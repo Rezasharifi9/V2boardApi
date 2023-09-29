@@ -1,0 +1,413 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="V2boardSiteModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="tbLinkUserAndPlans">
+          <Key>
+            <PropertyRef Name="Link_PU_ID" />
+          </Key>
+          <Property Name="Link_PU_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="L_FK_U_ID" Type="int" />
+          <Property Name="L_FK_P_ID" Type="int" />
+          <Property Name="L_Status" Type="bit" />
+        </EntityType>
+        <EntityType Name="tbLogs">
+          <Key>
+            <PropertyRef Name="log_ID" />
+          </Key>
+          <Property Name="log_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_Link_User_Plan_ID" Type="int" />
+          <Property Name="Action" Type="nvarchar(max)" />
+          <Property Name="CreateDatetime" Type="datetime" />
+          <Property Name="FK_NameUser_ID" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="tbPlans">
+          <Key>
+            <PropertyRef Name="Plan_ID" />
+          </Key>
+          <Property Name="Plan_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Plan_ID_V2" Type="int" />
+          <Property Name="Plan_Name" Type="nvarchar" MaxLength="250" />
+          <Property Name="Plan_Des" Type="nvarchar(max)" />
+          <Property Name="FK_Server_ID" Type="int" />
+          <Property Name="Status" Type="bit" />
+          <Property Name="CountDayes" Type="int" />
+          <Property Name="PlanVolume" Type="int" />
+          <Property Name="Price" Type="int" />
+        </EntityType>
+        <EntityType Name="tbServers">
+          <Key>
+            <PropertyRef Name="ServerID" />
+          </Key>
+          <Property Name="ServerID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ServerAddress" Type="varchar" MaxLength="250" />
+          <Property Name="Email" Type="varchar" MaxLength="250" />
+          <Property Name="Password" Type="varchar(max)" />
+          <Property Name="AdminPath" Type="varchar" MaxLength="250" />
+          <Property Name="Auth_Token" Type="varchar(max)" />
+          <Property Name="Status" Type="bit" />
+        </EntityType>
+        <EntityType Name="tbUsers">
+          <Key>
+            <PropertyRef Name="User_ID" />
+          </Key>
+          <Property Name="User_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Username" Type="varchar" MaxLength="150" />
+          <Property Name="Password" Type="varchar" MaxLength="250" />
+          <Property Name="FirstName" Type="nvarchar" MaxLength="250" />
+          <Property Name="LastName" Type="nvarchar" MaxLength="250" />
+          <Property Name="Status" Type="bit" />
+          <Property Name="FK_Server_ID" Type="int" />
+          <Property Name="Token" Type="varchar(max)" />
+          <Property Name="Limit" Type="int" />
+          <Property Name="Wallet" Type="int" />
+          <Property Name="Role" Type="int" />
+        </EntityType>
+        <Association Name="FK_tbLinkUserAndPlans_tbPlans">
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPlans">
+              <PropertyRef Name="Plan_ID" />
+            </Principal>
+            <Dependent Role="tbLinkUserAndPlans">
+              <PropertyRef Name="L_FK_P_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinkUserAndPlans_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbLinkUserAndPlans">
+              <PropertyRef Name="L_FK_U_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLogs_tbLinkUserAndPlans">
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Role="tbLogs" Type="Self.tbLogs" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbLinkUserAndPlans">
+              <PropertyRef Name="Link_PU_ID" />
+            </Principal>
+            <Dependent Role="tbLogs">
+              <PropertyRef Name="FK_Link_User_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbPlans_tbServers">
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServers">
+              <PropertyRef Name="ServerID" />
+            </Principal>
+            <Dependent Role="tbPlans">
+              <PropertyRef Name="FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbUsers_tbServers">
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServers">
+              <PropertyRef Name="ServerID" />
+            </Principal>
+            <Dependent Role="tbUsers">
+              <PropertyRef Name="FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="V2boardSiteModelStoreContainer">
+          <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbLogs" EntityType="Self.tbLogs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="Self.FK_tbLinkUserAndPlans_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkUserAndPlans_tbUsers" Association="Self.FK_tbLinkUserAndPlans_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="Self.FK_tbLogs_tbLinkUserAndPlans">
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+            <End Role="tbLogs" EntitySet="tbLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPlans_tbServers" Association="Self.FK_tbPlans_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbPlans" EntitySet="tbPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbServers" Association="Self.FK_tbUsers_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUsers" EntitySet="tbUsers" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="V2boardSiteModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="V2boardSiteEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="tbLinkUserAndPlans" EntityType="V2boardSiteModel.tbLinkUserAndPlans" />
+          <EntitySet Name="tbLogs" EntityType="V2boardSiteModel.tbLogs" />
+          <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
+          <EntitySet Name="tbServers" EntityType="V2boardSiteModel.tbServers" />
+          <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
+          <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkUserAndPlans_tbUsers" Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans">
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+            <End Role="tbLogs" EntitySet="tbLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPlans_tbServers" Association="V2boardSiteModel.FK_tbPlans_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbPlans" EntitySet="tbPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbServers" Association="V2boardSiteModel.FK_tbUsers_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUsers" EntitySet="tbUsers" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="tbLinkUserAndPlans">
+          <Key>
+            <PropertyRef Name="Link_PU_ID" />
+          </Key>
+          <Property Name="Link_PU_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="L_FK_U_ID" Type="Int32" />
+          <Property Name="L_FK_P_ID" Type="Int32" />
+          <Property Name="L_Status" Type="Boolean" />
+          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbLinkUserAndPlans" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbLinkUserAndPlans" ToRole="tbUsers" />
+          <NavigationProperty Name="tbLogs" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbLogs" />
+        </EntityType>
+        <EntityType Name="tbLogs">
+          <Key>
+            <PropertyRef Name="log_ID" />
+          </Key>
+          <Property Name="log_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_Link_User_Plan_ID" Type="Int32" />
+          <Property Name="Action" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CreateDatetime" Type="DateTime" Precision="3" />
+          <Property Name="FK_NameUser_ID" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
+        </EntityType>
+        <EntityType Name="tbPlans">
+          <Key>
+            <PropertyRef Name="Plan_ID" />
+          </Key>
+          <Property Name="Plan_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Plan_ID_V2" Type="Int32" />
+          <Property Name="Plan_Name" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Plan_Des" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="FK_Server_ID" Type="Int32" />
+          <Property Name="Status" Type="Boolean" />
+          <Property Name="CountDayes" Type="Int32" />
+          <Property Name="PlanVolume" Type="Int32" />
+          <Property Name="Price" Type="Int32" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
+        </EntityType>
+        <EntityType Name="tbServers">
+          <Key>
+            <PropertyRef Name="ServerID" />
+          </Key>
+          <Property Name="ServerID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ServerAddress" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="Email" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="Password" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="AdminPath" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="Auth_Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="Status" Type="Boolean" />
+          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="tbUsers">
+          <Key>
+            <PropertyRef Name="User_ID" />
+          </Key>
+          <Property Name="User_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Username" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Password" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="FirstName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Status" Type="Boolean" />
+          <Property Name="FK_Server_ID" Type="Int32" />
+          <Property Name="Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="Limit" Type="Int32" />
+          <Property Name="Wallet" Type="Int32" />
+          <Property Name="Role" Type="Int32" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
+        </EntityType>
+        <Association Name="FK_tbLinkUserAndPlans_tbPlans">
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPlans">
+              <PropertyRef Name="Plan_ID" />
+            </Principal>
+            <Dependent Role="tbLinkUserAndPlans">
+              <PropertyRef Name="L_FK_P_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinkUserAndPlans_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbLinkUserAndPlans">
+              <PropertyRef Name="L_FK_U_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLogs_tbLinkUserAndPlans">
+          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbLogs" Role="tbLogs" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbLinkUserAndPlans">
+              <PropertyRef Name="Link_PU_ID" />
+            </Principal>
+            <Dependent Role="tbLogs">
+              <PropertyRef Name="FK_Link_User_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbPlans_tbServers">
+          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServers">
+              <PropertyRef Name="ServerID" />
+            </Principal>
+            <Dependent Role="tbPlans">
+              <PropertyRef Name="FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbUsers_tbServers">
+          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServers">
+              <PropertyRef Name="ServerID" />
+            </Principal>
+            <Dependent Role="tbUsers">
+              <PropertyRef Name="FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="V2boardSiteModelStoreContainer" CdmEntityContainer="V2boardSiteEntities">
+          <EntitySetMapping Name="tbLinkUserAndPlans">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkUserAndPlans">
+              <MappingFragment StoreEntitySet="tbLinkUserAndPlans">
+                <ScalarProperty Name="L_Status" ColumnName="L_Status" />
+                <ScalarProperty Name="L_FK_P_ID" ColumnName="L_FK_P_ID" />
+                <ScalarProperty Name="L_FK_U_ID" ColumnName="L_FK_U_ID" />
+                <ScalarProperty Name="Link_PU_ID" ColumnName="Link_PU_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbLogs">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbLogs">
+              <MappingFragment StoreEntitySet="tbLogs">
+                <ScalarProperty Name="FK_NameUser_ID" ColumnName="FK_NameUser_ID" />
+                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="FK_Link_User_Plan_ID" ColumnName="FK_Link_User_Plan_ID" />
+                <ScalarProperty Name="log_ID" ColumnName="log_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbPlans">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
+              <MappingFragment StoreEntitySet="tbPlans">
+                <ScalarProperty Name="Price" ColumnName="Price" />
+                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
+                <ScalarProperty Name="CountDayes" ColumnName="CountDayes" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
+                <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
+                <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
+                <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbServers">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbServers">
+              <MappingFragment StoreEntitySet="tbServers">
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Auth_Token" ColumnName="Auth_Token" />
+                <ScalarProperty Name="AdminPath" ColumnName="AdminPath" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
+                <ScalarProperty Name="ServerID" ColumnName="ServerID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbUsers">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
+              <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="Role" ColumnName="Role" />
+                <ScalarProperty Name="Wallet" ColumnName="Wallet" />
+                <ScalarProperty Name="Limit" ColumnName="Limit" />
+                <ScalarProperty Name="Token" ColumnName="Token" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
