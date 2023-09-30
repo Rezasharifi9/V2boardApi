@@ -28,6 +28,7 @@ namespace DataLayer.DomainModel
         public string AdminPath { get; set; }
         public string Auth_Token { get; set; }
         public Nullable<bool> Status { get; set; }
+        public string SubAddress { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbPlans> tbPlans { get; set; }

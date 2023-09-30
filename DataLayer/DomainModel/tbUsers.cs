@@ -31,6 +31,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> Limit { get; set; }
         public Nullable<int> Wallet { get; set; }
         public Nullable<int> Role { get; set; }
+        public string TelegramID { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }

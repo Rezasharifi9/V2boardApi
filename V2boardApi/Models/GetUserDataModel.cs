@@ -17,5 +17,10 @@ namespace V2boardApi.Models
         public string RemainingVolume { get; set; }
         public bool CanEdit { get; set; }
         public bool IsBanned { get; set; }
+        public string TotalVolume { get; set; }
+        public string IsActive { get; set;}
+
+        public string SubLinks { get; set; }
+
     }
 }

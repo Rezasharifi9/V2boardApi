@@ -113,7 +113,8 @@ namespace V2boardApi.Controllers
                             str.Append(client.BaseAddress + "api/v1/" + User.tbServers.AdminPath + "/user/fetch?");
                             if (name != null)
                             {
-                                str.Append("filter[0][key]=email&filter[0][condition]=%E6%A8%A1%E7%B3%8A&filter[0][value]=" + name + "@" + User.Username.ToLower());
+                                str.Append("filter[0][key]=email&filter[0][condition]=%E6%A8%A1%E7%B3%8A&filter[0][value]=" + name);
+                                str.Append("&filter[1][key]=email&filter[1][condition]=%E6%A8%A1%E7%B3%8A&filter[1][value]=" + "@" + User.Username);
                             }
                             else
                             {
@@ -167,6 +168,7 @@ namespace V2boardApi.Controllers
                                     getUserData.Name = item.email.Split('@')[0];
                                     getUserData.id = item.id;
                                     getUserData.IsBanned = Convert.ToBoolean(item.banned);
+                                    getUserData.TotalVolume = Utility.ConvertByteToGB(item.transfer_enable).ToString();
                                     if (item.expired_at != null)
                                     {
                                         var ex = Utility.ConvertSecondToDatetime((long)item.expired_at);
@@ -564,200 +566,103 @@ namespace V2boardApi.Controllers
 
 
 
-        [System.Web.Http.HttpGet]
-        public IHttpActionResult GetUserByLink(string search)
-        {
-            var counter = 0;
-            try
-            {
-                if (!string.IsNullOrEmpty(search))
-                {
-                    var Token = Request.Headers.Authorization;
-                    if (Token != null)
-                    {
-                        var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).FirstOrDefault();
-                        if (User != null)
-                        {
-                            HttpClient client = new HttpClient();
-                            if (User.tbServers != null)
-                            {
-
-                                client.BaseAddress = new Uri(User.tbServers.ServerAddress);
-                                client.DefaultRequestHeaders.Clear();
-                                client.DefaultRequestHeaders.Add("Authorization", User.tbServers.Auth_Token);
-                                var result = client.GetAsync(client.BaseAddress + "api/v1/" + User.tbServers.AdminPath + "/user/fetch?filter[0][key]=email&filter[0][condition]=%E6%A8%A1%E7%B3%8A&filter[0][value]=@" + User.Username + "&filter[1][key]=token&filter[1][condition]=%3D&filter[1][value]=" + search.Split('=')[1] + "&pageSize=10&current=1");
-                                if (result.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                                {
-                                    var Content = result.Result.Content.ReadAsStringAsync();
-                                    var Con = Content.Result.ToString();
-
-                                    var res = JObject.Parse(Con);
-                                    var data = res["data"].ToString();
-                                    var total1 = Convert.ToInt32(res["total"].ToString());
-
-                                    var Js = JsonConvert.DeserializeObject<List<GetUserModel>>(data);
-
-                                    var Users = new List<GetUserDataModel>();
-
-                                    foreach (var item in Js)
-                                    {
-                                        GetUserDataModel getUserData = new GetUserDataModel();
-                                        getUserData.Name = item.email.Split('@')[0];
-                                        getUserData.id = item.id;
-
-                                        if (item.expired_at != null)
-                                        {
-                                            var ex = Utility.ConvertSecondToDatetime((long)item.expired_at);
-                                            getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
-                                            getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
-                                        }
-                                        getUserData.PlanName = item.plan_name;
-                                        getUserData.SubLink = item.subscribe_url;
-
-                                        var re = Utility.ConvertByteToGB(item.u + item.d);
-                                        getUserData.UsedVolume = Math.Round(re, 2) + " GB";
-
-                                        var vol = item.transfer_enable - (item.u + item.d);
-                                        var d = Utility.ConvertByteToGB(vol);
-                                        getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
-                                        Users.Add(getUserData);
-                                        counter++;
-                                    }
-
-
-                                    return Ok(new { status = true, result = Users, total = total1 });
-                                }
-                                else
-                                {
-                                    return Ok(new { status = false, result = "ارتباط با سرور پنل برقرار نشد لطفا اطلاعات ورودی را چک کنید" });
-                                }
-
-                            }
-                            else
-                            {
-                                return Ok(new { status = false, result = "این کاربر مختص سروری نیست" });
-                            }
-
-                        }
-                        else
-                        {
-                            return Ok(new { status = false, result = "کاربر یافت نشد لطفا توکن را چک کنید" });
-                        }
-                    }
-                    else
-                    {
-                        return Ok(new { status = false, result = "توکن خالی است لطفا توکن را وارد کنید" });
-                    }
-                }
-                else
-                {
-                    return Ok(new { status = false, result = "لطفا متن سرچ را وارد کنید" });
-                }
-
-            }
-            catch (Exception ex)
-            {
-
-                return Ok(new { status = false, result = "خطا در برقراری ارتباط با سرور" });
-
-            }
-        }
-        [System.Web.Http.HttpGet]
-        public IHttpActionResult Test()
-        {
-            var req = Request;
-            var ress = req.CreateResponse();
-            var g = ress.RequestMessage.Headers.UserAgent;
-            var ss = req.GetCorsRequestContext();
-            return Ok();
-        }
-
-
         [System.Web.Http.HttpPost]
         public IHttpActionResult Update(Models.UpdateUserModel model)
         {
             var auth = Request.Headers.Authorization;
-            if (!string.IsNullOrEmpty(auth.Scheme))
+            if (auth != null)
             {
-                var User = RepositoryUser.table.Where(p => p.Token == auth.Scheme).FirstOrDefault();
-                if (User != null)
+                if (!string.IsNullOrEmpty(auth.Scheme))
                 {
-                    if ((User.Limit - User.Wallet) >= 0)
+                    var User = RepositoryUser.table.Where(p => p.Token == auth.Scheme).FirstOrDefault();
+                    if (User != null)
                     {
-                        var Server = User.tbServers;
-
-                        HttpClient client = new HttpClient();
-                        client.BaseAddress = new Uri(Server.ServerAddress + "api/v1/" + Server.AdminPath);
-                        client.DefaultRequestHeaders.Clear();
-                        client.DefaultRequestHeaders.Add("Authorization", Server.Auth_Token);
-
-                        UpdateUserV2Model v2model = new UpdateUserV2Model();
-                        v2model.email = model.Name + "@" + User.Username;
-
-                        var Plan = RepositoryPlan.table.Where(p => p.Plan_ID == model.Plan_ID && p.FK_Server_ID == Server.ServerID && p.Status == true).FirstOrDefault();
-
-                        client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
-
-                        Dictionary<string, string> exp = new Dictionary<string, string>();
-                        int ban = 0;
-                        if (model.IsBanned)
+                        if ((User.Limit - User.Wallet) >= 0 || model.IsBanned == true)
                         {
-                            ban = 1;
-                        }
+                            var Server = User.tbServers;
+
+                            HttpClient client = new HttpClient();
+                            client.BaseAddress = new Uri(Server.ServerAddress + "api/v1/" + Server.AdminPath);
+                            client.DefaultRequestHeaders.Clear();
+                            client.DefaultRequestHeaders.Add("Authorization", Server.Auth_Token);
+
+                            UpdateUserV2Model v2model = new UpdateUserV2Model();
+                            v2model.email = model.Name + "@" + User.Username;
+
+                            var Plan = RepositoryPlan.table.Where(p => p.Plan_ID_V2 == model.Plan_ID && p.FK_Server_ID == Server.ServerID && p.Status == true).FirstOrDefault();
+
+                            client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
+
+                            Dictionary<string, string> exp = new Dictionary<string, string>();
+                            int ban = 0;
+                            if (model.IsBanned)
+                            {
+                                ban = 1;
+                            }
 
 
-                        exp.Add("id", model.AccountID.ToString());
-                        exp.Add("email", model.Name + "@" + User.Username);
-                        exp.Add("is_staff", "0");
-                        exp.Add("is_admin", "0");
-                        exp.Add("banned", ban.ToString());
+                            exp.Add("id", model.AccountID.ToString());
+                            exp.Add("email", model.Name + "@" + User.Username);
+                            exp.Add("u", "0");
+                            exp.Add("d", "0");
+                            exp.Add("is_staff", "0");
+                            exp.Add("is_admin", "0");
+                            exp.Add("banned", ban.ToString());
 
-                        if (model.Plan_ID != 0)
-                        {
-                            var t = ((Convert.ToInt64(Plan.PlanVolume) * 1024) * 1024) * 1024;
-                            exp.Add("expired_at", DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString());
-                            exp.Add("transfer_enable", t.ToString());
-                        }
+                            if (model.Plan_ID != 0 && model.IsBanned == false)
+                            {
+                                var t = ((Convert.ToInt64(Plan.PlanVolume) * 1024) * 1024) * 1024;
+                                exp.Add("expired_at", DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString());
+                                exp.Add("transfer_enable", t.ToString());
+                            }
 
-                        var Form = new FormUrlEncodedContent(exp);
+                            var Form = new FormUrlEncodedContent(exp);
 
-                        var addr = client.BaseAddress + "/user/update";
-                        var request = client.PostAsync(addr, Form);
-                        if (request.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                        {
+                            var addr = client.BaseAddress + "/user/update";
+                            var request = client.PostAsync(addr, Form);
+                            if (request.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                            {
 
-                            var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
-                            User.Wallet += link.tbPlans.Price;
-                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, model.Name);
+                                if (model.Plan_ID != 0)
+                                {
+                                    var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
+                                    User.Wallet += link.tbPlans.Price;
+                                    AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, model.Name);
+                                }
 
 
-                            return Ok(new { status = true, result = "اکانت با موفقیت تمدید شد" });
+                                return Ok(new { status = true, result = "اکانت با موفقیت ویرایش شد" });
+                            }
+                            else
+                            {
+                                var result = request.Result.Content.ReadAsStringAsync();
+                                return Ok(new { status = false, result = "اکانت ویرایش نشد" });
+                            }
+
                         }
                         else
                         {
-                            var result = request.Result.Content.ReadAsStringAsync();
-                            return Ok(new { status = false, result = "اکانت تمدید نشد" });
+                            var Count = User.Limit;
+
+                            StringBuilder str = new StringBuilder();
+                            str.Append(" شما اجازه ساخت بیشتر از مبلغ ");
+                            str.Append(string.Format("{0:C0}", Count).Replace("$", ""));
+                            str.Append(" تومان");
+                            str.Append(" را ندارید");
+                            str.Append(" لطفا بدهی خود را پرداخت کنید تا محدودیت 0 شود ");
+
+                            return Ok(new { status = false, result = str.ToString() });
                         }
 
                     }
                     else
                     {
-                        var Count = User.Limit;
-
-                        StringBuilder str = new StringBuilder();
-                        str.Append(" شما اجازه ساخت بیشتر از مبلغ ");
-                        str.Append(string.Format("{0:C0}", Count).Replace("$", ""));
-                        str.Append(" تومان");
-                        str.Append(" را ندارید");
-                        str.Append(" لطفا بدهی خود را پرداخت کنید تا محدودیت 0 شود ");
-
-                        return Ok(new { status = false, result = str.ToString() });
+                        return Ok(new { status = false, result = "کاربر یافت نشد لطفا توکن را چک کنید" });
                     }
-
                 }
                 else
                 {
-                    return Ok(new { status = false, result = "کاربر یافت نشد لطفا توکن را چک کنید" });
+                    return Ok(new { status = false, result = "توکن خالی است لطفا توکن را وارد کنید" });
                 }
             }
             else

@@ -49,6 +49,7 @@
           <Property Name="AdminPath" Type="varchar" MaxLength="250" />
           <Property Name="Auth_Token" Type="varchar(max)" />
           <Property Name="Status" Type="bit" />
+          <Property Name="SubAddress" Type="varchar" MaxLength="250" />
         </EntityType>
         <EntityType Name="tbUsers">
           <Key>
@@ -65,6 +66,7 @@
           <Property Name="Limit" Type="int" />
           <Property Name="Wallet" Type="int" />
           <Property Name="Role" Type="int" />
+          <Property Name="TelegramID" Type="varchar" MaxLength="250" />
         </EntityType>
         <Association Name="FK_tbLinkUserAndPlans_tbPlans">
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
@@ -234,6 +236,7 @@
           <Property Name="AdminPath" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="Auth_Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="Status" Type="Boolean" />
+          <Property Name="SubAddress" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
         </EntityType>
@@ -252,6 +255,7 @@
           <Property Name="Limit" Type="Int32" />
           <Property Name="Wallet" Type="Int32" />
           <Property Name="Role" Type="Int32" />
+          <Property Name="TelegramID" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
         </EntityType>
@@ -360,6 +364,7 @@
           <EntitySetMapping Name="tbServers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbServers">
               <MappingFragment StoreEntitySet="tbServers">
+                <ScalarProperty Name="SubAddress" ColumnName="SubAddress" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="Auth_Token" ColumnName="Auth_Token" />
                 <ScalarProperty Name="AdminPath" ColumnName="AdminPath" />
@@ -373,6 +378,7 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="TelegramID" ColumnName="TelegramID" />
                 <ScalarProperty Name="Role" ColumnName="Role" />
                 <ScalarProperty Name="Wallet" ColumnName="Wallet" />
                 <ScalarProperty Name="Limit" ColumnName="Limit" />

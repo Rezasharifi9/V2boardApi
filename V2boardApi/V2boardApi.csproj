@@ -74,6 +74,9 @@
     <Reference Include="System.Web.Http.Cors, Version=5.2.9.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Cors.5.2.9\lib\net45\System.Web.Http.Cors.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.9.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.9\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
@@ -179,9 +182,11 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\log.txt" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -190,6 +195,10 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
+    <Content Include="Scripts\cdn.jsdelivr.net_gh_davidshimjs_qrcodejs%40gh-pages_qrcode.min.js" />
+    <Content Include="Scripts\cdn.jsdelivr.net_npm_alpinejs-i18n%402.4.0_dist_cdn.min.js" />
+    <Content Include="Scripts\cdn.lordicon.com_bhenfmcm.js" />
+    <Content Include="Scripts\cdnjs.cloudflare.com_ajax_libs_flowbite_1.8.1_flowbite.min.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />
     <Content Include="Scripts\jquery-3.4.1.slim.js" />
@@ -200,6 +209,10 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\unpkg.com_alpinejs%403.13.0_dist_cdn.min.js" />
+    <Content Include="Styles\cdn.jsdelivr.net_gh_rastikerdar_shabnam-font%40v5.0.1_dist_font-face.css" />
+    <Content Include="Styles\cdn.jsdelivr.net_npm_daisyui%403.7.3_dist_full.css" />
+    <Content Include="Styles\fonts.cdnfonts.com_css_be-vietnam-pro.css" />
     <Content Include="Styles\Style.css" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
