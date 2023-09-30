@@ -67,6 +67,7 @@
           <Property Name="Wallet" Type="int" />
           <Property Name="Role" Type="int" />
           <Property Name="TelegramID" Type="varchar" MaxLength="250" />
+          <Property Name="BussinesTitle" Type="nvarchar" MaxLength="350" />
         </EntityType>
         <Association Name="FK_tbLinkUserAndPlans_tbPlans">
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
@@ -256,6 +257,7 @@
           <Property Name="Wallet" Type="Int32" />
           <Property Name="Role" Type="Int32" />
           <Property Name="TelegramID" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="BussinesTitle" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
         </EntityType>
@@ -378,6 +380,7 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="BussinesTitle" ColumnName="BussinesTitle" />
                 <ScalarProperty Name="TelegramID" ColumnName="TelegramID" />
                 <ScalarProperty Name="Role" ColumnName="Role" />
                 <ScalarProperty Name="Wallet" ColumnName="Wallet" />

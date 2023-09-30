@@ -168,7 +168,9 @@ namespace V2boardApi.Controllers
                                     getUserData.Name = item.email.Split('@')[0];
                                     getUserData.id = item.id;
                                     getUserData.IsBanned = Convert.ToBoolean(item.banned);
+                                    getUserData.IsActive = "فعال";
                                     getUserData.TotalVolume = Utility.ConvertByteToGB(item.transfer_enable).ToString();
+
                                     if (item.expired_at != null)
                                     {
                                         var ex = Utility.ConvertSecondToDatetime((long)item.expired_at);
@@ -177,6 +179,10 @@ namespace V2boardApi.Controllers
                                         if (getUserData.DaysLeft <= 2)
                                         {
                                             getUserData.CanEdit = true;
+                                        }
+                                        if (ex <= DateTime.Now)
+                                        {
+                                            getUserData.IsActive = "پایان تاریخ اشتراک";
                                         }
                                     }
                                     var Plan = RepositoryLogs.table.Where(p => p.FK_NameUser_ID == getUserData.Name && p.tbLinkUserAndPlans.tbUsers.Token == Token.Scheme).FirstOrDefault();
@@ -201,6 +207,15 @@ namespace V2boardApi.Controllers
                                         getUserData.CanEdit = true;
                                     }
 
+                                    if (d <= 0)
+                                    {
+                                        getUserData.IsActive = "اتمام حجم";
+                                    }
+                                    else
+                                        if (getUserData.IsBanned && getUserData.IsActive == "فعال")
+                                    {
+                                        getUserData.IsActive = "مسدود";
+                                    }
                                     getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
                                     Users.Add(getUserData);
                                     counter++;

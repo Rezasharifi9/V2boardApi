@@ -81,7 +81,7 @@ namespace V2boardApi.Controllers
                             {
                                 var item2 = Js[0];
                                 GetUserDataModel getUserData = new GetUserDataModel();
-                                getUserData.IsActive = "ok";
+                                getUserData.IsActive = "فعال";
                                 getUserData.Name = item2.email.Split('@')[0];
                                 getUserData.IsBanned = Convert.ToBoolean(item2.banned);
                                 getUserData.TotalVolume = Utility.ConvertByteToGB(item2.transfer_enable).ToString() + " GB";
@@ -93,13 +93,13 @@ namespace V2boardApi.Controllers
 
                                     if (ex <= DateTime.Today)
                                     {
-                                        getUserData.IsActive = "expiredate";
+                                        getUserData.IsActive = "پایان تاریخ اشتراک";
                                     }
 
                                 }
                                 if (getUserData.IsBanned)
                                 {
-                                    getUserData.IsActive = "ban";
+                                    getUserData.IsActive = "مسدود";
                                 }
 
 
@@ -112,7 +112,7 @@ namespace V2boardApi.Controllers
                                 var vol = item2.transfer_enable - (item2.u + item2.d);
                                 if (vol <= 0)
                                 {
-                                    getUserData.IsActive = "endvolume";
+                                    getUserData.IsActive = "اتمام حجم";
                                 }
                                 var d = Utility.ConvertByteToGB(vol);
                                 getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
@@ -121,7 +121,7 @@ namespace V2boardApi.Controllers
                                 {
 
                                     ViewBag.TelegramID = link.tbLinkUserAndPlans.tbUsers.TelegramID;
-                                    ViewBag.Title = link.tbLinkUserAndPlans.tbUsers.Username;
+                                    ViewBag.Title = link.tbLinkUserAndPlans.tbUsers.BussinesTitle;
                                 }
 
 
