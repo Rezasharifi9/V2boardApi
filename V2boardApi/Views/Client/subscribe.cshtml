@@ -825,24 +825,16 @@
                              class="radial-progress font-black text-2xl" id="progress__bar" style="--size:9rem;
                             --thickness: 1.2rem;"></div>
                         <span class="inline-block dark:text-white text-black font-semibold text-lg">@Model.Name</span>
-                        @if (Model.IsActive == "ban")
+                        @if (Model.IsActive == "فعال")
                         {
-                            <span style="background-color: #8f2f2f;" class="px-4 py-2 rounded-full inline-block shadow-md font-bold text-gray-200">قفل توسط ادمین</span>
-                        }else
-                        if (Model.IsActive == "expiredate")
-                        {
-                            <span style="background-color: #8f2f2f;" class="px-4 py-2 rounded-full inline-block shadow-md  font-bold text-gray-200">پایان تاریخ انقضا</span>
-                        }else
-                        if (Model.IsActive == "endvolume")
-                        {
-                            <span style="background-color: #8f2f2f;" class="px-4 py-2 rounded-full inline-block shadow-md font-bold text-gray-200">اتمام حجم</span>
+                            <span style="background-color: #2d7818; " class="px-4 py-2 rounded-full inline-block shadow-md font-bold text-gray-200">@Model.IsActive</span>
                         }
                         else
                         {
-                            <span class="px-4 py-2 rounded-full inline-block shadow-md shadow-green-900 font-bold" style="background-color:green;">فعال</span>
+                            <span style="background-color: #8f2f2f;" class="px-4 py-2 rounded-full inline-block shadow-md shadow-green-900 font-bold" style="background-color:green;">@Model.IsActive</span>
                         }
                     </div>
-                    <div x-data="{ usedTraffic: {{ user.used_traffic }}, dataLimit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit }}{% endif %} }"
+                    <div style="padding: 0px;" x-data="{ usedTraffic: {{ user.used_traffic }}, dataLimit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit }}{% endif %} }"
                          class="basis-2/3 flex flex-row items-center sm:ltr:pl-9 sm:rtl:pr-9">
                         <div class="data-usage w-full">
                             <div class="dark:text-white text-black text-center mb-2">

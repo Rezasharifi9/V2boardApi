@@ -21,6 +21,7 @@ namespace V2boardApi.Controllers
     {
         private Repository<tbServers> RepositoryServer { get; set; }
         private V2boardSiteEntities db;
+        private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
         public ClientController()
@@ -29,28 +30,35 @@ namespace V2boardApi.Controllers
             RepositoryServer = new Repository<tbServers>(db);
             RepositoryLinkUserAndPlan = new Repository<tbLinkUserAndPlans>(db);
             RepositoryLogs = new Repository<tbLogs>(db);
+            RepositoryUser = new Repository<tbUsers>(db);
         }
 
         public ActionResult subscribe(string token = "26948e1cfb866fbd9b80ac3626f7f6f4")
         {
             var UserAgent = Request.UserAgent.ToLower();
 
-            if (UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
+            if (UserAgent.Contains("surfboard") || UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
             {
                 var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(Request.Url.Host)).FirstOrDefault();
                 if (server != null)
                 {
                     HttpClient client = new HttpClient();
                     client.BaseAddress = new Uri(server.ServerAddress + "api/v1/");
-
+                    client.DefaultRequestHeaders.UserAgent.TryParseAdd(Request.UserAgent);
                     var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + token);
                     if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var result = res.Result.Content.ReadAsStringAsync();
                         //var response = new HttpResponseMessage();
                         //response.Content = new StringContent(result.Result, Encoding.UTF8, "text/html");
-
-                        return Content(result.Result);
+                        if (string.IsNullOrEmpty(result.Result))
+                        {
+                            var ress = HttpUtility.UrlEncode("❌ پایان تاریخ اشتراک ❌");
+                            var str = "vless://660e64cc-a610-48ed-88bf-1edba3c99a6b@test:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.speedtest.net&fp=random&pbk=ioE61VC3V30U7IdRmQ3bjhOq2ij9tPhVIgAD4JZ4YRY&sid=6ba85179e30d4fc2&type=tcp&headerType=none#" + ress;
+                            var base64 = Utility.Base64Encode(str);
+                            return Content(base64, "text/html", Encoding.UTF8);
+                        }
+                        return Content(result.Result, "text/html", Encoding.UTF8);
                     }
                 }
             }
@@ -116,12 +124,12 @@ namespace V2boardApi.Controllers
                                 }
                                 var d = Utility.ConvertByteToGB(vol);
                                 getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
-                                var link = RepositoryLogs.table.Where(p => p.FK_NameUser_ID == getUserData.Name).FirstOrDefault();
-                                if (link != null)
+                                var name = item2.email.Split('@')[1];
+                                var User = RepositoryUser.table.Where(p => p.Username == name).FirstOrDefault();
+                                if (User != null)
                                 {
-
-                                    ViewBag.TelegramID = link.tbLinkUserAndPlans.tbUsers.TelegramID;
-                                    ViewBag.Title = link.tbLinkUserAndPlans.tbUsers.BussinesTitle;
+                                    ViewBag.TelegramID = User.TelegramID;
+                                    ViewBag.Title = User.BussinesTitle;
                                 }
 
 
