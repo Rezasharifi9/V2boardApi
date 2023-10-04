@@ -71,6 +71,9 @@
     <Compile Include="DomainModel\tbLogs.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbOrders.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbPlans.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

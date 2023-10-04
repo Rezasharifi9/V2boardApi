@@ -182,10 +182,14 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\images\logo192.png" />
+    <Content Include="Content\images\logo512.png" />
     <Content Include="Content\log.txt" />
+    <Content Include="Content\master.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="manifest.json" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -199,6 +203,7 @@
     <Content Include="Scripts\cdn.jsdelivr.net_npm_alpinejs-i18n%402.4.0_dist_cdn.min.js" />
     <Content Include="Scripts\cdn.lordicon.com_bhenfmcm.js" />
     <Content Include="Scripts\cdnjs.cloudflare.com_ajax_libs_flowbite_1.8.1_flowbite.min.js" />
+    <Content Include="Scripts\index.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />
     <Content Include="Scripts\jquery-3.4.1.slim.js" />
@@ -214,6 +219,7 @@
     <Content Include="Styles\cdn.jsdelivr.net_npm_daisyui%403.7.3_dist_full.css" />
     <Content Include="Styles\fonts.cdnfonts.com_css_be-vietnam-pro.css" />
     <Content Include="Styles\Style.css" />
+    <Content Include="sw.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -229,7 +235,7 @@
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Client\subscribe.cshtml" />
-    <Content Include="Views\Client\sublink.cshtml" />
+    <Content Include="Views\Client\UpdateAccount.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

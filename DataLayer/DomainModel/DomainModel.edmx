@@ -24,6 +24,20 @@
           <Property Name="CreateDatetime" Type="datetime" />
           <Property Name="FK_NameUser_ID" Type="nvarchar(max)" />
         </EntityType>
+        <EntityType Name="tbOrders">
+          <Key>
+            <PropertyRef Name="Order_ID" />
+          </Key>
+          <Property Name="Order_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_Plan_ID" Type="int" />
+          <Property Name="AccountName" Type="nvarchar" MaxLength="350" />
+          <Property Name="OrderDate" Type="datetime" />
+          <Property Name="OrderStatus" Type="nvarchar" MaxLength="250" />
+          <Property Name="OrderType" Type="nvarchar" MaxLength="250" />
+          <Property Name="FK_OrderAdmin_ID" Type="int" />
+          <Property Name="Order_Guid" Type="uniqueidentifier" />
+          <Property Name="V2_User_ID" Type="int" />
+        </EntityType>
         <EntityType Name="tbPlans">
           <Key>
             <PropertyRef Name="Plan_ID" />
@@ -61,6 +75,7 @@
           <Property Name="FirstName" Type="nvarchar" MaxLength="250" />
           <Property Name="LastName" Type="nvarchar" MaxLength="250" />
           <Property Name="Status" Type="bit" />
+          <Property Name="Email" Type="varchar" MaxLength="150" />
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="Token" Type="varchar(max)" />
           <Property Name="Limit" Type="int" />
@@ -68,6 +83,7 @@
           <Property Name="Role" Type="int" />
           <Property Name="TelegramID" Type="varchar" MaxLength="250" />
           <Property Name="BussinesTitle" Type="nvarchar" MaxLength="350" />
+          <Property Name="Card Number" Type="bigint" />
         </EntityType>
         <Association Name="FK_tbLinkUserAndPlans_tbPlans">
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
@@ -105,6 +121,30 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbOrders_tbPlans">
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPlans">
+              <PropertyRef Name="Plan_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbOrders_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_OrderAdmin_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbPlans_tbServers">
           <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="*" />
@@ -132,6 +172,7 @@
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLogs" EntityType="Self.tbLogs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
@@ -146,6 +187,14 @@
           <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="Self.FK_tbLogs_tbLinkUserAndPlans">
             <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
             <End Role="tbLogs" EntitySet="tbLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbPlans" Association="Self.FK_tbOrders_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbUsers" Association="Self.FK_tbOrders_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
           </AssociationSet>
           <AssociationSet Name="FK_tbPlans_tbServers" Association="Self.FK_tbPlans_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
@@ -163,6 +212,7 @@
         <EntityContainer Name="V2boardSiteEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="tbLinkUserAndPlans" EntityType="V2boardSiteModel.tbLinkUserAndPlans" />
           <EntitySet Name="tbLogs" EntityType="V2boardSiteModel.tbLogs" />
+          <EntitySet Name="tbOrders" EntityType="V2boardSiteModel.tbOrders" />
           <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
           <EntitySet Name="tbServers" EntityType="V2boardSiteModel.tbServers" />
           <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
@@ -177,6 +227,14 @@
           <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans">
             <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
             <End Role="tbLogs" EntitySet="tbLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbPlans" Association="V2boardSiteModel.FK_tbOrders_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbUsers" Association="V2boardSiteModel.FK_tbOrders_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
           </AssociationSet>
           <AssociationSet Name="FK_tbPlans_tbServers" Association="V2boardSiteModel.FK_tbPlans_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
@@ -210,6 +268,22 @@
           <Property Name="FK_NameUser_ID" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
         </EntityType>
+        <EntityType Name="tbOrders">
+          <Key>
+            <PropertyRef Name="Order_ID" />
+          </Key>
+          <Property Name="Order_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_Plan_ID" Type="Int32" />
+          <Property Name="AccountName" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
+          <Property Name="OrderDate" Type="DateTime" Precision="3" />
+          <Property Name="OrderStatus" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="OrderType" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="FK_OrderAdmin_ID" Type="Int32" />
+          <Property Name="Order_Guid" Type="Guid" />
+          <Property Name="V2_User_ID" Type="Int32" />
+          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbOrders_tbUsers" FromRole="tbOrders" ToRole="tbUsers" />
+        </EntityType>
         <EntityType Name="tbPlans">
           <Key>
             <PropertyRef Name="Plan_ID" />
@@ -224,6 +298,7 @@
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="Price" Type="Int32" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
         </EntityType>
         <EntityType Name="tbServers">
@@ -251,6 +326,7 @@
           <Property Name="FirstName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="LastName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="Status" Type="Boolean" />
+          <Property Name="Email" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="Limit" Type="Int32" />
@@ -258,7 +334,9 @@
           <Property Name="Role" Type="Int32" />
           <Property Name="TelegramID" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="BussinesTitle" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
+          <Property Name="Card_Number" Type="Int64" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbUsers" FromRole="tbUsers" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
         </EntityType>
         <Association Name="FK_tbLinkUserAndPlans_tbPlans">
@@ -294,6 +372,30 @@
             </Principal>
             <Dependent Role="tbLogs">
               <PropertyRef Name="FK_Link_User_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbOrders_tbPlans">
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPlans">
+              <PropertyRef Name="Plan_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbOrders_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_OrderAdmin_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -348,6 +450,21 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="tbOrders">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbOrders">
+              <MappingFragment StoreEntitySet="tbOrders">
+                <ScalarProperty Name="V2_User_ID" ColumnName="V2_User_ID" />
+                <ScalarProperty Name="Order_Guid" ColumnName="Order_Guid" />
+                <ScalarProperty Name="FK_OrderAdmin_ID" ColumnName="FK_OrderAdmin_ID" />
+                <ScalarProperty Name="OrderType" ColumnName="OrderType" />
+                <ScalarProperty Name="OrderStatus" ColumnName="OrderStatus" />
+                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
+                <ScalarProperty Name="AccountName" ColumnName="AccountName" />
+                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
+                <ScalarProperty Name="Order_ID" ColumnName="Order_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tbPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
               <MappingFragment StoreEntitySet="tbPlans">
@@ -380,6 +497,7 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="Card_Number" ColumnName="Card Number" />
                 <ScalarProperty Name="BussinesTitle" ColumnName="BussinesTitle" />
                 <ScalarProperty Name="TelegramID" ColumnName="TelegramID" />
                 <ScalarProperty Name="Role" ColumnName="Role" />
@@ -387,6 +505,7 @@
                 <ScalarProperty Name="Limit" ColumnName="Limit" />
                 <ScalarProperty Name="Token" ColumnName="Token" />
                 <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="LastName" ColumnName="LastName" />
                 <ScalarProperty Name="FirstName" ColumnName="FirstName" />

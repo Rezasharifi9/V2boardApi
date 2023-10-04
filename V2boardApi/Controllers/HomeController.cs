@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Ajax.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,8 +9,14 @@ namespace V2boardApi.Controllers
 {
     public class HomeController : Controller
     {
+        [Route("/index")]
         public ActionResult Index()
         {
+            var Cookie = Request.Cookies["url"];
+            if (Cookie != null)
+            {
+                return Redirect(Cookie.Value);
+            }
             return View();
         }
 

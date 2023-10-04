@@ -17,12 +17,14 @@
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.7.3/dist/full.css" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/shabnam-font@v5.0.1/dist/font-face.css" rel="stylesheet"
           type="text/css" />
+    <link rel="manifest" href="~/manifest.json" />
     <script src="https://cdn.jsdelivr.net/npm/alpinejs-i18n@2.4.0/dist/cdn.min.js"></script>
     <script src="~/Scripts/alpine.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.js"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
     <script src="https://cdn.lordicon.com/bhenfmcm.js"></script>
     <link href="https://fonts.cdnfonts.com/css/be-vietnam-pro" rel="stylesheet">
+    <link rel="apple-touch-icon" href="~/Content/images/logo192.png" />
     <script defer src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script defer>
         const sub = "{{ user.subscription_url }}"
@@ -831,7 +833,7 @@
                         }
                         else
                         {
-                            <span style="background-color: #8f2f2f;" class="px-4 py-2 rounded-full inline-block shadow-md shadow-green-900 font-bold" style="background-color:green;">@Model.IsActive</span>
+                            <span style="background-color: #8f2f2f; width: 108%; text-align: center;" class="px-4 py-2 rounded-full inline-block shadow-md shadow-green-900 font-bold" style="background-color:green;width: 150px;text-align: center;">@Model.IsActive</span>
                         }
                     </div>
                     <div style="padding: 0px;" x-data="{ usedTraffic: {{ user.used_traffic }}, dataLimit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit }}{% endif %} }"
@@ -869,6 +871,8 @@
                         </div>
                     </div>
                 </div>
+                @Html.Action("UpdateAccount", "client", new { username = ViewBag.LinkCreator, Name = Model.Name, id = Model.id, FirstName = ViewBag.FirstName, LastName = ViewBag.LastName, Card_Number = ViewBag.Card_Number })
+                <br />
                 <div class="flex flex-col gap-y-4 mb-8 text-white text-sm sm:text-base">
                     <h2 x-text="$t('howToConnect')"
                         class="my-4 text-3xl font-black leading-none tracking-tight text-white md:text-5xl">
@@ -2010,34 +2014,34 @@
                         <p x-text="$t('macInfo')" class="text-lg font-normal mb-4 text-gray-300 lg:text-xl"></p>
                     </div>
                     @*<h2 x-text="$t('generalAccess')"
-                        class="my-4 text-3xl font-black leading-none tracking-tight text-white md:text-5xl">
-                    </h2>*@
+                            class="my-4 text-3xl font-black leading-none tracking-tight text-white md:text-5xl">
+                        </h2>*@
                     @*<p x-text="$t('generalAccessInfo')" class="text-lg font-normal mb-4 text-gray-300 lg:text-xl"></p>*@
                     <div class="collapse-arrow dark:text-white bg-gradient-to-r dark:from-gray-600 dark:via-gray-700 dark:to-gray-800 from-slate-100 via-slate-200 to-slate-300 text-black transition-all duration-300 font-medium rounded-2xl">
                         <!-- Accordion item -->
                         <div x-data="{ expanded: false }">
                             @*<h2>
-                                <button id="faqs-title-01" type="button"
-                                        class="flex p-4 rtl:pl-0 items-center justify-between w-full text-left font-semibold"
-                                        @@click="expanded = !expanded" :aria-expanded="expanded"
-                                        aria-controls="faqs-text-01">
-                                    <div class="flex items-center justify-start gap-x-2 text-lg sm:text-xl font-medium">
-                                        <div id="myConfigsContainer" class="w-8 h-8">
-                                            <lord-icon class="w-8 h-8" src="https://cdn.lordicon.com/gqzfzudq.json"
-                                                       trigger="loop" delay="2000" colors="primary:#fff,secondary:#fff">
-                                            </lord-icon>
+                                    <button id="faqs-title-01" type="button"
+                                            class="flex p-4 rtl:pl-0 items-center justify-between w-full text-left font-semibold"
+                                            @@click="expanded = !expanded" :aria-expanded="expanded"
+                                            aria-controls="faqs-text-01">
+                                        <div class="flex items-center justify-start gap-x-2 text-lg sm:text-xl font-medium">
+                                            <div id="myConfigsContainer" class="w-8 h-8">
+                                                <lord-icon class="w-8 h-8" src="https://cdn.lordicon.com/gqzfzudq.json"
+                                                           trigger="loop" delay="2000" colors="primary:#fff,secondary:#fff">
+                                                </lord-icon>
+                                            </div>
+                                            <span x-text="$t('myConfigs')">
+                                            </span>
                                         </div>
-                                        <span x-text="$t('myConfigs')">
-                                        </span>
-                                    </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                         stroke-width="1.5" stroke="currentColor" :class="{'!rotate-180': expanded}"
-                                         class="w-6 h-6 mx-6 transform origin-center transition duration-200 ease-out">
-                                        <path strokeLinecap="round" strokeLinejoin="round"
-                                              d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                                    </svg>
-                                </button>
-                            </h2>*@
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                             stroke-width="1.5" stroke="currentColor" :class="{'!rotate-180': expanded}"
+                                             class="w-6 h-6 mx-6 transform origin-center transition duration-200 ease-out">
+                                            <path strokeLinecap="round" strokeLinejoin="round"
+                                                  d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                        </svg>
+                                    </button>
+                                </h2>*@
                             <div id="faqs-text-01" role="region" aria-labelledby="faqs-title-01"
                                  class="grid text-sm text-white overflow-hidden transition-all duration-300 ease-in-out"
                                  :class="expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
@@ -2080,11 +2084,52 @@
                             <span class="sm:text-lg" x-text="$t('support')"></span>
                         </a>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
     </div>
+    <script src="~/Scripts/index.js"></script>
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+
+        $(function () {
+
+
+            var status = '@TempData["status"]';
+            var message = '@TempData["message"]';
+
+            if (status == "True") {
+                Swal.fire({
+                    title: 'موفق',
+                    text: message,
+                    icon: 'success',
+                    confirmButtonText: 'باشه'
+                });
+            }
+            else if (status == 'False') {
+                Swal.fire({
+                    title: 'خطا',
+                    text: message,
+                    icon: 'error',
+                    confirmButtonText: 'باشه'
+                });
+            }
+
+
+        });
+
+
+        function OpenDialog() {
+            $("#ResidFile").click();
+        }
+
+        function ShowBox() {
+            $("#boxTamdid").css("display", "flex");
+            $("#btnTamdid").css("display", "none");
+        }
+    </script>
 </body>
 
 </html>
