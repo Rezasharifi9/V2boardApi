@@ -3,7 +3,7 @@ if ("serviceWorker" in navigator) {
     
     navigator.serviceWorker.register(window.location.origin + "/sw.js").then(registeration => {
 
-        setCookie("url", location.href,10000);
+       
         
         console.log("Sw Registerd");
         console.log(registeration);

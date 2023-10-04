@@ -871,7 +871,11 @@
                         </div>
                     </div>
                 </div>
-                @Html.Action("UpdateAccount", "client", new { username = ViewBag.LinkCreator, Name = Model.Name, id = Model.id, FirstName = ViewBag.FirstName, LastName = ViewBag.LastName, Card_Number = ViewBag.Card_Number })
+                @if (Model.CanEdit)
+                {
+                    @Html.Action("UpdateAccount", "client", new { username = ViewBag.LinkCreator, Name = Model.Name, id = Model.id, FirstName = ViewBag.FirstName, LastName = ViewBag.LastName, Card_Number = ViewBag.Card_Number })
+
+                }
                 <br />
                 <div class="flex flex-col gap-y-4 mb-8 text-white text-sm sm:text-base">
                     <h2 x-text="$t('howToConnect')"

@@ -42,7 +42,7 @@ namespace V2boardApi.Controllers
         public ActionResult subscribe(string token)
         {
             var UserAgent = Request.UserAgent.ToLower();
-            var server = RepositoryServer.table.Where(p => p.SubAddress.Contains("panel.darkbaz.site")).FirstOrDefault();
+            var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(Request.Url.Host)).FirstOrDefault();
             if (UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
             {
                 if (server != null)
@@ -69,6 +69,20 @@ namespace V2boardApi.Controllers
             }
             else
             {
+                var url = Response.Cookies["url"];
+                if (url == null)
+                {
+                    HttpCookie cookie = new HttpCookie("url");
+                    cookie.Value = Request.Url.ToString();
+                    cookie.Expires = DateTime.Now.AddYears(100);
+                    Response.Cookies.Add(cookie);
+                }
+                else
+                {
+                    url.Value = Request.Url.ToString();
+                    url.Expires = DateTime.Now.AddYears(100);
+                }
+                
                 if (server != null)
                 {
                     HttpClient client = new HttpClient();
@@ -106,6 +120,10 @@ namespace V2boardApi.Controllers
                                     {
                                         getUserData.IsActive = "پایان تاریخ اشتراک";
                                     }
+                                    if (getUserData.DaysLeft <= 2)
+                                    {
+                                        getUserData.CanEdit = true;
+                                    }
 
                                 }
                                 if (getUserData.IsBanned)
@@ -121,11 +139,16 @@ namespace V2boardApi.Controllers
                                 getUserData.UsedVolume = Math.Round(re, 2) + " GB";
 
                                 var vol = item2.transfer_enable - (item2.u + item2.d);
+
                                 if (vol <= 0)
                                 {
                                     getUserData.IsActive = "اتمام حجم";
                                 }
                                 var d = Utility.ConvertByteToGB(vol);
+                                if (d <= 2)
+                                {
+                                    getUserData.CanEdit = true;
+                                }
                                 getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
                                 var name = item2.email.Split('@')[1];
                                 var User = RepositoryUser.table.Where(p => p.Username == name).FirstOrDefault();
@@ -146,7 +169,7 @@ namespace V2boardApi.Controllers
                                     ViewBag.LinkCreator = item2.email.Split('@')[1];
                                 }
 
-                                ViewBag.FirstName = User.FirstName; ViewBag.LastName = User.LastName; ViewBag.CardNumber = User.Card_Number;
+                                ViewBag.FirstName = User.FirstName; ViewBag.LastName = User.LastName; ViewBag.Card_Number = User.Card_Number;
 
                                 return View(getUserData);
                             }
@@ -216,7 +239,7 @@ namespace V2boardApi.Controllers
                         if (url != null)
                         {
                             TempData["status"] = true;
-                            TempData["message"] = "درخواست تمدید شما با موفقیت ثبت گردید لطفا منتظر تائید درخواست بمانید";
+                            TempData["message"] = "درخواست تمدید شما با موفقیت ثبت گردید لطفا منتظر تائید درخواست بمانید بعد از تائید اشتراکتون فعال میشه حتما این صفحه رو چک کنید";
                             return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
                         }
 
