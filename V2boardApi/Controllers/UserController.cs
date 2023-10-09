@@ -91,7 +91,7 @@ namespace V2boardApi.Controllers
             }
         }
         [System.Web.Http.HttpGet]
-        public IHttpActionResult GetAll(int page = 1, string name = null, string link = null, string KeySort = null, string SortType = "DESC")
+        public IHttpActionResult GetAll(int page = 1, string name = null, string KeySort = null, string SortType = "DESC")
         {
             var counter = 0;
             try
@@ -113,17 +113,21 @@ namespace V2boardApi.Controllers
                             str.Append(client.BaseAddress + "api/v1/" + User.tbServers.AdminPath + "/user/fetch?");
                             if (name != null)
                             {
-                                str.Append("filter[0][key]=email&filter[0][condition]=%E6%A8%A1%E7%B3%8A&filter[0][value]=" + name);
-                                str.Append("&filter[1][key]=email&filter[1][condition]=%E6%A8%A1%E7%B3%8A&filter[1][value]=" + "@" + User.Username);
+                                if (name.Contains("token="))
+                                {
+                                    str.Append("&filter[1][key]=token&filter[1][condition]=%3D&filter[1][value]=" + name.Split('=')[1]);
+                                }
+                                else
+                                {
+                                    str.Append("filter[0][key]=email&filter[0][condition]=%E6%A8%A1%E7%B3%8A&filter[0][value]=" + name);
+                                    str.Append("&filter[1][key]=email&filter[1][condition]=%E6%A8%A1%E7%B3%8A&filter[1][value]=" + "@" + User.Username);
+                                }
                             }
                             else
                             {
                                 str.Append("filter[0][key]=email&filter[0][condition]=%E6%A8%A1%E7%B3%8A&filter[0][value]=" + "@" + User.Username.ToLower());
                             }
-                            if (link != null)
-                            {
-                                str.Append("&filter[1][key]=token&filter[1][condition]=%3D&filter[1][value]=" + link.Split('=')[1]);
-                            }
+
 
                             str.Append("&pageSize=10&current=" + page);
 
@@ -174,7 +178,13 @@ namespace V2boardApi.Controllers
                                     if (item.expired_at != null)
                                     {
                                         var ex = Utility.ConvertSecondToDatetime((long)item.expired_at);
+                                        var onlineTime = Utility.ConvertSecondToDatetime(item.t);
+                                        if(onlineTime <= DateTime.Now.AddMinutes(-1))
+                                        {
+                                            getUserData.IsOnline = true;
+                                        }
                                         getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
+                                        getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
                                         getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
                                         if (getUserData.DaysLeft <= 2)
                                         {
@@ -285,9 +295,11 @@ namespace V2boardApi.Controllers
 
                                     var plan = RepositoryPlan.table.Where(p => p.Plan_ID_V2 == createUser.plan_id && p.FK_Server_ID == User.FK_Server_ID && p.Status == true).FirstOrDefault();
 
+
+
                                     exp.Add("expired_at", DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString());
                                     exp.Add("plan_id", createUser.plan_id.ToString());
-                                    exp.Add("email_prefix", createUser.name);
+                                    exp.Add("email_prefix", createUser.name.Replace(' ', '_'));
                                     exp.Add("email_suffix", User.Username);
 
                                     var Form = new FormUrlEncodedContent(exp);

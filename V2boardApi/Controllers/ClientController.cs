@@ -18,6 +18,7 @@ using System.IO;
 using System.Security.Policy;
 using System.Net.Mail;
 using System.Net;
+using Newtonsoft.Json;
 
 namespace V2boardApi.Controllers
 {
@@ -43,7 +44,7 @@ namespace V2boardApi.Controllers
         {
             var UserAgent = Request.UserAgent.ToLower();
             var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(Request.Url.Host)).FirstOrDefault();
-            if (UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
+            if (UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
             {
                 if (server != null)
                 {
@@ -69,20 +70,21 @@ namespace V2boardApi.Controllers
             }
             else
             {
-                var url = Response.Cookies["url"];
+                var url = Request.Cookies["url"];
                 if (url == null)
                 {
                     HttpCookie cookie = new HttpCookie("url");
-                    cookie.Value = Request.Url.ToString();
+                    cookie.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
                     cookie.Expires = DateTime.Now.AddYears(100);
                     Response.Cookies.Add(cookie);
                 }
                 else
                 {
-                    url.Value = Request.Url.ToString();
-                    url.Expires = DateTime.Now.AddYears(100);
+                    var url1 = Response.Cookies["url"];
+                    url1.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
+                    url1.Expires = DateTime.Now.AddYears(100);
                 }
-                
+
                 if (server != null)
                 {
                     HttpClient client = new HttpClient();
@@ -113,10 +115,16 @@ namespace V2boardApi.Controllers
                                 if (item2.expired_at != null)
                                 {
                                     var ex = Utility.ConvertSecondToDatetime((long)item2.expired_at);
+                                    var onlineTime = Utility.ConvertSecondToDatetime(item2.t);
+                                    if (onlineTime <= DateTime.Now.AddMinutes(-2))
+                                    {
+                                        getUserData.IsOnline = true;
+                                    }
+                                    getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
                                     getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
                                     getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
 
-                                    if (ex <= DateTime.Today)
+                                    if (ex <= DateTime.Now)
                                     {
                                         getUserData.IsActive = "پایان تاریخ اشتراک";
                                     }
@@ -151,12 +159,7 @@ namespace V2boardApi.Controllers
                                 }
                                 getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
                                 var name = item2.email.Split('@')[1];
-                                var User = RepositoryUser.table.Where(p => p.Username == name).FirstOrDefault();
-                                if (User != null)
-                                {
-                                    ViewBag.TelegramID = User.TelegramID;
-                                    ViewBag.Title = User.BussinesTitle;
-                                }
+
 
 
                                 ViewBag.Url = server.ServerAddress + "api/v1/" + "client/subscribe?token=" + token;
@@ -169,8 +172,45 @@ namespace V2boardApi.Controllers
                                     ViewBag.LinkCreator = item2.email.Split('@')[1];
                                 }
 
-                                ViewBag.FirstName = User.FirstName; ViewBag.LastName = User.LastName; ViewBag.Card_Number = User.Card_Number;
 
+
+
+                                var ManiText = Server.MapPath("/Content/Manifests/") + item2.email + ".json";
+                                if (!System.IO.File.Exists(ManiText))
+                                {
+                                    var ManiPath = Server.MapPath("/") + "manifest.json";
+                                    System.IO.File.Copy(ManiPath, ManiText);
+                                }
+                                var Text = System.IO.File.ReadAllText(ManiText);
+
+                                var mani = JsonConvert.DeserializeObject<ManifestModel>(Text);
+                                mani.name = item2.email.Split('@')[0];
+                                mani.short_name = item2.email.Split('@')[0];
+
+
+                                var User = RepositoryUser.table.Where(p => p.Username == name && p.Status == true).FirstOrDefault();
+                                if (User != null)
+                                {
+                                    ViewBag.IsRenew = User.IsRenew;
+                                    ViewBag.TelegramID = User.TelegramID;
+                                    ViewBag.Title = User.BussinesTitle;
+                                    ViewBag.FirstName = User.FirstName; ViewBag.LastName = User.LastName; ViewBag.Card_Number = User.Card_Number;
+
+                                    var PwaIcon = "images/" + User.Username + "192.png";
+                                    var PwaIcon1 = "images/" + User.Username + "512.png";
+                                    var SrcIcon = Server.MapPath("/Content/Manifests/images/") + User.Username + "192.png";
+                                    if (System.IO.File.Exists(SrcIcon))
+                                    {
+                                        mani.icons[0].src = PwaIcon;
+                                        mani.icons[1].src = PwaIcon1;
+                                    }
+                                }
+
+                                var maniJs = JsonConvert.SerializeObject(mani);
+                                System.IO.File.WriteAllText(ManiText, maniJs);
+
+                                var httpPath = "https://" + Request.Url.Authority + "/Content/Manifests/" + item2.email + ".json";
+                                ViewBag.manifest = httpPath;
                                 return View(getUserData);
                             }
                         }
@@ -188,9 +228,9 @@ namespace V2boardApi.Controllers
 
         }
 
-        public ActionResult UpdateAccount(string username, string Name, int id,string FirstName=null, string LastName = null, long Card_Number = 0)
+        public ActionResult UpdateAccount(string username, string Name, int id, string FirstName = null, string LastName = null, long Card_Number = 0)
         {
-            var Plans = db.tbLinkUserAndPlans.Where(p => p.tbUsers.Username == username).ToList();
+            var Plans = db.tbLinkUserAndPlans.Where(p => p.tbUsers.Username == username && p.L_Status == true).ToList();
             ViewBag.Name = Name + "@" + username;
             ViewBag.Id = id;
             ViewBag.FirstName = FirstName; ViewBag.LastName = LastName; ViewBag.CardNumber = Card_Number;
@@ -219,7 +259,7 @@ namespace V2boardApi.Controllers
                         var username = Name.Split('@')[1];
                         var admin = db.tbUsers.Where(p => p.Username == username).FirstOrDefault();
                         order.FK_OrderAdmin_ID = admin.User_ID;
-                        order.FK_Plan_ID = db.tbPlans.Where(p => p.Plan_ID == PlanID).FirstOrDefault().Plan_ID;
+                        order.FK_Plan_ID = db.tbPlans.Where(p => p.Plan_ID == PlanID && p.Status == true).FirstOrDefault().Plan_ID;
                         order.OrderDate = DateTime.Now;
                         order.OrderStatus = "در انتظار تائید";
                         order.OrderType = "تمدید";

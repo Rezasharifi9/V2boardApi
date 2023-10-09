@@ -19,7 +19,8 @@ namespace V2boardApi.Models
         public bool IsBanned { get; set; }
         public string TotalVolume { get; set; }
         public string IsActive { get; set;}
-
+        public bool IsOnline { get; set; }
+        public string LastTimeOnline { get; set; }
         public string SubLinks { get; set; }
 
     }

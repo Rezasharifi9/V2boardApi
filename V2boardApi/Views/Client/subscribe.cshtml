@@ -17,7 +17,7 @@
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.7.3/dist/full.css" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/shabnam-font@v5.0.1/dist/font-face.css" rel="stylesheet"
           type="text/css" />
-    <link rel="manifest" href="~/manifest.json" />
+    <link rel="manifest" href="@ViewBag.manifest" />
     <script src="https://cdn.jsdelivr.net/npm/alpinejs-i18n@2.4.0/dist/cdn.min.js"></script>
     <script src="~/Scripts/alpine.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.js"></script>
@@ -871,7 +871,7 @@
                         </div>
                     </div>
                 </div>
-                @if (Model.CanEdit)
+                @if (Model.CanEdit == true && ViewBag.IsRenew == true)
                 {
                     @Html.Action("UpdateAccount", "client", new { username = ViewBag.LinkCreator, Name = Model.Name, id = Model.id, FirstName = ViewBag.FirstName, LastName = ViewBag.LastName, Card_Number = ViewBag.Card_Number })
 

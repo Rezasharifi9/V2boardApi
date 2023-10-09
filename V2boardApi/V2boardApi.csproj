@@ -154,6 +154,7 @@
     <Compile Include="Models\BanUserModel.cs" />
     <Compile Include="Models\CreateUserModel.cs" />
     <Compile Include="Models\GetUserDataModel.cs" />
+    <Compile Include="Models\ManifestModel.cs" />
     <Compile Include="Models\Plans.cs" />
     <Compile Include="Models\ReqLoginModel.cs" />
     <Compile Include="Models\SubscribeDataViewModel.cs" />
@@ -239,6 +240,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Content\Manifests\" />
     <Folder Include="Views\Server\" />
     <Folder Include="Views\User\" />
   </ItemGroup>

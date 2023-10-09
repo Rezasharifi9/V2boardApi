@@ -84,6 +84,7 @@
           <Property Name="TelegramID" Type="varchar" MaxLength="250" />
           <Property Name="BussinesTitle" Type="nvarchar" MaxLength="350" />
           <Property Name="Card Number" Type="bigint" />
+          <Property Name="IsRenew" Type="bit" />
         </EntityType>
         <Association Name="FK_tbLinkUserAndPlans_tbPlans">
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
@@ -335,6 +336,7 @@
           <Property Name="TelegramID" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="BussinesTitle" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
           <Property Name="Card_Number" Type="Int64" />
+          <Property Name="IsRenew" Type="Boolean" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbUsers" FromRole="tbUsers" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
@@ -497,6 +499,7 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="IsRenew" ColumnName="IsRenew" />
                 <ScalarProperty Name="Card_Number" ColumnName="Card Number" />
                 <ScalarProperty Name="BussinesTitle" ColumnName="BussinesTitle" />
                 <ScalarProperty Name="TelegramID" ColumnName="TelegramID" />
