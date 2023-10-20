@@ -30,6 +30,7 @@ namespace V2boardApi.Controllers
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbOrders> RepositoryOrders { get; set; }
+        private Repository<tbUpdateLogs> RepositoryUpdateLogs { get; set; }
         public ClientController()
         {
             db = new V2boardSiteEntities();
@@ -38,16 +39,44 @@ namespace V2boardApi.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryUser = new Repository<tbUsers>(db);
             RepositoryOrders = new Repository<tbOrders>(db);
+            RepositoryUpdateLogs = new Repository<tbUpdateLogs>(db);
         }
+
+
 
         public ActionResult subscribe(string token)
         {
+
+
             var UserAgent = Request.UserAgent.ToLower();
             var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(Request.Url.Host)).FirstOrDefault();
             if (UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
             {
                 if (server != null)
                 {
+                    string ipv4 = Request.UserHostAddress;
+                    tbUpdateLogs tbUpdate = new tbUpdateLogs();
+                    tbUpdate.upl_CreateTime = DateTime.Now;
+                    tbUpdate.upl_UserAgent = UserAgent;
+                    tbUpdate.upl_AccountToken = token;
+                    tbUpdate.upl_IPv4 = ipv4;
+                    
+                    tbUpdate.upl_FK_Server_ID = server.ServerID;
+
+                    string strHostName = System.Net.Dns.GetHostName(); ;
+                    IPHostEntry ipEntry = System.Net.Dns.GetHostEntry(strHostName);
+                    IPAddress[] addr = ipEntry.AddressList;
+                    if (addr[0].AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+                    {
+
+
+                        tbUpdate.upl_IPv6 = addr[0].ToString();
+                    }
+
+                    tbUpdate.upl_HostName = strHostName;
+                    RepositoryUpdateLogs.Insert(tbUpdate);
+                    RepositoryUpdateLogs.Save();
+
                     HttpClient client = new HttpClient();
                     client.BaseAddress = new Uri(server.ServerAddress + "api/v1/");
                     client.DefaultRequestHeaders.UserAgent.TryParseAdd(Request.UserAgent);

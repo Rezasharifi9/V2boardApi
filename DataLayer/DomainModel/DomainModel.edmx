@@ -65,6 +65,19 @@
           <Property Name="Status" Type="bit" />
           <Property Name="SubAddress" Type="varchar" MaxLength="250" />
         </EntityType>
+        <EntityType Name="tbUpdateLogs">
+          <Key>
+            <PropertyRef Name="upl_ID" />
+          </Key>
+          <Property Name="upl_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="upl_HostName" Type="varchar" MaxLength="250" />
+          <Property Name="upl_IPv4" Type="varchar" MaxLength="50" />
+          <Property Name="upl_IPv6" Type="varchar" MaxLength="50" />
+          <Property Name="upl_UserAgent" Type="varchar" MaxLength="350" />
+          <Property Name="upl_CreateTime" Type="datetime" />
+          <Property Name="upl_AccountToken" Type="nvarchar" MaxLength="350" />
+          <Property Name="upl_FK_Server_ID" Type="int" />
+        </EntityType>
         <EntityType Name="tbUsers">
           <Key>
             <PropertyRef Name="User_ID" />
@@ -158,6 +171,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbUpdateLogs_tbServers">
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbUpdateLogs" Type="Self.tbUpdateLogs" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServers">
+              <PropertyRef Name="ServerID" />
+            </Principal>
+            <Dependent Role="tbUpdateLogs">
+              <PropertyRef Name="upl_FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbUsers_tbServers">
           <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="*" />
@@ -176,6 +201,7 @@
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbUpdateLogs" EntityType="Self.tbUpdateLogs" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="Self.FK_tbLinkUserAndPlans_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
@@ -201,6 +227,10 @@
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbPlans" EntitySet="tbPlans" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbUpdateLogs_tbServers" Association="Self.FK_tbUpdateLogs_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUpdateLogs" EntitySet="tbUpdateLogs" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbUsers_tbServers" Association="Self.FK_tbUsers_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbUsers" EntitySet="tbUsers" />
@@ -216,6 +246,7 @@
           <EntitySet Name="tbOrders" EntityType="V2boardSiteModel.tbOrders" />
           <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
           <EntitySet Name="tbServers" EntityType="V2boardSiteModel.tbServers" />
+          <EntitySet Name="tbUpdateLogs" EntityType="V2boardSiteModel.tbUpdateLogs" />
           <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
           <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
@@ -240,6 +271,10 @@
           <AssociationSet Name="FK_tbPlans_tbServers" Association="V2boardSiteModel.FK_tbPlans_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbPlans" EntitySet="tbPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUpdateLogs_tbServers" Association="V2boardSiteModel.FK_tbUpdateLogs_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUpdateLogs" EntitySet="tbUpdateLogs" />
           </AssociationSet>
           <AssociationSet Name="FK_tbUsers_tbServers" Association="V2boardSiteModel.FK_tbUsers_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
@@ -315,7 +350,22 @@
           <Property Name="Status" Type="Boolean" />
           <Property Name="SubAddress" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUpdateLogs" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="tbUpdateLogs">
+          <Key>
+            <PropertyRef Name="upl_ID" />
+          </Key>
+          <Property Name="upl_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="upl_HostName" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="upl_IPv4" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="upl_IPv6" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="upl_UserAgent" Type="String" MaxLength="350" FixedLength="false" Unicode="false" />
+          <Property Name="upl_CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="upl_AccountToken" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
+          <Property Name="upl_FK_Server_ID" Type="Int32" />
+          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbUpdateLogs" ToRole="tbServers" />
         </EntityType>
         <EntityType Name="tbUsers">
           <Key>
@@ -413,6 +463,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbUpdateLogs_tbServers">
+          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbUpdateLogs" Role="tbUpdateLogs" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServers">
+              <PropertyRef Name="ServerID" />
+            </Principal>
+            <Dependent Role="tbUpdateLogs">
+              <PropertyRef Name="upl_FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbUsers_tbServers">
           <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="*" />
@@ -493,6 +555,20 @@
                 <ScalarProperty Name="Email" ColumnName="Email" />
                 <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
                 <ScalarProperty Name="ServerID" ColumnName="ServerID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbUpdateLogs">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbUpdateLogs">
+              <MappingFragment StoreEntitySet="tbUpdateLogs">
+                <ScalarProperty Name="upl_FK_Server_ID" ColumnName="upl_FK_Server_ID" />
+                <ScalarProperty Name="upl_AccountToken" ColumnName="upl_AccountToken" />
+                <ScalarProperty Name="upl_CreateTime" ColumnName="upl_CreateTime" />
+                <ScalarProperty Name="upl_UserAgent" ColumnName="upl_UserAgent" />
+                <ScalarProperty Name="upl_IPv6" ColumnName="upl_IPv6" />
+                <ScalarProperty Name="upl_IPv4" ColumnName="upl_IPv4" />
+                <ScalarProperty Name="upl_HostName" ColumnName="upl_HostName" />
+                <ScalarProperty Name="upl_ID" ColumnName="upl_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

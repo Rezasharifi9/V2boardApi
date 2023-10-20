@@ -80,6 +80,9 @@
     <Compile Include="DomainModel\tbServers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbUpdateLogs.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbUsers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
