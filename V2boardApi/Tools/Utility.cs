@@ -133,7 +133,8 @@ namespace V2boardApi.Tools
 
         public static double ConvertByteToGB(double Byte)
         {
-            var result = ((Byte / 1024) / 1024) / 1024; 
+            
+            var result = ((Byte / 1024) / 1024) / 1024;
 
             return result;
         }

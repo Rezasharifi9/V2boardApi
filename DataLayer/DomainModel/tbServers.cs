@@ -19,15 +19,15 @@ namespace DataLayer.DomainModel
         {
             this.tbPlans = new HashSet<tbPlans>();
             this.tbUpdateLogs = new HashSet<tbUpdateLogs>();
+            this.tbUseages = new HashSet<tbUseages>();
             this.tbUsers = new HashSet<tbUsers>();
         }
     
         public int ServerID { get; set; }
         public string ServerAddress { get; set; }
-        public string Email { get; set; }
+        public string Username { get; set; }
         public string Password { get; set; }
-        public string AdminPath { get; set; }
-        public string Auth_Token { get; set; }
+        public string DataBaseName { get; set; }
         public Nullable<bool> Status { get; set; }
         public string SubAddress { get; set; }
     
@@ -35,6 +35,8 @@ namespace DataLayer.DomainModel
         public virtual ICollection<tbPlans> tbPlans { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUpdateLogs> tbUpdateLogs { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbUseages> tbUseages { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUsers> tbUsers { get; set; }
     }
