@@ -9,66 +9,44 @@ using System.Threading.Tasks;
 
 namespace DataLayer.DomainModel
 {
-    public static class MySqlEntities
+    public class MySqlEntities
     {
-        private static string _connection;
-        private static MySqlConnection SqlConnection;
-        public static bool Connect(string ConnectionString)
+        private string _connection;
+        private MySqlConnection SqlConnection;
+        
+        public MySqlEntities(string ConnectionString)
         {
             try
             {
                 _connection = ConnectionString;
                 SqlConnection = new MySqlConnection(_connection);
-                return true;
+                
             }
             catch (Exception)
             {
-                return false;
+                
             }
         }
 
-
-        public static List<Dictionary<string, object>> GetData(string query)
+        public void Open()
         {
-            var ListData = new List<Dictionary<string, object>>();
-            MySqlCommand sqlCommand = new MySqlCommand(query);
-            sqlCommand.Connection = SqlConnection;
             SqlConnection.Open();
-            MySqlDataReader reader = sqlCommand.ExecuteReader();
-
             
-            while (reader.Read())
-            {
-                var CountCol = reader.FieldCount;
-                if(reader.HasRows)
-                {
-                    var dic = new Dictionary<string, object>();
-                    for(var i = 0; i < CountCol; i++)
-                    {
-                        var val = reader.GetValue(i);
-                        var name = reader.GetName(i);
-                        dic.Add(name, val);
-                    }
-                    ListData.Add(dic);
-
-                }
-               
-            }
-
-
-            return ListData;
         }
 
-        public static void Close()
+        public MySqlDataReader GetData(string query)
+        {
+            using(MySqlCommand sqlCommand = new MySqlCommand(query, SqlConnection))
+            {
+                MySqlDataReader reader = sqlCommand.ExecuteReader();
+                return reader;
+            }
+        }
+
+        public  void Close()
         {
             SqlConnection.Close();
         }
-
-        public static Type GetListType<T>(this List<T> _)
-        {
-            return typeof(T);
-        }
-
     }
 
     //public IHttpActionResult ConnectSql()

@@ -44,214 +44,174 @@ namespace V2boardApi.Controllers
 
 
 
-        //public ActionResult subscribe(string token)
-        //{
-        //    var UserAgent = Request.UserAgent.ToLower();
-        //    var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(Request.Url.Host)).FirstOrDefault();
-        //    if (UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
-        //    {
-        //        if (server != null)
-        //        {
-        //            string ipv4 = Request.UserHostAddress;
-        //            tbUpdateLogs tbUpdate = new tbUpdateLogs();
-        //            tbUpdate.upl_CreateTime = DateTime.Now;
-        //            tbUpdate.upl_UserAgent = UserAgent;
-        //            tbUpdate.upl_AccountToken = token;
-        //            tbUpdate.upl_IPv4 = ipv4;
-                    
-        //            tbUpdate.upl_FK_Server_ID = server.ServerID;
+        public ActionResult subscribe(string token)
+        {
+            var UserAgent = Request.UserAgent.ToLower();
+            var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(Request.Url.Host)).FirstOrDefault();
+            if (UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
+            {
+                if (server != null)
+                {
+                    HttpClient client = new HttpClient();
+                    client.BaseAddress = new Uri(server.ServerAddress + "api/v1/");
+                    client.DefaultRequestHeaders.UserAgent.TryParseAdd(Request.UserAgent);
+                    var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + token);
+                    if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        var result = res.Result.Content.ReadAsStringAsync();
+                        //var response = new HttpResponseMessage();
+                        //response.Content = new StringContent(result.Result, Encoding.UTF8, "text/html");
+                        if (string.IsNullOrEmpty(result.Result))
+                        {
+                            var ress = HttpUtility.UrlEncode("❌ پایان تاریخ اشتراک ❌");
+                            var str = "vless://660e64cc-a610-48ed-88bf-1edba3c99a6b@test:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.speedtest.net&fp=random&pbk=ioE61VC3V30U7IdRmQ3bjhOq2ij9tPhVIgAD4JZ4YRY&sid=6ba85179e30d4fc2&type=tcp&headerType=none#" + ress;
+                            var base64 = Utility.Base64Encode(str);
+                            return Content(base64, "text/html", Encoding.UTF8);
+                        }
+                        return Content(result.Result, "text/html", Encoding.UTF8);
+                    }
+                }
+            }
+            else
+            {
+                var url = Request.Cookies["url"];
+                if (url == null)
+                {
+                    HttpCookie cookie = new HttpCookie("url");
+                    cookie.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
+                    cookie.Expires = DateTime.Now.AddYears(100);
+                    Response.Cookies.Add(cookie);
+                }
+                else
+                {
+                    var url1 = Response.Cookies["url"];
+                    url1.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
+                    url1.Expires = DateTime.Now.AddYears(100);
+                }
 
-        //            string strHostName = System.Net.Dns.GetHostName(); ;
-        //            IPHostEntry ipEntry = System.Net.Dns.GetHostEntry(strHostName);
-        //            IPAddress[] addr = ipEntry.AddressList;
-        //            if (addr[0].AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-        //            {
-        //                tbUpdate.upl_IPv6 = addr[0].ToString();
-        //            }
+                if (server != null)
+                {
+                    MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
+                    sqlEntities.Open();
+                    var query = "SELECT email,t,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
+                    var reader = sqlEntities.GetData(query);
+                    if (reader.Read())
+                    {
+                        GetUserDataModel getUserData = new GetUserDataModel();
+                        getUserData.IsActive = "فعال";
+                        getUserData.Name = reader.GetString("email").Split('@')[0];
+                        getUserData.IsBanned = reader.GetBoolean("banned");
+                        getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetDouble("transfer_enable")).ToString() + " GB";
+                        var exp = reader.GetInt64("expired_at");
+                        if (exp != 0)
+                        {
+                            var ex = Utility.ConvertSecondToDatetime(exp);
+                            var onlineTime = Utility.ConvertSecondToDatetime(reader.GetDouble("expired_at"));
+                            if (onlineTime <= DateTime.Now.AddMinutes(-2))
+                            {
+                                getUserData.IsOnline = true;
+                            }
+                            getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
+                            getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
+                            getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
 
-        //            tbUpdate.upl_HostName = strHostName;
-        //            RepositoryUpdateLogs.Insert(tbUpdate);
-        //            RepositoryUpdateLogs.Save();
+                            if (ex <= DateTime.Now)
+                            {
+                                getUserData.IsActive = "پایان تاریخ اشتراک";
+                            }
+                            if (getUserData.DaysLeft <= 2)
+                            {
+                                getUserData.CanEdit = true;
+                            }
 
-        //            HttpClient client = new HttpClient();
-        //            client.BaseAddress = new Uri(server.ServerAddress + "api/v1/");
-        //            client.DefaultRequestHeaders.UserAgent.TryParseAdd(Request.UserAgent);
-        //            var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + token);
-        //            if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
-        //            {
-        //                var result = res.Result.Content.ReadAsStringAsync();
-        //                //var response = new HttpResponseMessage();
-        //                //response.Content = new StringContent(result.Result, Encoding.UTF8, "text/html");
-        //                if (string.IsNullOrEmpty(result.Result))
-        //                {
-        //                    var ress = HttpUtility.UrlEncode("❌ پایان تاریخ اشتراک ❌");
-        //                    var str = "vless://660e64cc-a610-48ed-88bf-1edba3c99a6b@test:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.speedtest.net&fp=random&pbk=ioE61VC3V30U7IdRmQ3bjhOq2ij9tPhVIgAD4JZ4YRY&sid=6ba85179e30d4fc2&type=tcp&headerType=none#" + ress;
-        //                    var base64 = Utility.Base64Encode(str);
-        //                    return Content(base64, "text/html", Encoding.UTF8);
-        //                }
-        //                return Content(result.Result, "text/html", Encoding.UTF8);
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        var url = Request.Cookies["url"];
-        //        if (url == null)
-        //        {
-        //            HttpCookie cookie = new HttpCookie("url");
-        //            cookie.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
-        //            cookie.Expires = DateTime.Now.AddYears(100);
-        //            Response.Cookies.Add(cookie);
-        //        }
-        //        else
-        //        {
-        //            var url1 = Response.Cookies["url"];
-        //            url1.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
-        //            url1.Expires = DateTime.Now.AddYears(100);
-        //        }
+                        }
+                        if (getUserData.IsBanned)
+                        {
+                            getUserData.IsActive = "مسدود";
+                        }
 
-        //        if (server != null)
-        //        {
-        //            HttpClient client = new HttpClient();
-        //            client.BaseAddress = new Uri(server.ServerAddress);
-        //            client.DefaultRequestHeaders.Clear();
-        //            client.DefaultRequestHeaders.Add("Authorization", server.Auth_Token);
+                        getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
 
-        //            var result = client.GetAsync(client.BaseAddress + "api/v1/" + server.AdminPath + "/user/fetch?filter[0][key]=token&filter[0][condition]=%3D&filter[0][value]=" + token + "&pageSize=10");
-        //            if (result.Result.StatusCode == System.Net.HttpStatusCode.OK)
-        //            {
-        //                var Content = result.Result.Content.ReadAsStringAsync();
-        //                var Con = Content.Result.ToString();
+                        var re = Utility.ConvertByteToGB(reader.GetDouble("t"));
+                        getUserData.UsedVolume = Math.Round(re, 2) + " GB";
 
-        //                var res = JObject.Parse(Con);
-        //                var data = res["data"].ToString();
-        //                var Js = JsonConvert.DeserializeObject<List<GetUserModel>>(data);
-        //                if (Js != null)
-        //                {
-        //                    if (Js.Count >= 1)
-        //                    {
-        //                        var item2 = Js[0];
-        //                        GetUserDataModel getUserData = new GetUserDataModel();
-        //                        getUserData.IsActive = "فعال";
-        //                        getUserData.Name = item2.email.Split('@')[0];
-        //                        getUserData.IsBanned = Convert.ToBoolean(item2.banned);
-        //                        getUserData.TotalVolume = Utility.ConvertByteToGB(item2.transfer_enable).ToString() + " GB";
-        //                        getUserData.id = item2.id;
-        //                        if (item2.expired_at != null)
-        //                        {
-        //                            var ex = Utility.ConvertSecondToDatetime((long)item2.expired_at);
-        //                            var onlineTime = Utility.ConvertSecondToDatetime(item2.t);
-        //                            if (onlineTime <= DateTime.Now.AddMinutes(-2))
-        //                            {
-        //                                getUserData.IsOnline = true;
-        //                            }
-        //                            getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
-        //                            getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
-        //                            getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
+                        var vol = reader.GetInt64("transfer_enable") - (re);
 
-        //                            if (ex <= DateTime.Now)
-        //                            {
-        //                                getUserData.IsActive = "پایان تاریخ اشتراک";
-        //                            }
-        //                            if (getUserData.DaysLeft <= 2)
-        //                            {
-        //                                getUserData.CanEdit = true;
-        //                            }
+                        if (vol <= 0)
+                        {
+                            getUserData.IsActive = "اتمام حجم";
+                        }
+                        var d = Utility.ConvertByteToGB(vol);
+                        if (d <= 2)
+                        {
+                            getUserData.CanEdit = true;
+                        }
+                        getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
+                        var name = reader.GetString("email").Split('@')[1];
 
-        //                        }
-        //                        if (getUserData.IsBanned)
-        //                        {
-        //                            getUserData.IsActive = "مسدود";
-        //                        }
-
-
-        //                        getUserData.PlanName = item2.plan_name;
-        //                        getUserData.SubLink = item2.subscribe_url;
-
-        //                        var re = Utility.ConvertByteToGB(item2.u + item2.d);
-        //                        getUserData.UsedVolume = Math.Round(re, 2) + " GB";
-
-        //                        var vol = item2.transfer_enable - (item2.u + item2.d);
-
-        //                        if (vol <= 0)
-        //                        {
-        //                            getUserData.IsActive = "اتمام حجم";
-        //                        }
-        //                        var d = Utility.ConvertByteToGB(vol);
-        //                        if (d <= 2)
-        //                        {
-        //                            getUserData.CanEdit = true;
-        //                        }
-        //                        getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
-        //                        var name = item2.email.Split('@')[1];
-
-
-
-        //                        ViewBag.Url = server.ServerAddress + "api/v1/" + "client/subscribe?token=" + token;
-        //                        if (item2.email.Split('@')[1].Contains("."))
-        //                        {
-        //                            ViewBag.LinkCreator = item2.email.Split('@')[1].Split('.')[0];
-        //                        }
-        //                        else
-        //                        {
-        //                            ViewBag.LinkCreator = item2.email.Split('@')[1];
-        //                        }
+                        ViewBag.Url = server.ServerAddress + "api/v1/" + "client/subscribe?token=" + token;
+                        if (reader.GetString("email").Split('@')[1].Contains("."))
+                        {
+                            ViewBag.LinkCreator = reader.GetString("email").Split('.')[0];
+                        }
+                        else
+                        {
+                            ViewBag.LinkCreator = reader.GetString("email").Split('@')[1];
+                        }
 
 
 
 
-        //                        var ManiText = Server.MapPath("/Content/Manifests/") + item2.email + ".json";
-        //                        if (!System.IO.File.Exists(ManiText))
-        //                        {
-        //                            var ManiPath = Server.MapPath("/") + "manifest.json";
-        //                            System.IO.File.Copy(ManiPath, ManiText);
-        //                        }
-        //                        var Text = System.IO.File.ReadAllText(ManiText);
+                        var ManiText = Server.MapPath("/Content/Manifests/") + reader.GetString("email") + ".json";
+                        if (!System.IO.File.Exists(ManiText))
+                        {
+                            var ManiPath = Server.MapPath("/") + "manifest.json";
+                            System.IO.File.Copy(ManiPath, ManiText);
+                        }
+                        var Text = System.IO.File.ReadAllText(ManiText);
 
-        //                        var mani = JsonConvert.DeserializeObject<ManifestModel>(Text);
-        //                        mani.name = item2.email.Split('@')[0];
-        //                        mani.short_name = item2.email.Split('@')[0];
-
-
-        //                        var User = RepositoryUser.table.Where(p => p.Username == name && p.Status == true).FirstOrDefault();
-        //                        if (User != null)
-        //                        {
-        //                            ViewBag.IsRenew = User.IsRenew;
-        //                            ViewBag.TelegramID = User.TelegramID;
-        //                            ViewBag.Title = User.BussinesTitle;
-        //                            ViewBag.FirstName = User.FirstName; ViewBag.LastName = User.LastName; ViewBag.Card_Number = User.Card_Number;
-
-        //                            var PwaIcon = "images/" + User.Username + "192.png";
-        //                            var PwaIcon1 = "images/" + User.Username + "512.png";
-        //                            var SrcIcon = Server.MapPath("/Content/Manifests/images/") + User.Username + "192.png";
-        //                            if (System.IO.File.Exists(SrcIcon))
-        //                            {
-        //                                mani.icons[0].src = PwaIcon;
-        //                                mani.icons[1].src = PwaIcon1;
-        //                            }
-        //                        }
-
-        //                        var maniJs = JsonConvert.SerializeObject(mani);
-        //                        System.IO.File.WriteAllText(ManiText, maniJs);
-
-        //                        var httpPath = "https://" + Request.Url.Authority + "/Content/Manifests/" + item2.email + ".json";
-        //                        ViewBag.manifest = httpPath;
-        //                        return View(getUserData);
-        //                    }
-        //                }
-
-        //            }
-        //        }
+                        var mani = JsonConvert.DeserializeObject<ManifestModel>(Text);
+                        mani.name = reader.GetString("email").Split('@')[0];
+                        mani.short_name = reader.GetString("email").Split('@')[0];
 
 
-        //        return PartialView();
+                        var User = RepositoryUser.table.Where(p => p.Username == name && p.Status == true).FirstOrDefault();
+                        if (User != null)
+                        {
+                            ViewBag.IsRenew = User.IsRenew;
+                            ViewBag.TelegramID = User.TelegramID;
+                            ViewBag.Title = User.BussinesTitle;
+                            ViewBag.FirstName = User.FirstName; ViewBag.LastName = User.LastName; ViewBag.Card_Number = User.Card_Number;
 
-        //    }
+                            var PwaIcon = "images/" + User.Username + "192.png";
+                            var PwaIcon1 = "images/" + User.Username + "512.png";
+                            var SrcIcon = Server.MapPath("/Content/Manifests/images/") + User.Username + "192.png";
+                            if (System.IO.File.Exists(SrcIcon))
+                            {
+                                mani.icons[0].src = PwaIcon;
+                                mani.icons[1].src = PwaIcon1;
+                            }
+                        }
+
+                        var maniJs = JsonConvert.SerializeObject(mani);
+                        System.IO.File.WriteAllText(ManiText, maniJs);
+
+                        var httpPath = "https://" + Request.Url.Authority + "/Content/Manifests/" + reader.GetString("email") + ".json";
+                        ViewBag.manifest = httpPath;
+                        return View(getUserData);
+                    }
+
+                }
 
 
-        //    return null;
+                return PartialView();
 
-        //}
+            }
+
+
+            return null;
+
+        }
 
         //public ActionResult UpdateAccount(string username, string Name, int id, string FirstName = null, string LastName = null, long Card_Number = 0)
         //{

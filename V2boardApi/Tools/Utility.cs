@@ -138,6 +138,14 @@ namespace V2boardApi.Tools
 
             return result;
         }
+
+        public static long ConvertGBToByte(long Byte)
+        {
+
+            var result = ((Byte * 1024) * 1024) * 1024;
+
+            return result;
+        }
         public static double ConvertByteToMG(double Byte)
         {
             var result = ((Byte / 1024) / 1024);

@@ -7,6 +7,7 @@ namespace V2boardApi.Models
 {
     public class BanUserModel
     {
-        public int id { get; set; }
+        public int AccountID { get; set; }
+        public bool Status { get; set; }
     }
 }

@@ -9,7 +9,5 @@ namespace V2boardApi.Models
     {
         public int AccountID { get; set; }
         public int Plan_ID { get; set; }
-        public string Name { get; set; }
-        public bool IsBanned { get; set; }
     }
 }

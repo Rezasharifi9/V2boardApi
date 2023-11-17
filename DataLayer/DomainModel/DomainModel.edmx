@@ -58,6 +58,7 @@
           </Key>
           <Property Name="ServerID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="ServerAddress" Type="varchar" MaxLength="250" />
+          <Property Name="ServerIP" Type="varchar" MaxLength="50" />
           <Property Name="Username" Type="varchar" MaxLength="450" />
           <Property Name="Password" Type="varchar(max)" />
           <Property Name="DataBaseName" Type="varchar" MaxLength="450" />
@@ -109,6 +110,7 @@
           <Property Name="BussinesTitle" Type="nvarchar" MaxLength="350" />
           <Property Name="Card Number" Type="bigint" />
           <Property Name="IsRenew" Type="bit" />
+          <Property Name="ExpireTimeToken" Type="datetime" />
         </EntityType>
         <Association Name="FK_tbLinkUserAndPlans_tbPlans">
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
@@ -385,6 +387,7 @@
           <NavigationProperty Name="tbUpdateLogs" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
           <NavigationProperty Name="tbUseages" Relationship="V2boardSiteModel.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+          <Property Name="ServerIP" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -433,6 +436,7 @@
           <Property Name="BussinesTitle" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
           <Property Name="Card_Number" Type="Int64" />
           <Property Name="IsRenew" Type="Boolean" />
+          <Property Name="ExpireTimeToken" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbUsers" FromRole="tbUsers" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
@@ -605,6 +609,7 @@
           <EntitySetMapping Name="tbServers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbServers">
               <MappingFragment StoreEntitySet="tbServers">
+                <ScalarProperty Name="ServerIP" ColumnName="ServerIP" />
                 <ScalarProperty Name="SubAddress" ColumnName="SubAddress" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="DataBaseName" ColumnName="DataBaseName" />
@@ -645,6 +650,7 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
                 <ScalarProperty Name="IsRenew" ColumnName="IsRenew" />
                 <ScalarProperty Name="Card_Number" ColumnName="Card Number" />
                 <ScalarProperty Name="BussinesTitle" ColumnName="BussinesTitle" />

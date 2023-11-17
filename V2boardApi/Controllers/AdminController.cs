@@ -179,26 +179,26 @@ namespace V2boardApi.Controllers
                 return Content(HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با پایگاه داده");
             }
         }
-        [System.Web.Http.HttpGet]
-        public IHttpActionResult ConnectSql()
-        {
-            List<UserMySqlModel> sql = new List<UserMySqlModel>();
-            UserMySqlModel sql1 = new UserMySqlModel();
-            var conn = ConfigurationManager.ConnectionStrings["mysql"].ConnectionString;
+        //[System.Web.Http.HttpGet]
+        //public IHttpActionResult ConnectSql()
+        //{
+        //    List<UserMySqlModel> sql = new List<UserMySqlModel>();
+        //    UserMySqlModel sql1 = new UserMySqlModel();
+        //    var conn = ConfigurationManager.ConnectionStrings["mysql"].ConnectionString;
 
-            if (MySqlEntities.Connect(conn))
-            {
-                var dic = MySqlEntities.GetData("SELECT * FROM v2_user ORDER BY password ASC");
+        //    if (MySqlEntities.Connect(conn))
+        //    {
+        //        var dic = MySqlEntities.GetData("SELECT * FROM v2_user ORDER BY password ASC");
 
                 
-            }
-            MySqlEntities.Close();
+        //    }
+        //    MySqlEntities.Close();
 
 
 
-            return Ok();
+        //    return Ok();
 
 
-        }
+        //}
     }
 }

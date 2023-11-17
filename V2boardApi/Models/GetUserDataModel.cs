@@ -21,7 +21,6 @@ namespace V2boardApi.Models
         public string IsActive { get; set;}
         public bool IsOnline { get; set; }
         public string LastTimeOnline { get; set; }
-        public string SubLinks { get; set; }
 
     }
 }
