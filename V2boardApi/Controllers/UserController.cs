@@ -73,15 +73,11 @@ namespace V2boardApi.Controllers
                     {
                         return Content(System.Net.HttpStatusCode.NotFound, "کاربر گرامی حساب شما قفل شده است و اجازه ورود ندارید");
                     }
-                    
-                    if (User.ExpireTimeToken <= DateTime.Now || User.ExpireTimeToken == null)
-                    {
-                        User.ExpireTimeToken = DateTime.Now.AddDays(7);
-                        var Token = (req.username + req.password + DateTime.Now.ToString("yyyy/MM/dd hh:mm:ss")).ToSha256();
-                        User.Token = Token;
+                    var Token = (req.username + req.password).ToSha256();
+                    User.Token = Token;
 
-                        var res = RepositoryServer.Save();
-                    }
+                    var res = RepositoryServer.Save();
+
                     return Ok(new { Role = User.Role, Token = User.Token });
                 }
                 else
@@ -113,12 +109,12 @@ namespace V2boardApi.Controllers
                         }
                         else
                         {
-                            Query += "email like'" + name + "%'" + " and " + "email like '%" + User.Username + "%'";
+                            Query += "email like'%" + name + "%'" + " and " + "email like '%" + User.Username + "%'";
                         }
                     }
                     else
                     {
-                        Query += "email like '%" + User.Username + "%'";
+                        Query += "email like '%@" + User.Username + "%'";
                     }
 
 
@@ -174,23 +170,14 @@ namespace V2boardApi.Controllers
                             getUserData.IsBanned = Convert.ToBoolean(reader.GetSByte("banned"));
                             getUserData.IsActive = "فعال";
                             getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetInt64("transfer_enable")).ToString();
-                            long exp = 0;
-                            try
+                            var exp = reader.GetBodyDefinition("expired_at");
+                            var OnlineTime = reader.GetBodyDefinition("t");
+                            if (exp != "")
                             {
-                                exp = reader.GetInt64("expired_at");
-                            }
-                            catch { }
-                            if (exp != 0)
-                            {
-
-                                var ex = Utility.ConvertSecondToDatetime(exp);
-                                var onlineTime = Utility.ConvertSecondToDatetime(exp);
-                                if (onlineTime <= DateTime.Now.AddMinutes(-1))
-                                {
-                                    getUserData.IsOnline = true;
-                                }
+                                var e = Convert.ToInt64(exp);
+                                var ex = Utility.ConvertSecondToDatetime(e);
                                 getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
-                                getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
+
                                 getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
                                 if (getUserData.DaysLeft <= 2)
                                 {
@@ -201,7 +188,23 @@ namespace V2boardApi.Controllers
                                     getUserData.IsActive = "پایان تاریخ اشتراک";
                                 }
                             }
-
+                            if (OnlineTime != "0")
+                            {
+                                var onlineTime = Utility.ConvertSecondToDatetime(Convert.ToInt64(OnlineTime));
+                                if (onlineTime >= DateTime.Now.AddMinutes(-2))
+                                {
+                                    getUserData.IsOnline = true;
+                                }
+                                else
+                                {
+                                    getUserData.IsOnline = false;
+                                }
+                                getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
+                            }
+                            else
+                            {
+                                getUserData.IsOnline = false;
+                            }
 
                             getUserData.PlanName = reader.GetString("name");
 
@@ -212,14 +215,14 @@ namespace V2boardApi.Controllers
                             var re = Utility.ConvertByteToGB(u + d);
                             getUserData.UsedVolume = Math.Round(re, 2) + " GB";
 
-                            var vol = reader.GetInt64("transfer_enable") - u + d;
+                            var vol = reader.GetInt64("transfer_enable") - (u + d);
                             var dd = Utility.ConvertByteToGB(vol);
                             if (dd <= 2)
                             {
                                 getUserData.CanEdit = true;
                             }
 
-                            if (dd <= 0)
+                            if (vol <= 0)
                             {
                                 getUserData.IsActive = "اتمام حجم";
                             }
@@ -239,7 +242,14 @@ namespace V2boardApi.Controllers
                     mySqlEntities.Close();
 
                     mySqlEntities.Open();
-                    reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "%'");
+                    if (name != null)
+                    {
+                        reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "' and email like '" + name + "%'");
+                    }
+                    else
+                    {
+                        reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "%'");
+                    }
                     reader.Read();
                     var count = reader.GetInt32("Count");
                     reader.Close();
@@ -254,7 +264,7 @@ namespace V2boardApi.Controllers
             }
             catch (Exception ex)
             {
-
+                Utility.InsertLog(ex);
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با پایگاه داده");
 
             }
@@ -298,7 +308,7 @@ namespace V2boardApi.Controllers
                                 }
                                 reader.Close();
 
-                                string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace(" ", "");
+                                string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
 
                                 string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES ('" + emilprx + "'," + exp + "," + create + ",'" + Guid.NewGuid() + "',0,0,0," + tran + ",0," + grid + "," + planid + ",'" + token + "','" + Guid.NewGuid() + "'," + create + ")";
 
@@ -369,7 +379,7 @@ namespace V2boardApi.Controllers
                         if (plans != null)
                         {
                             List<Dictionary<string, string>> key = new List<Dictionary<string, string>>();
-                            foreach (var plan in plans.Where(p => p.L_Status == true && p.tbPlans.FK_Server_ID == User.FK_Server_ID).ToList())
+                            foreach (var plan in plans.Where(p => p.L_Status == true && p.tbPlans.FK_Server_ID == User.FK_Server_ID).OrderBy(p=> p.tbPlans.Price).ToList())
                             {
                                 var dic = new Dictionary<string, string>();
                                 dic.Add("ID", plan.tbPlans.Plan_ID_V2.ToString());
@@ -521,8 +531,9 @@ namespace V2boardApi.Controllers
 
                 MySqlEntities mySql = new MySqlEntities(User.tbServers.ConnectionString);
                 mySql.Open();
-                string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-                var reader = mySql.GetData("update v2_user set token = '" + token + "' where id=" + model.AccountID);
+                string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
+                var query = "update v2_user set token = '" + token + "',uuid='" + Guid.NewGuid() + "' where id=" + model.AccountID;
+                var reader = mySql.GetData(query);
                 return Ok("لینک اشتراک با موفقیت تغییر یافت");
             }
             else

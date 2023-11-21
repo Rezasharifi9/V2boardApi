@@ -25,12 +25,12 @@ namespace DataLayer.DomainModel
     
         public int ServerID { get; set; }
         public string ServerAddress { get; set; }
+        public string ServerIP { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
         public string DataBaseName { get; set; }
         public Nullable<bool> Status { get; set; }
         public string SubAddress { get; set; }
-        public string ServerIP { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbPlans> tbPlans { get; set; }

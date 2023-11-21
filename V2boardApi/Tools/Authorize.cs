@@ -28,7 +28,7 @@ namespace V2boardApi.Tools
                 {
                     if (!string.IsNullOrEmpty(auth.Scheme))
                     {
-                        var User = RepositoryUser.table.Where(p => p.Token == auth.Scheme && p.ExpireTimeToken >= DateTime.Now && p.Status == true).FirstOrDefault();
+                        var User = RepositoryUser.table.Where(p => p.Token == auth.Scheme && p.Status == true).FirstOrDefault();
                         if(User == null)
                         {
 

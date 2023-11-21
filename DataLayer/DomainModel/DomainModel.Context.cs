@@ -33,5 +33,6 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbUpdateLogs> tbUpdateLogs { get; set; }
         public virtual DbSet<tbUseages> tbUseages { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
+        public virtual DbSet<tbExpLog> tbExpLog { get; set; }
     }
 }

@@ -118,6 +118,9 @@
       <DependentUpon>DomainModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\MySqlEntities.cs" />
+    <Compile Include="DomainModel\tbExpLog.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbLinkUserAndPlans.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

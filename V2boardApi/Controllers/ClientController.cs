@@ -93,19 +93,19 @@ namespace V2boardApi.Controllers
                 {
                     MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
                     sqlEntities.Open();
-                    var query = "SELECT email,t,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
+                    var query = "SELECT email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
                     var reader = sqlEntities.GetData(query);
-                    if (reader.Read())
+                    while (reader.Read())
                     {
                         GetUserDataModel getUserData = new GetUserDataModel();
                         getUserData.IsActive = "فعال";
                         getUserData.Name = reader.GetString("email").Split('@')[0];
                         getUserData.IsBanned = reader.GetBoolean("banned");
                         getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetDouble("transfer_enable")).ToString() + " GB";
-                        var exp = reader.GetInt64("expired_at");
-                        if (exp != 0)
+                        var exp = reader.GetBodyDefinition("expired_at");
+                        if (exp != "")
                         {
-                            var ex = Utility.ConvertSecondToDatetime(exp);
+                            var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
                             var onlineTime = Utility.ConvertSecondToDatetime(reader.GetDouble("expired_at"));
                             if (onlineTime <= DateTime.Now.AddMinutes(-2))
                             {
@@ -132,10 +132,10 @@ namespace V2boardApi.Controllers
 
                         getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
 
-                        var re = Utility.ConvertByteToGB(reader.GetDouble("t"));
+                        var re = Utility.ConvertByteToGB(reader.GetDouble("d")+ reader.GetDouble("u"));
                         getUserData.UsedVolume = Math.Round(re, 2) + " GB";
 
-                        var vol = reader.GetInt64("transfer_enable") - (re);
+                        var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
 
                         if (vol <= 0)
                         {

@@ -1,4 +1,5 @@
 ﻿using DataLayer.DomainModel;
+using DataLayer.Repository;
 using Microsoft.Ajax.Utilities;
 using System;
 using System.Collections.Generic;
@@ -169,6 +170,17 @@ namespace V2boardApi.Tools
             return System.Text.Encoding.UTF8.GetString(base64Bytes);
         }
 
+       
+        public static void InsertLog(Exception ex)
+        {
+            var db = new V2boardSiteEntities();
+            var RepositoryExpLogs = new Repository<tbExpLog>(db);
+
+            tbExpLog tbExpLog = new tbExpLog();
+            tbExpLog.exl_Message = ex.Message;
+            RepositoryExpLogs.Insert(tbExpLog);
+            RepositoryExpLogs.Save();
+        }
 
     }
 }
