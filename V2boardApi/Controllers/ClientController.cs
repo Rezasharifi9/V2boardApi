@@ -48,7 +48,7 @@ namespace V2boardApi.Controllers
         {
             var UserAgent = Request.UserAgent.ToLower();
             var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(Request.Url.Host)).FirstOrDefault();
-            if (UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2rayng") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
+            if (UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
             {
                 if (server != null)
                 {
@@ -93,11 +93,12 @@ namespace V2boardApi.Controllers
                 {
                     MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
                     sqlEntities.Open();
-                    var query = "SELECT email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
+                    var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
                     var reader = sqlEntities.GetData(query);
                     while (reader.Read())
                     {
                         GetUserDataModel getUserData = new GetUserDataModel();
+                        getUserData.id = reader.GetInt32("id");
                         getUserData.IsActive = "فعال";
                         getUserData.Name = reader.GetString("email").Split('@')[0];
                         getUserData.IsBanned = reader.GetBoolean("banned");
@@ -132,7 +133,7 @@ namespace V2boardApi.Controllers
 
                         getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
 
-                        var re = Utility.ConvertByteToGB(reader.GetDouble("d")+ reader.GetDouble("u"));
+                        var re = Utility.ConvertByteToGB(reader.GetDouble("d") + reader.GetDouble("u"));
                         getUserData.UsedVolume = Math.Round(re, 2) + " GB";
 
                         var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
@@ -158,46 +159,11 @@ namespace V2boardApi.Controllers
                         {
                             ViewBag.LinkCreator = reader.GetString("email").Split('@')[1];
                         }
-
-
-
-
-                        var ManiText = Server.MapPath("/Content/Manifests/") + reader.GetString("email") + ".json";
-                        if (!System.IO.File.Exists(ManiText))
-                        {
-                            var ManiPath = Server.MapPath("/") + "manifest.json";
-                            System.IO.File.Copy(ManiPath, ManiText);
-                        }
-                        var Text = System.IO.File.ReadAllText(ManiText);
-
-                        var mani = JsonConvert.DeserializeObject<ManifestModel>(Text);
-                        mani.name = reader.GetString("email").Split('@')[0];
-                        mani.short_name = reader.GetString("email").Split('@')[0];
-
-
-                        var User = RepositoryUser.table.Where(p => p.Username == name && p.Status == true).FirstOrDefault();
+                        var User = server.tbUsers.Where(p => p.Username == reader.GetString("email").Split('@')[1]).FirstOrDefault();
                         if (User != null)
                         {
                             ViewBag.IsRenew = User.IsRenew;
-                            ViewBag.TelegramID = User.TelegramID;
-                            ViewBag.Title = User.BussinesTitle;
-                            ViewBag.FirstName = User.FirstName; ViewBag.LastName = User.LastName; ViewBag.Card_Number = User.Card_Number;
-
-                            var PwaIcon = "images/" + User.Username + "192.png";
-                            var PwaIcon1 = "images/" + User.Username + "512.png";
-                            var SrcIcon = Server.MapPath("/Content/Manifests/images/") + User.Username + "192.png";
-                            if (System.IO.File.Exists(SrcIcon))
-                            {
-                                mani.icons[0].src = PwaIcon;
-                                mani.icons[1].src = PwaIcon1;
-                            }
                         }
-
-                        var maniJs = JsonConvert.SerializeObject(mani);
-                        System.IO.File.WriteAllText(ManiText, maniJs);
-
-                        var httpPath = "https://" + Request.Url.Authority + "/Content/Manifests/" + reader.GetString("email") + ".json";
-                        ViewBag.manifest = httpPath;
                         return View(getUserData);
                     }
 
@@ -213,86 +179,81 @@ namespace V2boardApi.Controllers
 
         }
 
-        //public ActionResult UpdateAccount(string username, string Name, int id, string FirstName = null, string LastName = null, long Card_Number = 0)
-        //{
-        //    var Plans = db.tbLinkUserAndPlans.Where(p => p.tbUsers.Username == username && p.L_Status == true).ToList();
-        //    ViewBag.Name = Name + "@" + username;
-        //    ViewBag.Id = id;
-        //    ViewBag.FirstName = FirstName; ViewBag.LastName = LastName; ViewBag.CardNumber = Card_Number;
+        public ActionResult UpdateAccount(string username, string Name, int id, string FirstName = null, string LastName = null, long Card_Number = 0)
+        {
+            var Plans = db.tbLinkUserAndPlans.Where(p => p.tbUsers.Username == username && p.L_Status == true).ToList();
+            ViewBag.Name = Name + "@" + username;
+            ViewBag.Id = id;
+            ViewBag.FirstName = FirstName; ViewBag.LastName = LastName; ViewBag.CardNumber = Card_Number;
 
-        //    return PartialView(Plans);
-        //}
+            return PartialView(Plans);
+        }
 
-        //[System.Web.Mvc.HttpPost]
-        //public ActionResult UpdateAccount(int PlanID, HttpPostedFileBase ResidFile, string Name, int id)
-        //{
-        //    var url = Request.Cookies["url"];
-        //    try
-        //    {
-        //        if (ResidFile.ContentLength > 0)
-        //        {
-        //            var ext = Path.GetExtension(ResidFile.FileName);
-        //            if (ext == ".pdf" || ext == ".png" || ext == ".jpg")
-        //            {
-        //                var OrderGuid = Guid.NewGuid();
-        //                var filename = Name + "_" + OrderGuid;
-        //                var path = Server.MapPath("~/Content/Receipts/") + filename + Path.GetExtension(ResidFile.FileName);
-        //                var ServerPath = "https://" + Request.Url.Authority + "/Content/Receipts/" + filename + Path.GetExtension(ResidFile.FileName);
-        //                var AcceptPath = "https://" + Request.Url.Authority + "/api/v1/client/AcceptOrder?token=" + OrderGuid;
-        //                tbOrders order = new tbOrders();
-        //                order.AccountName = Name;
-        //                var username = Name.Split('@')[1];
-        //                var admin = db.tbUsers.Where(p => p.Username == username).FirstOrDefault();
-        //                order.FK_OrderAdmin_ID = admin.User_ID;
-        //                order.FK_Plan_ID = db.tbPlans.Where(p => p.Plan_ID == PlanID && p.Status == true).FirstOrDefault().Plan_ID;
-        //                order.OrderDate = DateTime.Now;
-        //                order.OrderStatus = "در انتظار تائید";
-        //                order.OrderType = "تمدید";
-        //                order.Order_Guid = OrderGuid;
-        //                order.V2_User_ID = id;
-        //                RepositoryOrders.Insert(order);
-        //                RepositoryOrders.Save();
-        //                ResidFile.SaveAs(path);
+        [System.Web.Mvc.HttpPost]
+        public ActionResult UpdateAccount(int PlanID, string Name, int id)
+        {
+            var url = Request.Cookies["url"];
+            try
+            {
+                var date = DateTime.Now.AddMinutes(-15);
+                var Order = RepositoryOrders.table.Where(p => p.OrderDate >= date && p.OrderStatus == "FOR_PAY" && p.FK_Plan_ID == PlanID).FirstOrDefault();
+                if (Order != null)
+                {
+                    Order.OrderStatus = "SUCCESS";
+                    Order.OrderDate = DateTime.Now;
+                    Order.AccountName = Name;
+                    Order.V2_User_ID = id;
+                    UpdateUserModel model = new UpdateUserModel();
+                    model.AccountID = id;
+                    model.Plan_ID = Order.V2_Plan_ID.Value;
 
-        //                var text = "<div dir='rtl' style='width: 100%;height: 100px;background: rgba(7, 136, 223, 0.562);'><span>  لطفا برای تائید رسید روی</span><a style='font-size: 24px;margin-right: 10px;' href='" + AcceptPath + "'>تائید</a><span style='margin-right: 10px;'>کلیک کنید </span>   <br><br><a style='font-size: 24px;margin-right: 10px;' href='" + ServerPath + "'>نمایش رسید</a></div>";
+                    HttpClient httpClient = new HttpClient();
+                    var name = Name.Split('@')[1].ToLower();
+                    var user = db.tbUsers.Where(p => p.Username == name).FirstOrDefault();
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("authorization", user.Token);
+                    var js = JsonConvert.SerializeObject(model);
+                    StringContent content = new StringContent(js, Encoding.UTF8, "application/json");
+                    var res = httpClient.PostAsync("https://panel.darkbaz.site" + "/User/Update", content);
+                    if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        RepositoryOrders.Save();
+                        var message = res.Result.Content.ReadAsStringAsync().Result.ToString();
+                        if (url != null)
+                        {
+                            TempData["status"] = true;
+                            TempData["message"] = "اکانت شما با موفقیت تمدید شد";
+                            return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
+                        }
+                    }
+                    else
+                    {
+                        Order.OrderStatus = "ERROR";
+                        RepositoryOrders.Save();
+                        TempData["status"] = true;
+                        TempData["message"] = "تمدید با خطا مواجه شد لطفا با پشتیبانی تماس بگیرید";
+                        return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
+                    }
+                }
+                else
+                {
+                    TempData["status"] = true;
+                    TempData["message"] = "واریزی شما در سیستم ثبت نشده لطفا 2 دقیقه بعد مجدد تلاش فرمائید";
+                    return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
+                }
 
 
-        //                SendGmail("تمدید اکانت" + " " + Name.Split('@')[0], text, admin.Email, admin.FirstName + " " + admin.LastName);
+                return PartialView();
 
 
+            }
+            catch (Exception ex)
+            {
+                TempData["status"] = false;
+                TempData["message"] = "تمدید با خطا مواجه شد لطفا با پشتیبانی ارتباط بگیرید";
+                return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
+            }
 
-        //                if (url != null)
-        //                {
-        //                    TempData["status"] = true;
-        //                    TempData["message"] = "درخواست تمدید شما با موفقیت ثبت گردید لطفا منتظر تائید درخواست بمانید بعد از تائید اشتراکتون فعال میشه حتما این صفحه رو چک کنید";
-        //                    return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
-        //                }
-
-        //                return PartialView();
-        //            }
-        //            else
-        //            {
-        //                TempData["status"] = false;
-        //                TempData["message"] = "پسوند فایل باید با نوع png,jpg,pdf باشد";
-        //                return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
-        //            }
-
-        //        }
-        //        else
-        //        {
-        //            TempData["status"] = false;
-        //            TempData["message"] = "لطفا رسید واریزی را آپلود کنید";
-        //            return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        TempData["status"] = false;
-        //        TempData["message"] = "تمدید با خطا مواجه شد لطفا با پشتیبانی ارتباط بگیرید";
-        //        return RedirectToAction("subscribe", new { token = url.Value.Split('=')[1] });
-        //    }
-
-        //}
+        }
 
         //[System.Web.Mvc.HttpGet]
         //public ActionResult AcceptOrder(string token)

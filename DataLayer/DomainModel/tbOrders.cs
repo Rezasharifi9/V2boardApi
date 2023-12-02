@@ -16,6 +16,7 @@ namespace DataLayer.DomainModel
     {
         public int Order_ID { get; set; }
         public Nullable<int> FK_Plan_ID { get; set; }
+        public Nullable<int> V2_Plan_ID { get; set; }
         public string AccountName { get; set; }
         public Nullable<System.DateTime> OrderDate { get; set; }
         public string OrderStatus { get; set; }

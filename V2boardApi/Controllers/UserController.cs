@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Numerics;
 using System.Runtime.Remoting.Messaging;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Timers;
@@ -16,6 +17,7 @@ using System.Web.Http.Cors;
 using System.Web.Http.Results;
 using System.Web.Management;
 using System.Web.Mvc;
+using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Antlr.Runtime;
@@ -39,6 +41,7 @@ namespace V2boardApi.Controllers
         private Repository<tbServers> RepositoryServer { get; set; }
         private Repository<tbPlans> RepositoryPlan { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
+        private Repository<tbOrders> RepositoryOrder { get; set; }
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
 
         private System.Timers.Timer Timer { get; set; }
@@ -50,7 +53,7 @@ namespace V2boardApi.Controllers
             RepositoryPlan = new Repository<tbPlans>(db);
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryLinkUserAndPlan = new Repository<tbLinkUserAndPlans>(db);
-
+            RepositoryOrder = new Repository<tbOrders>();
             Timer = new System.Timers.Timer();
             Timer.Elapsed += Timer_Elapsed;
 
@@ -290,7 +293,15 @@ namespace V2boardApi.Controllers
                             {
 
                                 var plan = RepositoryPlan.table.Where(p => p.Plan_ID_V2 == createUser.plan_id && p.FK_Server_ID == User.FK_Server_ID && p.Status == true).FirstOrDefault();
-                                var exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                                string exp = "";
+                                if (plan.CountDayes == 0)
+                                {
+                                    exp = "NULL";
+                                }
+                                else
+                                {
+                                    exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                                }
                                 var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
                                 var planid = createUser.plan_id;
                                 var emilprx = createUser.name + "@" + User.Username;
@@ -311,8 +322,6 @@ namespace V2boardApi.Controllers
                                 string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
 
                                 string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES ('" + emilprx + "'," + exp + "," + create + ",'" + Guid.NewGuid() + "',0,0,0," + tran + ",0," + grid + "," + planid + ",'" + token + "','" + Guid.NewGuid() + "'," + create + ")";
-
-
 
                                 reader = mySql.GetData(Query);
                                 reader.Close();
@@ -379,7 +388,7 @@ namespace V2boardApi.Controllers
                         if (plans != null)
                         {
                             List<Dictionary<string, string>> key = new List<Dictionary<string, string>>();
-                            foreach (var plan in plans.Where(p => p.L_Status == true && p.tbPlans.FK_Server_ID == User.FK_Server_ID).OrderBy(p=> p.tbPlans.Price).ToList())
+                            foreach (var plan in plans.Where(p => p.L_Status == true && p.tbPlans.FK_Server_ID == User.FK_Server_ID).OrderBy(p => p.tbPlans.CountDayes).ToList())
                             {
                                 var dic = new Dictionary<string, string>();
                                 dic.Add("ID", plan.tbPlans.Plan_ID_V2.ToString());
@@ -447,10 +456,17 @@ namespace V2boardApi.Controllers
 
 
                     var t = Utility.ConvertGBToByte(Convert.ToInt64(Plan.PlanVolume));
-                    var pl = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                    string exp = "";
+                    if (Plan.CountDayes == 0)
+                    {
+                        exp = "NULL";
+                    }
+                    else
+                    {
+                        exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                    }
 
-
-                    var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=" + model.Plan_ID + ", transfer_enable = " + t + " , expired_at = " + pl + " where id =" + model.AccountID;
+                    var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=" + model.Plan_ID + ", transfer_enable = " + t + " , expired_at = " + exp + " where id =" + model.AccountID;
 
                     MySqlEntities mySql = new MySqlEntities(User.tbServers.ConnectionString);
                     mySql.Open();
@@ -573,6 +589,105 @@ namespace V2boardApi.Controllers
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
             }
         }
+
+        [System.Web.Http.HttpGet]
+        public IHttpActionResult CreateOrder(string Price)
+        {
+            try
+            {
+                var auth = Request.Headers.Authorization;
+                if (auth != null)
+                {
+                    if (!string.IsNullOrEmpty(auth.Scheme))
+                    {
+                        if (auth.Scheme == "4b33b7c02fc5599ba93c08763e023f942cb12ef21c924f5b4e97e4bfe3ec29f5")
+                        {
+                            int pr = int.Parse(Price, NumberStyles.Currency);
+                            var Plan = RepositoryPlan.table.Where(p => p.Price2 == pr && p.Status == true).FirstOrDefault();
+                            if (Plan != null)
+                            {
+                                var d = DateTime.Now.AddSeconds(-10);
+                                var Or = RepositoryOrder.table.Where(p => p.FK_Plan_ID == Plan.Plan_ID && p.OrderDate.Value >= d).FirstOrDefault();
+                                if(Or == null)
+                                {
+                                    var date = DateTime.Now.AddMinutes(15);
+
+                                    var Order = new tbOrders();
+                                    Order.OrderDate = DateTime.Now;
+                                    Order.Order_Guid = Guid.NewGuid();
+                                    Order.OrderStatus = "FOR_PAY";
+                                    Order.OrderType = "تمدید";
+                                    Order.FK_Plan_ID = Plan.Plan_ID;
+                                    Order.V2_Plan_ID = Plan.Plan_ID_V2;
+                                    RepositoryOrder.Insert(Order);
+                                    RepositoryOrder.Save();
+                                    return Ok("سفارش با موفقیت ثبت شد");
+                                }
+                                else
+                                {
+                                    return BadRequest();
+                                }
+
+                            }
+                            else
+                            {
+                                return BadRequest();
+                            }
+
+                            //var Order = RepositoryOrder.table.Where(p => p.OrderStatus == "FOR_PAY" && p.tbPlans.Price2 == pr && p.OrderDate.Value <= date).FirstOrDefault();
+                            //if (Order != null)
+                            //{
+                            //    UpdateUserModel model = new UpdateUserModel();
+                            //    model.AccountID = Order.V2_User_ID.Value;
+                            //    model.Plan_ID = Order.V2_Plan_ID.Value;
+
+                            //    HttpClient httpClient = new HttpClient();
+                            //    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("authorization", auth.Scheme);
+                            //    var js = JsonConvert.SerializeObject(model);
+                            //    StringContent content = new StringContent(js, Encoding.UTF8, "application/json");
+                            //    var res = httpClient.PostAsync("http://172.18.20.16:8082" + "/User/Update", content);
+                            //    if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                            //    {
+                            //        Order.OrderStatus = "SUCCESS";
+                            //        RepositoryOrder.Save();
+                            //        var message = res.Result.Content.ReadAsStringAsync().Result.ToString();
+                            //        return Ok(message);
+                            //    }
+                            //    else
+                            //    {
+                            //        return BadRequest();
+                            //    }
+
+                            //}
+                            //else
+                            //{
+                            //    return BadRequest();
+                            //}
+
+
+                        }
+                        else
+                        {
+                            return BadRequest();
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
+
 
     }
 

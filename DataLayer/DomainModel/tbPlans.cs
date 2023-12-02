@@ -30,6 +30,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> CountDayes { get; set; }
         public Nullable<int> PlanVolume { get; set; }
         public Nullable<int> Price { get; set; }
+        public Nullable<int> Price2 { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }

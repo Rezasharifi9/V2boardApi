@@ -9,8 +9,15 @@
              class="py-3 px-4 transition-all duration-200 inline-flex gap-x-3 justify-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br font-medium rounded-lg">
 
             <div style="width:100%;">
-                <input type="password" id="pass" />
-                <input type="submit" class="btn btn-accent" value="ثبت" style="float:left" />
+                <label>پلن انتخابی :</label>
+                <br />
+                <select class="form-control" name="PlanID" style="background: #111827;margin-top: 10px;padding: 14px;border-radius: 9px;">
+                    @foreach (var item in Model.Where(p=> p.tbPlans.Plan_Des!=null).ToList())
+                    {
+                        <option value="@item.tbPlans.Plan_ID">@item.tbPlans.Plan_Des</option>
+                    }
+                </select>
+                <input type="submit" class="btn btn-accent" value="بررسی تراکنش" style="float: left; margin-top: 10px;" />
 
 
             </div>

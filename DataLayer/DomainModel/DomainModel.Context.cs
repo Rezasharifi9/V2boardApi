@@ -25,6 +25,7 @@ namespace DataLayer.DomainModel
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<tbExpLog> tbExpLog { get; set; }
         public virtual DbSet<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
         public virtual DbSet<tbLogs> tbLogs { get; set; }
         public virtual DbSet<tbOrders> tbOrders { get; set; }
@@ -33,6 +34,5 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbUpdateLogs> tbUpdateLogs { get; set; }
         public virtual DbSet<tbUseages> tbUseages { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
-        public virtual DbSet<tbExpLog> tbExpLog { get; set; }
     }
 }

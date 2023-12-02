@@ -5,14 +5,15 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="6c2abd47ff3042ccafe64c35cad2ebd0" Name="Diagram1" ZoomLevel="95">
-        <EntityTypeShape EntityType="V2boardSiteModel.tbLinkUserAndPlans" Width="1.5" PointX="5.25" PointY="8.125" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbLogs" Width="1.5" PointX="7.5" PointY="12.25" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbOrders" Width="1.5" PointX="8.25" PointY="7.75" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbPlans" Width="1.5" PointX="3" PointY="3.25" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbServers" Width="1.5" PointX="0.75" PointY="9.375" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="16.25" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUseages" Width="1.5" PointX="3" PointY="7.25" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUsers" Width="1.5" PointX="3" PointY="10.625" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbExpLog" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbLinkUserAndPlans" Width="1.5" PointX="5.25" PointY="13.375" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbLogs" Width="1.5" PointX="7.5" PointY="17.5" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbOrders" Width="1.5" PointX="8.25" PointY="13" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbPlans" Width="1.5" PointX="3" PointY="10" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbServers" Width="1.5" PointX="0.75" PointY="9.5" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="3.25" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUseages" Width="1.5" PointX="3" PointY="6.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUsers" Width="1.5" PointX="3" PointY="14.25" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" />
@@ -22,7 +23,6 @@
         <AssociationConnector Association="V2boardSiteModel.FK_tbUpdateLogs_tbServers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbUseages_tbServers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbUsers_tbServers" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbExpLog" Width="1.5" PointX="0.75" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

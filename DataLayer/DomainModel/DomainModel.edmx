@@ -37,6 +37,7 @@
           </Key>
           <Property Name="Order_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="FK_Plan_ID" Type="int" />
+          <Property Name="V2_Plan_ID" Type="int" />
           <Property Name="AccountName" Type="nvarchar" MaxLength="350" />
           <Property Name="OrderDate" Type="datetime" />
           <Property Name="OrderStatus" Type="nvarchar" MaxLength="250" />
@@ -58,6 +59,7 @@
           <Property Name="CountDayes" Type="int" />
           <Property Name="PlanVolume" Type="int" />
           <Property Name="Price" Type="int" />
+          <Property Name="Price2" Type="int" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -279,6 +281,7 @@
     <edmx:ConceptualModels>
       <Schema Namespace="V2boardSiteModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="V2boardSiteEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="tbExpLog" EntityType="V2boardSiteModel.tbExpLog" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="V2boardSiteModel.tbLinkUserAndPlans" />
           <EntitySet Name="tbLogs" EntityType="V2boardSiteModel.tbLogs" />
           <EntitySet Name="tbOrders" EntityType="V2boardSiteModel.tbOrders" />
@@ -323,8 +326,14 @@
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbUsers" EntitySet="tbUsers" />
           </AssociationSet>
-          <EntitySet Name="tbExpLog" EntityType="V2boardSiteModel.tbExpLog" />
         </EntityContainer>
+        <EntityType Name="tbExpLog">
+          <Key>
+            <PropertyRef Name="exl_ID" />
+          </Key>
+          <Property Name="exl_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="exl_Message" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+        </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
             <PropertyRef Name="Link_PU_ID" />
@@ -354,6 +363,7 @@
           </Key>
           <Property Name="Order_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="FK_Plan_ID" Type="Int32" />
+          <Property Name="V2_Plan_ID" Type="Int32" />
           <Property Name="AccountName" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
           <Property Name="OrderDate" Type="DateTime" Precision="3" />
           <Property Name="OrderStatus" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
@@ -377,6 +387,7 @@
           <Property Name="CountDayes" Type="Int32" />
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="Price" Type="Int32" />
+          <Property Name="Price2" Type="Int32" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
@@ -558,19 +569,20 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="tbExpLog">
-          <Key>
-            <PropertyRef Name="exl_ID" />
-          </Key>
-          <Property Name="exl_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="exl_Message" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
-        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="V2boardSiteModelStoreContainer" CdmEntityContainer="V2boardSiteEntities">
+          <EntitySetMapping Name="tbExpLog">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbExpLog">
+              <MappingFragment StoreEntitySet="tbExpLog">
+                <ScalarProperty Name="exl_Message" ColumnName="exl_Message" />
+                <ScalarProperty Name="exl_ID" ColumnName="exl_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tbLinkUserAndPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkUserAndPlans">
               <MappingFragment StoreEntitySet="tbLinkUserAndPlans">
@@ -602,6 +614,7 @@
                 <ScalarProperty Name="OrderStatus" ColumnName="OrderStatus" />
                 <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
                 <ScalarProperty Name="AccountName" ColumnName="AccountName" />
+                <ScalarProperty Name="V2_Plan_ID" ColumnName="V2_Plan_ID" />
                 <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
                 <ScalarProperty Name="Order_ID" ColumnName="Order_ID" />
               </MappingFragment>
@@ -610,6 +623,7 @@
           <EntitySetMapping Name="tbPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
               <MappingFragment StoreEntitySet="tbPlans">
+                <ScalarProperty Name="Price2" ColumnName="Price2" />
                 <ScalarProperty Name="Price" ColumnName="Price" />
                 <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
                 <ScalarProperty Name="CountDayes" ColumnName="CountDayes" />
@@ -683,14 +697,6 @@
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="User_ID" ColumnName="User_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbExpLog">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbExpLog">
-              <MappingFragment StoreEntitySet="tbExpLog">
-                <ScalarProperty Name="exl_Message" ColumnName="exl_Message" />
-                <ScalarProperty Name="exl_ID" ColumnName="exl_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
