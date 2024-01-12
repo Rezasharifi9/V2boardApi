@@ -18,7 +18,6 @@ namespace DataLayer.DomainModel
         public tbUsers()
         {
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
-            this.tbOrders = new HashSet<tbOrders>();
         }
     
         public int User_ID { get; set; }
@@ -26,6 +25,7 @@ namespace DataLayer.DomainModel
         public string Password { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string PhoneNumber { get; set; }
         public Nullable<bool> Status { get; set; }
         public string Email { get; set; }
         public Nullable<int> FK_Server_ID { get; set; }
@@ -41,8 +41,6 @@ namespace DataLayer.DomainModel
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbOrders> tbOrders { get; set; }
         public virtual tbServers tbServers { get; set; }
     }
 }

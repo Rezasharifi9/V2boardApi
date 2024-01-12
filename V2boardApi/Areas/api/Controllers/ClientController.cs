@@ -18,9 +18,8 @@ using System.IO;
 using System.Security.Policy;
 using System.Net.Mail;
 using System.Net;
-using Newtonsoft.Json;
 
-namespace V2boardApi.Controllers
+namespace V2boardApi.Areas.api.Controllers
 {
     public class ClientController : Controller
     {
@@ -43,12 +42,16 @@ namespace V2boardApi.Controllers
         }
 
 
-
         public ActionResult subscribe(string token)
         {
             var UserAgent = Request.UserAgent.ToLower();
-            var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(Request.Url.Host)).FirstOrDefault();
-            if (UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
+            var host = Request.Url.Host;
+            if(host == "panel.darkbaz.site")
+            {
+                host = "panel.darkbaz.com";
+            }
+            var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(host)).FirstOrDefault();
+            if (UserAgent.StartsWith("hiddifynext") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
             {
                 if (server != null)
                 {
@@ -195,7 +198,7 @@ namespace V2boardApi.Controllers
             var url = Request.Cookies["url"];
             try
             {
-                var date = DateTime.Now.AddMinutes(-15);
+                var date = DateTime.Now.AddHours(-15);
                 var Order = RepositoryOrders.table.Where(p => p.OrderDate >= date && p.OrderStatus == "FOR_PAY" && p.FK_Plan_ID == PlanID).FirstOrDefault();
                 if (Order != null)
                 {

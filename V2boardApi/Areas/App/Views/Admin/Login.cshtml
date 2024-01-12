@@ -1,0 +1,16 @@
+﻿@{
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container">
+
+    <form action="@Url.Action("Login", "Admin",new {area="App"})" method="post">
+        <label>نام کاربری</label>
+        <input type="text" name="Username" />
+        <label>رمز عبور</label>
+        <input type="text" name="Password" />
+        <input type="submit" value="Login" />
+    </form>
+
+</div>

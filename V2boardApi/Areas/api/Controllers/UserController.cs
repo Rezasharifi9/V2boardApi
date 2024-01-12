@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.EnterpriseServices;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Security.Policy;
 using System.Text;
@@ -26,12 +29,22 @@ using DataLayer.Repository;
 using Microsoft.Ajax.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Asn1.X509;
+using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Types;
 using V2boardApi.Models;
 using V2boardApi.Models.V2boardModel;
 using V2boardApi.Tools;
+using V2boardBot.Models;
+using System.Threading.Tasks;
+using V2boardApi.Areas.api.Data.ViewModels;
+using V2boardBot.Functions;
+using System.Windows;
+using System.Web.WebSockets;
 
-
-namespace V2boardApi.Controllers
+namespace V2boardApi.Areas.api.Controllers
 {
     [EnableCors(origins: "*", "*", "*")]
     public class UserController : ApiController
@@ -43,7 +56,9 @@ namespace V2boardApi.Controllers
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbOrders> RepositoryOrder { get; set; }
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
-
+        private Repository<tbLinks> RepositoryLinks { get; set; }
+        private Repository<tbDepositWallet_Log> RepositoryDepositWallet { get; set; }
+        private Repository<tbTelegramUsers> RepositoryTelegramUser { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public UserController()
         {
@@ -54,6 +69,9 @@ namespace V2boardApi.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryLinkUserAndPlan = new Repository<tbLinkUserAndPlans>(db);
             RepositoryOrder = new Repository<tbOrders>();
+            RepositoryLinks = new Repository<tbLinks>();
+            RepositoryDepositWallet = new Repository<tbDepositWallet_Log>(db);
+            RepositoryTelegramUser = new Repository<tbTelegramUsers>(db);
             Timer = new System.Timers.Timer();
             Timer.Elapsed += Timer_Elapsed;
 
@@ -590,103 +608,365 @@ namespace V2boardApi.Controllers
             }
         }
 
-        [System.Web.Http.HttpGet]
-        public IHttpActionResult CreateOrder(string Price)
-        {
-            try
-            {
-                var auth = Request.Headers.Authorization;
-                if (auth != null)
-                {
-                    if (!string.IsNullOrEmpty(auth.Scheme))
-                    {
-                        if (auth.Scheme == "4b33b7c02fc5599ba93c08763e023f942cb12ef21c924f5b4e97e4bfe3ec29f5")
-                        {
-                            int pr = int.Parse(Price, NumberStyles.Currency);
-                            var Plan = RepositoryPlan.table.Where(p => p.Price2 == pr && p.Status == true).FirstOrDefault();
-                            if (Plan != null)
-                            {
-                                var d = DateTime.Now.AddSeconds(-10);
-                                var Or = RepositoryOrder.table.Where(p => p.FK_Plan_ID == Plan.Plan_ID && p.OrderDate.Value >= d).FirstOrDefault();
-                                if(Or == null)
-                                {
-                                    var date = DateTime.Now.AddMinutes(15);
 
-                                    var Order = new tbOrders();
-                                    Order.OrderDate = DateTime.Now;
-                                    Order.Order_Guid = Guid.NewGuid();
-                                    Order.OrderStatus = "FOR_PAY";
-                                    Order.OrderType = "تمدید";
-                                    Order.FK_Plan_ID = Plan.Plan_ID;
-                                    Order.V2_Plan_ID = Plan.Plan_ID_V2;
-                                    RepositoryOrder.Insert(Order);
-                                    RepositoryOrder.Save();
-                                    return Ok("سفارش با موفقیت ثبت شد");
-                                }
-                                else
+        [System.Web.Http.HttpGet]
+        public async Task<IHttpActionResult> CheckOrder(string SMSMessageText, string Mobile)
+        {
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var Phone = JsonConvert.DeserializeObject(Mobile);
+                    var User = RepositoryUser.GetAll(p => p.PhoneNumber == Phone.ToString()).FirstOrDefault();
+                    if (User != null)
+                    {
+                        int pr = int.Parse(SMSMessageText, NumberStyles.Currency);
+
+
+                        var date2 = DateTime.Now.AddMinutes(-15);
+                        var tbDepositLog = RepositoryDepositWallet.GetAll(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY").ToList();
+
+                        foreach (var item in tbDepositLog)
+                        {
+                            if (item.tbTelegramUsers.Tel_Step == "Wait_For_Pay_IncreasePrice" && item.dw_CreateDatetime >= date2)
+                            {
+                                item.dw_Status = "FINISH";
+                                item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                                StringBuilder str = new StringBuilder();
+                                str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد");
+                                str.AppendLine("");
+                                str.AppendLine("📌 موجودی کیف پول شما : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+
+                                RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db);
+
+                                var botID = item.tbTelegramUsers.Tel_RobotID;
+                                if (botID != null)
                                 {
-                                    return BadRequest();
+                                    var Server = RepositoryServer.GetAll(p => p.Robot_ID == botID).FirstOrDefault();
+                                    if (Server != null)
+                                    {
+                                        TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
+                                        RepositoryDepositWallet.Save();
+                                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                        transaction.Commit();
+                                        return Ok();
+                                    }
                                 }
 
                             }
                             else
                             {
-                                return BadRequest();
+                                StringBuilder str = new StringBuilder();
+                                str.AppendLine("فاکتور افزایش موجودی ثبت نشده توسط سیستم :");
+                                str.AppendLine("");
+                                if (item.tbTelegramUsers.Tel_FirstName != null && item.tbTelegramUsers.Tel_LastName != null)
+                                {
+                                    str.AppendLine("نام و نام خانوادگی : " + item.tbTelegramUsers.Tel_FirstName + " " + item.tbTelegramUsers.Tel_LastName);
+                                }
+                                if (item.tbTelegramUsers.Tel_Username != null)
+                                {
+                                    str.AppendLine("آیدی کاربر :" + item.tbTelegramUsers.Tel_Username);
+                                }
+                                str.AppendLine("مبلغ : " + item.dw_Price.Value.ConvertToMony() + " " + "تومان");
+                                str.AppendLine("تاریخ : " + Utility.ConvertDateTimeToShamsi(item.dw_CreateDatetime.Value));
+
+                                str.AppendLine("سفارش فوق مورد تائید است ؟");
+
+                                var botID = item.tbTelegramUsers.Tel_RobotID;
+                                if (botID != null)
+                                {
+                                    var Server = RepositoryServer.GetAll(p => p.Robot_ID == botID).FirstOrDefault();
+                                    if (Server != null)
+                                    {
+                                        TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
+                                        var keyboard = new InlineKeyboardMarkup(new[]
+                                {
+                            new[]
+                            {
+
+                                InlineKeyboardButton.WithCallbackData("✅ بله","AcceptAdminIncrase_"+item.dw_ID),
+                                InlineKeyboardButton.WithCallbackData("❌ خیر","NotAcceptAdminIncrase_"+item.dw_ID)
                             }
 
-                            //var Order = RepositoryOrder.table.Where(p => p.OrderStatus == "FOR_PAY" && p.tbPlans.Price2 == pr && p.OrderDate.Value <= date).FirstOrDefault();
-                            //if (Order != null)
-                            //{
-                            //    UpdateUserModel model = new UpdateUserModel();
-                            //    model.AccountID = Order.V2_User_ID.Value;
-                            //    model.Plan_ID = Order.V2_Plan_ID.Value;
-
-                            //    HttpClient httpClient = new HttpClient();
-                            //    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("authorization", auth.Scheme);
-                            //    var js = JsonConvert.SerializeObject(model);
-                            //    StringContent content = new StringContent(js, Encoding.UTF8, "application/json");
-                            //    var res = httpClient.PostAsync("http://172.18.20.16:8082" + "/User/Update", content);
-                            //    if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                            //    {
-                            //        Order.OrderStatus = "SUCCESS";
-                            //        RepositoryOrder.Save();
-                            //        var message = res.Result.Content.ReadAsStringAsync().Result.ToString();
-                            //        return Ok(message);
-                            //    }
-                            //    else
-                            //    {
-                            //        return BadRequest();
-                            //    }
-
-                            //}
-                            //else
-                            //{
-                            //    return BadRequest();
-                            //}
-
+                        });
+                                        await botClient.SendTextMessageAsync(Server.AdminTelegramUniqID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                        transaction.Commit();
+                                    }
+                                }
+                            }
+                            return Ok();
 
                         }
-                        else
+
+                        var Date = DateTime.Now.AddHours(-3);
+                        var d = DateTime.Now.AddHours(-1);
+                        var Orders = RepositoryOrder.table.Where(p => p.Order_Price == pr && p.OrderStatus == "FOR_PAY" && p.OrderDate >= Date).ToList();
+                        foreach (var Order in Orders)
                         {
-                            return BadRequest();
+                            if (Order.tbTelegramUsers.Tel_Step == "Created_Factor" && Order.OrderDate >= d)
+                            {
+                                var InlineKeyboardMarkup = Keyboards.GetHomeButton();
+
+                                TelegramBotClient botClient = new TelegramBotClient(Order.tbPlans.tbServers.Robot_Token);
+
+                                var Linkss = Order.tbTelegramUsers.tbLinks.Where(p => p.tbL_Email == Order.AccountName).FirstOrDefault();
+                                if (Linkss != null)
+                                {
+                                    var username = Order.AccountName.Split('@')[1];
+                                    var Us = RepositoryUser.GetAll(p => p.Username == username).FirstOrDefault();
+                                    Admin admin = new Admin(botClient, Us.TelegramID);
+                                    var Plan = Order.tbPlans;
+                                    var t = Utility.ConvertGBToByte(Convert.ToInt64(Plan.PlanVolume));
+
+                                    string exp = "";
+                                    if (Plan.CountDayes == 0)
+                                    {
+                                        exp = "NULL";
+                                    }
+                                    else
+                                    {
+                                        exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                                    }
+                                    Linkss.tbL_Warning = false;
+                                    RepositoryLinks.Save();
+                                    var Query = "update v2_user set u=0,d=0,t=0,plan_id=" + Order.V2_Plan_ID + ",transfer_enable=" + t + ",expired_at=" + exp + " where email='" + Order.AccountName2 + "'";
+
+                                    MySqlEntities mySql = new MySqlEntities(Us.tbServers.ConnectionString);
+                                    mySql.Open();
+                                    var reader = mySql.GetData(Query);
+                                    var result = reader.Read();
+                                    reader.Close();
+                                    mySql.Close();
+
+                                    var link = RepositoryLinkUserAndPlan.GetAll(p => p.L_FK_U_ID == Us.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
+                                    Us.Wallet += link.tbPlans.Price;
+                                    RepositoryUser.Save();
+
+
+                                    await botClient.SendTextMessageAsync(Order.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت تمدید شد از بخش سرویس ها جزئیات اکانت را می توانید مشاهده کنید");
+
+                                    if (Order.tbTelegramUsers.Tel_Parent_ID != null)
+                                    {
+                                        var TelParentUser = RepositoryTelegramUser.GetAll(p => p.Tel_UserID == Order.tbTelegramUsers.Tel_Parent_ID).FirstOrDefault();
+                                        TelParentUser.Tel_Wallet += Plan.tbServers.FreeCredit;
+                                        RepositoryTelegramUser.Save();
+
+
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("✅ کاربر زیر مجموعه شما با موفقیت خرید انجام داد و کیف پول شما شارژ شد");
+                                        str.AppendLine("");
+                                        str.AppendLine("📌 موجودی کیف پول شما : " + TelParentUser.Tel_Wallet.Value.ConvertToMony() + " تومان");
+
+                                        RealUser.SetUserStep(TelParentUser.Tel_UniqUserID, "Start", db);
+
+                                        await botClient.SendTextMessageAsync(TelParentUser.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+
+
+                                    }
+                                }
+                                else
+                                {
+
+                                    var usernam = Order.AccountName.Split('@')[1];
+                                    var Us = RepositoryUser.GetAll(p => p.Username == usernam).FirstOrDefault();
+                                    string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
+                                    Random ran = new Random();
+                                    var FullName = Order.AccountName2;
+                                    var plan = Order.tbPlans;
+                                    string exp = "";
+                                    if (plan.CountDayes == 0)
+                                    {
+                                        exp = "NULL";
+                                    }
+                                    else
+                                    {
+                                        exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                                    }
+                                    var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
+                                    var planid = Order.V2_Plan_ID;
+                                    MySqlEntities mySql = new MySqlEntities(Us.tbServers.ConnectionString);
+                                    mySql.Open();
+
+                                    var reader = mySql.GetData("select group_id,transfer_enable from v2_plan where id =" + planid);
+                                    long tran = 0;
+                                    int grid = 0;
+                                    while (reader.Read())
+                                    {
+                                        tran = Utility.ConvertGBToByte(reader.GetInt64("transfer_enable"));
+                                        grid = reader.GetInt32("group_id");
+                                    }
+
+
+                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES ('" + FullName + "'," + exp + "," + create + ",'" + Guid.NewGuid() + "',0,0,0," + tran + ",0," + grid + "," + planid + ",'" + token + "','" + Guid.NewGuid() + "'," + create + ")";
+                                    reader.Close();
+
+                                    reader = mySql.GetData(Query);
+                                    reader.Close();
+
+                                    StringBuilder st = new StringBuilder();
+                                    st.AppendLine("📈 <strong>لینک اشتراک شما  : </strong>");
+                                    st.AppendLine("👇👇👇👇👇👇👇");
+                                    st.AppendLine("");
+                                    var SubLink = "https://" + Us.tbServers.SubAddress + "/api/v1/client/subscribe?token=" + token;
+                                    st.AppendLine("<code>" + SubLink + "</code>");
+                                    st.AppendLine("");
+
+                                    st.AppendLine("◀️ روی لینک کلیک کنید به صورت خودکار لینک کپی می شود");
+                                    st.AppendLine("");
+                                    st.AppendLine("◀️ برای نمایش جزئیات اشتراک به بخش سرویس ها مراجعه کنید");
+                                    st.AppendLine("");
+
+                                    var image = InputFile.FromStream(new MemoryStream(Utility.GenerateQRCode(SubLink)));
+
+                                    tbLinks tbLinks = new tbLinks();
+                                    tbLinks.tbL_Email = Order.AccountName;
+                                    tbLinks.tb_RandomEmail = FullName;
+                                    tbLinks.tbL_Token = token;
+                                    tbLinks.FK_Server_ID = Us.FK_Server_ID;
+                                    tbLinks.FK_TelegramUserID = Order.tbTelegramUsers.Tel_UserID;
+                                    tbLinks.tbL_Warning = false;
+                                    RepositoryLinks.Insert(tbLinks);
+                                    RepositoryLinks.Save();
+                                    mySql.Close();
+
+                                    if (Order.tbTelegramUsers.Tel_Parent_ID != null)
+                                    {
+                                        var TelParentUser = RepositoryTelegramUser.GetAll(p => p.Tel_UserID == Order.tbTelegramUsers.Tel_Parent_ID).FirstOrDefault();
+                                        TelParentUser.Tel_Wallet += plan.tbServers.FreeCredit;
+                                        RepositoryTelegramUser.Save();
+
+
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("✅ کاربر زیر مجموعه شما با موفقیت خرید انجام داد و کیف پول شما شارژ شد");
+                                        str.AppendLine("");
+                                        str.AppendLine("📌 موجودی کیف پول شما : " + TelParentUser.Tel_Wallet.Value.ConvertToMony() + " تومان");
+
+                                        RealUser.SetUserStep(TelParentUser.Tel_UniqUserID, "Start", db);
+
+                                        await botClient.SendTextMessageAsync(TelParentUser.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+
+
+                                    }
+
+                                    List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+
+                                    List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+                                    row2.Add(InlineKeyboardButton.WithCallbackData("📚 راهنمای اتصال", "ConnectionHelp"));
+                                    inlineKeyboards.Add(row2);
+
+                                    await botClient.SendTextMessageAsync(Order.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد");
+                                    var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
+
+                                    await botClient.SendPhotoAsync(
+                                      chatId: Order.tbTelegramUsers.Tel_UniqUserID,
+                                      photo: image,
+                                      caption: st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+
+                                }
+
+
+                                Order.OrderStatus = "FINISH";
+                                RepositoryOrder.Save();
+                                transaction.Commit();
+                                return Ok();
+
+                            }
+                            else
+                            {
+
+                                StringBuilder str = new StringBuilder();
+                                str.AppendLine("فاکتور ثبت نشده توسط سیستم :");
+                                str.AppendLine("");
+                                str.AppendLine("نام اکانت : " + Order.AccountName);
+                                str.AppendLine("پلن : " + Order.tbPlans.Plan_Des);
+                                str.AppendLine("مبلغ : " + Order.Order_Price.Value.ConvertToMony() + " ریال ");
+                                str.AppendLine("نوع فاکتور : " + Order.OrderType);
+                                if (Order.tbTelegramUsers.Tel_Username != null)
+                                {
+                                    str.AppendLine("آیدی تلگرام سفارش دهنده : " + Order.tbTelegramUsers.Tel_Username);
+                                }
+                                if (Order.tbTelegramUsers.Tel_FirstName != null && Order.tbTelegramUsers.Tel_LastName != null)
+                                {
+                                    str.AppendLine("نام و نام خانوادگی سفارش دهنده : " + Order.tbTelegramUsers.Tel_FirstName + " " + Order.tbTelegramUsers.Tel_LastName);
+                                }
+                                str.AppendLine("");
+                                str.AppendLine("");
+                                str.AppendLine("سفارش فوق مورد تائید است ؟");
+
+
+                                var username = Order.AccountName.Split('@')[1];
+                                var Us = RepositoryUser.GetAll(p => p.Username == username).FirstOrDefault();
+
+                                TelegramBotClient botClient = new TelegramBotClient(Order.tbPlans.tbServers.Robot_Token);
+                                var keyboard = new InlineKeyboardMarkup(new[]
+                        {
+                            new[]
+                            {
+
+                                InlineKeyboardButton.WithCallbackData("✅ بله","AcceptAdmin_"+Order.Order_ID),
+                                InlineKeyboardButton.WithCallbackData("❌ خیر","NotAcceptAdmin_"+Order.Order_ID)
+                            }
+
+                        });
+                                await botClient.SendTextMessageAsync(Us.tbServers.AdminTelegramUniqID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                transaction.Commit();
+                                return Ok();
+                            }
                         }
+
+                        return BadRequest("NOT FOUND ORDER");
+
                     }
                     else
                     {
-                        return BadRequest();
+                        var Server = RepositoryServer.GetAll(p => p.Robot_ID == "darkbaz_bot").FirstOrDefault();
+                        if (Server != null)
+                        {
+                            TelegramBotClient client = new TelegramBotClient(Server.Robot_Token);
+                            await client.SendTextMessageAsync(Server.AdminTelegramUniqID, "Error api : " + "شماره تلفن یافت نشد");
+                        }
+
+                        return BadRequest("FINISHED");
                     }
+
+
                 }
-                else
+                catch (Exception ex)
                 {
-                    return BadRequest();
+
+                    var Server = RepositoryServer.GetAll(p => p.Robot_ID == "darkbaz_bot").FirstOrDefault();
+                    if (Server != null)
+                    {
+                        TelegramBotClient client = new TelegramBotClient(Server.Robot_Token);
+                        await client.SendTextMessageAsync(Server.AdminTelegramUniqID, "Error api : " + ex.Message + " - Trace :" + ex.StackTrace);
+                    }
+
+                    transaction.Rollback();
+                    return BadRequest("Error:" + ex.Message);
                 }
-            }
-            catch(Exception ex)
-            {
-                return BadRequest();
             }
         }
 
+        [System.Web.Http.HttpPost]
+        public IHttpActionResult LoginAdmin(ReqLoginModel req)
+        {
+            try
+            {
+                var User = RepositoryUser.GetAll(p => p.Username == req.username && p.Password == req.password && p.Role == 1).FirstOrDefault();
+                if (User != null)
+                {
+                    return Ok(new { token = User.Token, baseApiAddress = User.tbServers.SubAddress, phoneNumber = User.PhoneNumber });
+                }
+                else
+                {
+                    return Content(System.Net.HttpStatusCode.NotFound, "نام کاربری یا رمز عبور اشتباه است");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
+            }
+        }
 
 
     }

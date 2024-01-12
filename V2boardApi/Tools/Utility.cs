@@ -1,9 +1,12 @@
 ﻿using DataLayer.DomainModel;
 using DataLayer.Repository;
 using Microsoft.Ajax.Utilities;
+using QRCoder;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -169,8 +172,19 @@ namespace V2boardApi.Tools
             var base64Bytes = System.Convert.FromBase64String(base64);
             return System.Text.Encoding.UTF8.GetString(base64Bytes);
         }
+        /// <summary>
+        /// جدا جدا کردن سه رقم سه رقم برای پول
+        /// </summary>
+        /// <param name="mony"></param>
+        /// <returns></returns>
+        public static string ConvertToMony(this int mony)
+        {
+            // تبدیل عدد به رشته و اضافه کردن جداکننده
+            string formattedNumber = String.Format("{0:#,0}", mony);
 
-       
+            return formattedNumber;
+        }
+
         public static void InsertLog(Exception ex)
         {
             var db = new V2boardSiteEntities();
@@ -182,5 +196,19 @@ namespace V2boardApi.Tools
             RepositoryExpLogs.Save();
         }
 
+
+        public static byte[] GenerateQRCode(string text)
+        {
+            var generator = new QRCodeGenerator();
+            var qrCodeData = generator.CreateQrCode(text, QRCodeGenerator.ECCLevel.Q);
+            var qrCode = new QRCoder.QRCode(qrCodeData);
+            var qrCodeImage = qrCode.GetGraphic(20);
+
+            using (var stream = new MemoryStream())
+            {
+                qrCodeImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                return stream.ToArray();
+            }
+        }
     }
 }

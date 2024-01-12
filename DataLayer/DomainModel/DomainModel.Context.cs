@@ -25,12 +25,17 @@ namespace DataLayer.DomainModel
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<tbConnectionHelp> tbConnectionHelp { get; set; }
+        public virtual DbSet<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }
         public virtual DbSet<tbExpLog> tbExpLog { get; set; }
+        public virtual DbSet<tbFailureServers> tbFailureServers { get; set; }
+        public virtual DbSet<tbLinks> tbLinks { get; set; }
         public virtual DbSet<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
         public virtual DbSet<tbLogs> tbLogs { get; set; }
         public virtual DbSet<tbOrders> tbOrders { get; set; }
         public virtual DbSet<tbPlans> tbPlans { get; set; }
         public virtual DbSet<tbServers> tbServers { get; set; }
+        public virtual DbSet<tbTelegramUsers> tbTelegramUsers { get; set; }
         public virtual DbSet<tbUpdateLogs> tbUpdateLogs { get; set; }
         public virtual DbSet<tbUseages> tbUseages { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }

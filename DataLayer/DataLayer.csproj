@@ -118,7 +118,19 @@
       <DependentUpon>DomainModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\MySqlEntities.cs" />
+    <Compile Include="DomainModel\tbConnectionHelp.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbDepositWallet_Log.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbExpLog.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbFailureServers.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbLinks.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbLinkUserAndPlans.cs">
@@ -134,6 +146,9 @@
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbServers.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbTelegramUsers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbUpdateLogs.cs">

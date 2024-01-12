@@ -27,9 +27,13 @@
     <link rel="apple-touch-icon" href="~/Content/images/logo192.png" />
     <script defer src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script defer>
-        const sub = "{{ user.subscription_url }}"
-        let fullUrl = `${window.location.href}`;
+        const sub = "{{ user.subscription_url }}";
+        let fullUrl = window.location.href;
+        fullUrl = fullUrl.replace("panel.darkbaz.site", "panel.darkbaz.com");
         if (sub.startsWith("http")) {
+
+            
+
             fullUrl = sub;
         }
 

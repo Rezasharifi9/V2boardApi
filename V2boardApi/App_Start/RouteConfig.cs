@@ -15,11 +15,11 @@ namespace V2boardApi
 
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
-            routes.MapRoute(
-                name: "Default",
-                url: "api/v1/{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
-            );
+            routes.MapRoute(name: "Default",
+   url: "{controller}/{action}/{id}",
+   defaults: new { controller = "Admin", action = "Index", id = UrlParameter.Optional },
+   namespaces: new[] { "V2boardApi.Areas.App.Controllers" });
+
         }
     }
 }

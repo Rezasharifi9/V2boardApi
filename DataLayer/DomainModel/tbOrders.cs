@@ -24,8 +24,11 @@ namespace DataLayer.DomainModel
         public Nullable<int> FK_OrderAdmin_ID { get; set; }
         public Nullable<System.Guid> Order_Guid { get; set; }
         public Nullable<int> V2_User_ID { get; set; }
+        public Nullable<int> Order_Price { get; set; }
+        public Nullable<int> FK_Tel_UserID { get; set; }
+        public string AccountName2 { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
-        public virtual tbUsers tbUsers { get; set; }
+        public virtual tbTelegramUsers tbTelegramUsers { get; set; }
     }
 }

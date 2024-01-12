@@ -1,0 +1,148 @@
+﻿@model V2boardApi.Models.UserAndPlans
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+}
+
+<h2>ویرایش کاربر</h2>
+
+@using (Html.BeginForm("Edit", "Admin", FormMethod.Post,new {area="App"}))
+{
+    @Html.AntiForgeryToken()
+    
+    <input type="hidden" name="tbUser.User_ID" value="@Model.tbUser.User_ID" />
+<div class="form-horizontal" dir="rtl">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-group">
+        نام کاربری
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.tbUser.Username, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.tbUser.Username, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        رمز عبور
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.tbUser.Password, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.tbUser.Password, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        نام
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.tbUser.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.tbUser.FirstName, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        نام خانوادگی
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.tbUser.LastName, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.tbUser.LastName, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        ایمیل
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.tbUser.Email, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.tbUser.Email, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        وضعیت
+        <div class="col-md-10">
+            @if (Model.tbUser.Status.Value)
+            {
+                <input id="state" name="tbUser.Status" type="checkbox" checked="checked" value="true" />
+            }
+            else
+            {
+                <input id="state" name="tbUser.Status" type="checkbox" value="false" />
+            }
+        </div>
+    </div>
+    <div class="form-group">
+        کیف پول
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.tbUser.Wallet, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.tbUser.Wallet, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        محدودیت خرید
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.tbUser.Limit, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.tbUser.Limit, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        پلن ها
+        <div class="col-md-10">
+            <select class="js-example-basic-single" multiple>
+                @foreach (var item in Model.tbPlans)
+                {
+                    <option selected value="@item.Plan_ID">@item.Plan_Name</option>
+                }
+                @foreach (var item in Model.AllPlans.Where(p => !Model.tbPlans.Contains(p)).ToList())
+                {
+                    <option value="@item.Plan_ID">@item.Plan_Name</option>
+                }
+
+            </select>
+        </div>
+    </div>
+    <input type="hidden" name="hidden_select2" id="hidden_select2" value="">
+
+    <br />
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="ویرایش" class="btn btn-warning" />
+        </div>
+    </div>
+</div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index",new {Area="App"})
+</div>
+
+@section scripts {
+
+    <script>
+        $(document).ready(function () {
+            $('.js-example-basic-single').select2();
+            debugger
+            // گرفتن تمام گزینه‌های انتخاب شده در زمان بارگذاری صفحه
+            var preselectedValues = $('.js-example-basic-single').val();
+            // تبدیل آرایه انتخابی به رشته جدا شده با کاما
+            var preselectedValuesString = preselectedValues.join(',');
+            // قرار دادن رشته مقادیر در فیلد مخفی
+            $('#hidden_select2').val(preselectedValuesString);
+        });
+
+        $("#state").change(function () {
+            
+            if ($("#state").is(":checked", true)) {
+                $("#state").val(true);
+            }
+            else {
+                $("#state").val(false);
+            }
+        });
+
+        
+
+        $('.js-example-basic-single').on('change', function () {
+            var selectedValues = $(this).val(); // مقادیر انتخابی کاربر
+            $('#hidden_select2').val(selectedValues); // به‌روز رسانی فیلد مخفی با مقادیر جدید
+        });
+    </script>
+
+}
+

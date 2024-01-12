@@ -17,6 +17,8 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public tbServers()
         {
+            this.tbConnectionHelp = new HashSet<tbConnectionHelp>();
+            this.tbLinks = new HashSet<tbLinks>();
             this.tbPlans = new HashSet<tbPlans>();
             this.tbUpdateLogs = new HashSet<tbUpdateLogs>();
             this.tbUseages = new HashSet<tbUseages>();
@@ -31,7 +33,18 @@ namespace DataLayer.DomainModel
         public string DataBaseName { get; set; }
         public Nullable<bool> Status { get; set; }
         public string SubAddress { get; set; }
+        public Nullable<long> BotID { get; set; }
+        public string Robot_ID { get; set; }
+        public string Robot_Token { get; set; }
+        public Nullable<double> Discount_Percent { get; set; }
+        public Nullable<long> AdminTelegramUniqID { get; set; }
+        public string Channel_ID { get; set; }
+        public Nullable<int> FreeCredit { get; set; }
     
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbConnectionHelp> tbConnectionHelp { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbLinks> tbLinks { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbPlans> tbPlans { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
