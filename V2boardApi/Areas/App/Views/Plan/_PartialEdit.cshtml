@@ -1,0 +1,163 @@
+﻿@model DataLayer.DomainModel.tbPlans
+<div class="modal-content">
+    <div class="modal-body">
+        <div class="card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Plan info</h4>
+                    <form class="form-sample">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Plan Name <span class="text-danger">*</span></label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="PlanName" name="PlanName" value="@Model.Plan_Name">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Plan Traffic <span class="text-danger">*</span></label>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" id="PlanVolume" name="PlanVolume" value="@Model.PlanVolume">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">How Many Days <span class="text-danger"></span></label>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" id="Days" name="Days" value="@Model.CountDayes">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Plan Describtion</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="PlanDes" name="PlanDes" value="@Model.Plan_Des">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Plan Price</label>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" id="Price" name="Price" value="@Model.Price">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Plan Price For Bot</label>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" id="Price2" name="Price2" value="@Model.Price2">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-gradient-success" id="SaveChange">Save changes</button>
+        <button type="button" class="btn btn-gradient-dark close" data-dismiss="modal">Close</button>
+    </div>
+</div>
+
+
+<script>
+    $(".close").click(function () {
+        $('.modal').modal('hide');
+
+    });
+
+    $("#SaveChange").click(function () {
+
+        var PlanName = $("#PlanName").val();
+        var PlanVolume = $("#PlanVolume").val();
+        var Permission = $("#Select2Permissons").val();
+        var Days = $("#Days").val();
+        var PlanDes = $("#PlanDes").val();
+        var Price = $("#Price").val();
+        var Price2 = $("#Price2").val();
+
+
+        if (PlanName.length <= 0) {
+            Swal.fire({
+                title: "Plan Name",
+                text: "Please Enter PlanName ?",
+                icon: "warning"
+            });
+            return false;
+        } else if (PlanVolume.length <= 0) {
+            Swal.fire({
+                title: "Plan Volume",
+                text: "Please Enter Plan Traffic ?",
+                icon: "warning"
+            });
+            return false;
+        }
+        else {
+
+            var Obj = new Object();
+            Obj.Plan_Name = PlanName;
+            Obj.PlanVolume = PlanVolume;
+            Obj.CountDayes = Days;
+            Obj.Plan_Des = PlanDes;
+            Obj.Price2 = Price2;
+            Obj.Price = Price;
+            Obj.Plan_ID = '@Model.Plan_ID';
+
+            $.ajax({
+                url: "@Url.Action("_PartialEdit", "Plan")",
+                type: "Post",
+                dataType: "html",
+                data: { plan: Obj },
+                success: function (result) {
+                    if (result == "1") {
+                        $("#loading").css("display", "none");
+                        Swal.fire({
+                            title: "Success",
+                            text: "The user was successfully registered",
+                            icon: "success"
+                        }).then(function () {
+                            $('.modal').modal('hide');
+                            $("#loading").css("display", "flex");
+                            $.ajax({
+                                url: "@Url.Action("_PartialGetAllPlans", "Plan", new { area = "App" })",
+                                dataType: "html",
+                                type: "get",
+                                success: function (res) {
+                                    $("#loading").css("display", "none");
+                                    $("#PartialPlans").html(res);
+                                    ConvertToDataTable("#TablePlan", 5, [{ width: 2, targets: 5 }]);
+
+                                }
+                            });
+
+                        });
+                        return;
+                    }
+                    else {
+                        $("#loading").css("display", "none");
+                        Swal.fire({
+                            title: "Error",
+                            text: "The server encountered an error",
+                            icon: "error"
+                        });
+                        return;
+                    }
+                }
+            })
+
+        }
+
+    });
+
+</script>

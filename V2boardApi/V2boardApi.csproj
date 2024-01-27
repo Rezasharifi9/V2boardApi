@@ -212,6 +212,12 @@
     <Compile Include="Areas\api\Controllers\ClientController.cs" />
     <Compile Include="Areas\api\Controllers\ServerController.cs" />
     <Compile Include="Areas\api\Controllers\UserController.cs" />
+    <Compile Include="Areas\App\Controllers\DashboardController.cs" />
+    <Compile Include="Areas\App\Controllers\PlanController.cs" />
+    <Compile Include="Areas\App\Controllers\TelegramUsersController.cs" />
+    <Compile Include="Areas\App\Data\CountAccountCreatedFromMajorModel.cs" />
+    <Compile Include="Areas\App\Data\DashboardViewModel.cs" />
+    <Compile Include="Areas\App\Data\PlanViewModels\PermissionsViewModel.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -241,6 +247,71 @@
     <Compile Include="Tools\Utility.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Areas\App\assets\css\style.css" />
+    <Content Include="Areas\App\assets\DataTable\datatables.min.css" />
+    <Content Include="Areas\App\assets\DataTable\datatables.min.js" />
+    <Content Include="Areas\App\assets\Loading.svg" />
+    <Content Include="Areas\App\assets\images\dashboard\circle.png" />
+    <Content Include="Areas\App\assets\images\dashboard\circle.svg" />
+    <Content Include="Areas\App\assets\images\dashboard\img_1.jpg" />
+    <Content Include="Areas\App\assets\images\dashboard\img_2.jpg" />
+    <Content Include="Areas\App\assets\images\dashboard\img_3.jpg" />
+    <Content Include="Areas\App\assets\images\dashboard\img_4.jpg" />
+    <Content Include="Areas\App\assets\images\faces-clipart\pic-1.png" />
+    <Content Include="Areas\App\assets\images\faces-clipart\pic-2.png" />
+    <Content Include="Areas\App\assets\images\faces-clipart\pic-3.png" />
+    <Content Include="Areas\App\assets\images\faces-clipart\pic-4.png" />
+    <Content Include="Areas\App\assets\images\faces\face1.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face10.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face11.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face12.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face13.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face14.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face15.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face16.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face17.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face18.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face19.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face2.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face20.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face21.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face22.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face23.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face24.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face25.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face26.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face27.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face3.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face4.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face5.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face6.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face7.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face8.jpg" />
+    <Content Include="Areas\App\assets\images\faces\face9.jpg" />
+    <Content Include="Areas\App\assets\images\favicon.ico" />
+    <Content Include="Areas\App\assets\images\favicon.png" />
+    <Content Include="Areas\App\assets\images\logo-mini.svg" />
+    <Content Include="Areas\App\assets\images\logo.svg" />
+    <Content Include="Areas\App\assets\images\sprites\blue.png" />
+    <Content Include="Areas\App\assets\images\sprites\dark.png" />
+    <Content Include="Areas\App\assets\images\sprites\flag.png" />
+    <Content Include="Areas\App\assets\images\sprites\green.png" />
+    <Content Include="Areas\App\assets\images\sprites\jsgrid-icons.png" />
+    <Content Include="Areas\App\assets\images\sprites\red.png" />
+    <Content Include="Areas\App\assets\images\sprites\yellow.png" />
+    <Content Include="Areas\App\assets\js\chart.js" />
+    <Content Include="Areas\App\assets\js\dashboard.js" />
+    <Content Include="Areas\App\assets\js\file-upload.js" />
+    <Content Include="Areas\App\assets\js\hoverable-collapse.js" />
+    <Content Include="Areas\App\assets\js\jquery.cookie.js" />
+    <Content Include="Areas\App\assets\js\misc.js" />
+    <Content Include="Areas\App\assets\js\off-canvas.js" />
+    <Content Include="Areas\App\assets\js\todo.js" />
+    <Content Include="Areas\App\assets\js\todolist.js" />
+    <Content Include="Areas\App\assets\vendors\chart.js\Chart.min.js" />
+    <Content Include="Areas\App\assets\vendors\css\vendor.bundle.base.css" />
+    <Content Include="Areas\App\assets\vendors\js\vendor.bundle.base.js" />
+    <Content Include="Areas\App\assets\vendors\mdi\css\materialdesignicons.min.css" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-grid.rtl.css" />
@@ -267,6 +338,86 @@
     <Content Include="manifest.json" />
     <Content Include="Areas\api\Views\web.config" />
     <Content Include="Areas\App\Views\web.config" />
+    <Content Include="Areas\App\assets\css\style.css.map" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Bold.eot" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Bold.ttf" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Bold.woff" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Bold.woff2" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Light.eot" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Light.ttf" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Light.woff" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Light.woff2" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Medium.eot" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Medium.ttf" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Medium.woff" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Medium.woff2" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Regular.eot" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Regular.ttf" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Regular.woff" />
+    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Regular.woff2" />
+    <Content Include="Areas\App\assets\scss\components\_badges.scss" />
+    <Content Include="Areas\App\assets\scss\components\_bootstrap-progress.scss" />
+    <Content Include="Areas\App\assets\scss\components\_breadcrumbs.scss" />
+    <Content Include="Areas\App\assets\scss\components\_buttons.scss" />
+    <Content Include="Areas\App\assets\scss\components\_cards.scss" />
+    <Content Include="Areas\App\assets\scss\components\_checkbox-radio.scss" />
+    <Content Include="Areas\App\assets\scss\components\_dropdown.scss" />
+    <Content Include="Areas\App\assets\scss\components\_forms.scss" />
+    <Content Include="Areas\App\assets\scss\components\_icons.scss" />
+    <Content Include="Areas\App\assets\scss\components\_lists.scss" />
+    <Content Include="Areas\App\assets\scss\components\_preview.scss" />
+    <Content Include="Areas\App\assets\scss\components\_tables.scss" />
+    <Content Include="Areas\App\assets\scss\components\_todo-list.scss" />
+    <Content Include="Areas\App\assets\scss\landing-screens\_auth.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_animation.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_background.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_badges.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_blockqoute.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_breadcrumbs.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_buttons.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_cards.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_misc.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_pagination.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_popovers.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_text.scss" />
+    <Content Include="Areas\App\assets\scss\mixins\_tooltips.scss" />
+    <Content Include="Areas\App\assets\scss\style.scss" />
+    <Content Include="Areas\App\assets\scss\_dashboard.scss" />
+    <Content Include="Areas\App\assets\scss\_demo.scss" />
+    <Content Include="Areas\App\assets\scss\_fonts.scss" />
+    <Content Include="Areas\App\assets\scss\_footer.scss" />
+    <Content Include="Areas\App\assets\scss\_functions.scss" />
+    <Content Include="Areas\App\assets\scss\_layouts.scss" />
+    <Content Include="Areas\App\assets\scss\_misc.scss" />
+    <Content Include="Areas\App\assets\scss\_navbar.scss" />
+    <Content Include="Areas\App\assets\scss\_reset.scss" />
+    <Content Include="Areas\App\assets\scss\_sidebar.scss" />
+    <Content Include="Areas\App\assets\scss\_typography.scss" />
+    <Content Include="Areas\App\assets\scss\_utilities.scss" />
+    <Content Include="Areas\App\assets\scss\_variables.scss" />
+    <Content Include="Areas\App\assets\scss\_vertical-wrapper.scss" />
+    <Content Include="Areas\App\assets\scss\_widget-grid.scss" />
+    <Content Include="Areas\App\assets\vendors\js\bootstrap.min.js.map" />
+    <Content Include="Areas\App\assets\vendors\mdi\css\materialdesignicons.min.css.map" />
+    <Content Include="Areas\App\assets\vendors\mdi\fonts\materialdesignicons-webfont.eot" />
+    <Content Include="Areas\App\assets\vendors\mdi\fonts\materialdesignicons-webfont.ttf" />
+    <Content Include="Areas\App\assets\vendors\mdi\fonts\materialdesignicons-webfont.woff" />
+    <Content Include="Areas\App\assets\vendors\mdi\fonts\materialdesignicons-webfont.woff2" />
+    <Content Include="Areas\App\Views\Admin\_PartialGetAllUsers.cshtml" />
+    <Content Include="Areas\App\Views\Admin\Select2Plans.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_PartialEdit.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_EditWallet.cshtml" />
+    <Content Include="Areas\App\Views\Admin\GetUserAccountLog.cshtml" />
+    <Content Include="Areas\App\Views\TelegramUsers\Index.cshtml" />
+    <Content Include="Areas\App\Views\TelegramUsers\_PartialGetAllUsers.cshtml" />
+    <Content Include="Areas\App\Views\TelegramUsers\_PartialPublicMessage.cshtml" />
+    <Content Include="Areas\App\Views\Dashboard\Index.cshtml" />
+    <Content Include="Areas\App\Views\TelegramUsers\_EditWallet.cshtml" />
+    <Content Include="Areas\App\Views\Admin\Factors.cshtml" />
+    <Content Include="Areas\App\Views\Plan\Index.cshtml" />
+    <Content Include="Areas\App\Views\Plan\_PartialGetAllPlans.cshtml" />
+    <Content Include="Areas\App\Views\Plan\_PartialEdit.cshtml" />
+    <Content Include="Areas\App\Views\Plan\_PartialGetPermissions.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -311,13 +462,12 @@
     <Content Include="Areas\api\Views\Client\subscribe.cshtml" />
     <Content Include="Areas\api\Views\Client\UpdateAccount.cshtml" />
     <Content Include="Areas\App\Views\Admin\Index.cshtml" />
-    <Content Include="Areas\App\Views\Admin\Create.cshtml" />
-    <Content Include="Areas\App\Views\Admin\Edit.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_PartialCreate.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Areas\api\Views\Admin\" />
     <Folder Include="Areas\api\Views\Shared\" />
-    <Folder Include="Areas\App\Data\" />
     <Folder Include="Areas\App\Views\Default\" />
     <Folder Include="Content\Manifests\" />
     <Folder Include="Controllers\" />
@@ -372,11 +522,11 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>false</UseIIS>
+          <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50997</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://172.18.20.16:8082</IISUrl>
+          <IISUrl>http://localhost:50997/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

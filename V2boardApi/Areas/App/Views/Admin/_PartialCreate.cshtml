@@ -1,0 +1,224 @@
+﻿
+
+@{
+    ViewBag.Title = "Create";
+    Layout = null;
+}
+
+
+<div class="modal-content">
+    <div class="modal-body">
+        <div class="card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Personal info</h4>
+                    <form class="form-sample">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Username <span class="text-danger">*</span></label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="Username">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Password <span class="text-danger">*</span></label>
+                                    <div class="col-sm-9">
+                                        <input type="password" class="form-control" name="Password">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Limit <span class="text-danger">*</span></label>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" name="Limit">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">First Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="FirstName">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Last Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="LastName">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Email</label>
+                                    <div class="col-sm-9">
+                                        <input type="email" class="form-control" name="Email">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Phone Number</label>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" name="PhoneNumber">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Telegram ID</label>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" name="TelegramID">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label">Plans <span class="text-danger">*</span></label>
+                                    @Html.Action("Select2Plans", "Admin", new { area = "App" })
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-gradient-success" id="SaveChange">Save changes</button>
+        <button type="button" class="btn btn-gradient-dark close" data-dismiss="modal">Close</button>
+    </div>
+</div>
+<script>
+    $(".close").click(function () {
+        $('.modal').modal('hide');
+
+    });
+
+    
+
+    $("#SaveChange").click(function () {
+
+
+        var FirstName = $("input[name='FirstName']").val();
+        var LastName = $("input[name='LastName']").val();
+        var Username = $("input[name='Username']").val();
+        var Password = $("input[name='Password']").val();
+        var PhoneNumber = $("input[name='PhoneNumber']").val();
+        var Email = $("input[name='Email']").val();
+        var Limit = $("input[name='Limit']").val();
+        var TelegramID = $("input[name='TelegramID']").val();
+        var Plans = $("#Select2Plans").val();
+
+        if (Username.length <= 0) {
+            Swal.fire({
+                title: "Username",
+                text: "Please Enter Username ?",
+                icon: "warning"
+            });
+            return false;
+        } else if (Password.length <= 0) {
+            Swal.fire({
+                title: "Password",
+                text: "Please Enter Password ?",
+                icon: "warning"
+            });
+            return false;
+        } else if (Limit <= 0) {
+            Swal.fire({
+                title: "Password",
+                text: "Please Enter Limit ?",
+                icon: "warning"
+            });
+            return false;
+        } else if (Plans.length <=0) {
+            Swal.fire({
+                title: "Plans",
+                text: "Please Select Plan ?",
+                icon: "warning"
+            });
+            return false;
+        }
+        else {
+
+            var Obj = new Object();
+            Obj.FirstName = FirstName;
+            Obj.LastName = LastName;
+            Obj.Username = Username;
+            Obj.Password = Password;
+            Obj.PhoneNumber = PhoneNumber;
+            Obj.Email = Email;
+            Obj.Limit = Limit;
+            Obj.TelegramID = TelegramID;
+
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("Create", "Admin",new {area="App"})",
+                type: "post",
+                dataType: "html",
+                data: { tbUser: Obj, Plans: Plans },
+                success: function (res) {
+                    
+                    if (res == "2") {
+                        $("#loading").css("display", "none");
+                        Swal.fire({
+                            title: "username",
+                            text: "This user already exists",
+                            icon: "info"
+                        });
+                        return;
+                    }
+                    else if (res == "1") {
+                        $("#loading").css("display", "none");
+                        Swal.fire({
+                            title: "Success",
+                            text: "The user was successfully registered",
+                            icon: "success"
+                        }).then(function () {
+                            $('.modal').modal('hide');
+                            $("#loading").css("display", "flex");
+                            $.ajax({
+                                url: "@Url.Action("_PartialGetAllUsers", "Admin", new { area = "App" })",
+                                dataType: "html",
+                                type: "get",
+                                success: function (res) {
+                                    $("#loading").css("display", "none");
+                                    $("#PartialUsers").html(res);
+                                    new DataTable('#TableUser', {
+                                        order: [[0, 'desc']]
+                                    });
+
+                                }
+                            });
+
+                        });
+                        return;
+                    }
+                    else if (res == "3") {
+                        $("#loading").css("display", "none");
+                        Swal.fire({
+                            title: "Error",
+                            text: "The server encountered an error",
+                            icon: "error"
+                        });
+                        return;
+                    }
+                }
+            })
+        }
+
+
+
+
+    });
+</script>

@@ -18,9 +18,11 @@ using System.IO;
 using System.Security.Policy;
 using System.Net.Mail;
 using System.Net;
+using System.Web.Http.Cors;
 
 namespace V2boardApi.Areas.api.Controllers
 {
+    [EnableCors(origins: "*", "*", "*")]
     public class ClientController : Controller
     {
         private Repository<tbServers> RepositoryServer { get; set; }

@@ -1,0 +1,52 @@
+﻿@model IEnumerable<DataLayer.DomainModel.tbTelegramUsers>
+
+@{
+    Layout = null;
+    ViewBag.Title = "Account Log";
+}
+
+@using V2boardApi.Tools;
+<table class="table" id="TableTelegramUser" style="width:100%;">
+    <thead>
+        <tr>
+            <th> User </th>
+            <th> Username </th>
+            <th> FirstName </th>
+            <th> LastName </th>
+            <th> Wallet </th>
+            <th> Invited? </th>
+            <th style="background-color:white;">Menu</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.ToList())
+        {
+            <tr>
+                <td class="py-1">
+                    <img src="~/Areas/App/assets/images/faces-clipart/pic-1.png" alt="image">
+                </td>
+                <td> @item.Tel_Username </td>
+                <td> @item.Tel_FirstName </td>
+                <td> @item.Tel_LastName </td>
+                <td> @item.Tel_Wallet.Value.ConvertToMony() </td>
+                @if (item.tbTelegramUsers2 != null)
+                {
+                    <td> Yes - @item.tbTelegramUsers2.Tel_Username </td>
+                }
+                else
+                {
+                    <td> No </td>
+                }
+                <td style="background-color:white;">
+                    <div class="btn-group">
+                        <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
+                        <div class="dropdown-menu" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 46px);cursor: pointer;">
+                            <a class="dropdown-item" onclick="EditWallet('@item.Tel_UserID')">Wallet</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

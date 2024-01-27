@@ -21,6 +21,8 @@ namespace DataLayer.DomainModel
         public string tbL_Email { get; set; }
         public Nullable<bool> tbL_Warning { get; set; }
         public string tb_RandomEmail { get; set; }
+        public Nullable<bool> tb_AutoRenew { get; set; }
+        public Nullable<int> tb_AutoRenew_V2Plan_ID { get; set; }
     
         public virtual tbServers tbServers { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }

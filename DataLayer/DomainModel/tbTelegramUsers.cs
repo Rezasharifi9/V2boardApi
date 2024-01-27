@@ -26,6 +26,7 @@ namespace DataLayer.DomainModel
         public int Tel_UserID { get; set; }
         public string Tel_UniqUserID { get; set; }
         public string Tel_Step { get; set; }
+        public string Tel_Data { get; set; }
         public string Tel_Username { get; set; }
         public string Tel_FirstName { get; set; }
         public string Tel_LastName { get; set; }

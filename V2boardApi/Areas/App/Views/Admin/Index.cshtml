@@ -7,172 +7,190 @@
 }
 
 
-@using V2boardApi.Tools;
 
-<button style="float:right;" class="btn btn-info" id="UpdatePlan">
-    آپدیت پلن ها
-</button>
-<p>
-    @Html.ActionLink("ایجاد کاربر جدید", "Create",new {Area="App"})
-</p>
-<table class="table" dir="rtl">
-    <tr>
-        <th>
-            نام کاربری
-        </th>
-        <th>
-            رمز عبور
-        </th>
-        <th>
-            نام
-        </th>
-        <th>
-            نام خانوادگی
-        </th>
-        <th>
-            وضعیت
-        </th>
-        <th>
-            ایمیل
-        </th>
-        <th>
-            محدودیت خرید
-        </th>
-        <th>
-            کیف پول
-        </th>
-        <th>
-            عملیات
-        </th>
-    </tr>
-
-    @foreach (var item in Model)
-    {
-
-        if (item.Wallet.Value >= item.Limit.Value)
-        {
-            <tr style="color:red;">
-                <td>
-                    @Html.DisplayFor(modelItem => item.Username)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Password)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.FirstName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.LastName)
-                </td>
-                <td>
-                    @if (item.Status.Value)
-                    {
-                        <span class="text text-green-500">فعال</span>
-                    }
-                    else
-                    {
-                        <span class="text text-green-500">غیرفعال</span>
-                    }
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Email)
-                </td>
-                <td>
-                    @if (item.Limit != null)
-                    {
-                        <span>@item.Limit.Value.ConvertToMony()</span>
-                    }
-                </td>
-                <td>
-                    @if (item.Wallet != null)
-                    {
-                        <span>@item.Wallet.Value.ConvertToMony()</span>
-                    }
-
-                </td>
-                <td>
-                    @Html.ActionLink("ویرایش", "Edit", new { id = item.User_ID }, new { Area = "App" })
-                </td>
-            </tr>
-        }
-        else
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Username)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Password)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.FirstName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.LastName)
-                </td>
-                <td>
-                    @if (item.Status.Value)
-                    {
-                        <span class="text text-green-500">فعال</span>
-                    }
-                    else
-                    {
-                        <span class="text text-green-500">غیرفعال</span>
-                    }
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Email)
-                </td>
-                <td>
-                    @if (item.Limit != null)
-                    {
-                        <span>@item.Limit.Value.ConvertToMony()</span>
-                    }
-                </td>
-                <td>
-                    @if (item.Wallet != null)
-                    {
-                        <span>@item.Wallet.Value.ConvertToMony()</span>
-                    }
-
-                </td>
-                <td>
-                    @Html.ActionLink("ویرایش", "Edit", new { id = item.User_ID }, new { Area = "App" })
-                </td>
-            </tr>
-        }
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body table-responsive">
+                <button class="btn btn-success btn-sm" id="addUser" style="margin-bottom:10px;">Add User</button>
+                <div id="PartialUsers">
+                    @Html.Action("_PartialGetAllUsers", "Admin", new { area = "App" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 
-    }
 
-</table>
+@*@section scripts {
+
+
+        <script>
+
+
+            $("#UpdatePlan").click(function () {
+                $.ajax({
+                    beforeSend: function () {
+                        alert("پلن ها در حال آپدیت لطفا کمی صبر کنید ...")
+                    },
+                    url: "@Url.Action("UpdatePlans","Server",new {area=""})",
+                    dataType: "json",
+                    type: "get",
+                    success: function (res) {
+                        if (res.status) {
+                            alert(res.result);
+                        }
+                        else {
+                            alert(res.result);
+                        }
+                    }
+                });
+            });
+
+        </script>
+
+
+    }*@
 
 @section scripts {
 
-
     <script>
 
+        ConvertToDataTable("#tblUser", 0, [{ width: 2, targets: 4 }]);
 
-        $("#UpdatePlan").click(function () {
+
+        $("#addUser").click(function () {
+            $("#loading").css("display", "flex");
             $.ajax({
-                beforeSend: function () {
-                    alert("پلن ها در حال آپدیت لطفا کمی صبر کنید ...")
-                },
-                url: "@Url.Action("UpdatePlans","Server",new {area=""})",
-                dataType: "json",
+                url: "@Url.Action("_PartialCreate","Admin",new {area="App"})",
                 type: "get",
-                success: function (res) {
-                    if (res.status) {
-                        alert(res.result);
-                    }
-                    else {
-                        alert(res.result);
-                    }
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#modal-dialog-lg").html(result);
+                    $('#modal-lg').modal('show');
                 }
             });
         });
 
-    </script>
+        function EditUser(input) {
+            $("#loading").css("display", "flex");
+            var id = $(input).attr("id").split("_")[1];
+            $.ajax({
+                url: "@Url.Action("_PartialEdit", "Admin", new { area = "App" })",
+                type: "get",
+                data: { id: id },
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#modal-dialog-lg").html(result);
+                    $('#modal-lg').modal('show');
+                }
+            });
+        }
 
+
+        function EditWallet(input) {
+            $("#loading").css("display", "flex");
+            var id = $(input).attr("id").split("_")[1];
+            $.ajax({
+                url: "@Url.Action("_EditWallet", "Admin", new { area = "App" })",
+                type: "get",
+                data: { id: id },
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#modal-dialog-sm").html(result);
+                    $('#modal-sm').modal('show');
+                }
+            });
+        }
+
+
+        $("#SearchUsername").change(function () {
+            var username = $(this).val();
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("_PartialGetAllUsers", "Admin", new { area = "App" })",
+                dataType: "html",
+                data: { username: username },
+                type: "get",
+                success: function (res) {
+                    $("#loading").css("display", "none");
+                    $("#PartialUsers").html(res);
+                    new DataTable('#TableUser', {
+                        order: [[0, 'desc']]
+                    });
+                }
+            });
+        });
+
+
+        function BanUser(id) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("BanUser", "Admin", new { area = "App" })",
+                dataType: "html",
+                data: { id: id },
+                type: "get",
+                success: function (res) {
+
+                    if (res == "1") {
+                        $("#loading").css("display", "flex");
+                            $.ajax({
+                                url: "@Url.Action("_PartialGetAllUsers", "Admin", new { area = "App" })",
+                                dataType: "html",
+                                type: "get",
+                                success: function (res) {
+                                    $("#loading").css("display", "none");
+                                    $("#PartialUsers").html(res);
+                                    new DataTable('#TableUser', {
+                                        order: [[0, 'desc']]
+                                    });
+                                }
+                            });
+                    }
+
+                }
+            });
+        }
+
+
+        function Factors(id) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("Factors", "Admin", new { area = "App" })",
+                type: "get",
+                data: { id: id },
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#PartialUsers").html(result);
+                    new DataTable('#TableUser', {
+                        order: [[0, 'desc']]
+                    });
+                }
+            });
+        }
+
+
+        function ShowAccountLog(Url) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: Url,
+                type: "get",
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#PartialUsers").html(result);
+                    new DataTable('#TableUser', {
+                        order: [[0, 'desc']]
+                    });
+                }
+            });
+        }
+
+    </script>
 
 }

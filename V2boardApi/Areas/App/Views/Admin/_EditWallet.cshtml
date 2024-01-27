@@ -1,0 +1,88 @@
+﻿@model DataLayer.DomainModel.tbUsers
+
+@using V2boardApi.Tools;
+<div class="modal-content">
+    <div class="modal-body">
+        <div class="card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Paid Price</h4>
+                    <form class="form-sample">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group row">
+                                    <input type="text" class="form-control" name="Wallet" id="Wallet" value="">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-gradient-success" onclick="SaveChange(this)">Save changes</button>
+        <button type="button" class="btn btn-gradient-dark close" data-dismiss="modal">Close</button>
+    </div>
+</div>
+
+<script>
+    $(".close").click(function () {
+        $('.modal').modal('hide');
+
+    });
+
+    function SaveChange(input) {
+        debugger
+        var wallet = $("input[name='Wallet']").val();
+
+        if (wallet >= 0 && wallet!="") {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("EditWallet", "Admin",new {area="App"})",
+                type: "Post",
+                data: { wallet: wallet, id: '@Model.User_ID' },
+                datatype: "html",
+                success: function (res) {
+                    $("#loading").css("display", "none");
+                    if (res == "1") {
+                        Swal.fire({
+                            title: "Wallet",
+                            text: "The wallet has been charged successfully",
+                            icon: "success"
+                        }).then(function () {
+                            $('.modal').modal('hide');
+                            $("#loading").css("display", "flex");
+                            $.ajax({
+                                url: "@Url.Action("_PartialGetAllUsers", "Admin", new { area = "App" })",
+                                dataType: "html",
+                                type: "get",
+                                success: function (res) {
+                                    $("#loading").css("display", "none");
+                                    $("#PartialUsers").html(res);
+                                    
+                                }
+                            });
+                        });
+                    }
+                    else {
+                        Swal.fire({
+                            title: "Error",
+                            text: "The server encountered an error",
+                            icon: "error"
+                        });
+                    }
+                }
+            });
+        }
+        else {
+            Swal.fire({
+                title: "Warning",
+                text: "Wallet amount must be greater than or equal to 0",
+                icon: "error"
+            });
+        }
+
+    }
+
+</script>

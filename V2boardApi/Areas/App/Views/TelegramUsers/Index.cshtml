@@ -1,0 +1,96 @@
+﻿@model IEnumerable<DataLayer.DomainModel.tbUsers>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+
+}
+
+
+
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body table-responsive">
+                <h4 class="card-title">Management Telegram User</h4>
+                <button class="btn btn-success btn-sm" style="margin-bottom:20px;" onclick="PublicSendMessageModal()">Send Public Message</button>
+                <div id="PartialUsers">
+                    @Html.Action("_PartialGetAllUsers", "TelegramUsers", new { area = "App" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@*@section scripts {
+
+
+        <script>
+
+
+            $("#UpdatePlan").click(function () {
+                $.ajax({
+                    beforeSend: function () {
+                        alert("پلن ها در حال آپدیت لطفا کمی صبر کنید ...")
+                    },
+                    url: "@Url.Action("UpdatePlans","Server",new {area=""})",
+                    dataType: "json",
+                    type: "get",
+                    success: function (res) {
+                        if (res.status) {
+                            alert(res.result);
+                        }
+                        else {
+                            alert(res.result);
+                        }
+                    }
+                });
+            });
+
+        </script>
+
+
+    }*@
+
+@section scripts {
+
+    <script>
+
+        ConvertToDataTable("#TableTelegramUser", 0, [{ width: 2, targets: 6 }]);
+
+        function PublicSendMessageModal() {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("_PartialPublicMessage", "TelegramUsers", new { area = "App" })",
+                dataType: "html",
+                type: "get",
+                success: function (res) {
+                    $("#loading").css("display", "none");
+                    $("#modal-dialog-lg").html(res);
+                    $('#modal-lg').modal('show');
+                }
+            });
+        }
+
+
+        function EditWallet(id) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("_EditWallet", "TelegramUsers", new { area = "App" })",
+                type: "get",
+                data: { id: id },
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#modal-dialog-sm").html(result);
+                    $('#modal-sm').modal('show');
+                }
+            });
+        }
+
+
+    </script>
+
+}

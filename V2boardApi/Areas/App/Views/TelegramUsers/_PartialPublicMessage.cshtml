@@ -1,0 +1,64 @@
+﻿<div class="modal-content">
+    <div class="modal-body">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Message</h4>
+                <form class="forms-sample">
+                    <div class="form-group">
+                        <textarea class="form-control" id="Message" rows="8"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-gradient-primary me-2" onclick="SendPublicMessage()">Send</button>
+                    <button class="btn btn-light close">Cancel</button>
+                </form>
+            </div>
+        </div>
+        </div>
+</div>
+
+<script>
+    $(".close").click(function () {
+        $('.modal').modal('hide');
+
+    });
+
+
+    function SendPublicMessage() {
+
+        var Message = $("#Message").val();
+        if (Message.length >= 3) {
+            Swal.fire({
+                title: "Do you want to Send Message for All?",
+                showDenyButton: true,
+                confirmButtonText: "Yes",
+                denyButtonText: `No`
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $("#loading").css("display", "flex");
+                    $.ajax({
+                        url: "@Url.Action("SendPublicMessage","TelegramUsers",new {area="App"})",
+                        type: "Post",
+                        dataType: "html",
+                        data: { message: Message },
+                        success: function (res) {
+                            $("#loading").css("display", "none");
+                            if (res == "1") {
+                                Swal.fire("The message was sent successfully", "", "success");
+                            }
+                            else {
+                                Swal.fire("The message encountered an error", "", "error");
+                            }
+                        }
+                    });
+
+                }
+            });
+        }
+        else {
+
+        }
+
+
+    }
+
+
+</script>

@@ -49,6 +49,8 @@
           <Property Name="tbL_Email" Type="varchar" MaxLength="350" />
           <Property Name="tbL_Warning" Type="bit" />
           <Property Name="tb_RandomEmail" Type="varchar" MaxLength="250" />
+          <Property Name="tb_AutoRenew" Type="bit" />
+          <Property Name="tb_AutoRenew_V2Plan_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
@@ -129,6 +131,7 @@
           <Property Name="Tel_UserID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Tel_UniqUserID" Type="varchar" MaxLength="50" />
           <Property Name="Tel_Step" Type="varchar" MaxLength="150" />
+          <Property Name="Tel_Data" Type="nvarchar(max)" />
           <Property Name="Tel_Username" Type="varchar" MaxLength="350" />
           <Property Name="Tel_FirstName" Type="nvarchar(max)" />
           <Property Name="Tel_LastName" Type="nvarchar(max)" />
@@ -160,6 +163,15 @@
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="v2_User_ID" Type="int" />
           <Property Name="Date" Type="datetime" />
+        </EntityType>
+        <EntityType Name="tbUserFactors">
+          <Key>
+            <PropertyRef Name="tbUf_ID" />
+          </Key>
+          <Property Name="tbUf_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tbUf_Value" Type="int" />
+          <Property Name="tbUf_CreateTime" Type="datetime" />
+          <Property Name="FK_User_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbUsers">
           <Key>
@@ -340,6 +352,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbUserFactors_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbUserFactors" Type="Self.tbUserFactors" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbUserFactors">
+              <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbUsers_tbServers">
           <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="*" />
@@ -366,6 +390,7 @@
           <EntitySet Name="tbTelegramUsers" EntityType="Self.tbTelegramUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUpdateLogs" EntityType="Self.tbUpdateLogs" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_tbConnectionHelp_tbServers" Association="Self.FK_tbConnectionHelp_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
@@ -419,6 +444,10 @@
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbUseages" EntitySet="tbUseages" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbUserFactors_tbUsers" Association="Self.FK_tbUserFactors_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUserFactors" EntitySet="tbUserFactors" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbUsers_tbServers" Association="Self.FK_tbUsers_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbUsers" EntitySet="tbUsers" />
@@ -442,6 +471,7 @@
           <EntitySet Name="tbTelegramUsers" EntityType="V2boardSiteModel.tbTelegramUsers" />
           <EntitySet Name="tbUpdateLogs" EntityType="V2boardSiteModel.tbUpdateLogs" />
           <EntitySet Name="tbUseages" EntityType="V2boardSiteModel.tbUseages" />
+          <EntitySet Name="tbUserFactors" EntityType="V2boardSiteModel.tbUserFactors" />
           <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
           <AssociationSet Name="FK_tbConnectionHelp_tbServers" Association="V2boardSiteModel.FK_tbConnectionHelp_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
@@ -499,6 +529,10 @@
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbTelegramUsers1" EntitySet="tbTelegramUsers" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbUserFactors_tbUsers" Association="V2boardSiteModel.FK_tbUserFactors_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUserFactors" EntitySet="tbUserFactors" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -546,6 +580,8 @@
           <Property Name="tbL_Email" Type="String" MaxLength="350" FixedLength="false" Unicode="false" />
           <Property Name="tbL_Warning" Type="Boolean" />
           <Property Name="tb_RandomEmail" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="tb_AutoRenew" Type="Boolean" />
+          <Property Name="tb_AutoRenew_V2Plan_ID" Type="Int32" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
         </EntityType>
@@ -643,6 +679,7 @@
           <Property Name="Tel_UserID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Tel_UniqUserID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Tel_Step" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Tel_Data" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Tel_Username" Type="String" MaxLength="350" FixedLength="false" Unicode="false" />
           <Property Name="Tel_FirstName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Tel_LastName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
@@ -682,6 +719,16 @@
           <Property Name="Date" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUseages_tbServers" FromRole="tbUseages" ToRole="tbServers" />
         </EntityType>
+        <EntityType Name="tbUserFactors">
+          <Key>
+            <PropertyRef Name="tbUf_ID" />
+          </Key>
+          <Property Name="tbUf_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbUf_Value" Type="Int32" />
+          <Property Name="tbUf_CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="FK_User_ID" Type="Int32" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUserFactors" ToRole="tbUsers" />
+        </EntityType>
         <EntityType Name="tbUsers">
           <Key>
             <PropertyRef Name="User_ID" />
@@ -706,6 +753,7 @@
           <Property Name="ExpireTimeToken" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
+          <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
         </EntityType>
         <Association Name="FK_tbConnectionHelp_tbServers">
           <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
@@ -875,6 +923,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbUserFactors_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbUserFactors" Role="tbUserFactors" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbUserFactors">
+              <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -921,6 +981,8 @@
           <EntitySetMapping Name="tbLinks">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLinks">
               <MappingFragment StoreEntitySet="tbLinks">
+                <ScalarProperty Name="tb_AutoRenew_V2Plan_ID" ColumnName="tb_AutoRenew_V2Plan_ID" />
+                <ScalarProperty Name="tb_AutoRenew" ColumnName="tb_AutoRenew" />
                 <ScalarProperty Name="tb_RandomEmail" ColumnName="tb_RandomEmail" />
                 <ScalarProperty Name="tbL_Warning" ColumnName="tbL_Warning" />
                 <ScalarProperty Name="tbL_Email" ColumnName="tbL_Email" />
@@ -1017,6 +1079,7 @@
                 <ScalarProperty Name="Tel_LastName" ColumnName="Tel_LastName" />
                 <ScalarProperty Name="Tel_FirstName" ColumnName="Tel_FirstName" />
                 <ScalarProperty Name="Tel_Username" ColumnName="Tel_Username" />
+                <ScalarProperty Name="Tel_Data" ColumnName="Tel_Data" />
                 <ScalarProperty Name="Tel_Step" ColumnName="Tel_Step" />
                 <ScalarProperty Name="Tel_UniqUserID" ColumnName="Tel_UniqUserID" />
                 <ScalarProperty Name="Tel_UserID" ColumnName="Tel_UserID" />
@@ -1047,6 +1110,16 @@
                 <ScalarProperty Name="Upload" ColumnName="Upload" />
                 <ScalarProperty Name="Download" ColumnName="Download" />
                 <ScalarProperty Name="tbUse_ID" ColumnName="tbUse_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbUserFactors">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbUserFactors">
+              <MappingFragment StoreEntitySet="tbUserFactors">
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="tbUf_CreateTime" ColumnName="tbUf_CreateTime" />
+                <ScalarProperty Name="tbUf_Value" ColumnName="tbUf_Value" />
+                <ScalarProperty Name="tbUf_ID" ColumnName="tbUf_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

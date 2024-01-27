@@ -38,6 +38,7 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbTelegramUsers> tbTelegramUsers { get; set; }
         public virtual DbSet<tbUpdateLogs> tbUpdateLogs { get; set; }
         public virtual DbSet<tbUseages> tbUseages { get; set; }
+        public virtual DbSet<tbUserFactors> tbUserFactors { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
     }
 }

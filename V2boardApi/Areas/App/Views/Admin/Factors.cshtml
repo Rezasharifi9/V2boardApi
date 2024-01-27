@@ -1,0 +1,26 @@
+﻿@model List<DataLayer.DomainModel.tbUserFactors>
+
+
+@using V2boardApi.Tools;
+
+<h4 class="card-title">Paid Prices</h4>
+<table class="table" id="tableFactor">
+    <thead>
+        <tr>
+            <th>Paid Date</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.tbUf_CreateTime.Value.ConvertDateTimeToShamsi2()</td>
+                <td>@item.tbUf_Value.Value.ConvertToMony()</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    new DataTable('#tableFactor');
+</script>

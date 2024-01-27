@@ -71,11 +71,14 @@ namespace V2boardApi.Tools
 
             return numDays;
         }
-        public static string ConvertDateTimeToShamsi(DateTime dt)
+        public static string ConvertDateTimeToShamsi(this DateTime dt)
         {
             return dt.ToString("yyyy MMMM dd", CultureInfo.GetCultureInfo("fa-IR")); ;
         }
-
+        public static string ConvertDateTimeToShamsi2(this DateTime dt)
+        {
+            return dt.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.GetCultureInfo("fa-IR")); ;
+        }
         public static string GetMonthName(DateTime date)
         {
             PersianCalendar pc = new PersianCalendar();
@@ -178,6 +181,20 @@ namespace V2boardApi.Tools
         /// <param name="mony"></param>
         /// <returns></returns>
         public static string ConvertToMony(this int mony)
+        {
+            // تبدیل عدد به رشته و اضافه کردن جداکننده
+            string formattedNumber = String.Format("{0:#,0}", mony);
+
+            return formattedNumber;
+        }
+        public static string ConvertToMony(this double mony)
+        {
+            // تبدیل عدد به رشته و اضافه کردن جداکننده
+            string formattedNumber = String.Format("{0:#,0}", mony);
+
+            return formattedNumber;
+        }
+        public static string ConvertToMony(this float mony)
         {
             // تبدیل عدد به رشته و اضافه کردن جداکننده
             string formattedNumber = String.Format("{0:#,0}", mony);

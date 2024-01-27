@@ -27,12 +27,6 @@ namespace DataLayer.Repository
             table = db.Set<T>();
         }
 
-        public void Delete(T obj)
-        {
-            T existing = table.Find(obj);
-            table.Remove(existing);
-        }
-
         public List<T> GetAll(Expression<Func<T, bool>> predicate)
         {
             return table.Where(predicate).ToList();
@@ -57,6 +51,12 @@ namespace DataLayer.Repository
         {
 
             return Convert.ToBoolean(db.SaveChanges());
+        }
+
+        public void Delete(int id)
+        {
+            T existing = table.Find(id);
+            table.Remove(existing);
         }
     }
 }

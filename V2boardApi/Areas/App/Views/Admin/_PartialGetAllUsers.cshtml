@@ -1,0 +1,99 @@
+﻿@model IEnumerable<DataLayer.DomainModel.tbUsers>
+
+@{
+    Layout = null;
+    ViewBag.Title = "Account Log";
+}
+
+@using V2boardApi.Tools;
+<table class="table" id="tblUser" style="width:100%;">
+    <thead>
+        <tr>
+            <th> User </th>
+            <th> Username </th>
+            <th> Status </th>
+            <th> Amount </th>
+            <th>Menu</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderByDescending(p => p.Wallet >= (p.Limit - (p.Limit * 0.2))).ToList())
+        {
+            <tr>
+                <td class="py-1">
+                    <img src="~/Areas/App/assets/images/faces-clipart/pic-1.png" alt="image">
+                </td>
+                <td> @item.Username </td>
+
+                @if (item.Status.Value)
+                {
+                    if (item.Wallet != null && item.Limit != null)
+                    {
+                        var limit = (item.Limit.Value - (item.Limit.Value * 0.2));
+                        if (item.Wallet >= limit)
+                        {
+                            if (item.Wallet.Value >= item.Limit.Value)
+                            {
+                                <td>
+                                    <label class="badge badge-danger">Expiration of purchase limit</label>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    <label class="badge badge-gradient-warning text-black">Near of purchase limit</label>
+                                </td>
+                            }
+                        }
+                        else
+                        {
+                            <td>
+                                <label class="badge badge-gradient-success">Normal</label>
+                            </td>
+                        }
+                    }
+                    else
+                    {
+                        <td>
+                            <label class="badge badge-gradient-success">Normal</label>
+                        </td>
+                    }
+                }
+                else
+                {
+                    <td>
+                        <label class="badge badge-gradient-danger">Disabled</label>
+                    </td>
+                }
+
+                @if (item.Wallet != null)
+                {
+                    <td> @item.Wallet.Value.ConvertToMony() T (@item.Limit.Value.ConvertToMony() T) </td>
+                }
+                else
+                {
+                    <td> 0 T </td>
+                }
+                <td style="background-color:white;">
+                    <div class="btn-group" style="margin-right: 37px; ">
+                        <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
+                        <div class="dropdown-menu" data-popper-placement="bottom-start" style="cursor: pointer;">
+                            <a class="dropdown-item" onclick="ShowAccountLog('@Url.Action("GetUserAccountLog","Admin",new {area="App",id=item.User_ID})')">Account Log</a>
+                            <a class="dropdown-item" onclick="Factors('@item.User_ID')">Factors</a>
+                            <a class="dropdown-item" onclick="EditUser(this)" id="User_@item.User_ID">Edit</a>
+                            @if (item.Status.Value)
+                            {
+                                <a class="dropdown-item" onclick="BanUser('@item.User_ID')">Ban</a>
+                            }
+                            else
+                            {
+                                <a class="dropdown-item" onclick="BanUser('@item.User_ID')">UnBan</a>
+                            }
+                            <a class="dropdown-item" onclick="EditWallet(this)" id="Wallet_@item.User_ID">Wallet</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

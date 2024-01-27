@@ -157,6 +157,9 @@
     <Compile Include="DomainModel\tbUseages.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbUserFactors.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbUsers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

@@ -1,0 +1,88 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body table-responsive">
+                <button class="btn btn-outline-dribbble btn-sm" id="UpdatePlan" style="margin-bottom:10px;">Update Plan</button>
+                <div id="PartialPlans">
+                    @Html.Action("_PartialGetAllPlans", "Plan", new { area = "App" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts {
+
+    <script>
+
+
+        ConvertToDataTable("#TablePlan", 4, [{ width: 2, targets: 5 }]);
+
+        $("#UpdatePlan").click(function () {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("UpdatePlans", "Plan",new {area="App"})",
+                type: "get",
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    if (result == "1") {
+                        Swal.fire({
+                            title: "Successfully",
+                            text: "The plans have been successfully updated",
+                            icon: "success"
+                        });
+                    }
+                }
+            });
+        });
+
+
+        function EditPlan(Url) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: Url,
+                type: "get",
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#modal-dialog-lg").html(result);
+                    $('#modal-lg').modal('show');
+                }
+            });
+        }
+
+
+        function DisablePlan(Url) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: Url,
+                type: "get",
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#loading").css("display", "flex");
+                    $.ajax({
+                        url: "@Url.Action("_PartialGetAllPlans", "Plan", new { area = "App" })",
+                        dataType: "html",
+                        type: "get",
+                        success: function (res) {
+                            $("#loading").css("display", "none");
+                            $("#PartialPlans").html(res);
+                            ConvertToDataTable("#TablePlan", 5, [{ width: 2, targets: 5 }]);
+
+                        }
+                    });
+                }
+            });
+        }
+
+    </script>
+}
