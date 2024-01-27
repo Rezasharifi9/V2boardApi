@@ -12,8 +12,8 @@
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body table-responsive">
-                <h4 class="card-title">Management Telegram User</h4>
-                <button class="btn btn-success btn-sm" style="margin-bottom:20px;" onclick="PublicSendMessageModal()">Send Public Message</button>
+                <h4 class="card-title">مدیریت کاربران ربات</h4>
+                <button class="btn btn-success btn-sm" style="margin-bottom:20px;float:left;" onclick="PublicSendMessageModal()">ارسال پیغام همگانی</button>
                 <div id="PartialUsers">
                     @Html.Action("_PartialGetAllUsers", "TelegramUsers", new { area = "App" })
                 </div>

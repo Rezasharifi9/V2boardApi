@@ -276,13 +276,13 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 else
                 {
-                    TempData["Error"] = "The username or password is incorrect";
+                    TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
                     return RedirectToAction("Login", "Admin");
                 }
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error communicating with the server";
+                TempData["Error"] = "خطا در برقراری ارتباط با سرور";
                 return RedirectToAction("Login", "Admin");
             }
         }

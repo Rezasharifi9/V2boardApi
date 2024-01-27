@@ -248,8 +248,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\App\assets\css\style.css" />
+    <Content Include="Areas\App\assets\DataTable\dataTables.fixedColumns.min.js" />
     <Content Include="Areas\App\assets\DataTable\datatables.min.css" />
     <Content Include="Areas\App\assets\DataTable\datatables.min.js" />
+    <Content Include="Areas\App\assets\DataTable\fixedColumns.dataTables.min.css" />
     <Content Include="Areas\App\assets\Loading.svg" />
     <Content Include="Areas\App\assets\images\dashboard\circle.png" />
     <Content Include="Areas\App\assets\images\dashboard\circle.svg" />
@@ -308,6 +310,9 @@
     <Content Include="Areas\App\assets\js\off-canvas.js" />
     <Content Include="Areas\App\assets\js\todo.js" />
     <Content Include="Areas\App\assets\js\todolist.js" />
+    <Content Include="Areas\App\assets\select2\select2.min.css" />
+    <Content Include="Areas\App\assets\select2\select2.min.js" />
+    <Content Include="Areas\App\assets\sweetalert\sweetalert2%4011.js" />
     <Content Include="Areas\App\assets\vendors\chart.js\Chart.min.js" />
     <Content Include="Areas\App\assets\vendors\css\vendor.bundle.base.css" />
     <Content Include="Areas\App\assets\vendors\js\vendor.bundle.base.js" />
@@ -339,22 +344,6 @@
     <Content Include="Areas\api\Views\web.config" />
     <Content Include="Areas\App\Views\web.config" />
     <Content Include="Areas\App\assets\css\style.css.map" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Bold.eot" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Bold.ttf" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Bold.woff" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Bold.woff2" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Light.eot" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Light.ttf" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Light.woff" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Light.woff2" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Medium.eot" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Medium.ttf" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Medium.woff" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Medium.woff2" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Regular.eot" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Regular.ttf" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Regular.woff" />
-    <Content Include="Areas\App\assets\fonts\Ubuntu\Ubuntu-Regular.woff2" />
     <Content Include="Areas\App\assets\scss\components\_badges.scss" />
     <Content Include="Areas\App\assets\scss\components\_bootstrap-progress.scss" />
     <Content Include="Areas\App\assets\scss\components\_breadcrumbs.scss" />
@@ -417,7 +406,12 @@
     <Content Include="Areas\App\Views\Plan\Index.cshtml" />
     <Content Include="Areas\App\Views\Plan\_PartialGetAllPlans.cshtml" />
     <Content Include="Areas\App\Views\Plan\_PartialEdit.cshtml" />
-    <Content Include="Areas\App\Views\Plan\_PartialGetPermissions.cshtml" />
+    <Content Include="Areas\App\assets\fonts\B-NAZANIN.TTF" />
+    <Content Include="Areas\App\assets\fonts\IRANSansWeb.ttf" />
+    <Content Include="Areas\App\assets\fonts\IRANSansWeb_Bold.ttf" />
+    <Content Include="Areas\App\assets\fonts\IRANSansWeb_Light.ttf" />
+    <Content Include="Areas\App\assets\fonts\IRANSansWeb_Medium.ttf" />
+    <Content Include="Areas\App\assets\fonts\IRANSansWeb_UltraLight.ttf" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />

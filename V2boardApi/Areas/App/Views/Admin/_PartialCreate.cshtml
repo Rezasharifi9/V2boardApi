@@ -11,12 +11,12 @@
         <div class="card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Personal info</h4>
+                    <h4 class="card-title">اطلاعات کاربر</h4>
                     <form class="form-sample">
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">Username <span class="text-danger">*</span></label>
+                                    <label class="col-sm-3 col-form-label">نام کاربری <span class="text-danger">*</span></label>
                                     <div class="col-sm-9">
                                         <input type="text" class="form-control" name="Username">
                                     </div>
@@ -24,7 +24,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">Password <span class="text-danger">*</span></label>
+                                    <label class="col-sm-3 col-form-label">رمز عبور <span class="text-danger">*</span></label>
                                     <div class="col-sm-9">
                                         <input type="password" class="form-control" name="Password">
                                     </div>
@@ -32,7 +32,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">Limit <span class="text-danger">*</span></label>
+                                    <label class="col-sm-3 col-form-label">محدودیت خرید <span class="text-danger">*</span></label>
                                     <div class="col-sm-9">
                                         <input type="number" class="form-control" name="Limit">
                                     </div>
@@ -42,7 +42,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">First Name</label>
+                                    <label class="col-sm-3 col-form-label">نام</label>
                                     <div class="col-sm-9">
                                         <input type="text" class="form-control" name="FirstName">
                                     </div>
@@ -50,7 +50,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">Last Name</label>
+                                    <label class="col-sm-3 col-form-label">نام خانوادگی</label>
                                     <div class="col-sm-9">
                                         <input type="text" class="form-control" name="LastName">
                                     </div>
@@ -58,7 +58,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">Email</label>
+                                    <label class="col-sm-3 col-form-label">ایمیل</label>
                                     <div class="col-sm-9">
                                         <input type="email" class="form-control" name="Email">
                                     </div>
@@ -68,7 +68,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">Phone Number</label>
+                                    <label class="col-sm-3 col-form-label">شماره همراه</label>
                                     <div class="col-sm-9">
                                         <input type="number" class="form-control" name="PhoneNumber">
                                     </div>
@@ -76,7 +76,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">Telegram ID</label>
+                                    <label class="col-sm-3 col-form-label">آیدی تلگرام</label>
                                     <div class="col-sm-9">
                                         <input type="number" class="form-control" name="TelegramID">
                                     </div>
@@ -84,7 +84,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group row">
-                                    <label class="col-sm-3 col-form-label">Plans <span class="text-danger">*</span></label>
+                                    <label class="col-sm-3 col-form-label">تعرفه ها <span class="text-danger">*</span></label>
                                     @Html.Action("Select2Plans", "Admin", new { area = "App" })
                                 </div>
                             </div>
@@ -94,9 +94,11 @@
             </div>
         </div>
     </div>
+
+
     <div class="modal-footer">
-        <button type="button" class="btn btn-gradient-success" id="SaveChange">Save changes</button>
-        <button type="button" class="btn btn-gradient-dark close" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-gradient-dark close" data-dismiss="modal">بستن</button>
+        <button type="button" class="btn btn-gradient-success" id="SaveChange">ذخیره</button>
     </div>
 </div>
 <script>
@@ -122,29 +124,29 @@
 
         if (Username.length <= 0) {
             Swal.fire({
-                title: "Username",
-                text: "Please Enter Username ?",
+                title: "نام کاربری !!",
+                text: "لطفا نام کاربری را وارد کنید",
                 icon: "warning"
             });
             return false;
         } else if (Password.length <= 0) {
             Swal.fire({
-                title: "Password",
-                text: "Please Enter Password ?",
+                title: "رمز عبور !!",
+                text: "لطفا رمز عبور کاربر را وارد کنید",
                 icon: "warning"
             });
             return false;
         } else if (Limit <= 0) {
             Swal.fire({
-                title: "Password",
-                text: "Please Enter Limit ?",
+                title: "محدودیت خرید",
+                text: "لطفا مقداری محدودیت خرید برای کاربرتان تنظیم کنید",
                 icon: "warning"
             });
             return false;
         } else if (Plans.length <=0) {
             Swal.fire({
-                title: "Plans",
-                text: "Please Select Plan ?",
+                title: "انتخاب تعرفه",
+                text: "لطفا تعدادی تعرفه انتخاب کنید",
                 icon: "warning"
             });
             return false;
@@ -173,7 +175,7 @@
                         $("#loading").css("display", "none");
                         Swal.fire({
                             title: "username",
-                            text: "This user already exists",
+                            text: "این کاربر از قبل در سیستم وجود دارد",
                             icon: "info"
                         });
                         return;
@@ -181,8 +183,8 @@
                     else if (res == "1") {
                         $("#loading").css("display", "none");
                         Swal.fire({
-                            title: "Success",
-                            text: "The user was successfully registered",
+                            title: "موفق",
+                            text: "کاربر با موفقیت ثبت شد",
                             icon: "success"
                         }).then(function () {
                             $('.modal').modal('hide');
@@ -207,8 +209,8 @@
                     else if (res == "3") {
                         $("#loading").css("display", "none");
                         Swal.fire({
-                            title: "Error",
-                            text: "The server encountered an error",
+                            title: "خطا",
+                            text: "خطا در برقراری ارتباط با سرور",
                             icon: "error"
                         });
                         return;

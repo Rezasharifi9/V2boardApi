@@ -6,7 +6,7 @@
         <div class="card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Paid Price</h4>
+                    <h4 class="card-title">مبلغ پرداختی</h4>
                     <form class="form-sample">
                         <div class="row">
                             <div class="col-md-12">
@@ -21,8 +21,8 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-gradient-success" onclick="SaveChange(this)">Save changes</button>
-        <button type="button" class="btn btn-gradient-dark close" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-gradient-dark close" data-dismiss="modal">بستن</button>
+        <button type="button" class="btn btn-gradient-success" onclick="SaveChange(this)">ذخیره</button>
     </div>
 </div>
 
@@ -47,8 +47,8 @@
                     $("#loading").css("display", "none");
                     if (res == "1") {
                         Swal.fire({
-                            title: "Wallet",
-                            text: "The wallet has been charged successfully",
+                            title: "موفق",
+                            text: "کیف پول کاربر با موفقیت شارژ شد",
                             icon: "success"
                         }).then(function () {
                             $('.modal').modal('hide');
@@ -67,8 +67,8 @@
                     }
                     else {
                         Swal.fire({
-                            title: "Error",
-                            text: "The server encountered an error",
+                            title: "خطا",
+                            text: "خطا در برقراری ارتباط با سرور",
                             icon: "error"
                         });
                     }

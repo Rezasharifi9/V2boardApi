@@ -4,15 +4,8 @@
     <h3 class="page-title">
         <span class="page-title-icon bg-gradient-primary text-white me-2">
             <i class="mdi mdi-home"></i>
-        </span> Dashboard
+        </span> داشبورد
     </h3>
-    <nav aria-label="breadcrumb">
-        <ul class="breadcrumb">
-            <li class="breadcrumb-item active" aria-current="page">
-                <span></span>Overview <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
-            </li>
-        </ul>
-    </nav>
 </div>
 <div class="row">
     <div class="col-md-4 stretch-card grid-margin">
@@ -20,7 +13,7 @@
             <div class="card-body">
                 <img src="~/Areas/App/assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
                 <h4 class="font-weight-normal mb-3">
-                    weekly Sales From Major  <i class="mdi mdi-chart-line mdi-24px float-right"></i>
+                    فروش هفتگی - پنل عمده فروش  <i class="mdi mdi-chart-line mdi-24px float-right"></i>
                 </h4>
                 @{
                     var SaleM = Model.SaleFromMajor / 10;
@@ -28,14 +21,14 @@
                 }
                 <h2 class="mb-5">@SaleM.ConvertToMony()</h2>
 
-                <h6 class="">for today : @SaleMToday.ConvertToMony()</h6>
+                <h6 class="">فروش امروز : @SaleMToday.ConvertToMony()</h6>
                 @if (Math.Round(Model.InterestRatesFromMajor, 2) > 0)
                 {
-                    <h6 class="badge badge-gradient-success">@Math.Round(Model.InterestRatesFromMajor, 2)%</h6>
+                    <h6 class="badge badge-gradient-success">@Math.Round(Model.InterestRatesFromMajor, 2)% سود نسبت به هفته قبل</h6>
                 }
                 else
                 {
-                    <h6 class="badge badge-gradient-danger">@Math.Round(Model.InterestRatesFromMajor, 2)%</h6>
+            <h6 class="badge badge-gradient-danger">@Math.Round(Model.InterestRatesFromMajor, 2)% ضرر نسبت به هفته قبل</h6>
                 }
 
             </div>
@@ -46,7 +39,7 @@
             <div class="card-body">
                 <img src="~/Areas/App/assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
                 <h4 class="font-weight-normal mb-3">
-                    weekly Sales From Bot <i class="mdi mdi-bookmark-outline mdi-24px float-right"></i>
+                    فروش هفتگی - ربات <i class="mdi mdi-bookmark-outline mdi-24px float-right"></i>
                 </h4>
 
                 @{
@@ -55,14 +48,14 @@
                 }
 
                 <h2 class="mb-5">@SaleB.ConvertToMony()</h2>
-                <h6 class="">for today : @SaleBToday.ConvertToMony()</h6>
+                <h6 class="">فروش امروز : @SaleBToday.ConvertToMony()</h6>
                 @if (@Math.Round(Model.InterestRatesFromBot, 2) > 0)
                 {
-                    <h6 class="badge badge-gradient-success">@Math.Round(Model.InterestRatesFromBot, 2)%</h6>
+                    <h6 class="badge badge-gradient-success">@Math.Round(Model.InterestRatesFromBot, 2)% سود نسبت به هفته قبل</h6>
                 }
                 else
                 {
-                    <h6 class="badge badge-gradient-danger">@Math.Round(Model.InterestRatesFromBot, 2)%</h6>
+                    <h6 class="badge badge-gradient-danger">@Math.Round(Model.InterestRatesFromBot, 2)% ضرر نسبت به هفته قبل</h6>
                 }
             </div>
         </div>
@@ -72,10 +65,9 @@
             <div class="card-body">
                 <img src="~/Areas/App/assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
                 <h4 class="font-weight-normal mb-3">
-                    Major | Bot <i class="mdi mdi-diamond mdi-24px float-right"></i>
+                    عمده فروش | ربات <i class="mdi mdi-diamond mdi-24px float-right"></i>
                 </h4>
                 <h2 class="mb-5">@Model.CountUserFromMajor | @Model.CountUserFromBot</h2>
-                <h6 class="card-text">@Math.Round(Model.InterestUserRatesFromMajor, 2)% | @Math.Round(Model.InterestUserRatesBot, 2)%</h6>
             </div>
         </div>
     </div>
@@ -85,7 +77,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="clearfix">
-                    <h4 class="card-title float-left">Sales Statistics</h4>
+                    <h4 class="card-title float-left">وضعیت فروش </h4>
                     <div id="visit-sale-chart-legend" class="rounded-legend legend-horizontal legend-top-right float-right"></div>
                 </div>
                 <canvas id="visit-sale-chart" class="mt-4"></canvas>
@@ -95,7 +87,7 @@
     <div class="col-md-5 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <h4 class="card-title">Users Sources</h4>
+                <h4 class="card-title">تعداد کاربران - این هفته</h4>
                 <canvas id="traffic-chart"></canvas>
                 <div id="traffic-chart-legend" class="rounded-legend legend-vertical legend-bottom-left pt-4"></div>
             </div>
@@ -317,7 +309,7 @@
                                 labels: res.Users,
                                 datasets: [
                                     {
-                                        label: "Count",
+                                        label: "مبلغ",
                                         borderColor: gradientStrokeViolet,
                                         backgroundColor: gradientStrokeViolet,
                                         hoverBackgroundColor: gradientStrokeViolet,
@@ -526,8 +518,8 @@
 
                     // These labels appear in the legend and in the tooltips when hovering different arcs
                     labels: [
-                        'Count Users From Major',
-                        'Count Users From Bot',
+                        'تعداد کاربر اضافه شده از پنل عمده :',
+                        'تعداد کاربر اضافه شده از ربات :',
                     ]
                 };
                 var trafficChartOptions = {

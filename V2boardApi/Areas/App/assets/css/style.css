@@ -50,6 +50,21 @@
 /*-------------------------------------------------------------------*/
 /* === SCSS Compass Functions === */
 
+/* Fonts */
+@font-face {
+    font-family: 'MyFont';
+    src: url("../fonts/IRANSansWeb_Medium.ttf") format('truetype');
+}
+
+
+h1,
+div.info,
+ul.tabs,
+div.tabs,
+div.footer {
+    direction: ltr;
+}
+
 @-webkit-keyframes flash {
   0% {
     opacity: 1; }
@@ -10929,10 +10944,16 @@ body {
   box-shadow: none; }
 
 a,
-div, h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5,
+div, h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5
 p,
 span {
-  text-shadow: none; }
+    text-shadow: none;
+    font-family: 'MyFont' !important;
+}
+
+th, td, label, button, input, select, h6 {
+    font-family: 'MyFont' !important;
+}
 
 [type=button]:focus,
 a:active,
@@ -11028,30 +11049,8 @@ input:focus {
   border-color: transparent;
   outline: none; }
 
-/* Fonts */
-@font-face {
-  font-family: 'ubuntu-light';
-  src: url("../fonts/Ubuntu/Ubuntu-Light.eot");
-  /* IE9 Compat Modes */
-  src: url("../fonts/Ubuntu/Ubuntu-Light.woff2") format("woff2"), url("../fonts/Ubuntu/Ubuntu-Light.woff") format("woff"), url("../fonts/Ubuntu/Ubuntu-Light.ttf") format("truetype"); }
 
-@font-face {
-  font-family: 'ubuntu-regular';
-  src: url("../fonts/Ubuntu/Ubuntu-Regular.eot");
-  /* IE9 Compat Modes */
-  src: url("../fonts/Ubuntu/Ubuntu-Regular.woff2") format("woff2"), url("../fonts/Ubuntu/Ubuntu-Regular.woff") format("woff"), url("../fonts/Ubuntu/Ubuntu-Regular.ttf") format("truetype"); }
 
-@font-face {
-  font-family: 'ubuntu-medium';
-  src: url("../fonts/Ubuntu/Ubuntu-Medium.eot");
-  /* IE9 Compat Modes */
-  src: url("../fonts/Ubuntu/Ubuntu-Medium.woff2") format("woff2"), url("../fonts/Ubuntu/Ubuntu-Medium.woff") format("woff"), url("../fonts/Ubuntu/Ubuntu-Medium.ttf") format("truetype"); }
-
-@font-face {
-  font-family: 'ubuntu-bold';
-  src: url("../fonts/Ubuntu/Ubuntu-Bold.eot");
-  /* IE9 Compat Modes */
-  src: url("../fonts/Ubuntu/Ubuntu-Bold.woff2") format("woff2"), url("../fonts/Ubuntu/Ubuntu-Bold.woff") format("woff"), url("../fonts/Ubuntu/Ubuntu-Bold.ttf") format("truetype"); }
 
 .text-twitter {
   color: #2caae1; }
@@ -14152,7 +14151,7 @@ dl {
           .sidebar .nav .nav-item .nav-link i.menu-icon {
             font-size: 1.125rem;
             line-height: 1;
-            margin-left: auto;
+            margin-left: 7px;
             color: #bba8bff5; }
             .rtl .sidebar .nav .nav-item .nav-link i.menu-icon {
               margin-left: 0;

@@ -8,7 +8,7 @@
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body table-responsive">
-                <button class="btn btn-outline-dribbble btn-sm" id="UpdatePlan" style="margin-bottom:10px;">Update Plan</button>
+                <button class="btn btn-outline-dribbble btn-sm" id="UpdatePlan" style="margin-bottom:10px;">بروزرسانی تعرفه ها</button>
                 <div id="PartialPlans">
                     @Html.Action("_PartialGetAllPlans", "Plan", new { area = "App" })
                 </div>
@@ -35,8 +35,8 @@
                     $("#loading").css("display", "none");
                     if (result == "1") {
                         Swal.fire({
-                            title: "Successfully",
-                            text: "The plans have been successfully updated",
+                            title: "موفق",
+                            text: "بروزرسانی تعرفه ها با موفقیت انجام شد",
                             icon: "success"
                         });
                     }

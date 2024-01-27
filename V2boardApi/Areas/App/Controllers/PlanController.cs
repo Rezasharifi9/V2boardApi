@@ -9,6 +9,7 @@ using V2boardApi.Areas.App.Data.PlanViewModels;
 
 namespace V2boardApi.Areas.App.Controllers
 {
+    [Authorize]
     public class PlanController : Controller
     {
 

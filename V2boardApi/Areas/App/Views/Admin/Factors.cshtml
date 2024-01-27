@@ -3,24 +3,25 @@
 
 @using V2boardApi.Tools;
 
-<h4 class="card-title">Paid Prices</h4>
-<table class="table" id="tableFactor">
+<h4 class="card-title">لیست پرداختی ها</h4>
+<table class="table" id="tableFactor" style="width:100%;direction:ltr;">
     <thead>
         <tr>
-            <th>Paid Date</th>
-            <th>Price</th>
+            <th>مبلغ پرداختی</th>
+            <th>تاریخ پرداخت</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.tbUf_CreateTime.Value.ConvertDateTimeToShamsi2()</td>
                 <td>@item.tbUf_Value.Value.ConvertToMony()</td>
+                <td>@item.tbUf_CreateTime.Value.ConvertDateTimeToShamsi2()</td>
+
             </tr>
         }
     </tbody>
 </table>
 <script>
-    new DataTable('#tableFactor');
+    ConvertToDataTable("#tableFactor", 0, []);
 </script>

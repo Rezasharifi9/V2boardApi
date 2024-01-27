@@ -6,64 +6,69 @@
 }
 
 @using V2boardApi.Tools;
-<table class="table" id="TablePlan" style="width:100%;">
+<table class="table" id="TablePlan" style="width:100%;direction:ltr;">
     <thead>
         <tr>
-            <th> Plan Name </th>
-            <th> Number Of Days </th>
-            <th> Plan Volume </th>
-            <th> Price </th>
-            <th> Status </th>
-            <th>Menu</th>
+            <th>منو</th>
+            <th> وضعیت </th>
+            <th> قیمت </th>
+            <th> ترافیک (گیگابایت) </th>
+            <th> تعداد روز </th>
+            <th> نام تعرفه </th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.OrderBy(p => p.Status == true).ToList())
         {
             <tr>
-                <td>
-                    @item.Plan_Name
-                </td>
-                <td>
-                    @item.CountDayes
-                </td>
-                <td>
-                    @item.PlanVolume
-                </td>
-                <td>
-                    @item.Price.Value.ConvertToMony()
-                </td>
-                @if (item.Status.Value)
-                {
-                    <td>
-                        <label class="badge badge-gradient-success">Active</label>
-                    </td>
-                }
-                else
-                {
-                    <td>
-                        <label class="badge badge-gradient-danger">DeActive</label>
-                    </td>
-                }
-
                 <td style="background-color:white;">
                     <div class="btn-group" style="margin-right: 37px;">
                         <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
-                        <div class="dropdown-menu" data-popper-placement="bottom-start" style="cursor: pointer;">
-                            <a class="dropdown-item" onclick="EditPlan('@Url.Action("_PartialEdit", "Plan", new { id=item.Plan_ID,area = "App" })')">Edit</a>
+                        <div class="dropdown-menu" data-popper-placement="bottom-start" style="cursor: pointer;text-align:right;">
+                            <a class="dropdown-item" onclick="EditPlan('@Url.Action("_PartialEdit", "Plan", new { id=item.Plan_ID,area = "App" })')">ویرایش</a>
                             <a class="dropdown-item" onclick="DisablePlan('@Url.Action("DisablePlan", "Plan", new { id=item.Plan_ID,area = "App" })')">
                                 @if (item.Status.Value)
                                 {
-                                    <span>Disable</span>
+                                    <span>فعال سازی</span>
                                 }
                                 else
                                 {
-                                    <span>Enable</span>
+                                    <span>غیرفعال سازی</span>
                                 }
                             </a>
                         </div>
                     </div>
                 </td>
+                @if (item.Status.Value)
+                {
+                    <td>
+                        <label class="badge badge-gradient-success">فعال</label>
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        <label class="badge badge-gradient-danger">غیرفعال</label>
+                    </td>
+                }
+                <td>
+                    @item.Price.Value.ConvertToMony()
+                </td>
+                <td>
+                    @item.PlanVolume
+                </td>
+                <td>
+                    @item.CountDayes
+                </td>
+                <td>
+                    @item.Plan_Name
+                </td>
+
+
+
+
+
+
             </tr>
         }
     </tbody>
