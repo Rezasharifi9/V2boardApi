@@ -135,9 +135,7 @@
                                 dataType: "html",
                                 type: "get",
                                 success: function (res) {
-                                    $("#loading").css("display", "none");
-                                    $("#PartialPlans").html(res);
-                                    ConvertToDataTable("#TablePlan", 5, [{ width: 2, targets: 5 }]);
+                                    location.reload();
 
                                 }
                             });

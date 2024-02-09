@@ -21,6 +21,10 @@ using Microsoft.Ajax.Utilities;
 using V2boardApi.Tools;
 using System.Globalization;
 using MySqlX.XDevAPI;
+using Telegram.Bot;
+using System.Text;
+using DeviceDetectorNET;
+using DeviceDetectorNET.Parser;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -171,6 +175,7 @@ namespace V2boardApi.Areas.App.Controllers
                     Us.Password = tbUser.Password;
                     Us.Email = tbUser.Email;
                     Us.Limit = tbUser.Limit;
+                    Us.TelegramID = tbUser.TelegramID;
                     foreach (var item in Us.tbLinkUserAndPlans.ToList())
                     {
                         item.L_Status = false;
@@ -265,17 +270,60 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
-                tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username && p.Password == user.Password && p.Role == 1).FirstOrDefault();
+                tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username && p.Role == 1).FirstOrDefault();
                 if (User != null)
                 {
+                    string ip = System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+                    if (string.IsNullOrEmpty(ip))
+                    {
+                        ip = System.Web.HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+                    }
 
-                    FormsAuthentication.SetAuthCookie(User.Username, false);
-                    return RedirectToAction("Index", "Dashboard");
+                    var ip2 = System.Web.HttpContext.Current.Request.ServerVariables["LOCAL_ADDR"];
+                    if (User.Password == user.Password)
+                    {
+                        
+                        TelegramBotClient bot = new TelegramBotClient(User.tbServers.Robot_Token);
+                        StringBuilder st = new StringBuilder();
+                        st.AppendLine("⚠️ هشدار :");
+                        st.AppendLine("");
+                        st.AppendLine("ورود موفق ✅");
+                        st.AppendLine("");
+                        st.AppendLine("🌐 آیپی : " + ip + " | " + ip2);
+                        st.AppendLine("تاریخ :" + Utility.ConvertDateTimeToShamsi2(DateTime.Now));
+                        st.AppendLine("🖥 مرورگر : " + Request.Browser.Browser);
+                        st.AppendLine();
+                        
+                        bot.SendTextMessageAsync(User.tbServers.AdminTelegramUniqID, st.ToString(), parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
 
+                        FormsAuthentication.SetAuthCookie(User.Username, false);
+                        return RedirectToAction("Index", "Dashboard");
+                    }
+                    else
+                    {
+
+                        TelegramBotClient bot = new TelegramBotClient(User.tbServers.Robot_Token);
+                        StringBuilder st = new StringBuilder();
+                        st.AppendLine("⚠️ هشدار :");
+                        st.AppendLine("");
+                        st.AppendLine("ورود ناموفق ❌");
+                        st.AppendLine("");
+                        st.AppendLine("🌐 آیپی : " + ip + " | " + ip2);
+                        st.AppendLine("تاریخ :" + Utility.ConvertDateTimeToShamsi2(DateTime.Now));
+                        st.AppendLine("🖥 مرورگر : " + Request.Browser.Browser);
+                        st.AppendLine();
+                        st.AppendLine("پسورد وارد شده : " + user.Password);
+                        bot.SendTextMessageAsync(User.tbServers.AdminTelegramUniqID, st.ToString(),parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+                        TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
+                        return RedirectToAction("Login", "Admin");
+                    }
 
                 }
                 else
                 {
+
+
+
                     TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
                     return RedirectToAction("Login", "Admin");
                 }

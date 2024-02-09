@@ -62,7 +62,7 @@ namespace V2boardApi.Areas.App.Controllers
                         var show = reader.GetByte("show");
                         var id = reader.GetInt32("id");
 
-                        var planD = RepositoryPlans.GetAll(p => p.Plan_ID_V2 == id).FirstOrDefault();
+                        var planD = RepositoryPlans.GetAll(p => p.Plan_ID_V2 == id && user.tbServers.ServerID == p.tbServers.ServerID).FirstOrDefault();
                         if (planD == null)
                         {
                             tbPlans plan = new tbPlans();

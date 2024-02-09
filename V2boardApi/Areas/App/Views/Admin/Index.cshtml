@@ -137,19 +137,7 @@
                 success: function (res) {
 
                     if (res == "1") {
-                        $("#loading").css("display", "flex");
-                            $.ajax({
-                                url: "@Url.Action("_PartialGetAllUsers", "Admin", new { area = "App" })",
-                                dataType: "html",
-                                type: "get",
-                                success: function (res) {
-                                    $("#loading").css("display", "none");
-                                    $("#PartialUsers").html(res);
-                                    new DataTable('#TableUser', {
-                                        order: [[0, 'desc']]
-                                    });
-                                }
-                            });
+                        location.reload();
                     }
 
                 }

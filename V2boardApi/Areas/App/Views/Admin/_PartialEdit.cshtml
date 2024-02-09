@@ -76,7 +76,7 @@
                                 <div class="form-group row">
                                     <label class="col-sm-3 col-form-label">آیدی تلگرام</label>
                                     <div class="col-sm-9">
-                                        <input type="number" class="form-control" name="TelegramID" value="@Model.TelegramID">
+                                        <input type="text" class="form-control" name="TelegramID" value="@Model.TelegramID">
                                     </div>
                                 </div>
                             </div>
@@ -202,20 +202,7 @@
                             text: "کاربر با موفقیت ویرایش شد",
                             icon: "success"
                         }).then(function () {
-                            $('.modal').modal('hide');
-                        $("#loading").css("display", "flex");
-                            $.ajax({
-                                url: "@Url.Action("_PartialGetAllUsers", "Admin", new { area = "App" })",
-                                dataType: "html",
-                                type: "get",
-                                success: function (res) {
-                                    $("#loading").css("display", "none");
-                                    $("#PartialUsers").html(res);
-                                    new DataTable('#TableUser', {
-                                        order: [[0, 'desc']]
-                                    });
-                                }
-                            });
+                            location.reload();
 
                         });
                         return;

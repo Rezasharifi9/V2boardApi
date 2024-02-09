@@ -34,20 +34,21 @@ namespace V2boardApi.Areas.App.Controllers
             var user = RepositoryUser.GetAll(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
             if (user != null)
             {
-                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fa-IR");
+                //CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fa-IR");
                 DashboardViewModel model = new DashboardViewModel();
                 var Users = user.tbServers.tbUsers.ToList();
 
-                PersianCalendar pc = new PersianCalendar();
-                var DayOfWeek = pc.GetDayOfWeek(DateTime.Now);
-                var day = -(int)DayOfWeek-1;
+                var ToDate = new DateTime(DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day,0,0,0,0);
+
+                var DayOfWeek = Tools.Utility.PersionDayOfWeek(ToDate); 
+                var day = -(int)(DayOfWeek);
                 // تاریخ هفته قبل
-                DateTime lastDayStartDate = DateTime.Now.AddDays(day - 6);
+                DateTime lastDayStartDate = ToDate.AddDays(day - 6);
                 // تاریخ هفته جاری
-                DateTime lastDayEndDate = DateTime.Now.AddDays(day);
+                DateTime lastDayEndDate = ToDate.AddDays(day);
 
                 // تاریخ هفته جاری
-                DateTime thisDayStartDate = DateTime.Now.Date.AddDays(day);
+                DateTime thisDayStartDate = ToDate.AddDays(day);
 
                 DateTime EndOfWeek = thisDayStartDate.AddDays(7);
 
@@ -117,12 +118,13 @@ namespace V2boardApi.Areas.App.Controllers
             if (user != null)
             {
 
-                PersianCalendar pc = new PersianCalendar();
-                var DayOfWeek = pc.GetDayOfWeek(DateTime.Now);
-                var day = -(int)DayOfWeek - 1;
+                var ToDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0, 0);
+
+                var DayOfWeek = Tools.Utility.PersionDayOfWeek(ToDate);
+                var day = -(int)(DayOfWeek);
 
                 // تاریخ هفته جاری
-                DateTime thisDayStartDate = DateTime.Now.Date.AddDays(day);
+                DateTime thisDayStartDate = ToDate.AddDays(day);
 
                 DateTime EndOfWeek = thisDayStartDate.AddDays(7);
 

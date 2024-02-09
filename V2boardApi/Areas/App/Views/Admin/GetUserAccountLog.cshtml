@@ -68,11 +68,8 @@
                     type: "get",
                     success: function (res) {
                         $("#loading").css("display", "none");
-                        Swal.fire("اشتراک با موفقیت حذف شذ", "", "success").then(function () {
-                            $("#PartialUsers").html(res);
-                            new DataTable('#TableUser', {
-                                order: [[0, 'desc']]
-                            });
+                        Swal.fire("اشتراک با موفقیت حذف شد", "", "success").then(function () {
+                            location.reload();
                         });
 
                     }

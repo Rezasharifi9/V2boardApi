@@ -51,17 +51,7 @@
                             text: "با موفقیت انجام شد",
                             icon: "success"
                         }).then(function () {
-                            $('.modal').modal('hide');
-                            $("#loading").css("display", "flex");
-                            $.ajax({
-                                url: "@Url.Action("_PartialGetAllUsers", "TelegramUsers", new { area = "App" })",
-                                dataType: "html",
-                                type: "get",
-                                success: function (res) {
-                                    $("#loading").css("display", "none");
-                                    $("#PartialUsers").html(res);
-                                }
-                            });
+                            location.reload();
                         });
                     }
                     else {
