@@ -39,10 +39,12 @@ namespace DataLayer.DomainModel
         public Nullable<long> Card_Number { get; set; }
         public Nullable<bool> IsRenew { get; set; }
         public Nullable<System.DateTime> ExpireTimeToken { get; set; }
+        public Nullable<int> Admin_Telegram_ID { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
         public virtual tbServers tbServers { get; set; }
+        public virtual tbTelegramUsers tbTelegramUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUserFactors> tbUserFactors { get; set; }
     }

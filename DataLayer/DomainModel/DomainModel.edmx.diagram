@@ -18,7 +18,6 @@
         <EntityTypeShape EntityType="V2boardSiteModel.tbTelegramUsers" Width="1.5" PointX="3.75" PointY="0.75" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="6.25" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbUseages" Width="1.5" PointX="3" PointY="22.25" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUserFactors" Width="1.5" PointX="5.25" PointY="17.875" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbUsers" Width="1.5" PointX="3" PointY="16.375" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbConnectionHelp_tbServers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" />
@@ -34,6 +33,8 @@
         <AssociationConnector Association="V2boardSiteModel.FK_tbUseages_tbServers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbUsers_tbServers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" />
+        <AssociationConnector Association="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUserFactors" Width="1.5" PointX="5.25" PointY="18.125" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbUserFactors_tbUsers" />
       </Diagram>
     </edmx:Diagrams>

@@ -25,6 +25,7 @@ using Telegram.Bot;
 using System.Text;
 using DeviceDetectorNET;
 using DeviceDetectorNET.Parser;
+using Telegram.Bot.Types;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -36,6 +37,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbPlans> RepositoryPlans { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbServers> RepositoryServer { get; set; }
+        private Repository<tbUserFactors> RepositoryUserFactors { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public AdminController()
         {
@@ -44,6 +46,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryPlans = new Repository<tbPlans>(db);
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryServer = new Repository<tbServers>(db);
+            RepositoryUserFactors = new Repository<tbUserFactors>(db);
         }
 
         #region لیست کاربران
@@ -282,39 +285,11 @@ namespace V2boardApi.Areas.App.Controllers
                     var ip2 = System.Web.HttpContext.Current.Request.ServerVariables["LOCAL_ADDR"];
                     if (User.Password == user.Password)
                     {
-                        
-                        TelegramBotClient bot = new TelegramBotClient(User.tbServers.Robot_Token);
-                        StringBuilder st = new StringBuilder();
-                        st.AppendLine("⚠️ هشدار :");
-                        st.AppendLine("");
-                        st.AppendLine("ورود موفق ✅");
-                        st.AppendLine("");
-                        st.AppendLine("🌐 آیپی : " + ip + " | " + ip2);
-                        st.AppendLine("تاریخ :" + Utility.ConvertDateTimeToShamsi2(DateTime.Now));
-                        st.AppendLine("🖥 مرورگر : " + Request.Browser.Browser);
-                        st.AppendLine();
-                        
-                        bot.SendTextMessageAsync(User.tbServers.AdminTelegramUniqID, st.ToString(), parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
-
                         FormsAuthentication.SetAuthCookie(User.Username, false);
                         return RedirectToAction("Index", "Dashboard");
                     }
                     else
                     {
-
-                        TelegramBotClient bot = new TelegramBotClient(User.tbServers.Robot_Token);
-                        StringBuilder st = new StringBuilder();
-                        st.AppendLine("⚠️ هشدار :");
-                        st.AppendLine("");
-                        st.AppendLine("ورود ناموفق ❌");
-                        st.AppendLine("");
-                        st.AppendLine("🌐 آیپی : " + ip + " | " + ip2);
-                        st.AppendLine("تاریخ :" + Utility.ConvertDateTimeToShamsi2(DateTime.Now));
-                        st.AppendLine("🖥 مرورگر : " + Request.Browser.Browser);
-                        st.AppendLine();
-                        st.AppendLine("پسورد وارد شده : " + user.Password);
-                        bot.SendTextMessageAsync(User.tbServers.AdminTelegramUniqID, st.ToString(),parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
-                        TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
                         return RedirectToAction("Login", "Admin");
                     }
 
@@ -462,5 +437,95 @@ namespace V2boardApi.Areas.App.Controllers
         }
         #endregion
 
+
+        public ActionResult Pay(string TOKEN)
+        {
+            if (!string.IsNullOrEmpty(TOKEN))
+            {
+                var User = RepositoryUser.GetAll(p => p.Token == TOKEN && p.Status == true).FirstOrDefault();
+                if (User != null)
+                {
+                    var wallet = User.Wallet * 10;
+                    if (!User.tbUserFactors.Where(p => p.tbUf_Value == wallet && p.IsPayed == false).Any() && User.Wallet != 0)
+                    {
+                        tbUserFactors userFactors = new tbUserFactors();
+                        userFactors.tbUf_Value = wallet;
+                        userFactors.tbUf_CreateTime = DateTime.Now;
+                        userFactors.IsPayed = false;
+                        User.tbUserFactors.Add(userFactors);
+                        RepositoryUser.Save();
+
+                        var Admin = RepositoryUser.GetAll(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
+
+                        if (Admin != null)
+                        {
+                            ViewBag.CardNumber = Admin.Card_Number;
+                            ViewBag.FullName = Admin.FirstName + " " + Admin.LastName;
+                        }
+                        ViewBag.wallet = wallet;
+                        return View(User);
+                    }
+                    else
+                    {
+                        var Admin = RepositoryUser.GetAll(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
+
+                        if (Admin != null)
+                        {
+                            ViewBag.CardNumber = Admin.Card_Number;
+                            ViewBag.FullName = Admin.FirstName + " " + Admin.LastName;
+                        }
+                        ViewBag.wallet = wallet;
+                        return View(User);
+                    }
+                }
+                else
+                {
+                    return RedirectToAction("Error404", "Error");
+                }
+            }
+            else
+            {
+                return RedirectToAction("Error404", "Error");
+            }
+        }
+
+        [System.Web.Mvc.HttpPost]
+        public ActionResult Pay(tbUsers tbUser)
+        {
+            var User = RepositoryUser.GetAll(p => p.Token == tbUser.Token && p.Status == true).FirstOrDefault();
+            if (User != null)
+            {
+                var wallet = (User.Wallet * 10);
+                ViewBag.wallet = wallet;
+                var Admin = RepositoryUser.GetAll(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
+
+                if (Admin != null)
+                {
+                    ViewBag.CardNumber = Admin.Card_Number;
+                    ViewBag.FullName = Admin.FirstName + " " + Admin.LastName;
+                }
+
+                var Factor = User.tbUserFactors.Where(p => p.tbUf_Value == wallet && p.IsPayed == true).Any();
+                if (Factor)
+                {
+                    if (wallet == tbUser.Wallet)
+                    {
+                        User.Wallet = 0;
+                        RepositoryUser.Save();
+                        TempData["MessageSuccess"] = "صورتحساب با موفقیت پرداخت شد";
+                        return View(tbUser);
+                    }
+                }
+                else
+                {
+                    TempData["MessageWarning"] = "شما هنوز واریزی انجام نداده اید";
+                    return View(tbUser);
+                }
+
+                TempData["MessageError"] = "صورتحساب قبلا پرداخت شده";
+                return View(tbUser);
+            }
+            return HttpNotFound();
+        }
     }
 }

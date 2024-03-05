@@ -21,6 +21,7 @@ namespace DataLayer.DomainModel
             this.tbLinks = new HashSet<tbLinks>();
             this.tbOrders = new HashSet<tbOrders>();
             this.tbTelegramUsers1 = new HashSet<tbTelegramUsers>();
+            this.tbUsers = new HashSet<tbUsers>();
         }
     
         public int Tel_UserID { get; set; }
@@ -43,5 +44,7 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbTelegramUsers> tbTelegramUsers1 { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers2 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbUsers> tbUsers { get; set; }
     }
 }
