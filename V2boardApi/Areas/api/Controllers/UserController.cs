@@ -46,7 +46,6 @@ using System.Web.WebSockets;
 using Org.BouncyCastle.Crypto.Generators;
 using System.Web.Security;
 using YamlDotNet.Core.Tokens;
-using System.Windows.Controls;
 
 namespace V2boardApi.Areas.api.Controllers
 {
@@ -314,11 +313,11 @@ namespace V2boardApi.Areas.api.Controllers
                             if ((User.Limit - User.Wallet) >= 0)
                             {
 
-                                var plan = RepositoryPlan.table.Where(p => p.Plan_ID == createUser.plan_id && p.FK_Server_ID == User.FK_Server_ID && p.Status == true).FirstOrDefault();
-                                if ((plan.Price + User.Wallet) > User.Limit)
+                                var plan = RepositoryPlan.table.Where(p => p.Plan_ID_V2 == createUser.plan_id && p.FK_Server_ID == User.FK_Server_ID && p.Status == true).FirstOrDefault();
+                                if((plan.Price + User.Wallet) > User.Limit)
                                 {
                                     return Content(System.Net.HttpStatusCode.BadRequest, "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
-                                }
+                                } 
                                 string exp = "";
                                 if (plan.CountDayes == 0)
                                 {
@@ -329,13 +328,13 @@ namespace V2boardApi.Areas.api.Controllers
                                     exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                 }
                                 var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
-                                var planid = plan.Plan_ID_V2;
+                                var planid = createUser.plan_id;
                                 var emilprx = createUser.name + "@" + User.Username;
 
                                 MySqlEntities mySql = new MySqlEntities(User.tbServers.ConnectionString);
                                 mySql.Open();
 
-                                var reader = mySql.GetData("select group_id,transfer_enable from v2_plan where id =" + plan.Plan_ID_V2);
+                                var reader = mySql.GetData("select group_id,transfer_enable from v2_plan where id =" + planid);
                                 long tran = 0;
                                 int grid = 0;
                                 while (reader.Read())
@@ -353,39 +352,8 @@ namespace V2boardApi.Areas.api.Controllers
                                 reader.Close();
                                 var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                                 User.Wallet += link.tbPlans.Price;
-
-                                var tblink = RepositoryLinks.GetAll(p => p.tb_RandomEmail == createUser.name + "@" + link.tbUsers.Username).FirstOrDefault();
-
-                                if (tblink != null)
-                                {
-                                    if (tblink.tb_ChargeLink_ID == null)
-                                    {
-                                        if (tblink != null)
-                                        {
-                                            while (true)
-                                            {
-                                                Random ran = new Random();
-                                                var ranNumber = ran.Next(1, 9999);
-                                                var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                                if (!ExitLink)
-                                                {
-                                                    tblink.tb_ChargeLink_ID = ranNumber;
-
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    tblink.tb_ChargeLinkedTime = DateTime.Now;
-                                    tblink.tb_ChargePlan_ID = plan.Plan_ID;
-                                    tblink.tb_status = true;
-                                }
-
-
-                                RepositoryLinks.Save();
                                 RepositoryUser.Save();
-                                AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, createUser.name, (int)plan.Price);
+                                AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, createUser.name);
                                 return Content(System.Net.HttpStatusCode.OK, "اکانت با موفقیت ساخته شد");
                             }
                             else
@@ -448,7 +416,7 @@ namespace V2boardApi.Areas.api.Controllers
                             foreach (var plan in plans.Where(p => p.L_Status == true && p.tbPlans.FK_Server_ID == User.FK_Server_ID).OrderBy(p => p.tbPlans.CountDayes).ToList())
                             {
                                 var dic = new Dictionary<string, string>();
-                                dic.Add("ID", plan.tbPlans.Plan_ID.ToString());
+                                dic.Add("ID", plan.tbPlans.Plan_ID_V2.ToString());
                                 dic.Add("Name", plan.tbPlans.Plan_Name);
                                 key.Add(dic);
                             }
@@ -476,7 +444,7 @@ namespace V2boardApi.Areas.api.Controllers
                 return Content(System.Net.HttpStatusCode.NotFound, "توکن خالی است لطفا توکن را وارد کنید");
             }
         }
-        private bool AddLog(string Action, int LinkUserID, string V2User, int price)
+        private bool AddLog(string Action, int LinkUserID, string V2User)
         {
             try
             {
@@ -485,7 +453,6 @@ namespace V2boardApi.Areas.api.Controllers
                 tbLogs.Action = Action;
                 tbLogs.FK_NameUser_ID = V2User;
                 tbLogs.CreateDatetime = DateTime.Now;
-                tbLogs.SalePrice = price;
                 RepositoryLogs.Insert(tbLogs);
                 return RepositoryLogs.Save();
             }
@@ -510,12 +477,12 @@ namespace V2boardApi.Areas.api.Controllers
                     var Server = User.tbServers;
 
 
-                    var Plan = RepositoryPlan.table.Where(p => p.Plan_ID == model.Plan_ID && p.FK_Server_ID == Server.ServerID && p.Status == true).FirstOrDefault();
+                    var Plan = RepositoryPlan.table.Where(p => p.Plan_ID_V2 == model.Plan_ID && p.FK_Server_ID == Server.ServerID && p.Status == true).FirstOrDefault();
+
                     if ((Plan.Price + User.Wallet) > User.Limit)
                     {
                         return Content(System.Net.HttpStatusCode.BadRequest, "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
                     }
-
                     var t = Utility.ConvertGBToByte(Convert.ToInt64(Plan.PlanVolume));
                     string exp = "";
                     if (Plan.CountDayes == 0)
@@ -527,7 +494,7 @@ namespace V2boardApi.Areas.api.Controllers
                         exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
                     }
 
-                    var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=" + Plan.Plan_ID_V2 + ", transfer_enable = " + t + " , expired_at = " + exp + " where id =" + model.AccountID;
+                    var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=" + model.Plan_ID + ", transfer_enable = " + t + " , expired_at = " + exp + " where id =" + model.AccountID;
 
                     MySqlEntities mySql = new MySqlEntities(User.tbServers.ConnectionString);
                     mySql.Open();
@@ -544,35 +511,10 @@ namespace V2boardApi.Areas.api.Controllers
                     {
                         var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                         User.Wallet += link.tbPlans.Price;
-
-                        var tblink = RepositoryLinks.GetAll(p => p.tb_RandomEmail == reader2.GetString("email")).FirstOrDefault();
-                        if (tblink != null)
-                        {
-                            if (tblink.tb_ChargeLink_ID == null)
-                            {
-                                while (true)
-                                {
-                                    Random ran = new Random();
-                                    var ranNumber = ran.Next(1, 9999);
-                                    var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                    if (!ExitLink)
-                                    {
-                                        tblink.tb_ChargeLink_ID = ranNumber;
-
-                                        break;
-                                    }
-                                }
-                            }
-                            tblink.tb_ChargeLinkedTime = DateTime.Now;
-                            tblink.tb_ChargePlan_ID = Plan.Plan_ID;
-                            tblink.tb_status = true;
-                        }
-
-
-                        AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price);
+                        AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0]);
                     }
                     reader2.Close();
-                    RepositoryLinks.Save();
+
                     RepositoryUser.Save();
                     return Ok("اکانت با موفقیت تمدید شد");
 
@@ -713,28 +655,33 @@ namespace V2boardApi.Areas.api.Controllers
 
                         foreach (var item in tbDepositLog)
                         {
-                            item.dw_Status = "FINISH";
-                            item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
-                            StringBuilder str = new StringBuilder();
-                            str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد");
-                            str.AppendLine("");
-                            str.AppendLine("📌 موجودی کیف پول شما : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
-
-                            RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db);
-
-                            var botID = item.tbTelegramUsers.Tel_RobotID;
-                            if (botID != null)
+                            if (item.tbTelegramUsers.Tel_Step == "Wait_For_Pay_IncreasePrice" && item.dw_CreateDatetime >= date2)
                             {
-                                var Server = RepositoryServer.GetAll(p => p.Robot_ID == botID).FirstOrDefault();
-                                if (Server != null)
+                                item.dw_Status = "FINISH";
+                                item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                                StringBuilder str = new StringBuilder();
+                                str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد");
+                                str.AppendLine("");
+                                str.AppendLine("📌 موجودی کیف پول شما : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+
+                                RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db);
+
+                                var botID = item.tbTelegramUsers.Tel_RobotID;
+                                if (botID != null)
                                 {
-                                    TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
-                                    RepositoryDepositWallet.Save();
-                                    await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-                                    transaction.Commit();
-                                    return Ok();
+                                    var Server = RepositoryServer.GetAll(p => p.Robot_ID == botID).FirstOrDefault();
+                                    if (Server != null)
+                                    {
+                                        TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
+                                        RepositoryDepositWallet.Save();
+                                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                        transaction.Commit();
+                                        return Ok();
+                                    }
                                 }
+
                             }
+                            return BadRequest();
 
                         }
 
@@ -766,25 +713,6 @@ namespace V2boardApi.Areas.api.Controllers
                                     exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                 }
                                 Linkss.tbL_Warning = false;
-                                if (Linkss.tb_ChargeLink_ID == null)
-                                {
-                                    while (true)
-                                    {
-                                        Random ran = new Random();
-                                        var ranNumber = ran.Next(1, 9999);
-                                        var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                        if (!ExitLink)
-                                        {
-                                            Linkss.tb_ChargeLink_ID = ranNumber;
-
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                Linkss.tb_ChargeLinkedTime = DateTime.Now;
-                                Linkss.tb_ChargePlan_ID = Plan.Plan_ID;
-                                Linkss.tb_status = true;
                                 RepositoryLinks.Save();
                                 var Query = "update v2_user set u=0,d=0,t=0,plan_id=" + Order.V2_Plan_ID + ",transfer_enable=" + t + ",expired_at=" + exp + " where email='" + Order.AccountName2 + "'";
 
@@ -794,10 +722,6 @@ namespace V2boardApi.Areas.api.Controllers
                                 var result = reader.Read();
                                 reader.Close();
                                 mySql.Close();
-
-
-
-
 
                                 await botClient.SendTextMessageAsync(Order.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت تمدید شد از بخش سرویس ها جزئیات اکانت را می توانید مشاهده کنید");
 
@@ -882,26 +806,6 @@ namespace V2boardApi.Areas.api.Controllers
                                 tbLinks.FK_TelegramUserID = Order.tbTelegramUsers.Tel_UserID;
                                 tbLinks.tbL_Warning = false;
                                 tbLinks.tb_AutoRenew = false;
-                                if (tbLinks.tb_ChargeLink_ID == null)
-                                {
-                                    while (true)
-                                    {
-                                        Random ran1 = new Random();
-                                        var ranNumber = ran.Next(1, 9999);
-                                        var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                        if (!ExitLink)
-                                        {
-                                            tbLinks.tb_ChargeLink_ID = ranNumber;
-
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                tbLinks.tb_ChargeLinkedTime = DateTime.Now;
-                                tbLinks.tb_ChargePlan_ID = plan.Plan_ID;
-                                tbLinks.tb_status = true;
-
                                 RepositoryLinks.Insert(tbLinks);
                                 RepositoryLinks.Save();
                                 mySql.Close();
@@ -989,93 +893,6 @@ namespace V2boardApi.Areas.api.Controllers
                             //        transaction.Commit();
                             //        return Ok();
                             //    }
-                        }
-
-
-                        if (Orders.Count == 0)
-                        {
-
-                            
-                                var price = pr.ToString().Substring(0, 2);
-                                var orginalPrice = Convert.ToInt32(price + "000");
-                                var price2 = pr.ToString();
-                                var ChargeIdStr = price2.Substring(price2.Length - 4, 4);
-                                var ChargeId = Convert.ToInt32(ChargeIdStr);
-
-                                var plan = User.tbServers.tbPlans.Where(p => p.Price2!=null && p.Status == true).ToList().Where(p=> p.Price2.Value.ToString().StartsWith(price)).FirstOrDefault();
-                                if (plan != null)
-                                {
-                                    var Linkss = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ChargeId).FirstOrDefault();
-                                    if (Linkss != null)
-                                    {
-                                        tbOrders Order = new tbOrders();
-                                        Order.Order_Guid = Guid.NewGuid();
-                                        Order.AccountName = Linkss.tbL_Email;
-                                        Order.AccountName2 = Linkss.tb_RandomEmail;
-                                        Order.OrderDate = DateTime.Now;
-                                        Order.OrderType = "تمدید";
-                                        Order.OrderStatus = "FINISH";
-                                        Order.FK_Plan_ID = plan.Plan_ID;
-                                        Order.Order_Price = pr;
-                                        Order.V2_Plan_ID = plan.Plan_ID_V2;
-                                        Order.FK_Tel_UserID = Linkss.FK_TelegramUserID;
-                                    
-
-
-
-                                        var username = Order.AccountName.Split('@')[1];
-                                        var Us = RepositoryUser.GetAll(p => p.Username == username).FirstOrDefault();
-
-                                        var t = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume));
-
-                                        string exp = "";
-                                        if (plan.CountDayes == 0)
-                                        {
-                                            exp = "NULL";
-                                        }
-                                        else
-                                        {
-                                            exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
-                                        }
-                                        Linkss.tbL_Warning = false;
-                                        if (Linkss.tb_ChargeLink_ID == null)
-                                        {
-                                            while (true)
-                                            {
-                                                Random ran = new Random();
-                                                var ranNumber = ran.Next(1, 9999);
-                                                var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                                if (!ExitLink)
-                                                {
-                                                    Linkss.tb_ChargeLink_ID = ranNumber;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        Linkss.tb_ChargeLinkedTime = DateTime.Now;
-                                        Linkss.tb_ChargePlan_ID = plan.Plan_ID;
-                                        Linkss.tb_status = true;
-
-                                        RepositoryLinks.Save();
-                                        var Query = "update v2_user set u=0,d=0,t=0,plan_id=" + Order.V2_Plan_ID + ",transfer_enable=" + t + ",expired_at=" + exp + " where email='" + Order.AccountName2 + "'";
-
-                                        MySqlEntities mySql = new MySqlEntities(Us.tbServers.ConnectionString);
-                                        mySql.Open();
-                                        var reader = mySql.GetData(Query);
-                                        var result = reader.Read();
-                                        reader.Close();
-                                        mySql.Close();
-
-                                        RepositoryOrder.Insert(Order);
-                                        RepositoryOrder.Save();
-
-                                        return Ok("OK SHOD");
-                                    }
-                                }
-                            
-
-
-
                         }
 
                         return BadRequest("NOT FOUND ORDER");
