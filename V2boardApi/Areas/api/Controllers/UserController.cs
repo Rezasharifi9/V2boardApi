@@ -478,7 +478,10 @@ namespace V2boardApi.Areas.api.Controllers
 
 
                     var Plan = RepositoryPlan.table.Where(p => p.Plan_ID_V2 == model.Plan_ID && p.FK_Server_ID == Server.ServerID && p.Status == true).FirstOrDefault();
-
+                    if ((Plan.Price + User.Wallet) > User.Limit)
+                    {
+                        return Content(System.Net.HttpStatusCode.BadRequest, "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
+                    }
 
                     var t = Utility.ConvertGBToByte(Convert.ToInt64(Plan.PlanVolume));
                     string exp = "";
