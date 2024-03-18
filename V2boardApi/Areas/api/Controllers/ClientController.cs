@@ -32,6 +32,7 @@ namespace V2boardApi.Areas.api.Controllers
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbOrders> RepositoryOrders { get; set; }
         private Repository<tbUpdateLogs> RepositoryUpdateLogs { get; set; }
+        private Repository<tbLinks> RepositoryLinks { get; set; }
         public ClientController()
         {
             db = new V2boardSiteEntities();
@@ -41,13 +42,14 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryUser = new Repository<tbUsers>(db);
             RepositoryOrders = new Repository<tbOrders>(db);
             RepositoryUpdateLogs = new Repository<tbUpdateLogs>(db);
+            RepositoryLinks = new Repository<tbLinks>(db);
         }
 
 
         public ActionResult subscribe(string token)
         {
             var UserAgent = Request.UserAgent.ToLower();
-            var host = Request.Url.Host;
+            var host = "panel.darkbaz.com";
             if(host == "panel.darkbaz.site")
             {
                 host = "panel.darkbaz.com";
@@ -169,6 +171,18 @@ namespace V2boardApi.Areas.api.Controllers
                         {
                             ViewBag.IsRenew = User.IsRenew;
                         }
+
+                        if(User.Role == 1)
+                        {
+                            getUserData.tbPlans = server.tbPlans.Where(p => p.Status == true && p.Price2 != null && p.Plan_Des!=null).ToList();
+                        }
+
+                        var tblink = RepositoryLinks.GetAll(p => p.tbL_Token == token).FirstOrDefault();
+                        if (tblink != null)
+                        {
+                            getUserData.ChargeID = tblink.tb_ChargeLink_ID.Value;
+                        }
+
                         return View(getUserData);
                     }
 

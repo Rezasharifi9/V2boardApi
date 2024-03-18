@@ -32,7 +32,7 @@
         fullUrl = fullUrl.replace("panel.darkbaz.site", "panel.darkbaz.com");
         if (sub.startsWith("http")) {
 
-            
+
 
             fullUrl = sub;
         }
@@ -882,6 +882,7 @@
 
                 }
                 <br />
+
                 <div class="flex flex-col gap-y-4 mb-8 text-white text-sm sm:text-base">
                     <h2 x-text="$t('howToConnect')"
                         class="my-4 text-3xl font-black leading-none tracking-tight text-white md:text-5xl">
@@ -2075,6 +2076,36 @@
                             </div>
                         </div>
                     </div>
+                    @if (Model.tbPlans != null && Model.ChargeID!=null)
+                    {
+                        <div class="flex flex-col gap-y-4 mb-8 text-white text-sm sm:text-base">
+                            <h3 class="my-4 text-5xl font-black leading-none tracking-tight text-white md:text-5xl">
+                                قیمت تعرفه ها
+                            </h3>
+                            <div>
+                                <table class="table" dir="rtl" style="text-align:right;">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-white">نام تعرفه</th>
+                                            <th class="text-white">مبلغ تمدید خودکار</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.tbPlans)
+                                        {
+                                            <tr>
+                                                <td>@item.Plan_Des</td>
+                                                <td>
+                                                    @V2boardApi.Tools.Utility.ConvertToMony(item.Price2.Value + Model.ChargeID)
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-lg font-normal mb-4 text-gray-300 lg:text-xl">شما با واریز کردن هرکدام از مبالغ ذکر شده در جدول بالا به صورت خودکار لینک شما تمدید می شود حتما برای تمدید های بعد این جدول را چک کنید</p>
+                        </div>
+                    }
                     <h2 x-text="$t('telsupport')"
                         class="mb-4 mt-8 text-3xl font-black leading-none tracking-tight text-white md:text-5xl">
                     </h2>
@@ -2095,6 +2126,7 @@
                     </div>
 
                 </div>
+
             </div>
         </div>
     </div>

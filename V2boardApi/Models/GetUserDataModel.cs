@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataLayer.DomainModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -21,6 +22,8 @@ namespace V2boardApi.Models
         public string IsActive { get; set;}
         public bool IsOnline { get; set; }
         public string LastTimeOnline { get; set; }
+        public List<tbPlans> tbPlans { get; set; }
+        public int ChargeID { get; set; }
 
     }
 }

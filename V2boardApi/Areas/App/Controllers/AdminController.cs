@@ -26,6 +26,7 @@ using System.Text;
 using DeviceDetectorNET;
 using DeviceDetectorNET.Parser;
 using Telegram.Bot.Types;
+using System.Data.Entity.Validation;
 
 namespace V2boardApi.Areas.App.Controllers
 {
