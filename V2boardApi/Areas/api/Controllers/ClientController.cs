@@ -49,7 +49,7 @@ namespace V2boardApi.Areas.api.Controllers
         public ActionResult subscribe(string token)
         {
             var UserAgent = Request.UserAgent.ToLower();
-            var host = "panel.darkbaz.com";
+            var host = Request.Url.Host;
             if(host == "panel.darkbaz.site")
             {
                 host = "panel.darkbaz.com";

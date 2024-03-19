@@ -713,33 +713,28 @@ namespace V2boardApi.Areas.api.Controllers
 
                         foreach (var item in tbDepositLog)
                         {
-                            if (item.tbTelegramUsers.Tel_Step == "Wait_For_Pay_IncreasePrice" && item.dw_CreateDatetime >= date2)
+                            item.dw_Status = "FINISH";
+                            item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                            StringBuilder str = new StringBuilder();
+                            str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد");
+                            str.AppendLine("");
+                            str.AppendLine("📌 موجودی کیف پول شما : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+
+                            RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db);
+
+                            var botID = item.tbTelegramUsers.Tel_RobotID;
+                            if (botID != null)
                             {
-                                item.dw_Status = "FINISH";
-                                item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
-                                StringBuilder str = new StringBuilder();
-                                str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد");
-                                str.AppendLine("");
-                                str.AppendLine("📌 موجودی کیف پول شما : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
-
-                                RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db);
-
-                                var botID = item.tbTelegramUsers.Tel_RobotID;
-                                if (botID != null)
+                                var Server = RepositoryServer.GetAll(p => p.Robot_ID == botID).FirstOrDefault();
+                                if (Server != null)
                                 {
-                                    var Server = RepositoryServer.GetAll(p => p.Robot_ID == botID).FirstOrDefault();
-                                    if (Server != null)
-                                    {
-                                        TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
-                                        RepositoryDepositWallet.Save();
-                                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-                                        transaction.Commit();
-                                        return Ok();
-                                    }
+                                    TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
+                                    RepositoryDepositWallet.Save();
+                                    await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                    transaction.Commit();
+                                    return Ok();
                                 }
-
                             }
-                            return BadRequest();
 
                         }
 
