@@ -507,14 +507,17 @@ namespace V2boardApi.Areas.api.Controllers
                     MySqlEntities mySql2 = new MySqlEntities(User.tbServers.ConnectionString);
                     mySql2.Open();
                     var reader2 = mySql2.GetData(Query2);
+                    var email = "";
                     if (reader2.Read())
                     {
-                        var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
-                        User.Wallet += link.tbPlans.Price;
-                        AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0]);
+                        email = reader2.GetString("email").Split('@')[0];
                     }
                     reader2.Close();
 
+                    var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
+                    User.Wallet += link.tbPlans.Price;
+                    AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, email);
+                    RepositoryLinkUserAndPlan.Save();
                     RepositoryUser.Save();
                     return Ok("اکانت با موفقیت تمدید شد");
 
