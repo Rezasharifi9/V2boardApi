@@ -130,7 +130,7 @@ namespace V2boardApi.Areas.api.Controllers
                     {
                         if (name.Contains("token="))
                         {
-                            Query += "token='" + name.Split('=')[1] + "'";
+                            Query += "token='" + name.Split('=')[1] + "'and " + "email like '%" + User.Username + "%'";
                         }
                         else
                         {
