@@ -22,8 +22,6 @@ namespace V2boardApi.Models
         public string IsActive { get; set;}
         public bool IsOnline { get; set; }
         public string LastTimeOnline { get; set; }
-        public List<tbPlans> tbPlans { get; set; }
-        public int ChargeID { get; set; }
 
     }
 }

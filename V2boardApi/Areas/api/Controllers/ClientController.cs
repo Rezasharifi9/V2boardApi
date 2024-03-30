@@ -172,17 +172,6 @@ namespace V2boardApi.Areas.api.Controllers
                             ViewBag.IsRenew = User.IsRenew;
                         }
 
-                        if(User.Role == 1)
-                        {
-                            getUserData.tbPlans = server.tbPlans.Where(p => p.Status == true && p.Price2 != null && p.Plan_Des!=null).ToList();
-                        }
-
-                        var tblink = RepositoryLinks.GetAll(p => p.tbL_Token == token).FirstOrDefault();
-                        if (tblink != null)
-                        {
-                            getUserData.ChargeID = tblink.tb_ChargeLink_ID.Value;
-                        }
-
                         return View(getUserData);
                     }
 
