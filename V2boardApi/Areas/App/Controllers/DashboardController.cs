@@ -82,15 +82,15 @@ namespace V2boardApi.Areas.App.Controllers
                 foreach (var item in RepositoryTelegramUsers.GetAll(p => p.Tel_RobotID == user.tbServers.Robot_ID).ToList())
                 {
                     //فروش هفته جاری از ربات
-                    model.SaleFromBot += item.tbOrders.Where(p => p.OrderDate >= thisDayStartDate && p.OrderDate <= EndOfWeek && p.OrderStatus == "FINISH").Sum(p => p.Order_Price.Value);
+                    model.SaleFromBot += item.tbOrders.Where(p => p.OrderDate >= thisDayStartDate && p.OrderDate <= EndOfWeek).Sum(p => p.Order_Price.Value);
                     //فروش هفته قبل از ربات
-                    OldWeekSaleFromBot += item.tbOrders.Where(p => p.OrderDate >= lastDayStartDate && p.OrderDate <= lastDayEndDate && p.OrderStatus == "FINISH").Sum(p => p.Order_Price.Value);
+                    OldWeekSaleFromBot += item.tbOrders.Where(p => p.OrderDate >= lastDayStartDate && p.OrderDate <= lastDayEndDate).Sum(p => p.Order_Price.Value);
                     //تعداد فروش هفته جاری از ربات
-                    model.CountUserFromBot += item.tbOrders.Where(p => p.OrderDate >= thisDayStartDate && p.OrderDate <= EndOfWeek && p.OrderStatus == "FINISH").Count();
+                    model.CountUserFromBot += item.tbOrders.Where(p => p.OrderDate >= thisDayStartDate && p.OrderDate <= EndOfWeek).Count();
                     // تعداد فروش هفته قبل در ربات
-                    OldWeekCountBot += item.tbOrders.Where(p => p.OrderDate >= lastDayStartDate && p.OrderDate <= lastDayEndDate && p.OrderStatus == "FINISH").Count();
+                    OldWeekCountBot += item.tbOrders.Where(p => p.OrderDate >= lastDayStartDate && p.OrderDate <= lastDayEndDate).Count();
                     //فروش امروز از ربات
-                    model.SaleFromBotToday += item.tbOrders.Where(p => p.OrderDate >= DateTime.Now.Date && p.OrderStatus == "FINISH").Sum(p => p.Order_Price.Value);
+                    model.SaleFromBotToday += item.tbOrders.Where(p => p.OrderDate >= DateTime.Now.Date).Sum(p => p.Order_Price.Value);
 
                 }
 

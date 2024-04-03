@@ -354,34 +354,6 @@ namespace V2boardApi.Areas.api.Controllers
                                 var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                                 User.Wallet += link.tbPlans.Price;
 
-                                var tblink = RepositoryLinks.GetAll(p => p.tb_RandomEmail == createUser.name + "@" + link.tbUsers.Username).FirstOrDefault();
-
-                                if (tblink != null)
-                                {
-                                    if (tblink.tb_ChargeLink_ID == null)
-                                    {
-                                        if (tblink != null)
-                                        {
-                                            while (true)
-                                            {
-                                                Random ran = new Random();
-                                                var ranNumber = ran.Next(1, 9999);
-                                                var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                                if (!ExitLink)
-                                                {
-                                                    tblink.tb_ChargeLink_ID = ranNumber;
-
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    tblink.tb_ChargeLinkedTime = DateTime.Now;
-                                    tblink.tb_ChargePlan_ID = plan.Plan_ID;
-                                    tblink.tb_status = true;
-                                }
-
 
                                 RepositoryLinks.Save();
                                 RepositoryUser.Save();
@@ -544,30 +516,6 @@ namespace V2boardApi.Areas.api.Controllers
                     {
                         var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                         User.Wallet += link.tbPlans.Price;
-
-                        var tblink = RepositoryLinks.GetAll(p => p.tb_RandomEmail == reader2.GetString("email")).FirstOrDefault();
-                        if (tblink != null)
-                        {
-                            if (tblink.tb_ChargeLink_ID == null)
-                            {
-                                while (true)
-                                {
-                                    Random ran = new Random();
-                                    var ranNumber = ran.Next(1, 9999);
-                                    var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                    if (!ExitLink)
-                                    {
-                                        tblink.tb_ChargeLink_ID = ranNumber;
-
-                                        break;
-                                    }
-                                }
-                            }
-                            tblink.tb_ChargeLinkedTime = DateTime.Now;
-                            tblink.tb_ChargePlan_ID = Plan.Plan_ID;
-                            tblink.tb_status = true;
-                        }
-
 
                         AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price);
                     }
