@@ -545,30 +545,6 @@ namespace V2boardApi.Areas.api.Controllers
                         var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                         User.Wallet += link.tbPlans.Price;
 
-                        var tblink = RepositoryLinks.GetAll(p => p.tb_RandomEmail == reader2.GetString("email")).FirstOrDefault();
-                        if (tblink != null)
-                        {
-                            if (tblink.tb_ChargeLink_ID == null)
-                            {
-                                while (true)
-                                {
-                                    Random ran = new Random();
-                                    var ranNumber = ran.Next(1, 9999);
-                                    var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                    if (!ExitLink)
-                                    {
-                                        tblink.tb_ChargeLink_ID = ranNumber;
-
-                                        break;
-                                    }
-                                }
-                            }
-                            tblink.tb_ChargeLinkedTime = DateTime.Now;
-                            tblink.tb_ChargePlan_ID = Plan.Plan_ID;
-                            tblink.tb_status = true;
-                        }
-
-
                         AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price);
                     }
                     reader2.Close();
@@ -738,8 +714,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                         }
 
-                        var Date = DateTime.Now.AddHours(-24);
-                        var Orders = RepositoryOrder.table.Where(p => p.Order_Price == pr && p.OrderStatus == "FOR_PAY" && p.OrderDate >= Date).ToList();
+                        //var Date = DateTime.Now.AddHours(-24);
+                        //var Orders = RepositoryOrder.table.Where(p => p.Order_Price == pr && p.OrderStatus == "FOR_PAY" && p.OrderDate >= Date).ToList();
                         //foreach (var Order in Orders)
                         //{
 
@@ -992,91 +968,91 @@ namespace V2boardApi.Areas.api.Controllers
                         //}
 
 
-                        if (Orders.Count == 0)
-                        {
+                        //if (Orders.Count == 0)
+                        //{
 
                             
-                                var price = pr.ToString().Substring(0, 2);
-                                var orginalPrice = Convert.ToInt32(price + "000");
-                                var price2 = pr.ToString();
-                                var ChargeIdStr = price2.Substring(price2.Length - 4, 4);
-                                var ChargeId = Convert.ToInt32(ChargeIdStr);
+                        //        var price = pr.ToString().Substring(0, 2);
+                        //        var orginalPrice = Convert.ToInt32(price + "000");
+                        //        var price2 = pr.ToString();
+                        //        var ChargeIdStr = price2.Substring(price2.Length - 4, 4);
+                        //        var ChargeId = Convert.ToInt32(ChargeIdStr);
 
-                                var plan = User.tbServers.tbPlans.Where(p => p.Price2!=null && p.Status == true).ToList().Where(p=> p.Price2.Value.ToString().StartsWith(price)).FirstOrDefault();
-                                if (plan != null)
-                                {
-                                    var Linkss = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ChargeId).FirstOrDefault();
-                                    if (Linkss != null)
-                                    {
-                                        tbOrders Order = new tbOrders();
-                                        Order.Order_Guid = Guid.NewGuid();
-                                        Order.AccountName = Linkss.tbL_Email;
-                                        Order.AccountName2 = Linkss.tb_RandomEmail;
-                                        Order.OrderDate = DateTime.Now;
-                                        Order.OrderType = "تمدید";
-                                        Order.OrderStatus = "FINISH";
-                                        Order.FK_Plan_ID = plan.Plan_ID;
-                                        Order.Order_Price = pr;
-                                        Order.V2_Plan_ID = plan.Plan_ID_V2;
-                                        Order.FK_Tel_UserID = Linkss.FK_TelegramUserID;
+                        //        var plan = User.tbServers.tbPlans.Where(p => p.Price2!=null && p.Status == true).ToList().Where(p=> p.Price2.Value.ToString().StartsWith(price)).FirstOrDefault();
+                        //        if (plan != null)
+                        //        {
+                        //            var Linkss = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ChargeId).FirstOrDefault();
+                        //            if (Linkss != null)
+                        //            {
+                        //                tbOrders Order = new tbOrders();
+                        //                Order.Order_Guid = Guid.NewGuid();
+                        //                Order.AccountName = Linkss.tbL_Email;
+                        //                Order.AccountName2 = Linkss.tb_RandomEmail;
+                        //                Order.OrderDate = DateTime.Now;
+                        //                Order.OrderType = "تمدید";
+                        //                Order.OrderStatus = "FINISH";
+                        //                Order.FK_Plan_ID = plan.Plan_ID;
+                        //                Order.Order_Price = pr;
+                        //                Order.V2_Plan_ID = plan.Plan_ID_V2;
+                        //                Order.FK_Tel_UserID = Linkss.FK_TelegramUserID;
                                     
 
 
 
-                                        var username = Order.AccountName.Split('@')[1];
-                                        var Us = RepositoryUser.GetAll(p => p.Username == username).FirstOrDefault();
+                        //                var username = Order.AccountName.Split('@')[1];
+                        //                var Us = RepositoryUser.GetAll(p => p.Username == username).FirstOrDefault();
 
-                                        var t = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume));
+                        //                var t = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume));
 
-                                        string exp = "";
-                                        if (plan.CountDayes == 0)
-                                        {
-                                            exp = "NULL";
-                                        }
-                                        else
-                                        {
-                                            exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
-                                        }
-                                        Linkss.tbL_Warning = false;
-                                        if (Linkss.tb_ChargeLink_ID == null)
-                                        {
-                                            while (true)
-                                            {
-                                                Random ran = new Random();
-                                                var ranNumber = ran.Next(1, 9999);
-                                                var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
-                                                if (!ExitLink)
-                                                {
-                                                    Linkss.tb_ChargeLink_ID = ranNumber;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        Linkss.tb_ChargeLinkedTime = DateTime.Now;
-                                        Linkss.tb_ChargePlan_ID = plan.Plan_ID;
-                                        Linkss.tb_status = true;
+                        //                string exp = "";
+                        //                if (plan.CountDayes == 0)
+                        //                {
+                        //                    exp = "NULL";
+                        //                }
+                        //                else
+                        //                {
+                        //                    exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                        //                }
+                        //                Linkss.tbL_Warning = false;
+                        //                if (Linkss.tb_ChargeLink_ID == null)
+                        //                {
+                        //                    while (true)
+                        //                    {
+                        //                        Random ran = new Random();
+                        //                        var ranNumber = ran.Next(1, 9999);
+                        //                        var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
+                        //                        if (!ExitLink)
+                        //                        {
+                        //                            Linkss.tb_ChargeLink_ID = ranNumber;
+                        //                            break;
+                        //                        }
+                        //                    }
+                        //                }
+                        //                Linkss.tb_ChargeLinkedTime = DateTime.Now;
+                        //                Linkss.tb_ChargePlan_ID = plan.Plan_ID;
+                        //                Linkss.tb_status = true;
 
-                                        RepositoryLinks.Save();
-                                        var Query = "update v2_user set u=0,d=0,t=0,plan_id=" + Order.V2_Plan_ID + ",transfer_enable=" + t + ",expired_at=" + exp + " where email='" + Order.AccountName2 + "'";
+                        //                RepositoryLinks.Save();
+                        //                var Query = "update v2_user set u=0,d=0,t=0,plan_id=" + Order.V2_Plan_ID + ",transfer_enable=" + t + ",expired_at=" + exp + " where email='" + Order.AccountName2 + "'";
 
-                                        MySqlEntities mySql = new MySqlEntities(Us.tbServers.ConnectionString);
-                                        mySql.Open();
-                                        var reader = mySql.GetData(Query);
-                                        var result = reader.Read();
-                                        reader.Close();
-                                        mySql.Close();
+                        //                MySqlEntities mySql = new MySqlEntities(Us.tbServers.ConnectionString);
+                        //                mySql.Open();
+                        //                var reader = mySql.GetData(Query);
+                        //                var result = reader.Read();
+                        //                reader.Close();
+                        //                mySql.Close();
 
-                                        RepositoryOrder.Insert(Order);
-                                        RepositoryOrder.Save();
+                        //                RepositoryOrder.Insert(Order);
+                        //                RepositoryOrder.Save();
 
-                                        return Ok("OK SHOD");
-                                    }
-                                }
+                        //                return Ok("OK SHOD");
+                        //            }
+                        //        }
                             
 
 
 
-                        }
+                        //}
 
                         return BadRequest("NOT FOUND ORDER");
 
