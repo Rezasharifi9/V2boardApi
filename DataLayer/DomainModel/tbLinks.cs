@@ -28,8 +28,8 @@ namespace DataLayer.DomainModel
         public Nullable<int> tb_ChargePlan_ID { get; set; }
         public Nullable<bool> tb_status { get; set; }
     
+        public virtual tbPlans tbPlans { get; set; }
         public virtual tbServers tbServers { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
-        public virtual tbPlans tbPlans { get; set; }
     }
 }

@@ -44,11 +44,11 @@ namespace V2boardApi.Areas.App.Controllers
             var Users = new List<tbTelegramUsers>();
             if (username != null)
             {
-                Users = RepositoryTelegramUsers.GetAll(p => p.Tel_RobotID == Use.tbServers.Robot_ID && p.Tel_Username == username).ToList();
+                Users = RepositoryTelegramUsers.Where(p => p.Tel_RobotID == Use.tbServers.Robot_ID && p.Tel_Username == username).ToList();
             }
             else
             {
-                Users = RepositoryTelegramUsers.GetAll(p => p.Tel_RobotID == Use.tbServers.Robot_ID).ToList();
+                Users = RepositoryTelegramUsers.Where(p => p.Tel_RobotID == Use.tbServers.Robot_ID).ToList();
             }
             return View(Users);
         }
@@ -62,13 +62,14 @@ namespace V2boardApi.Areas.App.Controllers
             return PartialView();
         }
 
+        
         public ActionResult SendPublicMessage(string message)
         {
             try
             {
                 var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
 
-                var Users = RepositoryTelegramUsers.GetAll(p => p.Tel_RobotID == Use.tbServers.Robot_ID).ToList();
+                var Users = RepositoryTelegramUsers.Where(p => p.Tel_RobotID == Use.tbServers.Robot_ID).ToList();
                 TelegramBotClient botClient = new TelegramBotClient(Use.tbServers.Robot_Token);
                 foreach(var item in Users)
                 {
@@ -88,7 +89,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         public ActionResult _EditWallet(int id)
         {
-            var us = RepositoryTelegramUsers.GetAll(p => p.Tel_UserID == id).FirstOrDefault();
+            var us = RepositoryTelegramUsers.Where(p => p.Tel_UserID == id).FirstOrDefault();
             if (us != null)
             {
                 return PartialView(us);
@@ -102,7 +103,7 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpPost]
         public ActionResult EditWallet(int id, int wallet)
         {
-            var us = RepositoryTelegramUsers.GetAll(p => p.Tel_UserID == id).FirstOrDefault();
+            var us = RepositoryTelegramUsers.Where(p => p.Tel_UserID == id).FirstOrDefault();
             if (us != null)
             {
                 us.Tel_Wallet = wallet;
@@ -116,5 +117,11 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #endregion
+
+        [HttpGet]
+        public ActionResult Orders(int TelegramUserId)
+        {
+            return View();
+        }
     }
 }

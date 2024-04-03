@@ -17,9 +17,9 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public tbPlans()
         {
+            this.tbLinks = new HashSet<tbLinks>();
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
             this.tbOrders = new HashSet<tbOrders>();
-            this.tbLinks = new HashSet<tbLinks>();
         }
     
         public int Plan_ID { get; set; }
@@ -34,11 +34,11 @@ namespace DataLayer.DomainModel
         public Nullable<int> Price2 { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbLinks> tbLinks { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbOrders> tbOrders { get; set; }
         public virtual tbServers tbServers { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbLinks> tbLinks { get; set; }
     }
 }

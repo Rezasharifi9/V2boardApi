@@ -148,7 +148,7 @@ namespace V2boardApi.Areas.api.Controllers
         {
             try
             {
-                foreach (tbServers s in RepositoryServer.GetAll(p => p.Status == true).ToList())
+                foreach (tbServers s in RepositoryServer.Where(p => p.Status == true).ToList())
                 {
 
 

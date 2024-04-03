@@ -163,21 +163,21 @@
         }
 
 
-        function ShowAccountLog(Url) {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: Url,
-                type: "get",
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#PartialUsers").html(result);
-                    new DataTable('#TableUser', {
-                        order: [[0, 'desc']]
-                    });
-                }
-            });
-        }
+        //function ShowAccountLog(Url) {
+        //    $("#loading").css("display", "flex");
+        //    $.ajax({
+        //        url: Url,
+        //        type: "get",
+        //        dataType: "html",
+        //        success: function (result) {
+        //            $("#loading").css("display", "none");
+        //            $("#PartialUsers").html(result);
+        //            new DataTable('#TableUser', {
+        //                order: [[0, 'desc']]
+        //            });
+        //        }
+        //    });
+        //}
 
     </script>
 

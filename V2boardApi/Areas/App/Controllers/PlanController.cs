@@ -34,9 +34,9 @@ namespace V2boardApi.Areas.App.Controllers
             return View();
         }
 
-        public ActionResult _PartialGetAllPlans()
+        public ActionResult _PartialWherePlans()
         {
-            var user = RepositoryUser.GetAll(p => p.Username == User.Identity.Name).FirstOrDefault();
+            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
                 return PartialView(user.tbServers.tbPlans.ToList());
@@ -48,7 +48,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
-                var user = RepositoryUser.GetAll(p => p.Username == User.Identity.Name).FirstOrDefault();
+                var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
 
                 if (user != null)
                 {
@@ -62,7 +62,7 @@ namespace V2boardApi.Areas.App.Controllers
                         var show = reader.GetByte("show");
                         var id = reader.GetInt32("id");
 
-                        var planD = RepositoryPlans.GetAll(p => p.Plan_ID_V2 == id && user.tbServers.ServerID == p.tbServers.ServerID).FirstOrDefault();
+                        var planD = RepositoryPlans.Where(p => p.Plan_ID_V2 == id && user.tbServers.ServerID == p.tbServers.ServerID).FirstOrDefault();
                         if (planD == null)
                         {
                             tbPlans plan = new tbPlans();
@@ -130,7 +130,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         public ActionResult _PartialEdit(int id)
         {
-            var user = RepositoryUser.GetAll(p => p.Username == User.Identity.Name).FirstOrDefault();
+            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
                 return PartialView(user.tbServers.tbPlans.Where(p => p.Plan_ID == id).FirstOrDefault());
@@ -141,7 +141,7 @@ namespace V2boardApi.Areas.App.Controllers
         [HttpPost]
         public ActionResult _PartialEdit(tbPlans plan)
         {
-            var Plan = RepositoryPlans.GetAll(p => p.Plan_ID == plan.Plan_ID).FirstOrDefault();
+            var Plan = RepositoryPlans.Where(p => p.Plan_ID == plan.Plan_ID).FirstOrDefault();
             if (Plan != null)
             {
                 Plan.PlanVolume = plan.PlanVolume;
@@ -159,7 +159,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         public ActionResult DisablePlan(int id)
         {
-            var Plan = RepositoryPlans.GetAll(p => p.Plan_ID == id).FirstOrDefault();
+            var Plan = RepositoryPlans.Where(p => p.Plan_ID == id).FirstOrDefault();
             if(Plan != null)
             {
                 if (Plan.Status.Value)

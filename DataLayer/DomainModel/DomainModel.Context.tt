@@ -531,7 +531,7 @@ public class TypeMapper
             .OrderBy(i => i.Name);
     }
 
-    public IEnumerable<string> GetAllGlobalItems(IEnumerable<GlobalItem> itemCollection)
+    public IEnumerable<string> WhereGlobalItems(IEnumerable<GlobalItem> itemCollection)
     {
         return itemCollection
             .Where(i => i is EntityType || i is ComplexType || i is EntityContainer || IsEnumType(i))

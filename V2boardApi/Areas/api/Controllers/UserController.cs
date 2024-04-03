@@ -88,6 +88,8 @@ namespace V2boardApi.Areas.api.Controllers
             throw new NotImplementedException();
         }
 
+
+        #region لاگین
         [System.Web.Http.HttpPost]
         public IHttpActionResult Login(ReqLoginModel req)
         {
@@ -115,9 +117,13 @@ namespace V2boardApi.Areas.api.Controllers
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
             }
         }
+
+        #endregion
+
+        #region لیست کاربران
         [System.Web.Http.HttpGet]
         [Authorize]
-        public IHttpActionResult GetAll(int page = 1, string name = null, string KeySort = null, string SortType = "DESC")
+        public IHttpActionResult Where(int page = 1, string name = null, string KeySort = null, string SortType = "DESC")
         {
             try
             {
@@ -295,6 +301,9 @@ namespace V2boardApi.Areas.api.Controllers
             }
         }
 
+        #endregion
+
+        #region افزودن اکانت جدید
         [System.Web.Http.HttpPost]
         [Authorize]
         public IHttpActionResult CreateUser(CreateUserModel createUser)
@@ -402,6 +411,9 @@ namespace V2boardApi.Areas.api.Controllers
 
         }
 
+        #endregion
+
+        #region لیست تعرفه ها
         [Authorize]
         public IHttpActionResult GetPlans()
         {
@@ -448,6 +460,10 @@ namespace V2boardApi.Areas.api.Controllers
                 return Content(System.Net.HttpStatusCode.NotFound, "توکن خالی است لطفا توکن را وارد کنید");
             }
         }
+
+        #endregion
+
+        #region افزودن لاگ تمدید یا ساخت کاربر
         private bool AddLog(string Action, int LinkUserID, string V2User, int price)
         {
             try
@@ -467,7 +483,9 @@ namespace V2boardApi.Areas.api.Controllers
             }
         }
 
+        #endregion
 
+        #region تمدید اکانت
         [System.Web.Http.HttpPost]
         [Authorize]
         public IHttpActionResult Update(Models.UpdateUserModel model)
@@ -549,6 +567,9 @@ namespace V2boardApi.Areas.api.Controllers
 
         }
 
+        #endregion
+
+        #region دریافت کیف پول
         [System.Web.Http.HttpGet]
         [Authorize]
         public IHttpActionResult GetWallet()
@@ -574,7 +595,9 @@ namespace V2boardApi.Areas.api.Controllers
             }
         }
 
+        #endregion
 
+        #region ریست لینک اکانت
         [System.Web.Http.HttpPost]
         [Authorize]
         public IHttpActionResult Reset(BanUserModel model)
@@ -601,7 +624,9 @@ namespace V2boardApi.Areas.api.Controllers
 
 
         }
+        #endregion
 
+        #region بن کاربر
 
         [System.Web.Http.HttpPost]
         [Authorize]
@@ -632,7 +657,9 @@ namespace V2boardApi.Areas.api.Controllers
             }
         }
 
+        #endregion
 
+        #region تابع برای ربات که تراکنش هارو چک میکنه
         [System.Web.Http.HttpGet]
         public async Task<IHttpActionResult> CheckOrder(string SMSMessageText, string Mobile)
         {
@@ -641,13 +668,13 @@ namespace V2boardApi.Areas.api.Controllers
                 try
                 {
                     var Phone = JsonConvert.DeserializeObject(Mobile);
-                    var User = RepositoryUser.GetAll(p => p.PhoneNumber == Phone.ToString()).FirstOrDefault();
+                    var User = RepositoryUser.Where(p => p.PhoneNumber == Phone.ToString()).FirstOrDefault();
                     if (User != null)
                     {
                         int pr = int.Parse(SMSMessageText, NumberStyles.Currency);
 
 
-                        var tbUserFactor = RepositoryFactor.GetAll(p => p.tbUf_Value == pr && p.IsPayed == false).OrderByDescending(p => p.tbUf_CreateTime).FirstOrDefault();
+                        var tbUserFactor = RepositoryFactor.Where(p => p.tbUf_Value == pr && p.IsPayed == false).OrderByDescending(p => p.tbUf_CreateTime).FirstOrDefault();
                         if (tbUserFactor != null)
                         {
                             tbUserFactor.IsPayed = true;
@@ -657,7 +684,7 @@ namespace V2boardApi.Areas.api.Controllers
                         }
 
                         var date2 = DateTime.Now.AddDays(-2);
-                        var tbDepositLog = RepositoryDepositWallet.GetAll(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2).ToList();
+                        var tbDepositLog = RepositoryDepositWallet.Where(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2).ToList();
 
                         foreach (var item in tbDepositLog)
                         {
@@ -673,7 +700,7 @@ namespace V2boardApi.Areas.api.Controllers
                             var botID = item.tbTelegramUsers.Tel_RobotID;
                             if (botID != null)
                             {
-                                var Server = RepositoryServer.GetAll(p => p.Robot_ID == botID).FirstOrDefault();
+                                var Server = RepositoryServer.Where(p => p.Robot_ID == botID).FirstOrDefault();
                                 if (Server != null)
                                 {
                                     TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
@@ -687,7 +714,7 @@ namespace V2boardApi.Areas.api.Controllers
                         }
 
                         //var Date = DateTime.Now.AddHours(-24);
-                        //var Orders = RepositoryOrder.table.Where(p => p.Order_Price == pr && p.OrderStatus == "FOR_PAY" && p.OrderDate >= Date).ToList();
+                        //var Orders = RepositoryOrder.table.Where(p => p.Order_Price == pr && p.OrderStatus == "FOR_RESERVE" && p.OrderDate >= Date).ToList();
                         //foreach (var Order in Orders)
                         //{
 
@@ -699,7 +726,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //    if (Linkss != null)
                         //    {
                         //        var username = Order.AccountName.Split('@')[1];
-                        //        var Us = RepositoryUser.GetAll(p => p.Username == username).FirstOrDefault();
+                        //        var Us = RepositoryUser.Where(p => p.Username == username).FirstOrDefault();
                         //        Admin admin = new Admin(botClient, Us.TelegramID);
                         //        var Plan = Order.tbPlans;
                         //        var t = Utility.ConvertGBToByte(Convert.ToInt64(Plan.PlanVolume));
@@ -720,7 +747,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //            {
                         //                Random ran = new Random();
                         //                var ranNumber = ran.Next(1, 9999);
-                        //                var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
+                        //                var ExitLink = RepositoryLinks.Where(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
                         //                if (!ExitLink)
                         //                {
                         //                    Linkss.tb_ChargeLink_ID = ranNumber;
@@ -751,7 +778,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                         //        if (Order.tbTelegramUsers.Tel_Parent_ID != null)
                         //        {
-                        //            var TelParentUser = RepositoryTelegramUser.GetAll(p => p.Tel_UserID == Order.tbTelegramUsers.Tel_Parent_ID).FirstOrDefault();
+                        //            var TelParentUser = RepositoryTelegramUser.Where(p => p.Tel_UserID == Order.tbTelegramUsers.Tel_Parent_ID).FirstOrDefault();
                         //            TelParentUser.Tel_Wallet += Plan.tbServers.FreeCredit;
                         //            RepositoryTelegramUser.Save();
 
@@ -772,7 +799,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //    {
 
                         //        var usernam = Order.AccountName.Split('@')[1];
-                        //        var Us = RepositoryUser.GetAll(p => p.Username == usernam).FirstOrDefault();
+                        //        var Us = RepositoryUser.Where(p => p.Username == usernam).FirstOrDefault();
                         //        string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
                         //        Random ran = new Random();
                         //        var FullName = Order.AccountName2;
@@ -836,7 +863,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //            {
                         //                Random ran1 = new Random();
                         //                var ranNumber = ran.Next(1, 9999);
-                        //                var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
+                        //                var ExitLink = RepositoryLinks.Where(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
                         //                if (!ExitLink)
                         //                {
                         //                    tbLinks.tb_ChargeLink_ID = ranNumber;
@@ -856,7 +883,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                         //        if (Order.tbTelegramUsers.Tel_Parent_ID != null)
                         //        {
-                        //            var TelParentUser = RepositoryTelegramUser.GetAll(p => p.Tel_UserID == Order.tbTelegramUsers.Tel_Parent_ID).FirstOrDefault();
+                        //            var TelParentUser = RepositoryTelegramUser.Where(p => p.Tel_UserID == Order.tbTelegramUsers.Tel_Parent_ID).FirstOrDefault();
                         //            TelParentUser.Tel_Wallet += plan.tbServers.FreeCredit;
                         //            RepositoryTelegramUser.Save();
 
@@ -920,7 +947,7 @@ namespace V2boardApi.Areas.api.Controllers
 
 
                         //    //        var username = Order.AccountName.Split('@')[1];
-                        //    //        var Us = RepositoryUser.GetAll(p => p.Username == username).FirstOrDefault();
+                        //    //        var Us = RepositoryUser.Where(p => p.Username == username).FirstOrDefault();
 
                         //    //        TelegramBotClient botClient = new TelegramBotClient(Order.tbPlans.tbServers.Robot_Token);
                         //    //        var keyboard = new InlineKeyboardMarkup(new[]
@@ -953,7 +980,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //        var plan = User.tbServers.tbPlans.Where(p => p.Price2!=null && p.Status == true).ToList().Where(p=> p.Price2.Value.ToString().StartsWith(price)).FirstOrDefault();
                         //        if (plan != null)
                         //        {
-                        //            var Linkss = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ChargeId).FirstOrDefault();
+                        //            var Linkss = RepositoryLinks.Where(p => p.tb_ChargeLink_ID == ChargeId).FirstOrDefault();
                         //            if (Linkss != null)
                         //            {
                         //                tbOrders Order = new tbOrders();
@@ -972,7 +999,7 @@ namespace V2boardApi.Areas.api.Controllers
 
 
                         //                var username = Order.AccountName.Split('@')[1];
-                        //                var Us = RepositoryUser.GetAll(p => p.Username == username).FirstOrDefault();
+                        //                var Us = RepositoryUser.Where(p => p.Username == username).FirstOrDefault();
 
                         //                var t = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume));
 
@@ -992,7 +1019,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //                    {
                         //                        Random ran = new Random();
                         //                        var ranNumber = ran.Next(1, 9999);
-                        //                        var ExitLink = RepositoryLinks.GetAll(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
+                        //                        var ExitLink = RepositoryLinks.Where(p => p.tb_ChargeLink_ID == ranNumber && p.tb_status == true).Any();
                         //                        if (!ExitLink)
                         //                        {
                         //                            Linkss.tb_ChargeLink_ID = ranNumber;
@@ -1031,7 +1058,7 @@ namespace V2boardApi.Areas.api.Controllers
                     }
                     else
                     {
-                        var Server = RepositoryServer.GetAll(p => p.Robot_ID == "darkbaz_bot").FirstOrDefault();
+                        var Server = RepositoryServer.Where(p => p.Robot_ID == "darkbaz_bot").FirstOrDefault();
                         if (Server != null)
                         {
                             TelegramBotClient client = new TelegramBotClient(Server.Robot_Token);
@@ -1046,7 +1073,7 @@ namespace V2boardApi.Areas.api.Controllers
                 catch (Exception ex)
                 {
 
-                    var Server = RepositoryServer.GetAll(p => p.Robot_ID == "darkbaz_bot").FirstOrDefault();
+                    var Server = RepositoryServer.Where(p => p.Robot_ID == "darkbaz_bot").FirstOrDefault();
                     if (Server != null)
                     {
                         TelegramBotClient client = new TelegramBotClient(Server.Robot_Token);
@@ -1059,26 +1086,29 @@ namespace V2boardApi.Areas.api.Controllers
             }
         }
 
-        [System.Web.Http.HttpPost]
-        public IHttpActionResult LoginAdmin(ReqLoginModel req)
-        {
-            try
-            {
-                var User = RepositoryUser.GetAll(p => p.Username == req.username && p.Password == req.password && p.Role == 1).FirstOrDefault();
-                if (User != null)
-                {
-                    return Ok(new { token = User.Token, baseApiAddress = User.tbServers.SubAddress, phoneNumber = User.PhoneNumber });
-                }
-                else
-                {
-                    return Content(System.Net.HttpStatusCode.NotFound, "نام کاربری یا رمز عبور اشتباه است");
-                }
-            }
-            catch (Exception ex)
-            {
-                return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
-            }
-        }
+        #endregion
+
+
+        //[System.Web.Http.HttpPost]
+        //public IHttpActionResult LoginAdmin(ReqLoginModel req)
+        //{
+        //    try
+        //    {
+        //        var User = RepositoryUser.Where(p => p.Username == req.username && p.Password == req.password && p.Role == 1).FirstOrDefault();
+        //        if (User != null)
+        //        {
+        //            return Ok(new { token = User.Token, baseApiAddress = User.tbServers.SubAddress, phoneNumber = User.PhoneNumber });
+        //        }
+        //        else
+        //        {
+        //            return Content(System.Net.HttpStatusCode.NotFound, "نام کاربری یا رمز عبور اشتباه است");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
+        //    }
+        //}
 
 
 

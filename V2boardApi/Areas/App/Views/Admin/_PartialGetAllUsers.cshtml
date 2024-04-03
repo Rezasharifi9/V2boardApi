@@ -23,7 +23,7 @@
                 <td style="background-color:white;">
                     <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
                     <div class="dropdown-menu" data-popper-placement="bottom-start" style="cursor: pointer;text-align:right;">
-                        <a class="dropdown-item" onclick="ShowAccountLog('@Url.Action("GetUserAccountLog","Admin",new {area="App",id=item.User_ID})')">تاریخچه ساخت کاربر</a>
+                        <a class="dropdown-item" href="@Url.Action("GetUserAccountLog","Admin",new {area="App",id=item.User_ID})">تاریخچه ساخت کاربر</a>
                         <a class="dropdown-item" onclick="Factors('@item.User_ID')">پرداختی ها</a>
                         <a class="dropdown-item" onclick="EditUser(this)" id="User_@item.User_ID">ویرایش</a>
                         @if (item.Status.Value)

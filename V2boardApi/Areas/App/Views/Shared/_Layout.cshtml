@@ -155,7 +155,7 @@
                             <div class="nav-profile-image">
                                 <img src="~/Areas/App/assets/images/faces/face1.jpg" alt="profile">
                                 <span class="login-status online" onclick="SelectImage()"></span>
-                                
+
                             </div>
                             <div class="nav-profile-text d-flex flex-column" style="margin-right:10px;">
                                 <span class="font-weight-bold mb-2">@User.Identity.Name</span>
@@ -168,6 +168,13 @@
                         <a class="nav-link" href="@Url.Action("Index","Dashboard",new {area="App"})">
                             <i class="mdi mdi-home menu-icon"></i>
                             <span class="menu-title">داشبورد</span>
+
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index","Orders",new {area="App"})">
+                            <i class="mdi mdi-origin menu-icon"></i>
+                            <span class="menu-title">لیست سفارشات</span>
 
                         </a>
                     </li>

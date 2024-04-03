@@ -27,7 +27,7 @@ namespace DataLayer.Repository
             table = db.Set<T>();
         }
 
-        public List<T> GetAll(Expression<Func<T, bool>> predicate)
+        public List<T> Where(Expression<Func<T, bool>> predicate)
         {
             return table.Where(predicate).ToList();
         }

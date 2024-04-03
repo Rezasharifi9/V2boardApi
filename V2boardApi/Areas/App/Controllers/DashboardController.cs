@@ -31,7 +31,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
         public ActionResult Index()
         {
-            var user = RepositoryUser.GetAll(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
+            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
             if (user != null)
             {
                 //CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fa-IR");
@@ -79,7 +79,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                 }
 
-                foreach (var item in RepositoryTelegramUsers.GetAll(p => p.Tel_RobotID == user.tbServers.Robot_ID).ToList())
+                foreach (var item in RepositoryTelegramUsers.Where(p => p.Tel_RobotID == user.tbServers.Robot_ID).ToList())
                 {
                     //فروش هفته جاری از ربات
                     model.SaleFromBot += item.tbOrders.Where(p => p.OrderDate >= thisDayStartDate && p.OrderDate <= EndOfWeek).Sum(p => p.Order_Price.Value);
@@ -114,7 +114,7 @@ namespace V2boardApi.Areas.App.Controllers
         [HttpGet]
         public ActionResult CountAccountCreatedFromMajor()
         {
-            var user = RepositoryUser.GetAll(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
+            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
             if (user != null)
             {
 

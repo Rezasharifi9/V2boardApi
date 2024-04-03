@@ -226,6 +226,7 @@
     <Compile Include="Areas\api\Controllers\UserController.cs" />
     <Compile Include="Areas\App\Controllers\DashboardController.cs" />
     <Compile Include="Areas\App\Controllers\ErrorController.cs" />
+    <Compile Include="Areas\App\Controllers\OrdersController.cs" />
     <Compile Include="Areas\App\Controllers\PlanController.cs" />
     <Compile Include="Areas\App\Controllers\TelegramUsersController.cs" />
     <Compile Include="Areas\App\Data\CountAccountCreatedFromMajorModel.cs" />
@@ -235,10 +236,12 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AdminModel\LoginModel.cs" />
+    <Compile Include="Models\AdminModel\UserLogViewModel.cs" />
     <Compile Include="Models\AdminModel\UsersModel.cs" />
     <Compile Include="Models\BanUserModel.cs" />
     <Compile Include="Models\CreateUserModel.cs" />
     <Compile Include="Models\GetUserDataModel.cs" />
+    <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
     <Compile Include="Tools\Keyboards.cs" />
     <Compile Include="Models\ManifestModel.cs" />
     <Compile Include="Models\MysqlModel\UserMySqlModel.cs" />
@@ -427,6 +430,8 @@
     <Content Include="Areas\App\assets\fonts\IRANSansWeb_UltraLight.ttf" />
     <Content Include="Areas\App\Views\Admin\Pay.cshtml" />
     <Content Include="Areas\App\Views\Error\Error404.cshtml" />
+    <Content Include="Areas\App\Views\TelegramUsers\Orders.cshtml" />
+    <Content Include="Areas\App\Views\Orders\Index.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />

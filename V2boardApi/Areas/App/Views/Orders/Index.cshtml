@@ -1,0 +1,147 @@
+﻿@{
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "لاگ کاربر";
+}
+
+@model List<DataLayer.DomainModel.tbOrders>
+
+@using V2boardApi.Tools;
+
+
+<div class="content-wrapper" style="padding: 1rem 1rem;">
+    <div class="row">
+        <div class="col-lg-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body table-responsive">
+                    <table id="AccountLogTable" class="table" style="width:100%;direction:rtl">
+                        <thead>
+                            <tr>
+                                <th style="text-align:right">نام اشتراک</th>
+                                <th style="text-align:right">نام اشتراک در V2board</th>
+                                <th style="text-align:right">تعرفه</th>
+                                <th style="text-align:right">تاریخ ایجاد</th>
+                                <th style="text-align:right">مبلغ</th>
+                                <th style="text-align:right">وضعیت</th>
+                                <th style="text-align:right">منو</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.AccountName</td>
+                                    <td>@item.AccountName2</td>
+                                    <td>@item.tbPlans.Plan_Des</td>
+                                    <td>@Utility.ConvertDateTimeToShamsi2(item.OrderDate.Value)</td>
+                                    <td>@item.Order_Price.Value.ConvertToMony()</td>
+                                    <td>
+                                        @if (item.OrderStatus == "FOR_RESERVE")
+                                        {
+                                            <label class="badge badge-gradient-warning text-black">در صف رزرو</label>
+                                        }
+                                        else if (item.OrderStatus == "FINISH")
+                                        {
+                                            <label class="badge badge-gradient-success">انجام شده</label>
+                                        }
+
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
+                                            <div class="dropdown-menu" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 46px);cursor: pointer;text-align:right;">
+                                                <a class="dropdown-item">حذف</a>
+                                            </div>
+                                        </div>
+                                    </td>
+
+
+
+
+
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+
+
+@section scripts {
+
+    <script>
+
+        $(function () {
+
+            new DataTable("#AccountLogTable", {
+                order: [[5, 'desc']],
+                columnDefs: 2,
+                paging: true,
+                scrollCollapse: false,
+                scrollX: true,
+                scrollY: "600px",
+                pageLength: 13,
+                bFilter: true,
+                lengthChange: false,
+                searchPlaceholder: "جستجو ",
+                sSearch: "Quick Search:",
+                language: {
+                    lengthMenu: "Display _MENU_ records per page",
+                    zeroRecords: "اطلاعاتی یافت نشد",
+                    info: "",
+                    infoEmpty: "اطلاعاتی وجود ندارد",
+                    infoFiltered: "(filtered from _MAX_ total records)",
+                    sSearch: "جستجو : ",
+                    paginate: {
+                        previous: "قبلی",
+                        next: "بعدی"
+                    }
+                }
+            });
+
+        });
+
+
+
+        function DeleteAccount(Url) {
+
+            Swal.fire({
+                title: "آیا مطمئن هستید می خواهید اشتراک را پاک کنید ؟",
+                showDenyButton: true,
+                showCancelButton: false,
+                confirmButtonText: "بله",
+                denyButtonText: `خیر`
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $("#loading").css("display", "flex");
+                    $.ajax({
+                        url: Url,
+                        dataType: "html",
+                        type: "get",
+                        success: function (res) {
+                            $("#loading").css("display", "none");
+                            Swal.fire("اشتراک با موفقیت حذف شد", "", "success").then(function () {
+                                location.reload();
+                            });
+
+                        }
+                    });
+
+                }
+            });
+
+        }
+
+    </script>
+}
+

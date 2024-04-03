@@ -524,6 +524,10 @@
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbPlans" Association="V2boardSiteModel.FK_tbLinks_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbLinks_tbServers" Association="V2boardSiteModel.FK_tbLinks_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbLinks" EntitySet="tbLinks" />
@@ -580,10 +584,6 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUserFactors" EntitySet="tbUserFactors" />
           </AssociationSet>
-          <AssociationSet Name="FK_tbLinks_tbPlans" Association="V2boardSiteModel.FK_tbLinks_tbPlans">
-            <End Role="tbPlans" EntitySet="tbPlans" />
-            <End Role="tbLinks" EntitySet="tbLinks" />
-          </AssociationSet>
         </EntityContainer>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -635,13 +635,13 @@
           <Property Name="tb_RandomEmail" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="tb_AutoRenew" Type="Boolean" />
           <Property Name="tb_AutoRenew_V2Plan_ID" Type="Int32" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
           <Property Name="tb_ChargeLink_ID" Type="Int32" />
           <Property Name="tb_ChargeLinkedTime" Type="DateTime" Precision="3" />
           <Property Name="tb_ChargePlan_ID" Type="Int32" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbLinks" ToRole="tbPlans" />
           <Property Name="tb_status" Type="Boolean" />
+          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbLinks" ToRole="tbPlans" />
+          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
@@ -702,10 +702,10 @@
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="Price" Type="Int32" />
           <Property Name="Price2" Type="Int32" />
+          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
-          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -842,6 +842,18 @@
             </Principal>
             <Dependent Role="tbDepositWallet_Log">
               <PropertyRef Name="FK_TelegramUser_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinks_tbPlans">
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPlans">
+              <PropertyRef Name="Plan_ID" />
+            </Principal>
+            <Dependent Role="tbLinks">
+              <PropertyRef Name="tb_ChargePlan_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1010,18 +1022,6 @@
             </Principal>
             <Dependent Role="tbUserFactors">
               <PropertyRef Name="FK_User_ID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_tbLinks_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="tbPlans">
-              <PropertyRef Name="Plan_ID" />
-            </Principal>
-            <Dependent Role="tbLinks">
-              <PropertyRef Name="tb_ChargePlan_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>

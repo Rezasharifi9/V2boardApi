@@ -204,7 +204,7 @@ namespace V2boardApi.Areas.api.Controllers
             try
             {
                 var date = DateTime.Now.AddHours(-15);
-                var Order = RepositoryOrders.table.Where(p => p.OrderDate >= date && p.OrderStatus == "FOR_PAY" && p.FK_Plan_ID == PlanID).FirstOrDefault();
+                var Order = RepositoryOrders.table.Where(p => p.OrderDate >= date && p.OrderStatus == "FOR_RESERVE" && p.FK_Plan_ID == PlanID).FirstOrDefault();
                 if (Order != null)
                 {
                     Order.OrderStatus = "SUCCESS";

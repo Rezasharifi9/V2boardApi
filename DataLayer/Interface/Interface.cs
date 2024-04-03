@@ -9,7 +9,7 @@ namespace DataLayer
 {
     public interface IRepository<T> where T : class
     {
-        List<T> GetAll(Expression<Func<T, bool>> predicate);
+        List<T> Where(Expression<Func<T, bool>> predicate);
         T GetById(object id);
         void Insert(T obj);
         void Update(T obj);

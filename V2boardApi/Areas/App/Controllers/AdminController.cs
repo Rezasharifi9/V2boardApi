@@ -95,7 +95,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var Us = db.tbUsers.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
                 if (Us != null)
                 {
-                    var CheckExistsUser = RepositoryUser.GetAll(p => p.Username == tbUser.Username).Any();
+                    var CheckExistsUser = RepositoryUser.Where(p => p.Username == tbUser.Username).Any();
                     if (CheckExistsUser)
                     {
                         return Content("2");
@@ -166,7 +166,7 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     if (tbUser.Username != Us.Username)
                     {
-                        var CheckExistsUser = RepositoryUser.GetAll(p => p.Username == tbUser.Username).Any();
+                        var CheckExistsUser = RepositoryUser.Where(p => p.Username == tbUser.Username).Any();
                         if (CheckExistsUser)
                         {
                             return Content("2");
@@ -330,7 +330,7 @@ namespace V2boardApi.Areas.App.Controllers
             try
             {
 
-                var User = RepositoryUser.GetAll(p => p.User_ID == id).FirstOrDefault();
+                var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
                 if (User != null)
                 {
                     if (User.Status.Value)
@@ -362,7 +362,7 @@ namespace V2boardApi.Areas.App.Controllers
 
             if (Us != null)
             {
-                var Plans = RepositoryPlans.GetAll(p => p.FK_Server_ID == Us.FK_Server_ID && p.Status == true).ToList();
+                var Plans = RepositoryPlans.Where(p => p.FK_Server_ID == Us.FK_Server_ID && p.Status == true).ToList();
                 return PartialView(Plans);
             }
             else
@@ -377,16 +377,25 @@ namespace V2boardApi.Areas.App.Controllers
 
         public ActionResult GetUserAccountLog(int id)
         {
-            var Username = RepositoryUser.GetAll(p => p.User_ID == id).FirstOrDefault().Username;
-            var Logs = RepositoryLogs.GetAll(p => p.tbLinkUserAndPlans.tbUsers.User_ID == id).OrderByDescending(p => p.CreateDatetime.Value).ToList();
+            var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
+            var Logs = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == id).OrderByDescending(p => p.CreateDatetime.Value).ToList();
             if (Logs != null)
             {
-                ViewBag.Name = Username;
-                return PartialView(Logs);
+
+                UserLogViewModel userLogViewModel = new UserLogViewModel();
+                userLogViewModel.Logs = Logs;
+                var LastPay = User.tbUserFactors.OrderByDescending(p => p.tbUf_CreateTime).FirstOrDefault();
+                userLogViewModel.SumSaleFromLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Sum(p => p.SalePrice.Value);
+                userLogViewModel.CountCreatedFormLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Count();
+                userLogViewModel.SumSale = Logs.Sum(p => p.SalePrice.Value);
+                userLogViewModel.CountCreated = Logs.Count();
+                ViewBag.Name = User.Username;
+
+                return View(userLogViewModel);
             }
             else
             {
-                return PartialView();
+                return View();
             }
 
         }
@@ -400,7 +409,7 @@ namespace V2boardApi.Areas.App.Controllers
         public ActionResult Factors(int id)
         {
 
-            var User = RepositoryUser.GetAll(p => p.User_ID == id).FirstOrDefault();
+            var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
             if (User != null)
             {
                 return PartialView(User.tbUserFactors.ToList());
@@ -416,7 +425,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
-                var Log = RepositoryLogs.GetAll(p => p.log_ID == id).FirstOrDefault();
+                var Log = RepositoryLogs.Where(p => p.log_ID == id).FirstOrDefault();
                 if (Log != null)
                 {
                     MySqlEntities mySqlEntities = new MySqlEntities(Log.tbLinkUserAndPlans.tbUsers.tbServers.ConnectionString);
@@ -443,7 +452,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             if (!string.IsNullOrEmpty(TOKEN))
             {
-                var User = RepositoryUser.GetAll(p => p.Token == TOKEN && p.Status == true).FirstOrDefault();
+                var User = RepositoryUser.Where(p => p.Token == TOKEN && p.Status == true).FirstOrDefault();
                 if (User != null)
                 {
                     var wallet = User.Wallet * 10;
@@ -456,7 +465,7 @@ namespace V2boardApi.Areas.App.Controllers
                         User.tbUserFactors.Add(userFactors);
                         RepositoryUser.Save();
 
-                        var Admin = RepositoryUser.GetAll(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
+                        var Admin = RepositoryUser.Where(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
 
                         if (Admin != null)
                         {
@@ -468,7 +477,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     else
                     {
-                        var Admin = RepositoryUser.GetAll(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
+                        var Admin = RepositoryUser.Where(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
 
                         if (Admin != null)
                         {
@@ -493,12 +502,12 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpPost]
         public ActionResult Pay(tbUsers tbUser)
         {
-            var User = RepositoryUser.GetAll(p => p.Token == tbUser.Token && p.Status == true).FirstOrDefault();
+            var User = RepositoryUser.Where(p => p.Token == tbUser.Token && p.Status == true).FirstOrDefault();
             if (User != null)
             {
                 var wallet = (User.Wallet * 10);
                 ViewBag.wallet = wallet;
-                var Admin = RepositoryUser.GetAll(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
+                var Admin = RepositoryUser.Where(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
 
                 if (Admin != null)
                 {

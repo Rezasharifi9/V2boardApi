@@ -11,7 +11,7 @@ var	fileManager = EntityFrameworkTemplateFileManager.Create(this);
 var itemCollection = new EdmMetadataLoader(textTransform.Host, textTransform.Errors).CreateEdmItemCollection(inputFile);
 var codeStringGenerator = new CodeStringGenerator(code, typeMapper, ef);
 
-if (!typeMapper.VerifyCaseInsensitiveTypeUniqueness(typeMapper.GetAllGlobalItems(itemCollection), inputFile))
+if (!typeMapper.VerifyCaseInsensitiveTypeUniqueness(typeMapper.WhereGlobalItems(itemCollection), inputFile))
 {
     return string.Empty;
 }
@@ -628,7 +628,7 @@ public class TypeMapper
             .OrderBy(i => i.Name);
     }
 
-    public IEnumerable<string> GetAllGlobalItems(IEnumerable<GlobalItem> itemCollection)
+    public IEnumerable<string> WhereGlobalItems(IEnumerable<GlobalItem> itemCollection)
     {
         return itemCollection
             .Where(i => i is EntityType || i is ComplexType || i is EntityContainer || IsEnumType(i))
