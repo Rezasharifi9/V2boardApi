@@ -123,7 +123,7 @@ namespace V2boardApi.Areas.api.Controllers
         #region لیست کاربران
         [System.Web.Http.HttpGet]
         [Authorize]
-        public IHttpActionResult Where(int page = 1, string name = null, string KeySort = null, string SortType = "DESC")
+        public IHttpActionResult GetAll(int page = 1, string name = null, string KeySort = null, string SortType = "DESC")
         {
             try
             {

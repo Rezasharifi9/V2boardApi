@@ -9206,7 +9206,7 @@ jQuery.extend( {
 				},
 
 				// Raw string
-				WhereResponseHeaders: function() {
+				getAllResponseHeaders : function() {
 					return completed ? responseHeadersString : null;
 				},
 
@@ -9793,7 +9793,7 @@ jQuery.ajaxTransport( function( options ) {
 									typeof xhr.responseText !== "string" ?
 										{ binary: xhr.response } :
 										{ text: xhr.responseText },
-									xhr.WhereResponseHeaders()
+									xhr.getAllResponseHeaders ()
 								);
 							}
 						}

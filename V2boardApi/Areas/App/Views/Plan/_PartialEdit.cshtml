@@ -131,7 +131,7 @@
                             $('.modal').modal('hide');
                             $("#loading").css("display", "flex");
                             $.ajax({
-                                url: "@Url.Action("_PartialWherePlans", "Plan", new { area = "App" })",
+                                url: "@Url.Action("_PartialGetAllPlans", "Plan", new { area = "App" })",
                                 dataType: "html",
                                 type: "get",
                                 success: function (res) {

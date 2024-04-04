@@ -34,7 +34,7 @@ namespace V2boardApi.Areas.App.Controllers
             return View();
         }
 
-        public ActionResult _PartialWherePlans()
+        public ActionResult _PartialGetAllPlans()
         {
             var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)

@@ -18,6 +18,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbPlans> RepositoryPlans { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbTelegramUsers> RepositoryTelegramUsers { get; set; }
+        private Repository<tbServers> RepositoryServers { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public TelegramUsersController()
         {
@@ -26,6 +27,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryPlans = new Repository<tbPlans>(db);
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryTelegramUsers = new Repository<tbTelegramUsers>(db);
+            RepositoryServers = new Repository<tbServers>(db);
         }
 
 
@@ -62,7 +64,7 @@ namespace V2boardApi.Areas.App.Controllers
             return PartialView();
         }
 
-        
+
         public ActionResult SendPublicMessage(string message)
         {
             try
@@ -71,14 +73,14 @@ namespace V2boardApi.Areas.App.Controllers
 
                 var Users = RepositoryTelegramUsers.Where(p => p.Tel_RobotID == Use.tbServers.Robot_ID).ToList();
                 TelegramBotClient botClient = new TelegramBotClient(Use.tbServers.Robot_Token);
-                foreach(var item in Users)
+                foreach (var item in Users)
                 {
                     botClient.SendTextMessageAsync(item.Tel_UniqUserID, message);
                 }
 
                 return Content("1");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Content("2");
             }
@@ -115,6 +117,50 @@ namespace V2boardApi.Areas.App.Controllers
                 return Content("2");
             }
         }
+
+        #endregion
+
+        #region پیام به کاربر
+
+        [HttpGet]
+        public ActionResult _SendMessage(int id)
+        {
+            var TelegramUser = RepositoryTelegramUsers.Where(p => p.Tel_UserID == id).FirstOrDefault();
+            ViewBag.id = id;
+            ViewBag.name = TelegramUser.Tel_FirstName + TelegramUser.Tel_LastName;
+            return PartialView();
+        }
+
+        [HttpPost]
+        public ActionResult SendMessage(string message, int id)
+        {
+
+            try
+            {
+                var TelegramUser = RepositoryTelegramUsers.Where(p => p.Tel_UserID == id).FirstOrDefault();
+                if (TelegramUser != null)
+                {
+
+                    var server = RepositoryServers.Where(p => p.Robot_ID == TelegramUser.Tel_RobotID).First();
+
+                    TelegramBotClient bot = new TelegramBotClient(server.Robot_Token);
+                    bot.SendTextMessageAsync(TelegramUser.Tel_UniqUserID, message);
+                    bot.CloseAsync();
+                    return Content("1");
+
+                }
+                else
+                {
+                    return Content("2");
+                }
+            }
+            catch(Exception ex)
+            {
+                return Content("3");
+            }
+            
+        }
+
 
         #endregion
 

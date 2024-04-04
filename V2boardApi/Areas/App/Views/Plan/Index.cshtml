@@ -10,7 +10,7 @@
             <div class="card-body table-responsive">
                 <button class="btn btn-outline-dribbble btn-sm" id="UpdatePlan" style="margin-bottom:10px;">بروزرسانی تعرفه ها</button>
                 <div id="PartialPlans">
-                    @Html.Action("_PartialWherePlans", "Plan", new { area = "App" })
+                    @Html.Action("_PartialGetAllPlans", "Plan", new { area = "App" })
                 </div>
             </div>
         </div>
@@ -70,7 +70,7 @@
                     $("#loading").css("display", "none");
                     $("#loading").css("display", "flex");
                     $.ajax({
-                        url: "@Url.Action("_PartialWherePlans", "Plan", new { area = "App" })",
+                        url: "@Url.Action("_PartialGetAllPlans", "Plan", new { area = "App" })",
                         dataType: "html",
                         type: "get",
                         success: function (res) {

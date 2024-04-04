@@ -1,17 +1,16 @@
-﻿@model DataLayer.DomainModel.tbTelegramUsers
-
-@using V2boardApi.Tools;
+﻿
 <div class="modal-content">
     <div class="modal-body">
         <div class="card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">شارژ کیف پول</h4>
+                    <h4 class="card-title">پیام به @ViewBag.name</h4>
                     <form class="form-sample">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group row">
-                                    <input type="text" class="form-control" name="Wallet" id="Wallet" value="@Model.Tel_Wallet.Value">
+
+                                    <textarea class="form-control" name="message" id="message" cols="10" rows="10"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -33,32 +32,40 @@
     });
 
     function SaveChange(input) {
-        debugger
-        var wallet = $("input[name='Wallet']").val();
+        var message = $("textarea[name='message']").val();
 
-        if (wallet >= 0 && wallet!="") {
+        if (message.length >= 0) {
             $("#loading").css("display", "flex");
             $.ajax({
-                url: "@Url.Action("EditWallet", "TelegramUsers",new {area="App"})",
+                url: "@Url.Action("SendMessage", "TelegramUsers",new {area="App"})",
                 type: "Post",
-                data: { wallet: wallet, id: '@Model.Tel_UserID' },
+                data: { message: message, id: '@ViewBag.id' },
                 datatype: "html",
                 success: function (res) {
                     $("#loading").css("display", "none");
                     if (res == "1") {
                         Swal.fire({
-                            title: "شارژ کیف پول",
-                            text: "با موفقیت انجام شد",
+                            title: "موفق",
+                            text: "پیام با موفقیت ارسال شد",
                             icon: "success"
                         }).then(function () {
                             location.reload();
                         });
                     }
+                    else if (res == "2") {
+                        $("#loading").css("display", "none");
+                        Swal.fire({
+                            title: "خطا",
+                            text: "این کاربر در ربات وجود ندارد",
+                            icon: "error"
+                        });
+                        return;
+                    }
                     else {
                         $("#loading").css("display", "none");
                         Swal.fire({
                             title: "خطا",
-                            text: "خطا در برقراری ارتباط با سرور",
+                            text: "این کاربر در ربات وجود ندارد یا ربات را بلاک کرده است",
                             icon: "error"
                         });
                         return;
@@ -70,8 +77,8 @@
             $("#loading").css("display", "none");
             Swal.fire({
                 title: "خطا",
-                text: "لطفا مبلغی جهت کسر از کیف پول وارد کنید",
-                icon: "error"
+                text: "لطفا متنی جهت ارسال وارد کنید",
+                icon: "warning"
             });
             return;
         }

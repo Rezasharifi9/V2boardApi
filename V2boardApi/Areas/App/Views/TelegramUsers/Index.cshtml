@@ -90,6 +90,21 @@
             });
         }
 
+        function SendMessage(id) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("_SendMessage", "TelegramUsers", new { area = "App" })",
+                type: "get",
+                data: { id: id },
+                dataType: "html",
+                success: function (result) {
+                    $("#loading").css("display", "none");
+                    $("#modal-dialog-sm").html(result);
+                    $('#modal-sm').modal('show');
+                }
+            });
+        }
+
 
     </script>
 

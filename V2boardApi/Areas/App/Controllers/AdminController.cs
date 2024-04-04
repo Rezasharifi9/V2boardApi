@@ -277,13 +277,6 @@ namespace V2boardApi.Areas.App.Controllers
                 tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username && p.Role == 1).FirstOrDefault();
                 if (User != null)
                 {
-                    string ip = System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
-                    if (string.IsNullOrEmpty(ip))
-                    {
-                        ip = System.Web.HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
-                    }
-
-                    var ip2 = System.Web.HttpContext.Current.Request.ServerVariables["LOCAL_ADDR"];
                     if (User.Password == user.Password)
                     {
                         FormsAuthentication.SetAuthCookie(User.Username, false);
