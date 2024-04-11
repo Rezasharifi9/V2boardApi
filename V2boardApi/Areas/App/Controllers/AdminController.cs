@@ -391,8 +391,16 @@ namespace V2boardApi.Areas.App.Controllers
                 UserLogViewModel userLogViewModel = new UserLogViewModel();
                 userLogViewModel.Logs = Logs;
                 var LastPay = User.tbUserFactors.OrderByDescending(p => p.tbUf_CreateTime).FirstOrDefault();
-                userLogViewModel.SumSaleFromLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Sum(p => p.SalePrice.Value);
-                userLogViewModel.CountCreatedFormLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Count();
+                if (LastPay != null)
+                {
+                    userLogViewModel.SumSaleFromLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Sum(p => p.SalePrice.Value);
+                    userLogViewModel.CountCreatedFormLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Count();
+                }
+                else
+                {
+                    userLogViewModel.SumSaleFromLastPay = 0;
+                    userLogViewModel.CountCreatedFormLastPay = 0;
+                }
                 userLogViewModel.SumSale = Logs.Sum(p => p.SalePrice.Value);
                 userLogViewModel.CountCreated = Logs.Count();
                 ViewBag.Name = User.Username;
