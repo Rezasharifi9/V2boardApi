@@ -32,13 +32,6 @@ namespace V2boardApi.Areas.App.Controllers
         public ActionResult Index()
         {
 
-            var logs = db.tbLogs.ToList();
-            foreach (var log in logs)
-            {
-                log.SalePrice = log.tbLinkUserAndPlans.tbPlans.Price;
-            }
-            db.SaveChanges();
-
             var user = RepositoryUser.Where(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
             if (user != null)
             {
