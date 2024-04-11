@@ -29,11 +29,12 @@
                             <a class="dropdown-item" onclick="DisablePlan('@Url.Action("DisablePlan", "Plan", new { id=item.Plan_ID,area = "App" })')">
                                 @if (item.Status.Value)
                                 {
-                                    <span>فعال سازی</span>
+
+                                    <span>غیرفعال سازی</span>
                                 }
                                 else
                                 {
-                                    <span>غیرفعال سازی</span>
+                                    <span>فعال سازی</span>
                                 }
                             </a>
                         </div>
