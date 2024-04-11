@@ -31,6 +31,14 @@ namespace V2boardApi.Areas.App.Controllers
         }
         public ActionResult Index()
         {
+
+            var logs = db.tbLogs.ToList();
+            foreach (var log in logs)
+            {
+                log.SalePrice = log.tbLinkUserAndPlans.tbPlans.Price;
+            }
+            db.SaveChanges();
+
             var user = RepositoryUser.Where(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
             if (user != null)
             {
@@ -82,15 +90,15 @@ namespace V2boardApi.Areas.App.Controllers
                 foreach (var item in RepositoryTelegramUsers.Where(p => p.Tel_RobotID == user.tbServers.Robot_ID).ToList())
                 {
                     //فروش هفته جاری از ربات
-                    model.SaleFromBot += item.tbOrders.Where(p => p.OrderDate >= thisDayStartDate && p.OrderDate <= EndOfWeek).Sum(p => p.Order_Price.Value);
+                    model.SaleFromBot += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= thisDayStartDate && p.dw_CreateDatetime <= EndOfWeek && p.dw_Status == "FINISH").Sum(p => p.dw_Price.Value);
                     //فروش هفته قبل از ربات
-                    OldWeekSaleFromBot += item.tbOrders.Where(p => p.OrderDate >= lastDayStartDate && p.OrderDate <= lastDayEndDate).Sum(p => p.Order_Price.Value);
+                    OldWeekSaleFromBot += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= lastDayStartDate && p.dw_CreateDatetime <= lastDayEndDate && p.dw_Status == "FINISH").Sum(p => p.dw_Price.Value);
                     //تعداد فروش هفته جاری از ربات
-                    model.CountUserFromBot += item.tbOrders.Where(p => p.OrderDate >= thisDayStartDate && p.OrderDate <= EndOfWeek).Count();
+                    model.CountUserFromBot += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= thisDayStartDate && p.dw_CreateDatetime <= EndOfWeek && p.dw_Status == "FINISH").Count();
                     // تعداد فروش هفته قبل در ربات
-                    OldWeekCountBot += item.tbOrders.Where(p => p.OrderDate >= lastDayStartDate && p.OrderDate <= lastDayEndDate).Count();
+                    OldWeekCountBot += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= lastDayStartDate && p.dw_CreateDatetime <= lastDayEndDate && p.dw_Status == "FINISH").Count();
                     //فروش امروز از ربات
-                    model.SaleFromBotToday += item.tbOrders.Where(p => p.OrderDate >= DateTime.Now.Date).Sum(p => p.Order_Price.Value);
+                    model.SaleFromBotToday += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= DateTime.Now.Date && p.dw_Status == "FINISH").Sum(p => p.dw_Price.Value);
 
                 }
 

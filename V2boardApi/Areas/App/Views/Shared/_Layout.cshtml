@@ -255,7 +255,7 @@
     <script src="~/Areas/App/assets/sweetalert/sweetalert2@11.js"></script>
     <script src="~/Areas/App/assets/select2/select2.min.js"></script>
     <script>
-        function ConvertToDataTable(table,OrderColumn,colmnWidth) {
+        function ConvertToDataTable(table, OrderColumn, colmnWidth) {
             new DataTable(table, {
                 order: [[OrderColumn, 'asc']],
                 columnDefs: colmnWidth,
@@ -277,14 +277,71 @@
                     sSearch: "جستجو : ",
                     paginate: {
                         previous: "قبلی",
-                        next:"بعدی"
+                        next: "بعدی"
                     }
                 }
             });
 
         }
 
+        function separateDigits(number) {
+            // تبدیل عدد به رشته
+            let numberString = String(number);
 
+            // بررسی اگر عدد منفی بود
+            let isNegative = false;
+            if (numberString[0] === '-') {
+                isNegative = true;
+                numberString = numberString.slice(1);
+            }
+
+            // جدا کردن ارقام به صورت سه رقم سه رقم
+            let separated = '';
+            let count = 0;
+            for (let i = numberString.length - 1; i >= 0; i--) {
+                separated = numberString[i] + separated;
+                count++;
+                if (count === 3 && i !== 0) {
+                    separated = ',' + separated;
+                    count = 0;
+                }
+            }
+
+            // اضافه کردن علامت منفی اگر بود
+            if (isNegative) {
+                separated = '-' + separated;
+            }
+
+            return separated;
+        }
+
+        // مثال استفاده
+        let number = 123456789;
+        console.log(separateDigits(number)); // خروجی: 123,456,789
+
+
+    </script>
+
+    <script>
+        function separateDigits(inputValue, InputId) {
+            // حذف همه اعداد از متن
+            let numberOnly = inputValue.replace(/\D/g, '');
+
+            // جدا کردن ارقام به صورت سه رقم سه رقم
+            let separated = '';
+            let count = 0;
+            for (let i = numberOnly.length - 1; i >= 0; i--) {
+                separated = numberOnly[i] + separated;
+                count++;
+                if (count === 3 && i !== 0) {
+                    separated = ',' + separated;
+                    count = 0;
+                }
+            }
+
+            // نمایش جدا کرده شده در input
+            document.getElementById(InputId).value = separated;
+        }
     </script>
 
     @RenderSection("scripts", false)

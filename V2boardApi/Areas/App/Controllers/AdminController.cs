@@ -55,6 +55,9 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.Authorize]
         public ActionResult Index()
         {
+
+            
+
             return View();
         }
 
@@ -234,16 +237,26 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [System.Web.Mvc.HttpPost]
-        public ActionResult EditWallet(int id, int wallet)
+        public ActionResult EditWallet(int id, string wallet)
         {
             var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
             if (us != null)
             {
+                var intWallet = 0;
+                try
+                {
+                    intWallet = int.Parse(wallet, NumberStyles.Currency);
+                }
+                catch(Exception ex)
+                {
+                    return Content("3");
+                }
+
                 tbUserFactors factor = new tbUserFactors();
-                factor.tbUf_Value = wallet;
+                factor.tbUf_Value = intWallet;
                 factor.tbUf_CreateTime = DateTime.Now;
                 factor.FK_User_ID = id;
-                us.Wallet -= wallet;
+                us.Wallet = intWallet;
                 us.tbUserFactors.Add(factor);
                 RepositoryUser.Save();
                 return Content("1");
@@ -423,8 +436,40 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     MySqlEntities mySqlEntities = new MySqlEntities(Log.tbLinkUserAndPlans.tbUsers.tbServers.ConnectionString);
                     mySqlEntities.Open();
+                    var Ended = false;
+                    var Reader2 = mySqlEntities.GetData("select * from v2_user where email='" + Log.FK_NameUser_ID + "@" + Log.tbLinkUserAndPlans.tbUsers.Username + "'");
+                    if (Reader2.Read())
+                    {
+                        var d = Reader2.GetDouble("d");
+                        var u = Reader2.GetDouble("u");
+                        var totalUsed = Reader2.GetDouble("transfer_enable");
+
+                        var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
+                        var exp2 = Reader2.GetBodyDefinition("expired_at");
+                        
+                        if (!string.IsNullOrWhiteSpace(exp2))
+                        {
+                            var expireTime = DateTime.Now;
+                            var ExpireDate = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp2));
+                            if (ExpireDate <= expireTime)
+                            {
+                                Ended = true;
+                            }
+                        }
+                        if (total <= 0)
+                        {
+                            Ended = true;
+                        }
+                    }
+                    Reader2.Close();
+
+
                     var Reader = mySqlEntities.GetData("delete from v2_user where email='" + Log.FK_NameUser_ID + "@" + Log.tbLinkUserAndPlans.tbUsers.Username + "'");
-                    Log.tbLinkUserAndPlans.tbUsers.Wallet -= Log.tbLinkUserAndPlans.tbPlans.Price;
+                    if (!Ended)
+                    {
+                        Log.tbLinkUserAndPlans.tbUsers.Wallet -= Log.tbLinkUserAndPlans.tbPlans.Price;
+                    }
+                    
                     var Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Log.tbLinkUserAndPlans.tbUsers.FK_Server_ID).OrderByDescending(p => p.User_ID).ToList();
                     RepositoryLogs.Delete(Log.log_ID);
                     RepositoryLogs.Save();

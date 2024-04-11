@@ -6,12 +6,12 @@
         <div class="card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">مبلغ پرداختی</h4>
+                    <h4 class="card-title">شارژ کیف پول</h4>
                     <form class="form-sample">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group row">
-                                    <input type="text" class="form-control" name="Wallet" id="Wallet" value="">
+                                    <input type="text" class="form-control" name="Wallet" id="Wallet" value="@Model.Wallet.Value.ConvertToMony()" oninput="separateDigits($(this).val(),'Wallet')">
                                 </div>
                             </div>
                         </div>
@@ -36,7 +36,7 @@
         debugger
         var wallet = $("input[name='Wallet']").val();
 
-        if (wallet >= 0 && wallet!="") {
+        if (wallet.length >= 0 && wallet!="") {
             $("#loading").css("display", "flex");
             $.ajax({
                 url: "@Url.Action("EditWallet", "Admin",new {area="App"})",
@@ -51,19 +51,17 @@
                             text: "کیف پول کاربر با موفقیت شارژ شد",
                             icon: "success"
                         }).then(function () {
-                            $('.modal').modal('hide');
-                            $("#loading").css("display", "flex");
-                            $.ajax({
-                                url: "@Url.Action("_PartialGetAllUsers", "Admin", new { area = "App" })",
-                                dataType: "html",
-                                type: "get",
-                                success: function (res) {
-                                    $("#loading").css("display", "none");
-                                    $("#PartialUsers").html(res);
-                                    
-                                }
-                            });
+                            location.reload();
+
                         });
+                    }
+                    else if (res == "3") {
+                        Swal.fire({
+                            title: "خطا",
+                            text: "لطفا مبلغ را به عدد وارد کنید",
+                            icon: "error"
+                        });
+                        return;
                     }
                     else {
                         Swal.fire({
@@ -78,7 +76,7 @@
         else {
             Swal.fire({
                 title: "Warning",
-                text: "Wallet amount must be greater than or equal to 0",
+                text: "مقدار کیف پول نمی تواند خالی باشد",
                 icon: "error"
             });
         }
@@ -86,3 +84,4 @@
     }
 
 </script>
+
