@@ -109,6 +109,50 @@ namespace V2boardApi.Areas.App.Controllers
                             plan.FK_Server_ID = user.FK_Server_ID;
                             RepositoryPlans.Insert(plan);
                         }
+                        else
+                        {
+                            planD.Plan_ID_V2 = id;
+                            planD.PlanVolume = reader.GetInt32("transfer_enable");
+                            planD.Plan_Name = reader.GetString("name");
+                            var Month_Price = reader.GetBodyDefinition("month_price");
+                            var quarter_price = reader.GetBodyDefinition("quarter_price");
+                            var half_year_price = reader.GetBodyDefinition("half_year_price");
+                            var year_price = reader.GetBodyDefinition("year_price");
+                            if (Month_Price != "")
+                            {
+                                planD.Price = Convert.ToInt32(Month_Price) / 100;
+                                planD.CountDayes = 30;
+
+                            }
+                            else if (quarter_price != "")
+                            {
+                                planD.Price = Convert.ToInt32(quarter_price) / 100;
+                                planD.CountDayes = 90;
+                            }
+                            else if (half_year_price != "")
+                            {
+                                planD.Price = Convert.ToInt32(half_year_price) / 100;
+                                planD.CountDayes = 180;
+                            }
+                            else if (year_price != "")
+                            {
+                                planD.Price = Convert.ToInt32(year_price) / 100;
+                                planD.CountDayes = 360;
+                            }
+                            if (show == 1)
+                            {
+                                planD.Status = true;
+                            }
+                            else
+                            {
+                                planD.Status = false;
+                            }
+                            if (planD.Price == null)
+                            {
+                                planD.Price = 0;
+                            }
+                            planD.FK_Server_ID = user.FK_Server_ID;
+                        }
                     }
 
 
