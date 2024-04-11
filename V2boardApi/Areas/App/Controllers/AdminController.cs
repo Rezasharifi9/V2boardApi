@@ -253,7 +253,7 @@ namespace V2boardApi.Areas.App.Controllers
                 }
 
                 tbUserFactors factor = new tbUserFactors();
-                factor.tbUf_Value = intWallet;
+                factor.tbUf_Value = us.Wallet - intWallet;
                 factor.tbUf_CreateTime = DateTime.Now;
                 factor.FK_User_ID = id;
                 us.Wallet = intWallet;
