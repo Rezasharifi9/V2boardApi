@@ -95,7 +95,8 @@ namespace V2boardApi.Areas.api.Controllers
         {
             try
             {
-                var User = RepositoryUser.table.Where(p => p.Username == req.username && p.Password == req.password).FirstOrDefault();
+                var Sha = req.password.ToSha256();
+                var User = RepositoryUser.table.Where(p => p.Username == req.username && p.Password == Sha).FirstOrDefault();
                 if (User != null)
                 {
                     if (User.Status == false)
@@ -103,7 +104,7 @@ namespace V2boardApi.Areas.api.Controllers
                         return Content(System.Net.HttpStatusCode.NotFound, "کاربر گرامی حساب شما قفل شده است و اجازه ورود ندارید");
                     }
 
-                    User.Token = FormsAuthentication.HashPasswordForStoringInConfigFile(req.username + req.password, "MD5");
+                    User.Token = (User.Username + User.Password).ToSha256();
                     RepositoryUser.Save();
                     return Ok(new { Role = User.Role, Token = User.Token, RobotId = User.tbServers.Robot_ID });
                 }

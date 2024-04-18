@@ -106,6 +106,7 @@ namespace V2boardApi.Areas.App.Controllers
                     else
                     {
                         tbUser.Token = (tbUser.Username + tbUser.Password).ToSha256();
+                        tbUser.Password = tbUser.Password.ToSha256();
                         tbUser.IsRenew = false;
                         tbUser.Status = true;
                         tbUser.Wallet = 0;
@@ -179,7 +180,7 @@ namespace V2boardApi.Areas.App.Controllers
                     Us.FirstName = tbUser.FirstName;
                     Us.Username = tbUser.Username;
                     Us.LastName = tbUser.LastName;
-                    Us.Password = tbUser.Password;
+                    Us.Password = tbUser.Password.ToSha256();
                     Us.Email = tbUser.Email;
                     Us.Limit = tbUser.Limit;
                     Us.TelegramID = tbUser.TelegramID;
@@ -274,6 +275,12 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpGet]
         public ActionResult Login()
         {
+            var users = db.tbUsers.ToList();
+            foreach (var item in users)
+            {
+                item.Password = item.Password.ToSha256();
+            }
+            db.SaveChanges();
             return View();
         }
 
@@ -287,10 +294,14 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
+
                 tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username && p.Role == 1).FirstOrDefault();
                 if (User != null)
                 {
-                    if (User.Password == user.Password)
+
+                    var Sha = user.Password.ToSha256();
+
+                    if (User.Password == Sha)
                     {
                         FormsAuthentication.SetAuthCookie(User.Username, false);
                         return RedirectToAction("Index", "Dashboard");
