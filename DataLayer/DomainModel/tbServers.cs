@@ -40,7 +40,7 @@ namespace DataLayer.DomainModel
         public Nullable<double> Discount_Percent { get; set; }
         public Nullable<long> AdminTelegramUniqID { get; set; }
         public string Channel_ID { get; set; }
-        public Nullable<int> FreeCredit { get; set; }
+        public Nullable<double> FreeCredit { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbConnectionHelp> tbConnectionHelp { get; set; }

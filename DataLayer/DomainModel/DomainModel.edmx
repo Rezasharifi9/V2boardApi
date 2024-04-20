@@ -131,7 +131,7 @@
           <Property Name="Discount_Percent" Type="float" />
           <Property Name="AdminTelegramUniqID" Type="bigint" />
           <Property Name="Channel_ID" Type="varchar" MaxLength="100" />
-          <Property Name="FreeCredit" Type="int" />
+          <Property Name="FreeCredit" Type="float" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
           <Key>
@@ -726,7 +726,7 @@
           <Property Name="Discount_Percent" Type="Double" />
           <Property Name="AdminTelegramUniqID" Type="Int64" />
           <Property Name="Channel_ID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="FreeCredit" Type="Int32" />
+          <Property Name="FreeCredit" Type="Double" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbServers" FromRole="tbServers" ToRole="tbConnectionHelp" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbServers" ToRole="tbLinks" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
