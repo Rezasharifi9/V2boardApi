@@ -275,12 +275,6 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpGet]
         public ActionResult Login()
         {
-            var users = db.tbUsers.ToList();
-            foreach (var item in users)
-            {
-                item.Password = item.Password.ToSha256();
-            }
-            db.SaveChanges();
             return View();
         }
 
@@ -308,15 +302,13 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     else
                     {
+                        TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
                         return RedirectToAction("Login", "Admin");
                     }
 
                 }
                 else
                 {
-
-
-
                     TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
                     return RedirectToAction("Login", "Admin");
                 }

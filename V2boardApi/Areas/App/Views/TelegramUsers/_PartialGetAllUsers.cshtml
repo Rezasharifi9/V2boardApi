@@ -28,6 +28,7 @@
                         <div class="dropdown-menu" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 46px);cursor: pointer;text-align:right;">
                             <a class="dropdown-item" onclick="EditWallet('@item.Tel_UserID')">شارژ کیف پول</a>
                             <a class="dropdown-item" onclick="SendMessage('@item.Tel_UserID')">پیام به کاربر</a>
+                            <a class="dropdown-item" href="@Url.Action("Accounts","TelegramUsers",new {id=item.Tel_UserID})">اکانت ها</a>
                         </div>
                     </div>
                 </td>

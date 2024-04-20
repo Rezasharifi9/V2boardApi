@@ -235,6 +235,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\AdminModel\AccountsViewModel.cs" />
     <Compile Include="Models\AdminModel\LoginModel.cs" />
     <Compile Include="Models\AdminModel\UserLogViewModel.cs" />
     <Compile Include="Models\AdminModel\UsersModel.cs" />
@@ -433,6 +434,7 @@
     <Content Include="Areas\App\assets\vendors\mdi\fonts\materialdesignicons-webfont.woff" />
     <Content Include="Areas\App\assets\vendors\mdi\fonts\materialdesignicons-webfont.woff2" />
     <Content Include="Areas\App\Views\TelegramUsers\_SendMessage.cshtml" />
+    <Content Include="Areas\App\Views\TelegramUsers\Accounts.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />

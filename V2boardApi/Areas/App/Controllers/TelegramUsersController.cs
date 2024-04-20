@@ -3,14 +3,17 @@ using DataLayer.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Web;
 using System.Web.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using V2boardApi.Models.AdminModel;
+using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [Authorize]
+    [V2boardApi.Tools.Authorize]
     public class TelegramUsersController : Controller
     {
         private V2boardSiteEntities db;
@@ -19,6 +22,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbTelegramUsers> RepositoryTelegramUsers { get; set; }
         private Repository<tbServers> RepositoryServers { get; set; }
+        Repository<tbLinks> RepositoryLinks { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public TelegramUsersController()
         {
@@ -28,6 +32,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryTelegramUsers = new Repository<tbTelegramUsers>(db);
             RepositoryServers = new Repository<tbServers>(db);
+            RepositoryLinks = new Repository<tbLinks>(db);
         }
 
 
@@ -168,6 +173,66 @@ namespace V2boardApi.Areas.App.Controllers
         public ActionResult Orders(int TelegramUserId)
         {
             return View();
+        }
+
+        public ActionResult Accounts(int id)
+        {
+            var Links = RepositoryLinks.Where(p => p.FK_TelegramUserID == id).ToList();
+
+            var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
+
+            MySqlEntities mysql = new MySqlEntities(Use.tbServers.ConnectionString);
+            mysql.Open();
+
+            List<AccountsViewModel> accounts = new List<AccountsViewModel>();
+            foreach (var link in Links)
+            {
+                
+                var Reader = mysql.GetData("select * from v2_user where email='" + link.tb_RandomEmail + "'");
+                if (Reader.Read())
+                {
+                    AccountsViewModel account = new AccountsViewModel();
+                    account.V2boardUsername = link.tb_RandomEmail;
+                    account.State = "فعال";
+                    account.TotalVolume = Utility.ConvertByteToGB(Reader.GetInt64("transfer_enable"));
+                    var exp = Reader.GetBodyDefinition("expired_at");
+                    var OnlineTime = Reader.GetBodyDefinition("t");
+                    if (exp != "")
+                    {
+                        var e = Convert.ToInt64(exp);
+                        var ex = Utility.ConvertSecondToDatetime(e);
+                        account.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
+                        if (ex <= DateTime.Now)
+                        {
+                            account.State = "پایان تاریخ اشتراک";
+                        }
+                    }
+                    var u = Reader.GetInt64("u");
+                    var d = Reader.GetInt64("d");
+                    var re = Utility.ConvertByteToGB(u + d);
+                    account.UsedVolume = Math.Round(re, 2) + " GB";
+
+                    var vol = Reader.GetInt64("transfer_enable") - (u + d);
+                    var dd = Utility.ConvertByteToGB(vol);
+
+                    if (vol <= 0)
+                    {
+                        account.State = "اتمام حجم";
+                    }
+                    else
+                    if (Convert.ToBoolean(Reader.GetSByte("banned")))
+                    {
+                        account.State = "مسدود";
+                    }
+
+                    account.RemainingVolume = Math.Round(dd, 2) + " GB";
+                    accounts.Add(account);
+                }
+                Reader.Close();
+            }
+            mysql.Close();
+
+            return PartialView(accounts);
         }
     }
 }

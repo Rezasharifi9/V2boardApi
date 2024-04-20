@@ -1,0 +1,52 @@
+﻿@model List<V2boardApi.Models.AdminModel.AccountsViewModel>
+@{
+    ViewBag.Title = "Accounts";
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body table-responsive">
+                <h4 class="card-title">لیست اکانت ها</h4>
+                <div id="PartialUsers">
+                    <table class="table" id="TableTelegramUser" style="width:100%;" dir="ltr">
+                        <thead>
+                            <tr>
+                                <th style="background-color:white;">منو</th>
+                                <th> وضعیت </th>
+                                <th> تاریخ انقضا </th>
+                                <th> حجم باقی مانده </th>
+                                <th> حجم کل </th>
+                                <th> نام اکانت </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ToList())
+                            {
+                                <tr>
+                                    <td style="background-color:white;">
+                                        <div class="btn-group">
+                                            <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
+                                            <div class="dropdown-menu" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 46px);cursor: pointer;text-align:right;">
+                                                <a class="dropdown-item" >مسدود کردن</a>
+                                                <a class="dropdown-item" >کپی لینک</a>
+                                                <a class="dropdown-item" >حذف اکانت</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td> @item.State </td>
+                                    <td> @item.ExpireDate </td>
+                                    <td> @item.RemainingVolume </td>
+                                    <td> @item.UsedVolume </td>
+                                    <td> @item.V2boardUsername </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
