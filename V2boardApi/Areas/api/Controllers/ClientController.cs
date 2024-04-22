@@ -19,6 +19,7 @@ using System.Security.Policy;
 using System.Net.Mail;
 using System.Net;
 using System.Web.Http.Cors;
+using System.Runtime.Remoting.Messaging;
 
 namespace V2boardApi.Areas.api.Controllers
 {
@@ -50,7 +51,7 @@ namespace V2boardApi.Areas.api.Controllers
         {
             var UserAgent = Request.UserAgent.ToLower();
             var host = Request.Url.Host;
-            if(host == "panel.darkbaz.site")
+            if (host == "panel.darkbaz.site")
             {
                 host = "panel.darkbaz.com";
             }
@@ -66,8 +67,23 @@ namespace V2boardApi.Areas.api.Controllers
                     if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var result = res.Result.Content.ReadAsStringAsync();
-                        //var response = new HttpResponseMessage();
-                        //response.Content = new StringContent(result.Result, Encoding.UTF8, "text/html");
+
+                        MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
+                        sqlEntities.Open();
+                        var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
+                        var reader = sqlEntities.GetData(query);
+                        while (reader.Read())
+                        {
+                            var str = "upload=" + reader.GetBodyDefinition("u") + ";download=" + reader.GetBodyDefinition("d") + ";total=" + reader.GetBodyDefinition("transfer_enable") + ";expire=" + reader.GetBodyDefinition("expired_at");
+                            var name = reader.GetString("email").Split('@')[0];
+                            var base64 = Utility.Base64Encode(name.Split('$')[0]);
+
+                            Response.Headers.Add("subscription-userinfo", str);
+                            Response.Headers.Add("profile-title", "base64:" + base64);
+
+                        }
+
+
                         if (string.IsNullOrEmpty(result.Result))
                         {
                             var ress = HttpUtility.UrlEncode("❌ پایان تاریخ اشتراک ❌");
