@@ -68,19 +68,22 @@ namespace V2boardApi.Areas.api.Controllers
                     {
                         var result = res.Result.Content.ReadAsStringAsync();
 
-                        MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
-                        sqlEntities.Open();
-                        var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
-                        var reader = sqlEntities.GetData(query);
-                        while (reader.Read())
+                        if (UserAgent.StartsWith("hiddify"))
                         {
-                            var str = "upload=" + reader.GetBodyDefinition("u") + ";download=" + reader.GetBodyDefinition("d") + ";total=" + reader.GetBodyDefinition("transfer_enable") + ";expire=" + reader.GetBodyDefinition("expired_at");
-                            var name = reader.GetString("email").Split('@')[0];
-                            var base64 = Utility.Base64Encode(name.Split('$')[0]);
+                            MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
+                            sqlEntities.Open();
+                            var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
+                            var reader = sqlEntities.GetData(query);
+                            while (reader.Read())
+                            {
+                                var str = "upload=" + reader.GetBodyDefinition("u") + ";download=" + reader.GetBodyDefinition("d") + ";total=" + reader.GetBodyDefinition("transfer_enable") + ";expire=" + reader.GetBodyDefinition("expired_at");
+                                var name = reader.GetString("email").Split('@')[0];
+                                var base64 = Utility.Base64Encode(name.Split('$')[0]);
 
-                            Response.Headers.Add("subscription-userinfo", str);
-                            Response.Headers.Add("profile-title", "base64:" + base64);
+                                Response.Headers.Add("subscription-userinfo", str);
+                                Response.Headers.Add("profile-title", "base64:" + base64);
 
+                            }
                         }
 
 
