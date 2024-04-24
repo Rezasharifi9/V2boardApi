@@ -271,9 +271,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                     }
                     reader.Close();
-                    mySqlEntities.Close();
 
-                    mySqlEntities.Open();
                     if (name != null)
                     {
                         reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "' and email like '" + name + "%'");
