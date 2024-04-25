@@ -13,6 +13,7 @@ namespace DataLayer.DomainModel
     {
         private string _connection;
         private MySqlConnection SqlConnection;
+        private MySqlDataReader SqlDataReader;
         
         public MySqlEntities(string ConnectionString)
         {
@@ -20,7 +21,7 @@ namespace DataLayer.DomainModel
             {
                 _connection = ConnectionString;
                 SqlConnection = new MySqlConnection(_connection);
-                
+               
             }
             catch (Exception)
             {
@@ -38,14 +39,15 @@ namespace DataLayer.DomainModel
         {
             using(MySqlCommand sqlCommand = new MySqlCommand(query, SqlConnection))
             {
-                MySqlDataReader reader = sqlCommand.ExecuteReader();
-                return reader;
+                SqlDataReader = sqlCommand.ExecuteReader();
+                return SqlDataReader;
             }
         }
 
         public  void Close()
         {
             SqlConnection.Close();
+            SqlConnection.Dispose();
         }
     }
 
