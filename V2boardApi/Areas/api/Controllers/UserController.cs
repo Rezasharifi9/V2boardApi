@@ -1093,30 +1093,6 @@ namespace V2boardApi.Areas.api.Controllers
 
         #endregion
 
-
-        //[System.Web.Http.HttpPost]
-        //public IHttpActionResult LoginAdmin(ReqLoginModel req)
-        //{
-        //    try
-        //    {
-        //        var User = RepositoryUser.Where(p => p.Username == req.username && p.Password == req.password && p.Role == 1).FirstOrDefault();
-        //        if (User != null)
-        //        {
-        //            return Ok(new { token = User.Token, baseApiAddress = User.tbServers.SubAddress, phoneNumber = User.PhoneNumber });
-        //        }
-        //        else
-        //        {
-        //            return Content(System.Net.HttpStatusCode.NotFound, "نام کاربری یا رمز عبور اشتباه است");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
-        //    }
-        //}
-
-
-
     }
 
 }
