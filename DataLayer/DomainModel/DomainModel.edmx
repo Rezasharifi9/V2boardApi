@@ -96,6 +96,8 @@
           <Property Name="FK_Tel_UserID" Type="int" />
           <Property Name="AccountName2" Type="varchar" MaxLength="50" />
           <Property Name="payment_id" Type="varchar" MaxLength="50" />
+          <Property Name="PlanVolume" Type="int" />
+          <Property Name="PlanCountDayes" Type="int" />
         </EntityType>
         <EntityType Name="tbPlans">
           <Key>
@@ -685,6 +687,8 @@
           <Property Name="FK_Tel_UserID" Type="Int32" />
           <Property Name="AccountName2" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="payment_id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="PlanVolume" Type="Int32" />
+          <Property Name="PlanCountDayes" Type="Int32" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
         </EntityType>
@@ -1114,6 +1118,8 @@
           <EntitySetMapping Name="tbOrders">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbOrders">
               <MappingFragment StoreEntitySet="tbOrders">
+                <ScalarProperty Name="PlanCountDayes" ColumnName="PlanCountDayes" />
+                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
                 <ScalarProperty Name="payment_id" ColumnName="payment_id" />
                 <ScalarProperty Name="AccountName2" ColumnName="AccountName2" />
                 <ScalarProperty Name="FK_Tel_UserID" ColumnName="FK_Tel_UserID" />

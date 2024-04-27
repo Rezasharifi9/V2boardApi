@@ -10,7 +10,7 @@ using V2boardApi.Models.OrdersModel;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [V2boardApi.Tools.Authorize]
+    [Authorize]
     public class OrdersController : Controller
     {
         private V2boardSiteEntities _db;

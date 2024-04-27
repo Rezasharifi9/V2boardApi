@@ -13,7 +13,7 @@ using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [V2boardApi.Tools.Authorize]
+    [System.Web.Mvc.Authorize]
     public class TelegramUsersController : Controller
     {
         private V2boardSiteEntities db;
