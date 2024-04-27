@@ -33,7 +33,14 @@
                                     <td>@item.AccountName</td>
                                     <td>@item.AccountName2</td>
                                     <td>@item.tbTelegramUsers.Tel_Username</td>
-                                    <td>@item.PlanVolume گیگ @item.PlanCountDayes روزه</td>
+                                    @if (item.PlanCountDayes != null && item.PlanVolume != null)
+                                    {
+                                        <td>@item.PlanVolume گیگ @item.PlanCountDayes روزه</td>
+                                    }
+                                    else
+                                    {
+                                        <td>@item.tbPlans.PlanVolume گیگ @item.tbPlans.CountDayes روزه</td>
+                                    }
                                     <td>@Utility.ConvertDateTimeToShamsi2(item.OrderDate.Value)</td>
                                     <td>@item.Order_Price.Value.ConvertToMony()</td>
                                     <td>
