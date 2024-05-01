@@ -13,10 +13,10 @@ namespace DataLayer.DomainModel
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class V2boardSiteEntities : DbContext
+    public partial class Entities : DbContext
     {
-        public V2boardSiteEntities()
-            : base("name=V2boardSiteEntities")
+        public Entities()
+            : base("name=Entities")
         {
         }
     

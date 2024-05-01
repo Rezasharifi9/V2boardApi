@@ -53,7 +53,7 @@ namespace V2boardApi.Areas.api.Controllers
     [EnableCors(origins: "*", "*", "*")]
     public class UserController : ApiController
     {
-        private V2boardSiteEntities db;
+        private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbServers> RepositoryServer { get; set; }
         private Repository<tbPlans> RepositoryPlan { get; set; }
@@ -67,7 +67,7 @@ namespace V2boardApi.Areas.api.Controllers
         private System.Timers.Timer Timer { get; set; }
         public UserController()
         {
-            db = new V2boardSiteEntities();
+            db = new Entities();
             RepositoryUser = new Repository<tbUsers>(db);
             RepositoryServer = new Repository<tbServers>(db);
             RepositoryPlan = new Repository<tbPlans>(db);
@@ -199,9 +199,30 @@ namespace V2boardApi.Areas.api.Controllers
                         {
                             getUserData.id = reader.GetInt32("id");
                             getUserData.Name = reader.GetString("email").Split('@')[0];
+
+                            var log = RepositoryLogs.Where(p => p.FK_NameUser_ID.Equals(getUserData.Name) && p.tbLinkUserAndPlans.L_FK_U_ID == User.User_ID).ToList().LastOrDefault();
+
+
+                            getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetInt64("transfer_enable")).ToString();
+                            getUserData.PlanName = reader.GetString("name");
+                            if (log != null)
+                            {
+                                if (log.tbLinkUserAndPlans != null)
+                                {
+                                    getUserData.TotalVolume = log.tbLinkUserAndPlans.tbPlans.PlanVolume.Value.ToString();
+                                    if (log.PlanName != null)
+                                    {
+                                        getUserData.PlanName = log.PlanName;
+                                    }
+                                    else
+                                    {
+                                        getUserData.PlanName = log.tbLinkUserAndPlans.tbPlans.Plan_Name;
+                                    }
+                                }
+                            }
+
                             getUserData.IsBanned = Convert.ToBoolean(reader.GetSByte("banned"));
                             getUserData.IsActive = "فعال";
-                            getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetInt64("transfer_enable")).ToString();
                             var exp = reader.GetBodyDefinition("expired_at");
                             var OnlineTime = reader.GetBodyDefinition("t");
                             if (exp != "")
@@ -238,7 +259,6 @@ namespace V2boardApi.Areas.api.Controllers
                                 getUserData.IsOnline = false;
                             }
 
-                            getUserData.PlanName = reader.GetString("name");
 
 
                             getUserData.SubLink = "https://" + User.tbServers.SubAddress + "/api/v1/client/subscribe?token=" + reader.GetString("token");
@@ -319,11 +339,17 @@ namespace V2boardApi.Areas.api.Controllers
 
                 if (!string.IsNullOrEmpty(createUser.name))
                 {
+                    createUser.name = createUser.name.ToLower();
                     if (createUser.plan_id != 0)
                     {
                         var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).FirstOrDefault();
                         if (User != null)
                         {
+                            var Log = RepositoryLogs.Where(p=> p.FK_NameUser_ID == createUser.name && p.tbLinkUserAndPlans.L_FK_U_ID == User.User_ID).ToList().LastOrDefault();
+                            if (Log != null)
+                            {
+                                return Content(System.Net.HttpStatusCode.BadRequest, "این کاربر از قبل وجود دارد");
+                            }
 
                             if ((User.Limit - User.Wallet) >= 0)
                             {
@@ -371,7 +397,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 RepositoryLinks.Save();
                                 RepositoryUser.Save();
-                                AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, createUser.name, (int)plan.Price);
+                                AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, createUser.name, (int)plan.Price,plan.Plan_Name);
                                 return Content(System.Net.HttpStatusCode.OK, "اکانت با موفقیت ساخته شد");
                             }
                             else
@@ -469,7 +495,7 @@ namespace V2boardApi.Areas.api.Controllers
         #endregion
 
         #region افزودن لاگ تمدید یا ساخت کاربر
-        private bool AddLog(string Action, int LinkUserID, string V2User, int price)
+        private bool AddLog(string Action, int LinkUserID, string V2User, int price,string planName)
         {
             try
             {
@@ -479,6 +505,7 @@ namespace V2boardApi.Areas.api.Controllers
                 tbLogs.FK_NameUser_ID = V2User;
                 tbLogs.CreateDatetime = DateTime.Now;
                 tbLogs.SalePrice = price;
+                tbLogs.PlanName = planName;
                 RepositoryLogs.Insert(tbLogs);
                 return RepositoryLogs.Save();
             }
@@ -540,7 +567,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                         User.Wallet += link.tbPlans.Price;
 
-                        AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price);
+                        AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price,Plan.Plan_Name);
                     }
                     reader2.Close();
                     RepositoryLinks.Save();

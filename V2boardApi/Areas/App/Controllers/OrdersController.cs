@@ -13,12 +13,12 @@ namespace V2boardApi.Areas.App.Controllers
     [Authorize]
     public class OrdersController : Controller
     {
-        private V2boardSiteEntities _db;
+        private Entities _db;
         private Repository<tbOrders> OrdersRepository;
         private Repository<tbUsers> UsersRepository;
         public OrdersController()
         {
-            _db = new V2boardSiteEntities();
+            _db = new Entities();
             OrdersRepository = new Repository<tbOrders>(_db);
             UsersRepository = new Repository<tbUsers>(_db);
         }

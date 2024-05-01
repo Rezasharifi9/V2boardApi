@@ -169,32 +169,30 @@
     <Compile Include="Repository\Repository.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.Config" />
     <EntityDeploy Include="DomainModel\DomainModel.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>DomainModel.Designer.cs</LastGenOutput>
     </EntityDeploy>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.Config" />
     <None Include="DomainModel\DomainModel.edmx.diagram">
       <DependentUpon>DomainModel.edmx</DependentUpon>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="DomainModel\DomainModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>DomainModel.Context.cs</LastGenOutput>
       <DependentUpon>DomainModel.edmx</DependentUpon>
+      <LastGenOutput>DomainModel.Context.cs</LastGenOutput>
     </Content>
     <Content Include="DomainModel\DomainModel.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>DomainModel.edmx</DependentUpon>
       <LastGenOutput>DomainModel.cs</LastGenOutput>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

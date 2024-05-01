@@ -8,7 +8,7 @@ namespace V2boardBot.Functions
 {
     public static class RealUser
     {
-        public static void SetUserStep(string UserUniq, string Step, V2boardSiteEntities db)
+        public static void SetUserStep(string UserUniq, string Step, Entities db)
         {
             db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_Step = Step;
             db.SaveChanges();

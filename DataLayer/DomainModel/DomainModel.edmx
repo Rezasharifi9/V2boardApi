@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema Namespace="V2boardSiteModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+      <Schema Namespace="V2boardSiteModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="tbConnectionHelp">
           <Key>
             <PropertyRef Name="ch_ID" />
@@ -77,6 +77,7 @@
           <Property Name="CreateDatetime" Type="datetime" />
           <Property Name="FK_NameUser_ID" Type="nvarchar(max)" />
           <Property Name="SalePrice" Type="int" />
+          <Property Name="PlanName" Type="nvarchar" MaxLength="150" />
         </EntityType>
         <EntityType Name="tbOrders">
           <Key>
@@ -498,95 +499,11 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
           </AssociationSet>
         </EntityContainer>
-      </Schema></edmx:StorageModels>
+      </Schema>
+    </edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="V2boardSiteModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityContainer Name="V2boardSiteEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="tbConnectionHelp" EntityType="V2boardSiteModel.tbConnectionHelp" />
-          <EntitySet Name="tbDepositWallet_Log" EntityType="V2boardSiteModel.tbDepositWallet_Log" />
-          <EntitySet Name="tbExpLog" EntityType="V2boardSiteModel.tbExpLog" />
-          <EntitySet Name="tbFailureServers" EntityType="V2boardSiteModel.tbFailureServers" />
-          <EntitySet Name="tbLinks" EntityType="V2boardSiteModel.tbLinks" />
-          <EntitySet Name="tbLinkUserAndPlans" EntityType="V2boardSiteModel.tbLinkUserAndPlans" />
-          <EntitySet Name="tbLogs" EntityType="V2boardSiteModel.tbLogs" />
-          <EntitySet Name="tbOrders" EntityType="V2boardSiteModel.tbOrders" />
-          <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
-          <EntitySet Name="tbServers" EntityType="V2boardSiteModel.tbServers" />
-          <EntitySet Name="tbTelegramUsers" EntityType="V2boardSiteModel.tbTelegramUsers" />
-          <EntitySet Name="tbUpdateLogs" EntityType="V2boardSiteModel.tbUpdateLogs" />
-          <EntitySet Name="tbUseages" EntityType="V2boardSiteModel.tbUseages" />
-          <EntitySet Name="tbUserFactors" EntityType="V2boardSiteModel.tbUserFactors" />
-          <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
-          <AssociationSet Name="FK_tbConnectionHelp_tbServers" Association="V2boardSiteModel.FK_tbConnectionHelp_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbDepositWallet_Log_tbTelegramUsers" Association="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinks_tbPlans" Association="V2boardSiteModel.FK_tbLinks_tbPlans">
-            <End Role="tbPlans" EntitySet="tbPlans" />
-            <End Role="tbLinks" EntitySet="tbLinks" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinks_tbServers" Association="V2boardSiteModel.FK_tbLinks_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbLinks" EntitySet="tbLinks" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinks_tbTelegramUsers" Association="V2boardSiteModel.FK_tbLinks_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbLinks" EntitySet="tbLinks" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans">
-            <End Role="tbPlans" EntitySet="tbPlans" />
-            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinkUserAndPlans_tbUsers" Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans">
-            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
-            <End Role="tbLogs" EntitySet="tbLogs" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbOrders_tbPlans" Association="V2boardSiteModel.FK_tbOrders_tbPlans">
-            <End Role="tbPlans" EntitySet="tbPlans" />
-            <End Role="tbOrders" EntitySet="tbOrders" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbOrders_tbTelegramUsers" Association="V2boardSiteModel.FK_tbOrders_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbOrders" EntitySet="tbOrders" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbPlans_tbServers" Association="V2boardSiteModel.FK_tbPlans_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbPlans" EntitySet="tbPlans" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUpdateLogs_tbServers" Association="V2boardSiteModel.FK_tbUpdateLogs_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbUpdateLogs" EntitySet="tbUpdateLogs" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUseages_tbServers" Association="V2boardSiteModel.FK_tbUseages_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbUseages" EntitySet="tbUseages" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUsers_tbServers" Association="V2boardSiteModel.FK_tbUsers_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbUsers" EntitySet="tbUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbTelegramUsers_tbTelegramUsers" Association="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbTelegramUsers1" EntitySet="tbTelegramUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUsers_tbTelegramUsers" Association="V2boardSiteModel.FK_tbUsers_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbUsers" EntitySet="tbUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUserFactors_tbUsers" Association="V2boardSiteModel.FK_tbUserFactors_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbUserFactors" EntitySet="tbUserFactors" />
-          </AssociationSet>
-        </EntityContainer>
         <EntityType Name="tbConnectionHelp">
           <Key>
             <PropertyRef Name="ch_ID" />
@@ -596,7 +513,7 @@
           <Property Name="ch_Link" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="ch_Type" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbServers" FromRole="tbConnectionHelp" ToRole="tbServers" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbConnectionHelp_tbServers" FromRole="tbConnectionHelp" ToRole="tbServers" />
         </EntityType>
         <EntityType Name="tbDepositWallet_Log">
           <Key>
@@ -608,7 +525,7 @@
           <Property Name="dw_Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="dw_CreateDatetime" Type="DateTime" Precision="3" />
           <Property Name="dw_payment_id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="Self.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -641,9 +558,9 @@
           <Property Name="tb_ChargeLinkedTime" Type="DateTime" Precision="3" />
           <Property Name="tb_ChargePlan_ID" Type="Int32" />
           <Property Name="tb_status" Type="Boolean" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbLinks" ToRole="tbPlans" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbLinks_tbPlans" FromRole="tbLinks" ToRole="tbPlans" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="Self.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
@@ -653,9 +570,9 @@
           <Property Name="L_FK_U_ID" Type="Int32" />
           <Property Name="L_FK_P_ID" Type="Int32" />
           <Property Name="L_Status" Type="Boolean" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbLinkUserAndPlans" ToRole="tbPlans" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbLinkUserAndPlans" ToRole="tbUsers" />
-          <NavigationProperty Name="tbLogs" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbLogs" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbLinkUserAndPlans" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbLinkUserAndPlans" ToRole="tbUsers" />
+          <NavigationProperty Name="tbLogs" Relationship="Self.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbLogs" />
         </EntityType>
         <EntityType Name="tbLogs">
           <Key>
@@ -667,7 +584,8 @@
           <Property Name="CreateDatetime" Type="DateTime" Precision="3" />
           <Property Name="FK_NameUser_ID" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="SalePrice" Type="Int32" />
-          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
+          <Property Name="PlanName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="Self.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
         </EntityType>
         <EntityType Name="tbOrders">
           <Key>
@@ -689,8 +607,8 @@
           <Property Name="payment_id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="PlanCountDayes" Type="Int32" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="Self.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbPlans">
           <Key>
@@ -706,10 +624,10 @@
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="Price" Type="Int32" />
           <Property Name="Price2" Type="Int32" />
-          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
-          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
-          <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
+          <NavigationProperty Name="tbLinks" Relationship="Self.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="Self.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbOrders" Relationship="Self.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -731,12 +649,12 @@
           <Property Name="AdminTelegramUniqID" Type="Int64" />
           <Property Name="Channel_ID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="FreeCredit" Type="Double" />
-          <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbServers" FromRole="tbServers" ToRole="tbConnectionHelp" />
-          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbServers" ToRole="tbLinks" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
-          <NavigationProperty Name="tbUpdateLogs" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
-          <NavigationProperty Name="tbUseages" Relationship="V2boardSiteModel.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+          <NavigationProperty Name="tbConnectionHelp" Relationship="Self.FK_tbConnectionHelp_tbServers" FromRole="tbServers" ToRole="tbConnectionHelp" />
+          <NavigationProperty Name="tbLinks" Relationship="Self.FK_tbLinks_tbServers" FromRole="tbServers" ToRole="tbLinks" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUpdateLogs" Relationship="Self.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
+          <NavigationProperty Name="tbUseages" Relationship="Self.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
           <Key>
@@ -752,12 +670,12 @@
           <Property Name="Tel_RobotID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Tel_Wallet" Type="Int32" />
           <Property Name="Tel_Parent_ID" Type="Int32" />
-          <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
-          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
-          <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbOrders" />
-          <NavigationProperty Name="tbTelegramUsers1" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbTelegramUsers1" />
-          <NavigationProperty Name="tbTelegramUsers2" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
+          <NavigationProperty Name="tbDepositWallet_Log" Relationship="Self.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
+          <NavigationProperty Name="tbLinks" Relationship="Self.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
+          <NavigationProperty Name="tbOrders" Relationship="Self.FK_tbOrders_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbOrders" />
+          <NavigationProperty Name="tbTelegramUsers1" Relationship="Self.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbTelegramUsers1" />
+          <NavigationProperty Name="tbTelegramUsers2" Relationship="Self.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -771,7 +689,7 @@
           <Property Name="upl_CreateTime" Type="DateTime" Precision="3" />
           <Property Name="upl_AccountToken" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
           <Property Name="upl_FK_Server_ID" Type="Int32" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbUpdateLogs" ToRole="tbServers" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbUpdateLogs_tbServers" FromRole="tbUpdateLogs" ToRole="tbServers" />
         </EntityType>
         <EntityType Name="tbUseages">
           <Key>
@@ -784,7 +702,7 @@
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="v2_User_ID" Type="Int32" />
           <Property Name="Date" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUseages_tbServers" FromRole="tbUseages" ToRole="tbServers" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbUseages_tbServers" FromRole="tbUseages" ToRole="tbServers" />
         </EntityType>
         <EntityType Name="tbUserFactors">
           <Key>
@@ -795,7 +713,7 @@
           <Property Name="tbUf_CreateTime" Type="DateTime" Precision="3" />
           <Property Name="FK_User_ID" Type="Int32" />
           <Property Name="IsPayed" Type="Boolean" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUserFactors" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbUserFactors_tbUsers" FromRole="tbUserFactors" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbUsers">
           <Key>
@@ -820,14 +738,14 @@
           <Property Name="IsRenew" Type="Boolean" />
           <Property Name="ExpireTimeToken" Type="DateTime" Precision="3" />
           <Property Name="Admin_Telegram_ID" Type="Int32" />
-          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
-          <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="Self.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="Self.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbUserFactors" Relationship="Self.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
         </EntityType>
         <Association Name="FK_tbConnectionHelp_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbConnectionHelp" Role="tbConnectionHelp" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbConnectionHelp" Type="Self.tbConnectionHelp" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -838,8 +756,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbDepositWallet_Log_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbDepositWallet_Log" Role="tbDepositWallet_Log" Multiplicity="*" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbDepositWallet_Log" Type="Self.tbDepositWallet_Log" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -850,8 +768,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
               <PropertyRef Name="Plan_ID" />
@@ -862,8 +780,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -874,8 +792,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -886,8 +804,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinkUserAndPlans_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="*" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
               <PropertyRef Name="Plan_ID" />
@@ -898,8 +816,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinkUserAndPlans_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -910,8 +828,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLogs_tbLinkUserAndPlans">
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLogs" Role="tbLogs" Multiplicity="*" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Role="tbLogs" Type="Self.tbLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbLinkUserAndPlans">
               <PropertyRef Name="Link_PU_ID" />
@@ -922,8 +840,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
               <PropertyRef Name="Plan_ID" />
@@ -934,8 +852,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -946,8 +864,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbPlans_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -958,8 +876,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUpdateLogs_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUpdateLogs" Role="tbUpdateLogs" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbUpdateLogs" Type="Self.tbUpdateLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -970,8 +888,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUseages_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUseages" Role="tbUseages" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbUseages" Type="Self.tbUseages" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -982,8 +900,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -994,8 +912,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbTelegramUsers_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers1" Multiplicity="*" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbTelegramUsers1" Type="Self.tbTelegramUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -1006,8 +924,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="*" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -1018,8 +936,8 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUserFactors_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUserFactors" Role="tbUserFactors" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbUserFactors" Type="Self.tbUserFactors" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1029,228 +947,314 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        </Schema>
+        <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="tbConnectionHelp" EntityType="Self.tbConnectionHelp" />
+          <EntitySet Name="tbDepositWallet_Log" EntityType="Self.tbDepositWallet_Log" />
+          <EntitySet Name="tbExpLog" EntityType="Self.tbExpLog" />
+          <EntitySet Name="tbFailureServers" EntityType="Self.tbFailureServers" />
+          <EntitySet Name="tbLinks" EntityType="Self.tbLinks" />
+          <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" />
+          <EntitySet Name="tbLogs" EntityType="Self.tbLogs" />
+          <EntitySet Name="tbOrders" EntityType="Self.tbOrders" />
+          <EntitySet Name="tbPlans" EntityType="Self.tbPlans" />
+          <EntitySet Name="tbServers" EntityType="Self.tbServers" />
+          <EntitySet Name="tbTelegramUsers" EntityType="Self.tbTelegramUsers" />
+          <EntitySet Name="tbUpdateLogs" EntityType="Self.tbUpdateLogs" />
+          <EntitySet Name="tbUseages" EntityType="Self.tbUseages" />
+          <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" />
+          <EntitySet Name="tbUsers" EntityType="Self.tbUsers" />
+          <AssociationSet Name="FK_tbConnectionHelp_tbServers" Association="Self.FK_tbConnectionHelp_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbDepositWallet_Log_tbTelegramUsers" Association="Self.FK_tbDepositWallet_Log_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbPlans" Association="Self.FK_tbLinks_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbServers" Association="Self.FK_tbLinks_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbTelegramUsers" Association="Self.FK_tbLinks_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="Self.FK_tbLinkUserAndPlans_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkUserAndPlans_tbUsers" Association="Self.FK_tbLinkUserAndPlans_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="Self.FK_tbLogs_tbLinkUserAndPlans">
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+            <End Role="tbLogs" EntitySet="tbLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbPlans" Association="Self.FK_tbOrders_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbTelegramUsers" Association="Self.FK_tbOrders_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPlans_tbServers" Association="Self.FK_tbPlans_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbPlans" EntitySet="tbPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUpdateLogs_tbServers" Association="Self.FK_tbUpdateLogs_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUpdateLogs" EntitySet="tbUpdateLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUseages_tbServers" Association="Self.FK_tbUseages_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUseages" EntitySet="tbUseages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbServers" Association="Self.FK_tbUsers_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUsers" EntitySet="tbUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbTelegramUsers_tbTelegramUsers" Association="Self.FK_tbTelegramUsers_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbTelegramUsers1" EntitySet="tbTelegramUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbTelegramUsers" Association="Self.FK_tbUsers_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbUsers" EntitySet="tbUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUserFactors_tbUsers" Association="Self.FK_tbUserFactors_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUserFactors" EntitySet="tbUserFactors" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="V2boardSiteModelStoreContainer" CdmEntityContainer="V2boardSiteEntities">
+        <EntityContainerMapping StorageEntityContainer="V2boardSiteModelStoreContainer" CdmEntityContainer="Entities">
           <EntitySetMapping Name="tbConnectionHelp">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbConnectionHelp">
               <MappingFragment StoreEntitySet="tbConnectionHelp">
-                <ScalarProperty Name="ch_Type" ColumnName="ch_Type" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="ch_Link" ColumnName="ch_Link" />
-                <ScalarProperty Name="ch_Title" ColumnName="ch_Title" />
                 <ScalarProperty Name="ch_ID" ColumnName="ch_ID" />
+                <ScalarProperty Name="ch_Title" ColumnName="ch_Title" />
+                <ScalarProperty Name="ch_Link" ColumnName="ch_Link" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="ch_Type" ColumnName="ch_Type" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbDepositWallet_Log">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
-                <ScalarProperty Name="dw_payment_id" ColumnName="dw_payment_id" />
-                <ScalarProperty Name="dw_CreateDatetime" ColumnName="dw_CreateDatetime" />
-                <ScalarProperty Name="dw_Status" ColumnName="dw_Status" />
-                <ScalarProperty Name="dw_Price" ColumnName="dw_Price" />
-                <ScalarProperty Name="FK_TelegramUser_ID" ColumnName="FK_TelegramUser_ID" />
                 <ScalarProperty Name="dw_ID" ColumnName="dw_ID" />
+                <ScalarProperty Name="FK_TelegramUser_ID" ColumnName="FK_TelegramUser_ID" />
+                <ScalarProperty Name="dw_Price" ColumnName="dw_Price" />
+                <ScalarProperty Name="dw_Status" ColumnName="dw_Status" />
+                <ScalarProperty Name="dw_CreateDatetime" ColumnName="dw_CreateDatetime" />
+                <ScalarProperty Name="dw_payment_id" ColumnName="dw_payment_id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbExpLog">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbExpLog">
               <MappingFragment StoreEntitySet="tbExpLog">
-                <ScalarProperty Name="exl_Message" ColumnName="exl_Message" />
                 <ScalarProperty Name="exl_ID" ColumnName="exl_ID" />
+                <ScalarProperty Name="exl_Message" ColumnName="exl_Message" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbFailureServers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbFailureServers">
               <MappingFragment StoreEntitySet="tbFailureServers">
-                <ScalarProperty Name="tbFa_v2_ServerID" ColumnName="tbFa_v2_ServerID" />
                 <ScalarProperty Name="tbFa_ID" ColumnName="tbFa_ID" />
+                <ScalarProperty Name="tbFa_v2_ServerID" ColumnName="tbFa_v2_ServerID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbLinks">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLinks">
               <MappingFragment StoreEntitySet="tbLinks">
-                <ScalarProperty Name="tb_status" ColumnName="tb_status" />
-                <ScalarProperty Name="tb_ChargePlan_ID" ColumnName="tb_ChargePlan_ID" />
-                <ScalarProperty Name="tb_ChargeLinkedTime" ColumnName="tb_ChargeLinkedTime" />
-                <ScalarProperty Name="tb_ChargeLink_ID" ColumnName="tb_ChargeLink_ID" />
-                <ScalarProperty Name="tb_AutoRenew_V2Plan_ID" ColumnName="tb_AutoRenew_V2Plan_ID" />
-                <ScalarProperty Name="tb_AutoRenew" ColumnName="tb_AutoRenew" />
-                <ScalarProperty Name="tb_RandomEmail" ColumnName="tb_RandomEmail" />
-                <ScalarProperty Name="tbL_Warning" ColumnName="tbL_Warning" />
-                <ScalarProperty Name="tbL_Email" ColumnName="tbL_Email" />
-                <ScalarProperty Name="tbL_Token" ColumnName="tbL_Token" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="FK_TelegramUserID" ColumnName="FK_TelegramUserID" />
                 <ScalarProperty Name="tbLink_ID" ColumnName="tbLink_ID" />
+                <ScalarProperty Name="FK_TelegramUserID" ColumnName="FK_TelegramUserID" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="tbL_Token" ColumnName="tbL_Token" />
+                <ScalarProperty Name="tbL_Email" ColumnName="tbL_Email" />
+                <ScalarProperty Name="tbL_Warning" ColumnName="tbL_Warning" />
+                <ScalarProperty Name="tb_RandomEmail" ColumnName="tb_RandomEmail" />
+                <ScalarProperty Name="tb_AutoRenew" ColumnName="tb_AutoRenew" />
+                <ScalarProperty Name="tb_AutoRenew_V2Plan_ID" ColumnName="tb_AutoRenew_V2Plan_ID" />
+                <ScalarProperty Name="tb_ChargeLink_ID" ColumnName="tb_ChargeLink_ID" />
+                <ScalarProperty Name="tb_ChargeLinkedTime" ColumnName="tb_ChargeLinkedTime" />
+                <ScalarProperty Name="tb_ChargePlan_ID" ColumnName="tb_ChargePlan_ID" />
+                <ScalarProperty Name="tb_status" ColumnName="tb_status" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbLinkUserAndPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkUserAndPlans">
               <MappingFragment StoreEntitySet="tbLinkUserAndPlans">
-                <ScalarProperty Name="L_Status" ColumnName="L_Status" />
-                <ScalarProperty Name="L_FK_P_ID" ColumnName="L_FK_P_ID" />
-                <ScalarProperty Name="L_FK_U_ID" ColumnName="L_FK_U_ID" />
                 <ScalarProperty Name="Link_PU_ID" ColumnName="Link_PU_ID" />
+                <ScalarProperty Name="L_FK_U_ID" ColumnName="L_FK_U_ID" />
+                <ScalarProperty Name="L_FK_P_ID" ColumnName="L_FK_P_ID" />
+                <ScalarProperty Name="L_Status" ColumnName="L_Status" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbLogs">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLogs">
               <MappingFragment StoreEntitySet="tbLogs">
-                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
-                <ScalarProperty Name="FK_NameUser_ID" ColumnName="FK_NameUser_ID" />
-                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
-                <ScalarProperty Name="Action" ColumnName="Action" />
-                <ScalarProperty Name="FK_Link_User_Plan_ID" ColumnName="FK_Link_User_Plan_ID" />
                 <ScalarProperty Name="log_ID" ColumnName="log_ID" />
+                <ScalarProperty Name="FK_Link_User_Plan_ID" ColumnName="FK_Link_User_Plan_ID" />
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
+                <ScalarProperty Name="FK_NameUser_ID" ColumnName="FK_NameUser_ID" />
+                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
+                <ScalarProperty Name="PlanName" ColumnName="PlanName" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbOrders">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbOrders">
               <MappingFragment StoreEntitySet="tbOrders">
-                <ScalarProperty Name="PlanCountDayes" ColumnName="PlanCountDayes" />
-                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
-                <ScalarProperty Name="payment_id" ColumnName="payment_id" />
-                <ScalarProperty Name="AccountName2" ColumnName="AccountName2" />
-                <ScalarProperty Name="FK_Tel_UserID" ColumnName="FK_Tel_UserID" />
-                <ScalarProperty Name="Order_Price" ColumnName="Order_Price" />
-                <ScalarProperty Name="V2_User_ID" ColumnName="V2_User_ID" />
-                <ScalarProperty Name="Order_Guid" ColumnName="Order_Guid" />
-                <ScalarProperty Name="FK_OrderAdmin_ID" ColumnName="FK_OrderAdmin_ID" />
-                <ScalarProperty Name="OrderType" ColumnName="OrderType" />
-                <ScalarProperty Name="OrderStatus" ColumnName="OrderStatus" />
-                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
-                <ScalarProperty Name="AccountName" ColumnName="AccountName" />
-                <ScalarProperty Name="V2_Plan_ID" ColumnName="V2_Plan_ID" />
-                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
                 <ScalarProperty Name="Order_ID" ColumnName="Order_ID" />
+                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
+                <ScalarProperty Name="V2_Plan_ID" ColumnName="V2_Plan_ID" />
+                <ScalarProperty Name="AccountName" ColumnName="AccountName" />
+                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
+                <ScalarProperty Name="OrderStatus" ColumnName="OrderStatus" />
+                <ScalarProperty Name="OrderType" ColumnName="OrderType" />
+                <ScalarProperty Name="FK_OrderAdmin_ID" ColumnName="FK_OrderAdmin_ID" />
+                <ScalarProperty Name="Order_Guid" ColumnName="Order_Guid" />
+                <ScalarProperty Name="V2_User_ID" ColumnName="V2_User_ID" />
+                <ScalarProperty Name="Order_Price" ColumnName="Order_Price" />
+                <ScalarProperty Name="FK_Tel_UserID" ColumnName="FK_Tel_UserID" />
+                <ScalarProperty Name="AccountName2" ColumnName="AccountName2" />
+                <ScalarProperty Name="payment_id" ColumnName="payment_id" />
+                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
+                <ScalarProperty Name="PlanCountDayes" ColumnName="PlanCountDayes" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
               <MappingFragment StoreEntitySet="tbPlans">
-                <ScalarProperty Name="Price2" ColumnName="Price2" />
-                <ScalarProperty Name="Price" ColumnName="Price" />
-                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
-                <ScalarProperty Name="CountDayes" ColumnName="CountDayes" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
-                <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
-                <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
                 <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
+                <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
+                <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
+                <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="CountDayes" ColumnName="CountDayes" />
+                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
+                <ScalarProperty Name="Price" ColumnName="Price" />
+                <ScalarProperty Name="Price2" ColumnName="Price2" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbServers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbServers">
               <MappingFragment StoreEntitySet="tbServers">
-                <ScalarProperty Name="FreeCredit" ColumnName="FreeCredit" />
-                <ScalarProperty Name="Channel_ID" ColumnName="Channel_ID" />
-                <ScalarProperty Name="AdminTelegramUniqID" ColumnName="AdminTelegramUniqID" />
-                <ScalarProperty Name="Discount_Percent" ColumnName="Discount_Percent" />
-                <ScalarProperty Name="NowPayment_API_KEY" ColumnName="NowPayment_API_KEY" />
-                <ScalarProperty Name="Robot_Token" ColumnName="Robot_Token" />
-                <ScalarProperty Name="Robot_ID" ColumnName="Robot_ID" />
-                <ScalarProperty Name="BotID" ColumnName="BotID" />
-                <ScalarProperty Name="SubAddress" ColumnName="SubAddress" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="DataBaseName" ColumnName="DataBaseName" />
-                <ScalarProperty Name="Password" ColumnName="Password" />
-                <ScalarProperty Name="Username" ColumnName="Username" />
-                <ScalarProperty Name="ServerIP" ColumnName="ServerIP" />
-                <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
                 <ScalarProperty Name="ServerID" ColumnName="ServerID" />
+                <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
+                <ScalarProperty Name="ServerIP" ColumnName="ServerIP" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="DataBaseName" ColumnName="DataBaseName" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="SubAddress" ColumnName="SubAddress" />
+                <ScalarProperty Name="BotID" ColumnName="BotID" />
+                <ScalarProperty Name="Robot_ID" ColumnName="Robot_ID" />
+                <ScalarProperty Name="Robot_Token" ColumnName="Robot_Token" />
+                <ScalarProperty Name="NowPayment_API_KEY" ColumnName="NowPayment_API_KEY" />
+                <ScalarProperty Name="Discount_Percent" ColumnName="Discount_Percent" />
+                <ScalarProperty Name="AdminTelegramUniqID" ColumnName="AdminTelegramUniqID" />
+                <ScalarProperty Name="Channel_ID" ColumnName="Channel_ID" />
+                <ScalarProperty Name="FreeCredit" ColumnName="FreeCredit" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbTelegramUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbTelegramUsers">
               <MappingFragment StoreEntitySet="tbTelegramUsers">
-                <ScalarProperty Name="Tel_Parent_ID" ColumnName="Tel_Parent_ID" />
-                <ScalarProperty Name="Tel_Wallet" ColumnName="Tel_Wallet" />
-                <ScalarProperty Name="Tel_RobotID" ColumnName="Tel_RobotID" />
-                <ScalarProperty Name="Tel_LastName" ColumnName="Tel_LastName" />
-                <ScalarProperty Name="Tel_FirstName" ColumnName="Tel_FirstName" />
-                <ScalarProperty Name="Tel_Username" ColumnName="Tel_Username" />
-                <ScalarProperty Name="Tel_Data" ColumnName="Tel_Data" />
-                <ScalarProperty Name="Tel_Step" ColumnName="Tel_Step" />
-                <ScalarProperty Name="Tel_UniqUserID" ColumnName="Tel_UniqUserID" />
                 <ScalarProperty Name="Tel_UserID" ColumnName="Tel_UserID" />
+                <ScalarProperty Name="Tel_UniqUserID" ColumnName="Tel_UniqUserID" />
+                <ScalarProperty Name="Tel_Step" ColumnName="Tel_Step" />
+                <ScalarProperty Name="Tel_Data" ColumnName="Tel_Data" />
+                <ScalarProperty Name="Tel_Username" ColumnName="Tel_Username" />
+                <ScalarProperty Name="Tel_FirstName" ColumnName="Tel_FirstName" />
+                <ScalarProperty Name="Tel_LastName" ColumnName="Tel_LastName" />
+                <ScalarProperty Name="Tel_RobotID" ColumnName="Tel_RobotID" />
+                <ScalarProperty Name="Tel_Wallet" ColumnName="Tel_Wallet" />
+                <ScalarProperty Name="Tel_Parent_ID" ColumnName="Tel_Parent_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbUpdateLogs">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUpdateLogs">
               <MappingFragment StoreEntitySet="tbUpdateLogs">
-                <ScalarProperty Name="upl_FK_Server_ID" ColumnName="upl_FK_Server_ID" />
-                <ScalarProperty Name="upl_AccountToken" ColumnName="upl_AccountToken" />
-                <ScalarProperty Name="upl_CreateTime" ColumnName="upl_CreateTime" />
-                <ScalarProperty Name="upl_UserAgent" ColumnName="upl_UserAgent" />
-                <ScalarProperty Name="upl_IPv6" ColumnName="upl_IPv6" />
-                <ScalarProperty Name="upl_IPv4" ColumnName="upl_IPv4" />
-                <ScalarProperty Name="upl_HostName" ColumnName="upl_HostName" />
                 <ScalarProperty Name="upl_ID" ColumnName="upl_ID" />
+                <ScalarProperty Name="upl_HostName" ColumnName="upl_HostName" />
+                <ScalarProperty Name="upl_IPv4" ColumnName="upl_IPv4" />
+                <ScalarProperty Name="upl_IPv6" ColumnName="upl_IPv6" />
+                <ScalarProperty Name="upl_UserAgent" ColumnName="upl_UserAgent" />
+                <ScalarProperty Name="upl_CreateTime" ColumnName="upl_CreateTime" />
+                <ScalarProperty Name="upl_AccountToken" ColumnName="upl_AccountToken" />
+                <ScalarProperty Name="upl_FK_Server_ID" ColumnName="upl_FK_Server_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbUseages">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUseages">
               <MappingFragment StoreEntitySet="tbUseages">
-                <ScalarProperty Name="Date" ColumnName="Date" />
-                <ScalarProperty Name="v2_User_ID" ColumnName="v2_User_ID" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="Server_Record" ColumnName="Server_Record" />
-                <ScalarProperty Name="Upload" ColumnName="Upload" />
-                <ScalarProperty Name="Download" ColumnName="Download" />
                 <ScalarProperty Name="tbUse_ID" ColumnName="tbUse_ID" />
+                <ScalarProperty Name="Download" ColumnName="Download" />
+                <ScalarProperty Name="Upload" ColumnName="Upload" />
+                <ScalarProperty Name="Server_Record" ColumnName="Server_Record" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="v2_User_ID" ColumnName="v2_User_ID" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbUserFactors">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUserFactors">
               <MappingFragment StoreEntitySet="tbUserFactors">
-                <ScalarProperty Name="IsPayed" ColumnName="IsPayed" />
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="tbUf_CreateTime" ColumnName="tbUf_CreateTime" />
-                <ScalarProperty Name="tbUf_Value" ColumnName="tbUf_Value" />
                 <ScalarProperty Name="tbUf_ID" ColumnName="tbUf_ID" />
+                <ScalarProperty Name="tbUf_Value" ColumnName="tbUf_Value" />
+                <ScalarProperty Name="tbUf_CreateTime" ColumnName="tbUf_CreateTime" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="IsPayed" ColumnName="IsPayed" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
-                <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
-                <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
-                <ScalarProperty Name="IsRenew" ColumnName="IsRenew" />
-                <ScalarProperty Name="Card_Number" ColumnName="Card Number" />
-                <ScalarProperty Name="BussinesTitle" ColumnName="BussinesTitle" />
-                <ScalarProperty Name="TelegramID" ColumnName="TelegramID" />
-                <ScalarProperty Name="Role" ColumnName="Role" />
-                <ScalarProperty Name="Wallet" ColumnName="Wallet" />
-                <ScalarProperty Name="Limit" ColumnName="Limit" />
-                <ScalarProperty Name="Token" ColumnName="Token" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="Email" ColumnName="Email" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
-                <ScalarProperty Name="LastName" ColumnName="LastName" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="Password" ColumnName="Password" />
-                <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="Token" ColumnName="Token" />
+                <ScalarProperty Name="Limit" ColumnName="Limit" />
+                <ScalarProperty Name="Wallet" ColumnName="Wallet" />
+                <ScalarProperty Name="Role" ColumnName="Role" />
+                <ScalarProperty Name="TelegramID" ColumnName="TelegramID" />
+                <ScalarProperty Name="BussinesTitle" ColumnName="BussinesTitle" />
+                <ScalarProperty Name="Card_Number" ColumnName="Card Number" />
+                <ScalarProperty Name="IsRenew" ColumnName="IsRenew" />
+                <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
+                <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

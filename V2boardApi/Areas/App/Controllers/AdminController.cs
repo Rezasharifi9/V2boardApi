@@ -33,7 +33,7 @@ namespace V2boardApi.Areas.App.Controllers
     [Authorize]
     public class AdminController : Controller
     {
-        private V2boardSiteEntities db;
+        private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbPlans> RepositoryPlans { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
@@ -42,7 +42,7 @@ namespace V2boardApi.Areas.App.Controllers
         private System.Timers.Timer Timer { get; set; }
         public AdminController()
         {
-            db = new V2boardSiteEntities();
+            db = new Entities();
             RepositoryUser = new Repository<tbUsers>(db);
             RepositoryPlans = new Repository<tbPlans>(db);
             RepositoryLogs = new Repository<tbLogs>(db);

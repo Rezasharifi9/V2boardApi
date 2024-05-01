@@ -204,7 +204,7 @@ namespace V2boardApi.Tools
 
         public static void InsertLog(Exception ex)
         {
-            var db = new V2boardSiteEntities();
+            var db = new Entities();
             var RepositoryExpLogs = new Repository<tbExpLog>(db);
 
             tbExpLog tbExpLog = new tbExpLog();

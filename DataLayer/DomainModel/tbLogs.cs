@@ -20,6 +20,7 @@ namespace DataLayer.DomainModel
         public Nullable<System.DateTime> CreateDatetime { get; set; }
         public string FK_NameUser_ID { get; set; }
         public Nullable<int> SalePrice { get; set; }
+        public string PlanName { get; set; }
     
         public virtual tbLinkUserAndPlans tbLinkUserAndPlans { get; set; }
     }

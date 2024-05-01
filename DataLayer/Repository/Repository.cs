@@ -14,16 +14,16 @@ namespace DataLayer.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private V2boardSiteEntities db;
+        private Entities db;
         public DbSet<T> table = null;
-        public Repository(V2boardSiteEntities _db)
+        public Repository(Entities _db)
         {
             db = _db;
             table = db.Set<T>();
         }
         public Repository()
         {
-            db = new V2boardSiteEntities();
+            db = new Entities();
             table = db.Set<T>();
         }
 

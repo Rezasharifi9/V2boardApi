@@ -27,7 +27,7 @@ namespace V2boardApi.Areas.api.Controllers
     public class ClientController : Controller
     {
         private Repository<tbServers> RepositoryServer { get; set; }
-        private V2boardSiteEntities db;
+        private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
@@ -36,7 +36,7 @@ namespace V2boardApi.Areas.api.Controllers
         private Repository<tbLinks> RepositoryLinks { get; set; }
         public ClientController()
         {
-            db = new V2boardSiteEntities();
+            db = new Entities();
             RepositoryServer = new Repository<tbServers>(db);
             RepositoryLinkUserAndPlan = new Repository<tbLinkUserAndPlans>(db);
             RepositoryLogs = new Repository<tbLogs>(db);
