@@ -47,6 +47,7 @@ using Org.BouncyCastle.Crypto.Generators;
 using System.Web.Security;
 using YamlDotNet.Core.Tokens;
 using System.Windows.Controls;
+using LiteDB;
 
 namespace V2boardApi.Areas.api.Controllers
 {
@@ -124,7 +125,7 @@ namespace V2boardApi.Areas.api.Controllers
         #region لیست کاربران
         [System.Web.Http.HttpGet]
         [Authorize]
-        public IHttpActionResult GetAll(int page = 1, string name = null, string KeySort = null, string SortType = "DESC")
+        public IHttpActionResult GetAll(int page = 1, string name = null, string KeySort = null, string type = null, string SortType = "DESC")
         {
             try
             {
@@ -138,6 +139,10 @@ namespace V2boardApi.Areas.api.Controllers
                         if (name.Contains("token="))
                         {
                             Query += "token='" + name.Split('=')[1] + "'and " + "email like '%" + User.Username + "%'";
+                        }
+                        else if (type == "uuid")
+                        {
+                            Query += "uuid='" + name + "'" + " and " + "email like '%" + User.Username + "%'";
                         }
                         else
                         {
@@ -244,7 +249,7 @@ namespace V2boardApi.Areas.api.Controllers
                             if (OnlineTime != "0")
                             {
                                 var onlineTime = Utility.ConvertSecondToDatetime(Convert.ToInt64(OnlineTime));
-                                if (onlineTime >= DateTime.Now.AddMinutes(-2))
+                                if (onlineTime >= DateTime.Now.AddMinutes(-1))
                                 {
                                     getUserData.IsOnline = true;
                                 }
@@ -252,7 +257,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     getUserData.IsOnline = false;
                                 }
-                                getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
+                                getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi2(onlineTime);
                             }
                             else
                             {
@@ -291,7 +296,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                     }
                     reader.Close();
-                 
+
                     if (name != null)
                     {
                         reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "' and email like '" + name + "%'");
@@ -308,8 +313,8 @@ namespace V2boardApi.Areas.api.Controllers
                     {
                         mySqlEntities.Close();
                     }
-                    
-                   
+
+
                     return Ok(new { result = Users, total = count });
 
                 }
@@ -345,7 +350,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).FirstOrDefault();
                         if (User != null)
                         {
-                            var Log = RepositoryLogs.Where(p=> p.FK_NameUser_ID == createUser.name && p.tbLinkUserAndPlans.L_FK_U_ID == User.User_ID).ToList().LastOrDefault();
+                            var Log = RepositoryLogs.Where(p => p.FK_NameUser_ID == createUser.name && p.tbLinkUserAndPlans.L_FK_U_ID == User.User_ID).ToList().LastOrDefault();
                             if (Log != null)
                             {
                                 return Content(System.Net.HttpStatusCode.BadRequest, "این کاربر از قبل وجود دارد");
@@ -397,7 +402,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 RepositoryLinks.Save();
                                 RepositoryUser.Save();
-                                AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, createUser.name, (int)plan.Price,plan.Plan_Name);
+                                AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, createUser.name, (int)plan.Price, plan.Plan_Name);
                                 return Content(System.Net.HttpStatusCode.OK, "اکانت با موفقیت ساخته شد");
                             }
                             else
@@ -495,7 +500,7 @@ namespace V2boardApi.Areas.api.Controllers
         #endregion
 
         #region افزودن لاگ تمدید یا ساخت کاربر
-        private bool AddLog(string Action, int LinkUserID, string V2User, int price,string planName)
+        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName)
         {
             try
             {
@@ -567,7 +572,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var link = RepositoryLinkUserAndPlan.table.Where(p => p.L_FK_U_ID == User.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                         User.Wallet += link.tbPlans.Price;
 
-                        AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price,Plan.Plan_Name);
+                        AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name);
                     }
                     reader2.Close();
                     RepositoryLinks.Save();
@@ -1002,7 +1007,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //if (Orders.Count == 0)
                         //{
 
-                            
+
                         //        var price = pr.ToString().Substring(0, 2);
                         //        var orginalPrice = Convert.ToInt32(price + "000");
                         //        var price2 = pr.ToString();
@@ -1026,7 +1031,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //                Order.Order_Price = pr;
                         //                Order.V2_Plan_ID = plan.Plan_ID_V2;
                         //                Order.FK_Tel_UserID = Linkss.FK_TelegramUserID;
-                                    
+
 
 
 
@@ -1079,7 +1084,7 @@ namespace V2boardApi.Areas.api.Controllers
                         //                return Ok("OK SHOD");
                         //            }
                         //        }
-                            
+
 
 
 
@@ -1116,6 +1121,56 @@ namespace V2boardApi.Areas.api.Controllers
                     return BadRequest("Error api:" + ex.Message + "Data:" + SMSMessageText + " " + "Mobile :" + Mobile);
                 }
             }
+        }
+
+        #endregion
+
+        #region تاریخچه مصرف کاربر
+
+        [Authorize]
+        public IHttpActionResult GetTrafficUsage(int userId)
+        {
+            var Token = Request.Headers.Authorization;
+            var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).First();
+
+            try
+            {
+
+                MySqlEntities mysql = new MySqlEntities(User.tbServers.ConnectionString);
+                mysql.Open();
+
+                var reader = mysql.GetData("select * from v2_stat_user where user_id=" + userId);
+                List<UsagesModel> Useages = new List<UsagesModel>();
+                while (reader.Read())
+                {
+                    UsagesModel model = new UsagesModel();
+                    var d = reader.GetInt64("d");
+                    var u = reader.GetInt64("u");
+
+                    var total = d + u;
+
+                    var UnixDate = reader.GetInt64("updated_at");
+
+                    var Date = Utility.ConvertSecondToDatetime(UnixDate);
+
+                    model.Date = Utility.ConvertDateTimeToShamsi(Date);
+                    model.Used = Utility.ConvertByteToMG(total);
+
+                    Useages.Add(model);
+                }
+
+                var Useage = Useages.GroupBy(p => p.Date).ToList();
+                var use = Useage.Select(p => new { Date = p.Key, Used = p.Sum(s => Math.Round(s.Used, 2)) }).ToList();
+
+
+                return Ok(use);
+
+            }
+            catch (Exception ex)
+            {
+                return Content(System.Net.HttpStatusCode.InternalServerError, "دریافت اطلاعات با خطا مواجه شد");
+            }
+
         }
 
         #endregion
