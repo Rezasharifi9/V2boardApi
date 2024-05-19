@@ -188,11 +188,11 @@ namespace V2boardApi.Areas.App.Controllers
             foreach (var link in Links)
             {
                 
-                var Reader = mysql.GetData("select * from v2_user where email='" + link.tb_RandomEmail + "'");
+                var Reader = mysql.GetData("select * from v2_user where email='" + link.tbL_Email + "'");
                 if (Reader.Read())
                 {
                     AccountsViewModel account = new AccountsViewModel();
-                    account.V2boardUsername = link.tb_RandomEmail;
+                    account.V2boardUsername = link.tbL_Email;
                     account.State = "فعال";
                     account.TotalVolume = Utility.ConvertByteToGB(Reader.GetInt64("transfer_enable"));
                     var exp = Reader.GetBodyDefinition("expired_at");

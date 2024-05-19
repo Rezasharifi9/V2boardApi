@@ -34,6 +34,8 @@ namespace DataLayer.DomainModel
         public string Tel_RobotID { get; set; }
         public Nullable<int> Tel_Wallet { get; set; }
         public Nullable<int> Tel_Parent_ID { get; set; }
+        public Nullable<int> Tel_Monthes { get; set; }
+        public Nullable<int> Tel_Traffic { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }

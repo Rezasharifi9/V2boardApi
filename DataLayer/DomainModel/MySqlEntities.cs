@@ -47,6 +47,7 @@ namespace DataLayer.DomainModel
         public  void Close()
         {
             SqlConnection.Close();
+            MySqlConnection.ClearPool(SqlConnection);
             SqlConnection.Dispose();
         }
     }

@@ -16,7 +16,6 @@
                     <table id="AccountLogTable" class="table" style="width:100%;direction:rtl">
                         <thead>
                             <tr>
-                                <th style="text-align:right">نام اشتراک</th>
                                 <th style="text-align:right">نام اشتراک در V2board</th>
                                 <th style="text-align:right">کاربر</th>
                                 <th style="text-align:right">تعرفه</th>
@@ -31,11 +30,10 @@
                             {
                                 <tr>
                                     <td>@item.AccountName</td>
-                                    <td>@item.AccountName2</td>
                                     <td>@item.tbTelegramUsers.Tel_Username</td>
-                                    @if (item.PlanCountDayes != null && item.PlanVolume != null)
+                                    @if (item.Month != null && item.Month != null)
                                     {
-                                        <td>@item.PlanVolume گیگ @item.PlanCountDayes روزه</td>
+                                        <td>@item.Traffic گیگ @item.Month ماهه</td>
                                     }
                                     else
                                     {

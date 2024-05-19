@@ -49,160 +49,204 @@ namespace V2boardApi.Areas.api.Controllers
 
         public ActionResult subscribe(string token)
         {
-            var UserAgent = Request.UserAgent.ToLower();
-            var host = Request.Url.Host;
-            if (host == "panel.darkbaz.site")
+            try
             {
-                host = "panel.darkbaz.com";
-            }
-            var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(host)).FirstOrDefault();
-            if (UserAgent.StartsWith("hiddifynext") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
-            {
-                if (server != null)
+                var UserAgent = Request.UserAgent.ToLower();
+                var host = Request.Url.Host;
+                if (host == "panel.darkbaz.site")
                 {
-                    HttpClient client = new HttpClient();
-                    client.BaseAddress = new Uri(server.ServerAddress + "api/v1/");
-                    client.DefaultRequestHeaders.UserAgent.TryParseAdd(Request.UserAgent);
-                    var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + token);
-                    if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    host = "panel.darkbaz.com";
+                }
+                var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(host)).FirstOrDefault();
+                if (UserAgent.StartsWith("hiddify") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
+                {
+                    if (server != null)
                     {
-                        var result = res.Result.Content.ReadAsStringAsync();
-
-                        if (UserAgent.StartsWith("hiddify"))
+                        HttpClient client = new HttpClient();
+                        client.BaseAddress = new Uri(server.ServerAddress + "api/v1/");
+                        client.DefaultRequestHeaders.UserAgent.TryParseAdd(Request.UserAgent);
+                        var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + token);
+                        if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
                         {
+                            var result = res.Result.Content.ReadAsStringAsync();
+
                             MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
                             sqlEntities.Open();
-                            var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
-                            var reader = sqlEntities.GetData(query);
-                            while (reader.Read())
+                            if (UserAgent.StartsWith("hiddify"))
                             {
-                                var str = "upload=" + reader.GetBodyDefinition("u") + ";download=" + reader.GetBodyDefinition("d") + ";total=" + reader.GetBodyDefinition("transfer_enable") + ";expire=" + reader.GetBodyDefinition("expired_at");
-                                var name = reader.GetString("email").Split('@')[0];
-                                var base64 = Utility.Base64Encode(name.Split('$')[0]);
 
-                                Response.Headers.Add("subscription-userinfo", str);
-                                Response.Headers.Add("profile-title", "base64:" + base64);
+                                var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
+                                var reader = sqlEntities.GetData(query);
+                                while (reader.Read())
+                                {
+                                    var str = "upload=" + reader.GetBodyDefinition("u") + ";download=" + reader.GetBodyDefinition("d") + ";total=" + reader.GetBodyDefinition("transfer_enable") + ";expire=" + reader.GetBodyDefinition("expired_at");
+                                    var name = reader.GetString("email").Split('@')[0];
+                                    var base64 = Utility.Base64Encode(name.Split('$')[0]);
 
+                                    Response.Headers.Add("subscription-userinfo", str);
+                                    Response.Headers.Add("profile-title", "base64:" + base64);
+
+                                }
+                                reader.Close();
                             }
-                        }
+
+                            if (string.IsNullOrEmpty(result.Result))
+                            {
+                                var query1 = "SELECT uuid,email,u,d,transfer_enable FROM v2_user where token='" + token + "'";
+                                var reader2 = sqlEntities.GetData(query1);
+                                reader2.Read();
+                                var Admin = server.tbUsers.Where(p => p.Role == 1).FirstOrDefault();
+
+                                var ress = HttpUtility.UrlEncode("❌ کاربر گرامی زمان اشتراک شما به پایان رسیده است ❌");
+                                var vless = "vless://" + reader2.GetString("uuid") + "@test:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.speedtest.net&fp=random&pbk=ioE61VC3V30U7IdRmQ3bjhOq2ij9tPhVIgAD4JZ4YRY&sid=6ba85179e30d4fc2&type=tcp&headerType=none#";
+                                var link1 = vless + ress;
+
+                                var passvand = reader2.GetString("email").Split('@')[1];
 
 
-                        if (string.IsNullOrEmpty(result.Result))
-                        {
-                            var ress = HttpUtility.UrlEncode("❌ پایان تاریخ اشتراک ❌");
-                            var str = "vless://660e64cc-a610-48ed-88bf-1edba3c99a6b@test:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.speedtest.net&fp=random&pbk=ioE61VC3V30U7IdRmQ3bjhOq2ij9tPhVIgAD4JZ4YRY&sid=6ba85179e30d4fc2&type=tcp&headerType=none#" + ress;
-                            var base64 = Utility.Base64Encode(str);
-                            return Content(base64, "text/html", Encoding.UTF8);
+                                var link2 = "";
+                                var link3 = "";
+
+                                if (passvand == Admin.Username)
+                                {
+                                    var ress1 = HttpUtility.UrlEncode("❌ شما می توانید از طریق ربات به آیدی " + server.Robot_ID + " اکانت خود را مجدد شارژ کنید ❌");
+                                    link2 = vless + ress1;
+                                }
+                                else
+                                {
+                                    var Admin2 = server.tbUsers.Where(p => p.Username == passvand).FirstOrDefault();
+                                    if (Admin2 != null)
+                                    {
+                                        if (Admin2.TelegramID != null)
+                                        {
+                                            var ress1 = HttpUtility.UrlEncode("❌ شما می توانید در تلگرام به آیدی " + Admin2.TelegramID + " پیام دهید تا اکانتتان مجدد شارژ شود ❌");
+                                            link3 = vless + ress1;
+                                        }
+                                    }
+                                }
+
+                                var base64 = link1 + "\n" + link2 + "\n" + link3;
+
+                                reader2.Close();
+                                sqlEntities.Close();
+                                return Content(base64, "text/html", Encoding.UTF8);
+                            }
+                            sqlEntities.Close();
+                            return Content(result.Result, "text/html", Encoding.UTF8);
                         }
-                        return Content(result.Result, "text/html", Encoding.UTF8);
                     }
-                }
-            }
-            else
-            {
-                var url = Request.Cookies["url"];
-                if (url == null)
-                {
-                    HttpCookie cookie = new HttpCookie("url");
-                    cookie.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
-                    cookie.Expires = DateTime.Now.AddYears(100);
-                    Response.Cookies.Add(cookie);
                 }
                 else
                 {
-                    var url1 = Response.Cookies["url"];
-                    url1.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
-                    url1.Expires = DateTime.Now.AddYears(100);
-                }
-
-                if (server != null)
-                {
-                    MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
-                    sqlEntities.Open();
-                    var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
-                    var reader = sqlEntities.GetData(query);
-                    while (reader.Read())
+                    var url = Request.Cookies["url"];
+                    if (url == null)
                     {
-                        GetUserDataModel getUserData = new GetUserDataModel();
-                        getUserData.id = reader.GetInt32("id");
-                        getUserData.IsActive = "فعال";
-                        getUserData.Name = reader.GetString("email").Split('@')[0];
-                        getUserData.IsBanned = reader.GetBoolean("banned");
-                        getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetDouble("transfer_enable")).ToString() + " GB";
-                        var exp = reader.GetBodyDefinition("expired_at");
-                        if (exp != "")
-                        {
-                            var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
-                            var onlineTime = Utility.ConvertSecondToDatetime(reader.GetDouble("expired_at"));
-                            if (onlineTime <= DateTime.Now.AddMinutes(-2))
-                            {
-                                getUserData.IsOnline = true;
-                            }
-                            getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
-                            getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
-                            getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
+                        HttpCookie cookie = new HttpCookie("url");
+                        cookie.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
+                        cookie.Expires = DateTime.Now.AddYears(100);
+                        Response.Cookies.Add(cookie);
+                    }
+                    else
+                    {
+                        var url1 = Response.Cookies["url"];
+                        url1.Value = (Server.HtmlEncode(Request.Url.ToString())).Replace(";", "");
+                        url1.Expires = DateTime.Now.AddYears(100);
+                    }
 
-                            if (ex <= DateTime.Now)
+                    if (server != null)
+                    {
+                        MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
+                        sqlEntities.Open();
+                        var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
+                        var reader = sqlEntities.GetData(query);
+                        while (reader.Read())
+                        {
+                            GetUserDataModel getUserData = new GetUserDataModel();
+                            getUserData.id = reader.GetInt32("id");
+                            getUserData.IsActive = "فعال";
+                            getUserData.Name = reader.GetString("email").Split('@')[0];
+                            getUserData.IsBanned = reader.GetBoolean("banned");
+                            getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetDouble("transfer_enable")).ToString() + " GB";
+                            var exp = reader.GetBodyDefinition("expired_at");
+                            if (exp != "")
                             {
-                                getUserData.IsActive = "پایان تاریخ اشتراک";
+                                var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
+                                var onlineTime = Utility.ConvertSecondToDatetime(reader.GetDouble("expired_at"));
+                                if (onlineTime <= DateTime.Now.AddMinutes(-2))
+                                {
+                                    getUserData.IsOnline = true;
+                                }
+                                getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
+                                getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
+                                getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
+
+                                if (ex <= DateTime.Now)
+                                {
+                                    getUserData.IsActive = "پایان تاریخ اشتراک";
+                                }
+                                if (getUserData.DaysLeft <= 2)
+                                {
+                                    getUserData.CanEdit = true;
+                                }
+
                             }
-                            if (getUserData.DaysLeft <= 2)
+                            if (getUserData.IsBanned)
+                            {
+                                getUserData.IsActive = "مسدود";
+                            }
+
+                            getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
+
+                            var re = Utility.ConvertByteToGB(reader.GetDouble("d") + reader.GetDouble("u"));
+                            getUserData.UsedVolume = Math.Round(re, 2) + " GB";
+
+                            var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
+
+                            if (vol <= 0)
+                            {
+                                getUserData.IsActive = "اتمام حجم";
+                            }
+                            var d = Utility.ConvertByteToGB(vol);
+                            if (d <= 2)
                             {
                                 getUserData.CanEdit = true;
                             }
+                            getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
+                            var name = reader.GetString("email").Split('@')[1];
 
-                        }
-                        if (getUserData.IsBanned)
-                        {
-                            getUserData.IsActive = "مسدود";
-                        }
+                            ViewBag.Url = server.ServerAddress + "api/v1/" + "client/subscribe?token=" + token;
+                            if (reader.GetString("email").Split('@')[1].Contains("."))
+                            {
+                                ViewBag.LinkCreator = reader.GetString("email").Split('.')[0];
+                            }
+                            else
+                            {
+                                ViewBag.LinkCreator = reader.GetString("email").Split('@')[1];
+                            }
+                            var User = server.tbUsers.Where(p => p.Username == reader.GetString("email").Split('@')[1]).FirstOrDefault();
+                            if (User != null)
+                            {
+                                ViewBag.IsRenew = User.IsRenew;
+                            }
 
-                        getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
-
-                        var re = Utility.ConvertByteToGB(reader.GetDouble("d") + reader.GetDouble("u"));
-                        getUserData.UsedVolume = Math.Round(re, 2) + " GB";
-
-                        var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
-
-                        if (vol <= 0)
-                        {
-                            getUserData.IsActive = "اتمام حجم";
-                        }
-                        var d = Utility.ConvertByteToGB(vol);
-                        if (d <= 2)
-                        {
-                            getUserData.CanEdit = true;
-                        }
-                        getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
-                        var name = reader.GetString("email").Split('@')[1];
-
-                        ViewBag.Url = server.ServerAddress + "api/v1/" + "client/subscribe?token=" + token;
-                        if (reader.GetString("email").Split('@')[1].Contains("."))
-                        {
-                            ViewBag.LinkCreator = reader.GetString("email").Split('.')[0];
-                        }
-                        else
-                        {
-                            ViewBag.LinkCreator = reader.GetString("email").Split('@')[1];
-                        }
-                        var User = server.tbUsers.Where(p => p.Username == reader.GetString("email").Split('@')[1]).FirstOrDefault();
-                        if (User != null)
-                        {
-                            ViewBag.IsRenew = User.IsRenew;
+                            return View(getUserData);
                         }
 
-                        return View(getUserData);
                     }
+
+
+                    return HttpNotFound();
 
                 }
 
 
-                return PartialView();
-
+                return null;
             }
-
-
-            return null;
+            catch(Exception ex)
+            {
+                Utility.InsertLog(ex);
+                return HttpNotFound();
+            }
 
         }
 
@@ -229,7 +273,6 @@ namespace V2boardApi.Areas.api.Controllers
                     Order.OrderStatus = "SUCCESS";
                     Order.OrderDate = DateTime.Now;
                     Order.AccountName = Name;
-                    Order.V2_User_ID = id;
                     UpdateUserModel model = new UpdateUserModel();
                     model.AccountID = id;
                     model.Plan_ID = Order.V2_Plan_ID.Value;
@@ -269,7 +312,7 @@ namespace V2boardApi.Areas.api.Controllers
                 }
 
 
-                return PartialView();
+                return HttpNotFound();
 
 
             }

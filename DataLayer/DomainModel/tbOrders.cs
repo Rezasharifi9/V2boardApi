@@ -21,15 +21,12 @@ namespace DataLayer.DomainModel
         public Nullable<System.DateTime> OrderDate { get; set; }
         public string OrderStatus { get; set; }
         public string OrderType { get; set; }
-        public Nullable<int> FK_OrderAdmin_ID { get; set; }
         public Nullable<System.Guid> Order_Guid { get; set; }
-        public Nullable<int> V2_User_ID { get; set; }
         public Nullable<int> Order_Price { get; set; }
         public Nullable<int> FK_Tel_UserID { get; set; }
-        public string AccountName2 { get; set; }
         public string payment_id { get; set; }
-        public Nullable<int> PlanVolume { get; set; }
-        public Nullable<int> PlanCountDayes { get; set; }
+        public Nullable<int> Traffic { get; set; }
+        public Nullable<int> Month { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
