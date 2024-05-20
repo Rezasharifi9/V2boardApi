@@ -761,6 +761,10 @@ namespace V2boardApi.Areas.api.Controllers
 
                         });
 
+                            keyboard.IsPersistent = true;
+                            keyboard.ResizeKeyboard = true;
+                            keyboard.OneTimeKeyboard = false;
+
                             RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db);
 
                             var botID = item.tbTelegramUsers.Tel_RobotID;
