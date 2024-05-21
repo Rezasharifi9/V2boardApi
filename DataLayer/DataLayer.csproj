@@ -136,6 +136,9 @@
     <Compile Include="DomainModel\tbLinkUserAndPlans.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbLogAccount.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbLogs.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
@@ -161,6 +164,9 @@
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbUsers.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbUserSetting.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Interface\Interface.cs" />

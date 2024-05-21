@@ -325,8 +325,9 @@ namespace V2boardApi.Areas.api.Controllers
             }
             catch (Exception ex)
             {
-                Utility.InsertLog(ex);
-                return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با پایگاه داده");
+                var User = RepositoryUser.Where(p => p.Token == Request.Headers.Authorization.Scheme).FirstOrDefault();
+                ExceptionHandling.InsertLog(ex, User.User_ID);
+                return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط");
 
             }
         }
@@ -334,6 +335,8 @@ namespace V2boardApi.Areas.api.Controllers
         #endregion
 
         #region افزودن اکانت جدید
+
+        #region افزودن اکانت با پلن
         [System.Web.Http.HttpPost]
         [Authorize]
         public IHttpActionResult CreateUser(CreateUserModel createUser)
@@ -447,6 +450,115 @@ namespace V2boardApi.Areas.api.Controllers
 
         }
 
+        #endregion
+
+        #region افزودن اکانت با تایم و ترافیک دلخواه
+
+        [Authorize]
+        [System.Web.Http.HttpPost]
+        public IHttpActionResult CreateAccWithOutPlan(AddAccountWithOutPlanInputModel model)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(model.AccountName) && model.Traffic != 0 && model.Month != 0)
+                {
+                    if (model.AccountName.Length <= 20)
+                    {
+                        var User = RepositoryUser.table.Where(p => p.Token == Request.Headers.Authorization.Scheme).First();
+
+                        if (User.tbUserSetting.Us_Status)
+                        {
+
+                            if (model.Traffic > User.tbUserSetting.Us_LimitTraffic)
+                            {
+                                return Content(System.Net.HttpStatusCode.NotAcceptable, "ترافیک درخواستی بیشتر از ترافیک تنظیم شده برای شماست");
+                            }
+                            else if (model.Month > User.tbUserSetting.Us_LimitMonth)
+                            {
+                                return Content(System.Net.HttpStatusCode.NotAcceptable, "تعداد ماه درخواستی بیشتر از تعداد ماه تنظیم شده برای شماست");
+                            }
+                            else
+                            {
+                                var Price = model.Traffic * User.tbUserSetting.Us_CostTraffic;
+                                Price += model.Month * User.tbUserSetting.Us_LimitMonth;
+
+                                var CheckWallet = User.Wallet + Price;
+                                if (CheckWallet > User.Limit)
+                                {
+                                    var Count = User.Limit;
+
+                                    StringBuilder str = new StringBuilder();
+                                    str.Append(" شما اجازه ساخت بیشتر از مبلغ ");
+                                    str.Append(string.Format("{0:C0}", Count).Replace("$", ""));
+                                    str.Append(" تومان");
+                                    str.Append(" را ندارید");
+                                    str.Append(" لطفا بدهی خود را پرداخت کنید تا محدودیت شما 0 شود ");
+
+                                    return Content(System.Net.HttpStatusCode.NotAcceptable, str.ToString());
+                                }
+
+                                MySqlEntities mySql = new MySqlEntities(User.tbServers.ConnectionString);
+                                mySql.Open();
+                                var Reader = mySql.GetData("select email from v2_user where email like '" + model.AccountName + "'");
+                                if (!Reader.Read())
+                                {
+                                    Reader.Close();
+                                    var reader = mySql.GetData("select group_id,transfer_enable from v2_plan where id =" + User.tbUserSetting.Us_PlanDefaultInV2board);
+                                    long tran = 0;
+                                    int grid = 0;
+                                    while (reader.Read())
+                                    {
+                                        tran = Utility.ConvertGBToByte(Convert.ToInt64(model.Traffic));
+                                        grid = reader.GetInt32("group_id");
+                                    }
+                                    reader.Close();
+
+                                    string exp = DateTime.Now.AddMonths(model.Month).ConvertDatetimeToSecond().ToString();
+
+                                    var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
+                                    var planid = User.tbUserSetting.Us_PlanDefaultInV2board;
+                                    var emilprx = model.AccountName + "@" + User.Username;
+
+                                    string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
+
+                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES ('" + emilprx + "'," + exp + "," + create + ",'" + Guid.NewGuid() + "',0,0,0," + tran + ",0," + grid + "," + planid + ",'" + token + "','" + Guid.NewGuid() + "'," + create + ")";
+
+                                    reader = mySql.GetData(Query);
+                                    reader.Close();
+
+                                    UserLog.InsertLog(model.Traffic, model.Month, User.tbUserSetting.Us_CostTraffic.Value, User.tbUserSetting.Us_CostMonth.Value, User.User_ID, model.AccountName);
+
+                                    return Content(System.Net.HttpStatusCode.OK, "اکانت با موفقیت ساخته شد");
+
+                                }
+                                else
+                                {
+                                    return Content(System.Net.HttpStatusCode.NotAcceptable, "این اکانت از قبل در سیستم وجود دارد");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return Content(System.Net.HttpStatusCode.NotAcceptable, "ویژگی شخصی سازی ماه و ترافیک توسط ادمین بسته شده است");
+                        }
+                    }
+                    else
+                    {
+                        return Content(System.Net.HttpStatusCode.NotAcceptable, "نام کاربر نمی تواند بیشتر از 20 کاراکتر باشد");
+                    }
+                }
+                else
+                {
+                    return Content(System.Net.HttpStatusCode.NoContent, "اطلاعات ورودی ناقص : لطفا ورودی ها را چک کنید");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content(System.Net.HttpStatusCode.InternalServerError, "خطای ناشناخته سرور");
+            }
+        }
+
+        #endregion
         #endregion
 
         #region لیست تعرفه ها
@@ -771,7 +883,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
                                     RepositoryDepositWallet.Save();
-                                    await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html,replyMarkup: keyboard);
+                                    await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
                                     transaction.Commit();
                                     return Ok();
                                 }

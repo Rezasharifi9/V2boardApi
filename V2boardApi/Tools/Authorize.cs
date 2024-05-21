@@ -55,7 +55,7 @@ namespace V2boardApi.Tools
 
         protected override void HandleUnauthorizedRequest(HttpActionContext actionContext)
         {
-            actionContext.Response = actionContext.ControllerContext.Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "دسترسی رد شد لطفا مجدد وارد شوید");
+            actionContext.Response = actionContext.ControllerContext.Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "عدم مجوز دسترسی ورود به سامانه");
         }
     }
 }

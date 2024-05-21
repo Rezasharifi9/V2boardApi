@@ -18,6 +18,7 @@ namespace DataLayer.DomainModel
         public tbUsers()
         {
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
+            this.tbLogAccount = new HashSet<tbLogAccount>();
             this.tbUserFactors = new HashSet<tbUserFactors>();
         }
     
@@ -40,12 +41,16 @@ namespace DataLayer.DomainModel
         public Nullable<bool> IsRenew { get; set; }
         public Nullable<System.DateTime> ExpireTimeToken { get; set; }
         public Nullable<int> Admin_Telegram_ID { get; set; }
+        public Nullable<int> FK_UserSetting_ID { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbLogAccount> tbLogAccount { get; set; }
         public virtual tbServers tbServers { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUserFactors> tbUserFactors { get; set; }
+        public virtual tbUserSetting tbUserSetting { get; set; }
     }
 }

@@ -219,6 +219,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Areas\api\apiAreaRegistration.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AccountHistoryViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\AddAccountWithOutPlanInputModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\NotPayedUserModel.cs" />
     <Compile Include="Areas\App\AppAreaRegistration.cs" />
     <Compile Include="Areas\App\Controllers\AdminController.cs" />
@@ -244,6 +245,7 @@
     <Compile Include="Models\CreateUserModel.cs" />
     <Compile Include="Models\GetUserDataModel.cs" />
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
+    <Compile Include="Tools\ExceptionHandling.cs" />
     <Compile Include="Tools\Keyboards.cs" />
     <Compile Include="Models\ManifestModel.cs" />
     <Compile Include="Models\MysqlModel\UserMySqlModel.cs" />
@@ -262,6 +264,7 @@
     <Compile Include="Tools\Authorize.cs" />
     <Compile Include="Tools\CustomViewEngine.cs" />
     <Compile Include="Tools\RealUser.cs" />
+    <Compile Include="Tools\UserLog.cs" />
     <Compile Include="Tools\Utility.cs" />
   </ItemGroup>
   <ItemGroup>

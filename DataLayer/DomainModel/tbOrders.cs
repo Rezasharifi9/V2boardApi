@@ -15,7 +15,6 @@ namespace DataLayer.DomainModel
     public partial class tbOrders
     {
         public int Order_ID { get; set; }
-        public Nullable<int> FK_Plan_ID { get; set; }
         public Nullable<int> V2_Plan_ID { get; set; }
         public string AccountName { get; set; }
         public Nullable<System.DateTime> OrderDate { get; set; }
@@ -28,7 +27,6 @@ namespace DataLayer.DomainModel
         public Nullable<int> Traffic { get; set; }
         public Nullable<int> Month { get; set; }
     
-        public virtual tbPlans tbPlans { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
     }
 }

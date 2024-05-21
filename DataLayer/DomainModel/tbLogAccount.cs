@@ -12,12 +12,16 @@ namespace DataLayer.DomainModel
     using System;
     using System.Collections.Generic;
     
-    public partial class tbExpLog
+    public partial class tbLogAccount
     {
-        public int exl_ID { get; set; }
-        public string exl_MethodName { get; set; }
-        public System.DateTime exl_CreateDatetime { get; set; }
-        public string exl_Description { get; set; }
-        public int FK_User_ID { get; set; }
+        public int LogAcc_ID { get; set; }
+        public Nullable<int> La_Traffic { get; set; }
+        public Nullable<int> La_Month { get; set; }
+        public Nullable<System.DateTime> La_CreateDate { get; set; }
+        public string La_AccountName { get; set; }
+        public Nullable<int> La_Cost { get; set; }
+        public Nullable<int> FK_User_ID { get; set; }
+    
+        public virtual tbUsers tbUsers { get; set; }
     }
 }

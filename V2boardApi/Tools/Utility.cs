@@ -202,18 +202,6 @@ namespace V2boardApi.Tools
             return formattedNumber;
         }
 
-        public static void InsertLog(Exception ex)
-        {
-            var db = new Entities();
-            var RepositoryExpLogs = new Repository<tbExpLog>(db);
-
-            tbExpLog tbExpLog = new tbExpLog();
-            tbExpLog.exl_Message = ex.Message;
-            RepositoryExpLogs.Insert(tbExpLog);
-            RepositoryExpLogs.Save();
-        }
-
-
         public static byte[] GenerateQRCode(string text)
         {
             var generator = new QRCodeGenerator();
