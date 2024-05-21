@@ -499,7 +499,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 MySqlEntities mySql = new MySqlEntities(User.tbServers.ConnectionString);
                                 mySql.Open();
-                                var Reader = mySql.GetData("select email from v2_user where email like '" + model.AccountName + "'");
+                                var Reader = mySql.GetData("select email from v2_user where email like '" + model.AccountName + "@" + User.Username + "'");
                                 if (!Reader.Read())
                                 {
                                     Reader.Close();
@@ -526,8 +526,10 @@ namespace V2boardApi.Areas.api.Controllers
                                     reader = mySql.GetData(Query);
                                     reader.Close();
 
+                                    User.Wallet += Price;
+                                    RepositoryUser.Save();
                                     UserLog.InsertLog(model.Traffic, model.Month, User.tbUserSetting.Us_CostTraffic.Value, User.tbUserSetting.Us_CostMonth.Value, User.User_ID, model.AccountName);
-
+                                    mySql.Close();
                                     return Content(System.Net.HttpStatusCode.OK, "اکانت با موفقیت ساخته شد");
 
                                 }
