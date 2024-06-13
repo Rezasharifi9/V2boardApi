@@ -239,6 +239,7 @@
           <Property Name="Us_CostTraffic" Type="int" />
           <Property Name="Us_CostMonth" Type="int" />
           <Property Name="Us_PlanDefaultInV2board" Type="int" />
+          <Property Name="Us_State" Type="smallint" />
         </EntityType>
         <Association Name="FK_tbConnectionHelp_tbServers">
           <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
@@ -917,6 +918,7 @@
           <Property Name="Us_CostTraffic" Type="Int32" />
           <Property Name="Us_CostMonth" Type="Int32" />
           <Property Name="Us_PlanDefaultInV2board" Type="Int32" />
+          <Property Name="Us_State" Type="Int16" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbUserSetting" FromRole="tbUserSetting" ToRole="tbUsers" />
         </EntityType>
         <Association Name="FK_tbConnectionHelp_tbServers">
@@ -1383,6 +1385,7 @@
           <EntitySetMapping Name="tbUserSetting">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUserSetting">
               <MappingFragment StoreEntitySet="tbUserSetting">
+                <ScalarProperty Name="Us_State" ColumnName="Us_State" />
                 <ScalarProperty Name="Us_PlanDefaultInV2board" ColumnName="Us_PlanDefaultInV2board" />
                 <ScalarProperty Name="Us_CostMonth" ColumnName="Us_CostMonth" />
                 <ScalarProperty Name="Us_CostTraffic" ColumnName="Us_CostTraffic" />

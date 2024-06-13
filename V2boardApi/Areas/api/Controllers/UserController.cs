@@ -107,7 +107,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                     User.Token = (User.Username + User.Password).ToSha256();
                     RepositoryUser.Save();
-                    return Ok(new { Role = User.Role, Token = User.Token, RobotId = User.tbServers.Robot_ID });
+                    return Ok(new { FirstName = User.FirstName, LastName = User.LastName, Role = User.Role, Token = User.Token, MaxTraffic = User.tbUserSetting.Us_LimitTraffic, MaxMonth = User.tbUserSetting.Us_LimitMonth, CostMonth = User.tbUserSetting.Us_CostMonth, CostTraffic = User.tbUserSetting.Us_CostTraffic, UserState = User.tbUserSetting.Us_State });
                 }
                 else
                 {

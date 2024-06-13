@@ -27,6 +27,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> Us_CostTraffic { get; set; }
         public Nullable<int> Us_CostMonth { get; set; }
         public Nullable<int> Us_PlanDefaultInV2board { get; set; }
+        public Nullable<short> Us_State { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUsers> tbUsers { get; set; }
