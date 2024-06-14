@@ -34,8 +34,8 @@ namespace DataLayer.DomainModel
         public string Tel_RobotID { get; set; }
         public Nullable<int> Tel_Wallet { get; set; }
         public Nullable<int> Tel_Parent_ID { get; set; }
-        public Nullable<int> Tel_Traffic { get; set; }
         public Nullable<int> Tel_Monthes { get; set; }
+        public Nullable<int> Tel_Traffic { get; set; }
         public Nullable<System.DateTime> Tel_UpdateMessage { get; set; }
         public Nullable<bool> Tel_GetedTestAccount { get; set; }
     

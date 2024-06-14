@@ -245,6 +245,7 @@
     <Compile Include="Models\CreateUserModel.cs" />
     <Compile Include="Models\GetUserDataModel.cs" />
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
+    <Compile Include="Tools\CustomKeyboards.cs" />
     <Compile Include="Tools\ExceptionHandling.cs" />
     <Compile Include="Tools\Keyboards.cs" />
     <Compile Include="Models\ManifestModel.cs" />

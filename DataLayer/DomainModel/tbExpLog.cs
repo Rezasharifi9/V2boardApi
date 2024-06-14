@@ -15,9 +15,12 @@ namespace DataLayer.DomainModel
     public partial class tbExpLog
     {
         public int exl_ID { get; set; }
-        public string exl_MethodName { get; set; }
-        public System.DateTime exl_CreateDatetime { get; set; }
+        public string exl_Message { get; set; }
         public string exl_Description { get; set; }
-        public int FK_User_ID { get; set; }
+        public string exl_MethodName { get; set; }
+        public Nullable<int> FK_User_ID { get; set; }
+        public Nullable<System.DateTime> exl_CreateDatetime { get; set; }
+    
+        public virtual tbUsers tbUsers { get; set; }
     }
 }
