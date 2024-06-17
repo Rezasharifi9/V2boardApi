@@ -201,6 +201,13 @@ namespace V2boardApi.Tools
 
             return formattedNumber;
         }
+        public static string ConvertToMony(this string mony)
+        {
+            // تبدیل عدد به رشته و اضافه کردن جداکننده
+            string formattedNumber = String.Format("{0:#,0}", mony);
+
+            return formattedNumber;
+        }
 
         public static byte[] GenerateQRCode(string text)
         {

@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="rtl">
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -21,7 +21,7 @@
     <link href="~/Areas/App/assets/DataTable/datatables.min.css" rel="stylesheet" />
     <link href="~/Areas/App/assets/DataTable/fixedColumns.dataTables.min.css" rel="stylesheet" />
 </head>
-<body dir="rtl" style="font-family: 'MyFont'">
+<body style="font-family: 'MyFont'">
     <div class="container-scroller">
         <div id="loading" style="display:none;position: absolute; z-index: 100000;width: 100%; height: 100%; justify-content: center; align-items: center; background-color: #0000008a;">
             <img src="~/Areas/App/assets/Loading.svg" style="width:70px;height:70px;" />
@@ -150,20 +150,7 @@
             <!-- partial:partials/_sidebar.html -->
             <nav class="sidebar sidebar-offcanvas" id="sidebar">
                 <ul class="nav" style="padding: 0;">
-                    <li class="nav-item nav-profile">
-                        <a href="#" class="nav-link">
-                            <div class="nav-profile-image">
-                                <img src="~/Areas/App/assets/images/faces/face1.jpg" alt="profile">
-                                <span class="login-status online" onclick="SelectImage()"></span>
-
-                            </div>
-                            <div class="nav-profile-text d-flex flex-column" style="margin-right:10px;">
-                                <span class="font-weight-bold mb-2">@User.Identity.Name</span>
-                                <span class="text-secondary text-small">ادمین</span>
-                            </div>
-                            <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
-                        </a>
-                    </li>
+                    @Html.Action("_Profile","Admin")
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","Dashboard",new {area="App"})">
                             <i class="mdi mdi-home menu-icon"></i>
@@ -172,30 +159,44 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index","BotFactors",new {area="App"})">
+                            <i class="mdi mdi-cash-multiple menu-icon"></i>
+                            <span class="menu-title">فاکتور ها</span>
+
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","Orders",new {area="App"})">
-                            <i class="mdi mdi-origin menu-icon"></i>
-                            <span class="menu-title">لیست سفارشات</span>
+                            <i class="mdi mdi-cart-arrow-down menu-icon"></i>
+                            <span class="menu-title">سفارشات</span>
 
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","Admin",new {area="App"})">
-                            <i class="mdi mdi-account menu-icon"></i>
-                            <span class="menu-title">مدیریت کاربران</span>
+                            <i class="mdi mdi-account-group menu-icon"></i>
+                            <span class="menu-title">کاربران عمده</span>
 
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","TelegramUsers",new {area="App"})">
-                            <i class="mdi mdi-account menu-icon"></i>
-                            <span class="menu-title">مدیریت کاربران تلگرام</span>
+                            <i class="mdi mdi-telegram menu-icon"></i>
+                            <span class="menu-title">کاربران ربات</span>
 
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","Plan",new {area="App"})">
-                            <i class="mdi mdi-account menu-icon"></i>
+                            <i class="mdi mdi-basket menu-icon"></i>
                             <span class="menu-title">تعرفه ها</span>
+
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index","Settings",new {area="App"})">
+                            <i class="mdi mdi-settings menu-icon"></i>
+                            <span class="menu-title">تنظیمات</span>
 
                         </a>
                     </li>
@@ -257,7 +258,7 @@
     <script>
         function ConvertToDataTable(table, OrderColumn, colmnWidth) {
             new DataTable(table, {
-                order: [[OrderColumn, 'asc']],
+                order: [[OrderColumn, 'desc']],
                 columnDefs: colmnWidth,
                 paging: true,
                 scrollCollapse: false,
@@ -283,6 +284,17 @@
             });
 
         }
+
+        $("#ChangeProf").click(function () {
+            $('#Profile').trigger('click');
+        });
+
+        $("#Profile").change(function () {
+
+            $("#ProfileForm").submit();
+        });
+
+      
 
         function separateDigits(number) {
             // تبدیل عدد به رشته
@@ -343,6 +355,7 @@
             document.getElementById(InputId).value = separated;
         }
     </script>
+
 
     @RenderSection("scripts", false)
 </body>

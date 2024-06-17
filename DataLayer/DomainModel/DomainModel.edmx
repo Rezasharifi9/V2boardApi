@@ -5,6 +5,18 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
     <Schema Namespace="V2boardSiteModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="tbBankCardNumbers">
+          <Key>
+            <PropertyRef Name="CardNumber_ID" />
+          </Key>
+          <Property Name="CardNumber_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="CardNumber" Type="varchar" MaxLength="30" />
+          <Property Name="BankSmsNumber" Type="varchar" MaxLength="500" />
+          <Property Name="FK_Server_ID" Type="int" />
+          <Property Name="Active" Type="bit" />
+          <Property Name="InTheNameOf" Type="nvarchar" MaxLength="150" />
+          <Property Name="phoneNumber" Type="varchar" MaxLength="11" />
+        </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
             <PropertyRef Name="ch_ID" />
@@ -216,7 +228,20 @@
           <Property Name="IsRenew" Type="bit" />
           <Property Name="ExpireTimeToken" Type="datetime" />
           <Property Name="Admin_Telegram_ID" Type="int" />
+          <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
         </EntityType>
+        <Association Name="FK_tbBankCardNumbers_tbServers">
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbBankCardNumbers" Type="Self.tbBankCardNumbers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServers">
+              <PropertyRef Name="ServerID" />
+            </Principal>
+            <Dependent Role="tbBankCardNumbers">
+              <PropertyRef Name="FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbConnectionHelp_tbServers">
           <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
           <End Role="tbConnectionHelp" Type="Self.tbConnectionHelp" Multiplicity="*" />
@@ -434,6 +459,7 @@
           </ReferentialConstraint>
         </Association>
         <EntityContainer Name="V2boardSiteModelStoreContainer">
+          <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbConnectionHelp" EntityType="Self.tbConnectionHelp" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbDepositWallet_Log" EntityType="Self.tbDepositWallet_Log" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbExpLog" EntityType="Self.tbExpLog" Schema="dbo" store:Type="Tables" />
@@ -449,6 +475,10 @@
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_tbBankCardNumbers_tbServers" Association="Self.FK_tbBankCardNumbers_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbConnectionHelp_tbServers" Association="Self.FK_tbConnectionHelp_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
@@ -527,6 +557,7 @@
     <edmx:ConceptualModels>
       <Schema Namespace="V2boardSiteModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="tbBankCardNumbers" EntityType="V2boardSiteModel.tbBankCardNumbers" />
           <EntitySet Name="tbConnectionHelp" EntityType="V2boardSiteModel.tbConnectionHelp" />
           <EntitySet Name="tbDepositWallet_Log" EntityType="V2boardSiteModel.tbDepositWallet_Log" />
           <EntitySet Name="tbExpLog" EntityType="V2boardSiteModel.tbExpLog" />
@@ -542,6 +573,10 @@
           <EntitySet Name="tbUseages" EntityType="V2boardSiteModel.tbUseages" />
           <EntitySet Name="tbUserFactors" EntityType="V2boardSiteModel.tbUserFactors" />
           <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
+          <AssociationSet Name="FK_tbBankCardNumbers_tbServers" Association="V2boardSiteModel.FK_tbBankCardNumbers_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbConnectionHelp_tbServers" Association="V2boardSiteModel.FK_tbConnectionHelp_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
@@ -615,6 +650,19 @@
             <End Role="tbUserFactors" EntitySet="tbUserFactors" />
           </AssociationSet>
         </EntityContainer>
+        <EntityType Name="tbBankCardNumbers">
+          <Key>
+            <PropertyRef Name="CardNumber_ID" />
+          </Key>
+          <Property Name="CardNumber_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CardNumber" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="BankSmsNumber" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="FK_Server_ID" Type="Int32" />
+          <Property Name="Active" Type="Boolean" />
+          <Property Name="InTheNameOf" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="phoneNumber" Type="String" MaxLength="11" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbServers" FromRole="tbBankCardNumbers" ToRole="tbServers" />
+        </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
             <PropertyRef Name="ch_ID" />
@@ -764,6 +812,7 @@
           <Property Name="PricePerGig" Type="Int32" />
           <Property Name="PricePerMonth" Type="Int32" />
           <Property Name="DefaultPlanIdInV2board" Type="Int32" />
+          <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbServers" FromRole="tbServers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbServers" FromRole="tbServers" ToRole="tbConnectionHelp" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbServers" ToRole="tbLinks" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
@@ -857,12 +906,25 @@
           <Property Name="IsRenew" Type="Boolean" />
           <Property Name="ExpireTimeToken" Type="DateTime" Precision="3" />
           <Property Name="Admin_Telegram_ID" Type="Int32" />
+          <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbExpLog" Relationship="V2boardSiteModel.FK_tbExpLog_tbUsers" FromRole="tbUsers" ToRole="tbExpLog" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
         </EntityType>
+        <Association Name="FK_tbBankCardNumbers_tbServers">
+          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbBankCardNumbers" Role="tbBankCardNumbers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServers">
+              <PropertyRef Name="ServerID" />
+            </Principal>
+            <Dependent Role="tbBankCardNumbers">
+              <PropertyRef Name="FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbConnectionHelp_tbServers">
           <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
           <End Type="V2boardSiteModel.tbConnectionHelp" Role="tbConnectionHelp" Multiplicity="*" />
@@ -1085,6 +1147,19 @@
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="V2boardSiteModelStoreContainer" CdmEntityContainer="Entities">
+          <EntitySetMapping Name="tbBankCardNumbers">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbBankCardNumbers">
+              <MappingFragment StoreEntitySet="tbBankCardNumbers">
+                <ScalarProperty Name="phoneNumber" ColumnName="phoneNumber" />
+                <ScalarProperty Name="InTheNameOf" ColumnName="InTheNameOf" />
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="BankSmsNumber" ColumnName="BankSmsNumber" />
+                <ScalarProperty Name="CardNumber" ColumnName="CardNumber" />
+                <ScalarProperty Name="CardNumber_ID" ColumnName="CardNumber_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tbConnectionHelp">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbConnectionHelp">
               <MappingFragment StoreEntitySet="tbConnectionHelp">
@@ -1290,6 +1365,7 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
                 <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
                 <ScalarProperty Name="IsRenew" ColumnName="IsRenew" />

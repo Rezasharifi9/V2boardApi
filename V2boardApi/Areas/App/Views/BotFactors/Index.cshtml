@@ -1,0 +1,64 @@
+﻿@model List<DataLayer.DomainModel.tbDepositWallet_Log>
+
+@{
+    ViewBag.Title = "فاکتور ها";
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+
+}
+
+<style>
+</style>
+
+@using V2boardApi.Tools;
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">فاکتور ها</h4>
+        <p class="card-description">
+        </p>
+        <table class="table table-striped" id="payList" style="width: 100%;" dir="ltr">
+            <thead>
+                <tr>
+                    <th style="text-align:center;"> مبلغ </th>
+                    <th style="text-align:center;"> وضعیت </th>
+                    <th style="text-align:center;"> تاریخ </th>
+                    <th style="text-align:center;"> کاربر </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="text-align:center;"> @Utility.ConvertToMony(item.dw_Price.Value) </td>
+                        <td style="text-align:center;">
+                            @if (item.dw_Status == "FOR_PAY")
+                            {
+                                <label class="badge badge-danger">در حال پرداخت</label>
+                            }
+                            else if (item.dw_Status == "FINISH")
+                            {
+                                <label class="badge badge-success">پرداخت شده</label>
+                            }
+                        </td>
+                        <td style="text-align:center;"> @Utility.ConvertDateTimeToShamsi2(item.dw_CreateDatetime.Value) </td>
+                        <td class="py-1" style="text-align:center;">
+                            @item.tbTelegramUsers.Tel_Username (@item.tbTelegramUsers.Tel_FirstName @item.tbTelegramUsers.Tel_LastName)
+                        </td>
+
+
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+@section scripts {
+    <script>
+
+
+
+        ConvertToDataTable("#payList", 2, [{ width: 5, targets: 3 }]);
+
+
+    </script>
+}

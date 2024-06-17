@@ -28,7 +28,7 @@ namespace V2boardApi.Areas.App.Controllers
 
             var Use = UsersRepository.Where(p => p.Username == User.Identity.Name).First();
            
-            var Orders = OrdersRepository.Where(p=> p.tbTelegramUsers.Tel_RobotID == Use.tbServers.Robot_ID).OrderByDescending(p=> p.OrderDate).ToList();
+            var Orders = OrdersRepository.Where(p=> p.tbTelegramUsers.Tel_RobotID == Use.tbServers.Robot_ID).OrderByDescending(p=> p.OrderDate).Take(100).ToList();
             return View(Orders);
         }
     }

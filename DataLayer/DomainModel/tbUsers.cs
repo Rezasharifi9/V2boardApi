@@ -41,6 +41,7 @@ namespace DataLayer.DomainModel
         public Nullable<bool> IsRenew { get; set; }
         public Nullable<System.DateTime> ExpireTimeToken { get; set; }
         public Nullable<int> Admin_Telegram_ID { get; set; }
+        public string Profile_Filename { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbExpLog> tbExpLog { get; set; }

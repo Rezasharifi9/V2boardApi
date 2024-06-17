@@ -30,7 +30,7 @@
                             {
                                 <tr>
                                     <td>@item.AccountName</td>
-                                    <td>@item.tbTelegramUsers.Tel_Username</td>
+                                    <td>@item.tbTelegramUsers.Tel_Username (@item.tbTelegramUsers.Tel_FirstName @item.tbTelegramUsers.Tel_LastName)</td>
                                     @if (item.Month != null && item.Month != null)
                                     {
                                         <td>@item.Traffic گیگ @item.Month ماهه</td>
@@ -89,7 +89,7 @@
         $(function () {
 
             new DataTable("#AccountLogTable", {
-                order: [[6, 'desc']],
+                order: [[3, 'desc']],
                 columnDefs: 2,
                 paging: true,
                 scrollCollapse: false,

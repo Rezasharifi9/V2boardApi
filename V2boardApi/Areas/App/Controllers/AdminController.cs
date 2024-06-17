@@ -27,6 +27,8 @@ using DeviceDetectorNET;
 using DeviceDetectorNET.Parser;
 using Telegram.Bot.Types;
 using System.Data.Entity.Validation;
+using System.Web;
+using System.IO;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -35,6 +37,8 @@ namespace V2boardApi.Areas.App.Controllers
     {
         private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
+        private Repository<tbTelegramUsers> RepositoryTelegramUser { get; set; }
+        private Repository<tbDepositWallet_Log> RepositoryDepositLog { get; set; }
         private Repository<tbPlans> RepositoryPlans { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbServers> RepositoryServer { get; set; }
@@ -47,8 +51,49 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryPlans = new Repository<tbPlans>(db);
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryServer = new Repository<tbServers>(db);
+            RepositoryTelegramUser = new Repository<tbTelegramUsers>(db);
+            RepositoryDepositLog = new Repository<tbDepositWallet_Log>(db);
             RepositoryUserFactors = new Repository<tbUserFactors>(db);
         }
+
+
+        #region تغییر پروفایل
+
+        public ActionResult _Profile()
+        {
+            var Us = db.tbUsers.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            if (Us != null)
+            {
+                return PartialView(Us);
+            }
+            else
+            {
+                return PartialView();
+            }
+        }
+
+        [System.Web.Mvc.HttpPost]
+        public ActionResult ChangeProfile(HttpPostedFileBase profile)
+        {
+            var Us = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            if (Us != null)
+            {
+                var ServerPath = Server.MapPath("~/Areas/App/assets/images/faces/");
+                Us.Profile_Filename = Us.Username + Path.GetExtension(profile.FileName);
+                profile.SaveAs(ServerPath + Us.Username + Path.GetExtension(profile.FileName));
+                RepositoryUser.Save();
+
+                return RedirectToAction("index", "dashboard");
+
+            }
+            else
+            {
+                return RedirectToAction("index", "dashboard");
+            }
+            
+        }
+
+        #endregion
 
         #region لیست کاربران
 
@@ -180,7 +225,10 @@ namespace V2boardApi.Areas.App.Controllers
                     Us.FirstName = tbUser.FirstName;
                     Us.Username = tbUser.Username;
                     Us.LastName = tbUser.LastName;
-                    Us.Password = tbUser.Password.ToSha256();
+                    if(tbUser.Password != null)
+                    {
+                        Us.Password = tbUser.Password.ToSha256();
+                    }
                     Us.Email = tbUser.Email;
                     Us.Limit = tbUser.Limit;
                     Us.TelegramID = tbUser.TelegramID;
@@ -257,6 +305,7 @@ namespace V2boardApi.Areas.App.Controllers
                 factor.tbUf_Value = us.Wallet - intWallet;
                 factor.tbUf_CreateTime = DateTime.Now;
                 factor.FK_User_ID = id;
+                factor.IsPayed = true;
                 us.Wallet = intWallet;
                 us.tbUserFactors.Add(factor);
                 RepositoryUser.Save();
@@ -429,7 +478,7 @@ namespace V2boardApi.Areas.App.Controllers
             var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
             if (User != null)
             {
-                return PartialView(User.tbUserFactors.ToList());
+                return PartialView(User.tbUserFactors.Where(p=> p.IsPayed == true).ToList());
             }
             return PartialView();
         }
@@ -495,6 +544,8 @@ namespace V2boardApi.Areas.App.Controllers
 
         }
         #endregion
+
+        #region مربوط به پرداخت کاربران عمده
 
 
         public ActionResult Pay(string TOKEN)
@@ -586,5 +637,9 @@ namespace V2boardApi.Areas.App.Controllers
             }
             return HttpNotFound();
         }
+
+        #endregion
+
+        
     }
 }

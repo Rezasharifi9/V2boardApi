@@ -1,0 +1,41 @@
+﻿@model DataLayer.DomainModel.tbBankCardNumbers
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">تنظیمات کارت</h4>
+        <hr />
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="exampleInputUsername1">شماره کارت <span class="text-danger">*</span></label>
+                    <input type="number" dir="ltr" class="form-control form-control-sm" id="CardNumber" placeholder="6219" value="@Model.CardNumber">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="exampleInputUsername1"> به نام <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm" id="NameOfCard" placeholder="رضا" value="@Model.InTheNameOf">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="exampleInputUsername1">شماره SMS <span class="text-danger">*</span></label>
+                    <input type="text" dir="ltr" class="form-control form-control-sm" id="SmsNumberOfCard" placeholder="989965555,654656" value="@Model.BankSmsNumber">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="exampleInputUsername1">شماره همراه <span class="text-danger">*</span></label>
+                    <input type="text" dir="ltr" class="form-control form-control-sm" id="phoneNumber" placeholder="09334325653" value="@Model.phoneNumber">
+                </div>
+            </div>
+        </div>
+        <span class="text-info text-small">نکته : اگر بانک شما بیش از یک شماره SMS داشت با ( , ) شماره ها را جدا کنید</span>
+        <div class="row">
+            <div class="col-md-12" style="margin-top:27px;">
+                <button type="button" id="SaveBankCards" class="btn btn-gradient-success me-2 float-start">ذخیره</button>
+            </div>
+        </div>
+    </div>
+</div>

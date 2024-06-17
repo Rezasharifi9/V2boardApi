@@ -63,7 +63,7 @@ namespace V2boardApi.Areas.api.Controllers
                     if (server != null)
                     {
                         HttpClient client = new HttpClient();
-                        client.BaseAddress = new Uri(server.ServerAddress + "api/v1/");
+                        client.BaseAddress = new Uri("https://" + server.ServerAddress + "/api/v1/");
                         client.DefaultRequestHeaders.UserAgent.TryParseAdd(Request.UserAgent);
                         var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + token);
                         if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
@@ -242,7 +242,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                 return null;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return HttpNotFound();
             }

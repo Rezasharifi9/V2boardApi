@@ -226,10 +226,12 @@
     <Compile Include="Areas\api\Controllers\ClientController.cs" />
     <Compile Include="Areas\api\Controllers\ServerController.cs" />
     <Compile Include="Areas\api\Controllers\UserController.cs" />
+    <Compile Include="Areas\App\Controllers\BotFactorsController.cs" />
     <Compile Include="Areas\App\Controllers\DashboardController.cs" />
     <Compile Include="Areas\App\Controllers\ErrorController.cs" />
     <Compile Include="Areas\App\Controllers\OrdersController.cs" />
     <Compile Include="Areas\App\Controllers\PlanController.cs" />
+    <Compile Include="Areas\App\Controllers\SettingsController.cs" />
     <Compile Include="Areas\App\Controllers\TelegramUsersController.cs" />
     <Compile Include="Areas\App\Data\CountAccountCreatedFromMajorModel.cs" />
     <Compile Include="Areas\App\Data\DashboardViewModel.cs" />
@@ -264,6 +266,7 @@
     <Compile Include="Tools\Admin.cs" />
     <Compile Include="Tools\Authorize.cs" />
     <Compile Include="Tools\CustomViewEngine.cs" />
+    <Compile Include="Tools\Network.cs" />
     <Compile Include="Tools\RealUser.cs" />
     <Compile Include="Tools\UserLog.cs" />
     <Compile Include="Tools\Utility.cs" />
@@ -440,6 +443,13 @@
     <Content Include="Areas\App\assets\vendors\mdi\fonts\materialdesignicons-webfont.woff2" />
     <Content Include="Areas\App\Views\TelegramUsers\_SendMessage.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\Accounts.cshtml" />
+    <Content Include="Areas\App\Views\Settings\Index.cshtml" />
+    <Content Include="Areas\App\Views\Settings\_BaseSetting.cshtml" />
+    <Content Include="Areas\App\Views\Settings\_BotSetting.cshtml" />
+    <Content Include="Areas\App\Views\Settings\_BankNumbers.cshtml" />
+    <Content Include="Areas\App\Views\Admin\PaymentList.cshtml" />
+    <Content Include="Areas\App\Views\BotFactors\Index.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_Profile.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />

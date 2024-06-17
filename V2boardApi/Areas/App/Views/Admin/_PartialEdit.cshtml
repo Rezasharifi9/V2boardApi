@@ -142,14 +142,7 @@
                 icon: "warning"
             });
             return false;
-        } else if (Password.length <= 0) {
-            Swal.fire({
-                title: "رمز عبور !!",
-                text: "لطفا رمز عبور کاربر را وارد کنید",
-                icon: "warning"
-            });
-            return false;
-        } else if (Limit <= 0) {
+        }else if (Limit <= 0) {
             Swal.fire({
                 title: "محدودیت خرید",
                 text: "لطفا مقداری محدودیت خرید برای کاربرتان تنظیم کنید",

@@ -5,21 +5,23 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="d1df1a994c6648c3b2d3bffd866328e7" Name="Diagram1">
-        <EntityTypeShape EntityType="V2boardSiteModel.tbConnectionHelp" Width="1.5" PointX="3" PointY="26.625" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbDepositWallet_Log" Width="1.5" PointX="3" PointY="22.75" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbExpLog" Width="1.5" PointX="5.25" PointY="9.25" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbFailureServers" Width="1.5" PointX="5.75" PointY="3" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbLinks" Width="1.5" PointX="6" PointY="12.625" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbLinkUserAndPlans" Width="1.5" PointX="5.25" PointY="5.375" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbLogs" Width="1.5" PointX="7.5" PointY="5.375" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbOrders" Width="1.5" PointX="3" PointY="12.625" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbPlans" Width="1.5" PointX="3" PointY="0.75" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbServers" Width="1.5" PointX="0.75" PointY="4.75" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbTelegramUsers" Width="1.5" PointX="0.75" PointY="12.125" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="18.125" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUseages" Width="1.5" PointX="3" PointY="29.5" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUserFactors" Width="1.5" PointX="5.25" PointY="17.375" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUsers" Width="1.5" PointX="3" PointY="5.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbBankCardNumbers" Width="1.5" PointX="3" PointY="32.25" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbConnectionHelp" Width="1.5" PointX="3" PointY="35.625" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbDepositWallet_Log" Width="1.5" PointX="3" PointY="25" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbExpLog" Width="1.5" PointX="5.25" PointY="19.5" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbFailureServers" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbLinks" Width="1.5" PointX="5.25" PointY="14.5" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbLinkUserAndPlans" Width="1.5" PointX="5.25" PointY="10.375" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbLogs" Width="1.5" PointX="7.5" PointY="14.375" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbOrders" Width="1.5" PointX="8.25" PointY="9.625" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbPlans" Width="1.5" PointX="3" PointY="9.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbServers" Width="1.5" PointX="0.75" PointY="15.125" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbTelegramUsers" Width="1.5" PointX="0.75" PointY="22.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="14.25" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUseages" Width="1.5" PointX="3" PointY="29" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUserFactors" Width="1.5" PointX="5.25" PointY="22.625" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUsers" Width="1.5" PointX="3" PointY="18.25" />
+        <AssociationConnector Association="V2boardSiteModel.FK_tbBankCardNumbers_tbServers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbConnectionHelp_tbServers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbExpLog_tbUsers" />

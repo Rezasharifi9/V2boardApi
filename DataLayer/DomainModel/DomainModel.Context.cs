@@ -25,6 +25,7 @@ namespace DataLayer.DomainModel
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<tbBankCardNumbers> tbBankCardNumbers { get; set; }
         public virtual DbSet<tbConnectionHelp> tbConnectionHelp { get; set; }
         public virtual DbSet<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }
         public virtual DbSet<tbExpLog> tbExpLog { get; set; }

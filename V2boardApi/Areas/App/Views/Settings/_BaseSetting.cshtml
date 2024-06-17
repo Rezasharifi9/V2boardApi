@@ -1,0 +1,52 @@
+﻿@model DataLayer.DomainModel.tbServers
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">تنظیمات سرور</h4>
+        <hr />
+        <form class="forms-sample">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="exampleInputUsername1"> آیپی سرور <span class="text-danger">*</span></label>
+                        <input type="text" dir="ltr" class="form-control" id="IPAddress" placeholder="192.168.1.1" value="@Model.ServerIP">
+
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="exampleInputUsername1">نام دیتابیس <span class="text-danger">*</span></label>
+                        <input type="text" dir="ltr" class="form-control" id="DatabaseName" placeholder="V2boardDB" value="@Model.DataBaseName">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-6">
+                    <label for="exampleInputEmail1">نام کاربری (mysql) <span class="text-danger">*</span></label>
+                    <input type="text" dir="ltr" class="form-control" id="Username" placeholder="mysql_database" value="@Model.Username">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="exampleInputPassword1">رمز عبور (mysql) <span class="text-danger">*</span></label>
+                    <input type="password" dir="ltr" class="form-control" id="Password" placeholder="********" value="@Model.Password">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="exampleInputPassword1">دامنه Sub <span class="text-danger">*</span></label>
+                        <input type="text" dir="ltr" class="form-control" id="SubAddr" placeholder="site.com" value="@Model.SubAddress">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="exampleInputPassword2">دامنه پنل V2board <span class="text-danger">*</span></label>
+                        <input type="text" dir="ltr" class="form-control" id="ServerAddress" placeholder="site.com" value="@Model.ServerAddress">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="SaveServerInfo" class="btn btn-gradient-success me-2 float-start">ذخیره</button>
+            <button type="button" id="testConnection" class="btn btn-gradient-light me-2 float-start">تست ارتباط</button>
+        </form>
+        <span class="text-danger text-small">نکته : پورت 3306 در aaPanel و CentOs فعال باشد</span>
+    </div>
+</div>

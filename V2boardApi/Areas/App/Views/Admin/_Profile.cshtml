@@ -1,0 +1,17 @@
+﻿@model DataLayer.DomainModel.tbUsers
+<li class="nav-item nav-profile">
+    <a href="#" class="nav-link">
+        <div class="nav-profile-image">
+            <img src="~/Areas/App/assets/images/faces/@Model.Profile_Filename" alt="profile" id="ChangeProf">
+            <span class="login-status online"></span>
+            <form action="@Url.Action("ChangeProfile","Admin")" enctype="multipart/form-data" id="ProfileForm" method="post">
+                <input type="file" id="Profile" style="visibility:hidden" name="profile" />
+            </form>
+        </div>
+        <div class="nav-profile-text d-flex flex-column" style="margin-right:10px;">
+            <span class="font-weight-bold mb-2">@Model.FirstName @Model.LastName</span>
+            <span class="text-secondary text-small">ادمین</span>
+        </div>
+        <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
+    </a>
+</li>

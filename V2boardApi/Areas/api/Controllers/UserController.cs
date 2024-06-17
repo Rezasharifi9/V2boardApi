@@ -91,6 +91,35 @@ namespace V2boardApi.Areas.api.Controllers
             throw new NotImplementedException();
         }
 
+        #region لاگین مربوط به اپلیکیشن
+        [System.Web.Http.HttpPost]
+        public IHttpActionResult LoginAdmin(ReqLoginModel req)
+        {
+            try
+            {
+                var pass = req.password.ToSha256();
+                var User = RepositoryUser.Where(p => p.Username == req.username && p.Password == pass && p.Status == true).FirstOrDefault();
+                if (User != null)
+                {
+                    var Server = User.tbServers;
+
+                    var ActiveBank = Server.tbBankCardNumbers.Where(p=> p.Active == true).FirstOrDefault();
+
+                    return Ok(new { phoneNumber = User.PhoneNumber, BankSmsNumbers = ActiveBank.BankSmsNumber.Split(',').ToList() });
+
+                }
+                else
+                {
+                    return Content(System.Net.HttpStatusCode.NotFound, "نام کاربری یا رمز عبور اشتباه است");
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest("خطا در ارتباط با سرور");
+            }
+        }
+
+        #endregion
 
         #region لاگین
         [System.Web.Http.HttpPost]
