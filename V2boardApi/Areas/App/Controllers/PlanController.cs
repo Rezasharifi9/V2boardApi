@@ -6,10 +6,11 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using V2boardApi.Areas.App.Data.PlanViewModels;
+using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [Authorize]
+    [AuthorizeApp(Roles = "1")]
     public class PlanController : Controller
     {
 

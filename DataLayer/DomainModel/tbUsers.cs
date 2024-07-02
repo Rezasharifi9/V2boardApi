@@ -17,8 +17,12 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public tbUsers()
         {
+            this.tbBankCardNumbers = new HashSet<tbBankCardNumbers>();
+            this.tbBotSettings = new HashSet<tbBotSettings>();
+            this.tbConnectionHelp = new HashSet<tbConnectionHelp>();
             this.tbExpLog = new HashSet<tbExpLog>();
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
+            this.tbTelegramUsers = new HashSet<tbTelegramUsers>();
             this.tbUserFactors = new HashSet<tbUserFactors>();
         }
     
@@ -44,11 +48,19 @@ namespace DataLayer.DomainModel
         public string Profile_Filename { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbBankCardNumbers> tbBankCardNumbers { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbBotSettings> tbBotSettings { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbConnectionHelp> tbConnectionHelp { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbExpLog> tbExpLog { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
         public virtual tbServers tbServers { get; set; }
-        public virtual tbTelegramUsers tbTelegramUsers { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbTelegramUsers> tbTelegramUsers { get; set; }
+        public virtual tbTelegramUsers tbTelegramUsers1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUserFactors> tbUserFactors { get; set; }
     }

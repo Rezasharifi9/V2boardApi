@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
+    [AuthorizeApp(Roles = "1,2")]
     public class BotFactorsController : Controller
     {
         private Entities db;
@@ -23,7 +25,12 @@ namespace V2boardApi.Areas.App.Controllers
             List<tbDepositWallet_Log> PayList = new List<tbDepositWallet_Log>();
             if (Us != null)
             {
-                var Logs = RepositoryDepositLog.Where(p => p.tbTelegramUsers.Tel_RobotID == Us.tbServers.Robot_ID).OrderByDescending(p => p.dw_CreateDatetime).Take(100).ToList();
+                var Logs = new List<tbDepositWallet_Log>();
+                foreach (var us in Us.tbTelegramUsers.ToList()) 
+                {
+                    Logs.AddRange(us.tbDepositWallet_Log.ToList());
+                }
+               
 
                 return View(Logs);
             }

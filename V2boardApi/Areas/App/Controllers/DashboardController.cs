@@ -1,5 +1,7 @@
 ﻿using DataLayer.DomainModel;
 using DataLayer.Repository;
+using Stimulsoft.Report.Mvc;
+using Stimulsoft.Report;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,10 +9,11 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using V2boardApi.Areas.App.Data;
+using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [Authorize]
+
     public class DashboardController : Controller
     {
         private Entities db;
@@ -28,127 +31,55 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryServer = new Repository<tbServers>(db);
             RepositoryTelegramUsers = new Repository<tbTelegramUsers>();
+
+
+            var path = System.Web.HttpContext.Current.Server.MapPath("~/Key/license.key");
+
+            Stimulsoft.Base.StiLicense.LoadFromFile(path);
         }
+
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult Index()
         {
-
-            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
-            if (user != null)
-            {
-                //CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fa-IR");
-                DashboardViewModel model = new DashboardViewModel();
-                var Users = user.tbServers.tbUsers.ToList();
-
-                var ToDate = new DateTime(DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day,0,0,0,0);
-
-                var DayOfWeek = Tools.Utility.PersionDayOfWeek(ToDate); 
-                var day = -(int)(DayOfWeek);
-                // تاریخ هفته قبل
-                DateTime lastDayStartDate = ToDate.AddDays(day - 6);
-                // تاریخ هفته جاری
-                DateTime lastDayEndDate = ToDate.AddDays(day);
-
-                // تاریخ هفته جاری
-                DateTime thisDayStartDate = ToDate.AddDays(day);
-
-                DateTime EndOfWeek = thisDayStartDate.AddDays(7);
-
-                // فروش هفته قبل 
-                double OldWeekSaleFromMajor = 0;
-                //فروش هفته قبل از ربات
-                double OldWeekSaleFromBot = 0;
-                //کاربرای هفته قبل
-                double OldWeekCountUser = 0;
-                // تعداد فروش هفته قبل در ربات
-                double OldWeekCountBot = 0;
-                foreach (var item in Users)
-                {
-                    foreach (var link in item.tbLinkUserAndPlans.ToList())
-                    {
-                        //فروش هفته جاری
-                        model.SaleFromMajor += link.tbLogs.Where(p => p.CreateDatetime >= thisDayStartDate && p.CreateDatetime <= EndOfWeek).Sum(p => p.tbLinkUserAndPlans.tbPlans.Price.Value) * 10;
-                        // فروش هفته قبل 
-                        OldWeekSaleFromMajor += link.tbLogs.Where(p => p.CreateDatetime >= lastDayStartDate && p.CreateDatetime <= lastDayEndDate).Sum(p => p.tbLinkUserAndPlans.tbPlans.Price.Value) * 10;
-
-                        //فروش امروز از پنل عمده فروش
-                        model.SaleFromMajorToday += link.tbLogs.Where(p => p.CreateDatetime >= DateTime.Now.Date).Sum(p => p.tbLinkUserAndPlans.tbPlans.Price.Value) * 10;
-
-                        //کاربرای هفته جاری
-                        model.CountUserFromMajor += link.tbLogs.Where(p => p.CreateDatetime >= thisDayStartDate && p.CreateDatetime <= EndOfWeek).Count();
-                        //کاربرای هفته قبل
-                        OldWeekCountUser += link.tbLogs.Where(p => p.CreateDatetime >= lastDayStartDate && p.CreateDatetime <= lastDayEndDate).Count();
-                    }
-                }
-
-                foreach (var item in RepositoryTelegramUsers.Where(p => p.Tel_RobotID == user.tbServers.Robot_ID).ToList())
-                {
-                    //فروش هفته جاری از ربات
-                    model.SaleFromBot += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= thisDayStartDate && p.dw_CreateDatetime <= EndOfWeek && p.dw_Status == "FINISH").Sum(p => p.dw_Price.Value);
-                    //فروش هفته قبل از ربات
-                    OldWeekSaleFromBot += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= lastDayStartDate && p.dw_CreateDatetime <= lastDayEndDate && p.dw_Status == "FINISH").Sum(p => p.dw_Price.Value);
-                    //تعداد فروش هفته جاری از ربات
-                    model.CountUserFromBot += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= thisDayStartDate && p.dw_CreateDatetime <= EndOfWeek && p.dw_Status == "FINISH").Count();
-                    // تعداد فروش هفته قبل در ربات
-                    OldWeekCountBot += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= lastDayStartDate && p.dw_CreateDatetime <= lastDayEndDate && p.dw_Status == "FINISH").Count();
-                    //فروش امروز از ربات
-                    model.SaleFromBotToday += item.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= DateTime.Now.Date && p.dw_Status == "FINISH").Sum(p => p.dw_Price.Value);
-
-                }
-
-
-                model.InterestRatesFromBot = (model.SaleFromBot - OldWeekSaleFromBot) / OldWeekSaleFromBot * 100;
-                model.InterestRatesFromMajor = (model.SaleFromMajor - OldWeekSaleFromMajor) / OldWeekSaleFromMajor * 100;
-
-                model.InterestUserRatesBot = (model.CountUserFromBot - OldWeekCountBot) / OldWeekCountBot * 100;
-                model.InterestUserRatesFromMajor = (model.CountUserFromMajor - OldWeekCountUser) / OldWeekCountUser * 100;
-
-
-
-                return View(model);
-            }
-
             return View();
-
-
         }
 
-        [HttpGet]
-        public ActionResult CountAccountCreatedFromMajor()
+        [AuthorizeApp(Roles = "1,2")]
+        public ActionResult GetReport()
         {
-            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name && p.Role == 1).FirstOrDefault();
-            if (user != null)
+            var report = StiReport.CreateNewDashboard();
+
+            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+
+            if (user.Role != 1)
+            {
+                var path = Server.MapPath("~/Reports/Report.mrt");
+                report.Load(path);
+
+                report.Dictionary.DataSources[0].Parameters["User_ID"].Value = user.User_ID.ToString();
+            }
+            else
             {
 
-                var ToDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0, 0);
+                var path = Server.MapPath("~/Reports/ReportAdmin.mrt");
+                report.Load(path);
 
-                var DayOfWeek = Tools.Utility.PersionDayOfWeek(ToDate);
-                var day = -(int)(DayOfWeek);
-
-                // تاریخ هفته جاری
-                DateTime thisDayStartDate = ToDate.AddDays(day);
-
-                DateTime EndOfWeek = thisDayStartDate.AddDays(7);
-
-                CountAccountCreatedFromMajorModel majorModel = new CountAccountCreatedFromMajorModel();
-                majorModel.Users = new List<string>();
-                majorModel.Prices = new List<int>();
-                foreach (var item in user.tbServers.tbUsers.Where(p => p.Role == 2).ToList())
-                {
-                    var SumPrice = 0;
-                    foreach (var item2 in item.tbLinkUserAndPlans.ToList())
-                    {
-                        SumPrice += item2.tbLogs.Where(p => p.CreateDatetime >= thisDayStartDate && p.CreateDatetime <= EndOfWeek).Sum(p => p.tbLinkUserAndPlans.tbPlans.Price.Value);
-                    }
-                    if (SumPrice > 0)
-                    {
-                        majorModel.Prices.Add(SumPrice);
-                        majorModel.Users.Add(item.Username);
-                    }
-                }
-
-                return Json(majorModel, JsonRequestBehavior.AllowGet);
             }
-            return Json(null);
+
+
+
+
+
+
+
+            return StiMvcViewer.GetReportResult(report);
         }
+
+        [AuthorizeApp(Roles = "1,2")]
+        public ActionResult ViewerEvent()
+        {
+            return StiMvcViewer.ViewerEventResult();
+        }
+
     }
 }

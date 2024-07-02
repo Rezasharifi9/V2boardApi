@@ -7,11 +7,12 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Windows;
+using Telegram.Bot;
 using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [V2boardApi.Tools.Authorize]
+
     public class SettingsController : Controller
     {
         private Entities db;
@@ -28,6 +29,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         // GET: App/Settings
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult Index()
         {
             return View();
@@ -36,6 +38,7 @@ namespace V2boardApi.Areas.App.Controllers
         #region چک کردن ارتباط با mySql 
 
         [HttpPost]
+        [AuthorizeApp(Roles = "1")]
         public ActionResult ScanPort(string IPAddress, string DatabaseName, string Username, string Password)
         {
             try
@@ -57,7 +60,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region تنظیمات سرور
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult _BaseSetting()
         {
             var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
@@ -65,10 +68,14 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [HttpPost]
+        [AuthorizeApp(Roles = "1")]
         public ActionResult SaveServerSetting(string IPAddress, string ServerAddress, string DatabaseName, string Username, string Password, string SubAddr)
         {
             try
             {
+
+
+
                 var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
                 if (Use.tbServers != null)
                 {
@@ -109,40 +116,127 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region تنظیمات ربات
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult _BotSetting()
         {
             var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-            return PartialView(Use.tbServers);
+
+            if (Use.tbBotSettings.FirstOrDefault() == null)
+            {
+                return PartialView(new tbBotSettings());
+            }
+
+            return PartialView(Use.tbBotSettings.FirstOrDefault());
         }
 
         [HttpPost]
-        public ActionResult SaveBotSetting(string BotId, string BotToken, long TelegramUserId, string ChannelId)
+        [AuthorizeApp(Roles = "1,2")]
+        public ActionResult SaveBotSetting(string BotId, string BotToken, long TelegramUserId, string ChannelId, int PricePerMonth_Major, int PricePerGig_Major, bool Active, bool RequiredJoinChannel, double? Present_Discount = null)
         {
 
             try
             {
+
+
+
                 var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-                if (Use.tbServers == null)
+
+                if (ChannelId != null && RequiredJoinChannel)
                 {
-                    tbServers server = new tbServers();
-                    server.Robot_ID = BotId;
-                    server.Robot_Token = BotToken;
-                    server.AdminTelegramUniqID = TelegramUserId;
-                    server.Channel_ID = ChannelId;
-                    RepositoryServer.Insert(server);
-                    RepositoryServer.Save();
+                    try
+                    {
+                        TelegramBotClient bot = new TelegramBotClient(BotToken);
+                        try
+                        {
+                            var joined = bot.GetChatMemberAsync("@" + ChannelId, TelegramUserId);
+                            var s = joined.Result.Status;
 
-                    Use.FK_Server_ID = server.ServerID;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex.InnerException != null)
+                            {
+                                if (ex.InnerException.Message.Contains("not found"))
+                                {
+                                    return Content("error-" + "جهت فعال سازی عضویت اجباری آیدی کانال را درست وارد کنید");
+                                }
+                                if (ex.InnerException.Message.Contains("inaccessible"))
+                                {
+                                    return Content("error-" + "جهت فعال سازی عضویت اجباری باید ربات را داخل کانال خود ادمین کنید");
+                                }
+                            }
+                            return Content("error-" + "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return Content("error-" + "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
+                    }
 
+                }
+                else
+                {
+                    TelegramBotClient bot = new TelegramBotClient(BotToken);
+                    try
+                    {
+                        var joined = bot.GetChatMemberAsync(900535071, TelegramUserId);
+                        var s = joined.Result.Status;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex.InnerException != null)
+                        {
+                            if (ex.InnerException.Message.Contains("not found"))
+                            {
+                                return Content("error-" + "شناسه تلگرام ادمین اشتباه است لطفا شناسه را از داخل getmyid_bot چک کنید");
+                            }
+                        }
+                        return Content("error-" + "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
+                    }
+
+                }
+
+                if (Use.tbBotSettings.Count == 0)
+                {
+                    tbBotSettings botSettings = new tbBotSettings();
+
+                    botSettings.RequiredJoinChannel = RequiredJoinChannel;
+                    botSettings.Bot_Token = BotToken;
+                    botSettings.Bot_ID = BotId;
+                    botSettings.Active = Active;
+                    botSettings.AdminBot_ID = TelegramUserId;
+                    if (ChannelId != null)
+                    {
+                        botSettings.ChannelID = ChannelId;
+                    }
+                    if (Present_Discount != null && Present_Discount != 0)
+                    {
+                        botSettings.Present_Discount = Present_Discount / 100;
+                    }
+                    botSettings.PricePerMonth_Major = PricePerMonth_Major;
+                    botSettings.PricePerGig_Major = PricePerGig_Major;
+                    Use.tbBotSettings.Add(botSettings);
                     RepositoryUser.Save();
                 }
                 else
                 {
-                    Use.tbServers.Robot_ID = BotId;
-                    Use.tbServers.Robot_Token = BotToken;
-                    Use.tbServers.AdminTelegramUniqID = TelegramUserId;
-                    Use.tbServers.Channel_ID = ChannelId;
+                    var botSettings = Use.tbBotSettings.FirstOrDefault();
+                    if (ChannelId != null)
+                    {
+                        botSettings.ChannelID = ChannelId;
+                    }
+                    if (Present_Discount != null && Present_Discount != 0)
+                    {
+                        botSettings.Present_Discount = Present_Discount / 100;
+                    }
+                    botSettings.RequiredJoinChannel = RequiredJoinChannel;
+                    botSettings.Bot_Token = BotToken;
+                    botSettings.Bot_ID = BotId;
+                    botSettings.Active = Active;
+                    botSettings.AdminBot_ID = TelegramUserId;
+                    botSettings.PricePerMonth_Major = PricePerMonth_Major;
+                    botSettings.PricePerGig_Major = PricePerGig_Major;
                     RepositoryUser.Save();
                 }
 
@@ -150,7 +244,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
+                return Content("error-" + "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
 
 
@@ -159,98 +253,125 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region کارت بانکی ها
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult _BankNumbers()
         {
             var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-            if (Use.tbServers.tbBankCardNumbers != null)
-            {
-                return PartialView(Use.tbServers.tbBankCardNumbers.FirstOrDefault());
-            }
-            return PartialView();
+            return PartialView(Use.tbBankCardNumbers.ToList());
         }
 
         [HttpPost]
-        public ActionResult SaveBankNumbers(string CardNumber, string NameOfCard, string SmsNumberOfCard,string phoneNumber)
+        [AuthorizeApp(Roles = "1,2")]
+        public ActionResult SaveBankNumbers(string CardNumber, string NameOfCard, string SmsNumberOfCard, string phoneNumber, int Card_ID)
         {
 
             try
             {
                 var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-                if (Use.tbServers.tbBankCardNumbers != null)
+                if (Use.tbBankCardNumbers.Count() > 0)
                 {
-                    var Card = Use.tbServers.tbBankCardNumbers.Where(p => p.CardNumber == CardNumber).FirstOrDefault();
-                    if (Card != null)
+                    if (Card_ID != 0)
                     {
-                        Card.CardNumber = CardNumber;
-                        Card.InTheNameOf = NameOfCard;
-                        Card.BankSmsNumber = SmsNumberOfCard;
-                        Card.phoneNumber = phoneNumber;
-                        Card.Active = true;
+                        var Card = Use.tbBankCardNumbers.Where(p => p.CardNumber_ID == Card_ID).FirstOrDefault();
+                        if (Card != null)
+                        {
+                            Card.CardNumber = CardNumber;
+                            Card.InTheNameOf = NameOfCard;
+                            Card.BankSmsNumber = SmsNumberOfCard;
+                            Card.phoneNumber = phoneNumber;
+                            RepositoryUser.Save();
+                        }
+                    }
+                    else
+                    {
+                        tbBankCardNumbers Card1 = new tbBankCardNumbers();
+                        Card1.CardNumber = CardNumber;
+                        Card1.InTheNameOf = NameOfCard;
+                        Card1.BankSmsNumber = SmsNumberOfCard;
+                        Card1.phoneNumber = phoneNumber;
+                        Card1.Active = false;
+                        Use.tbBankCardNumbers.Add(Card1);
                         RepositoryUser.Save();
                     }
                 }
+                else
+                {
+                    tbBankCardNumbers Card = new tbBankCardNumbers();
+                    Card.CardNumber = CardNumber;
+                    Card.InTheNameOf = NameOfCard;
+                    Card.BankSmsNumber = SmsNumberOfCard;
+                    Card.phoneNumber = phoneNumber;
+                    Card.Active = true;
+                    Use.tbBankCardNumbers.Add(Card);
+                    RepositoryUser.Save();
+
+                }
                 return Content("success-" + "اطلاعات بانکی با موفقیت ذخیره شد");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
-
-            return PartialView();
         }
 
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult DeleteCard(string CardNumber)
         {
             try
             {
                 var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-                if (Use.tbServers.tbBankCardNumbers != null)
+                if (Use.tbBankCardNumbers != null)
                 {
-                    var Card = Use.tbServers.tbBankCardNumbers.Where(p => p.CardNumber == CardNumber).FirstOrDefault();
+                    var Card = Use.tbBankCardNumbers.Where(p => p.CardNumber == CardNumber).FirstOrDefault();
                     if (Card != null)
                     {
-                        Use.tbServers.tbBankCardNumbers.Remove(Card);
+                        Use.tbBankCardNumbers.Remove(Card);
                     }
                     RepositoryUser.Save();
                 }
                 return Content("success-" + "کارت با موفقیت حذف شد");
             }
-            catch ( Exception ex)
+            catch (Exception ex)
             {
                 return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
         }
 
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult DeactiveCard(int id)
         {
             try
             {
                 var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-                if (Use.tbServers.tbBankCardNumbers != null)
+                if (Use.tbBankCardNumbers != null)
                 {
-                    var Card = Use.tbServers.tbBankCardNumbers.Where(p => p.CardNumber_ID == id).FirstOrDefault();
+                    var Card = Use.tbBankCardNumbers.Where(p => p.CardNumber_ID == id).FirstOrDefault();
                     if (Card != null)
                     {
-                        if (Card.Active == true)
+                        foreach (var item in Use.tbBankCardNumbers)
                         {
-                            Card.Active = false;
+                            item.Active = false;
                         }
-                        else
-                        {
-                            Card.Active = true;
-                        }
+                        Card.Active = true;
                     }
                     RepositoryUser.Save();
                 }
                 return RedirectToAction("Index", "Settings");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return RedirectToAction("Index", "Settings");
             }
+        }
+
+        [HttpGet]
+        [AuthorizeApp(Roles = "1,2")]
+        public ActionResult _EditBankNumber(int CardID)
+        {
+            var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
+            var Card = Use.tbBankCardNumbers.Where(p => p.CardNumber_ID == CardID).FirstOrDefault();
+
+            return PartialView(Card);
         }
 
         #endregion

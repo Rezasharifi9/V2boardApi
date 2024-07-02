@@ -17,9 +17,9 @@ namespace DataLayer.DomainModel
         public int ch_ID { get; set; }
         public string ch_Title { get; set; }
         public string ch_Link { get; set; }
-        public Nullable<int> FK_Server_ID { get; set; }
+        public Nullable<int> FK_User_ID { get; set; }
         public string ch_Type { get; set; }
     
-        public virtual tbServers tbServers { get; set; }
+        public virtual tbUsers tbUsers { get; set; }
     }
 }

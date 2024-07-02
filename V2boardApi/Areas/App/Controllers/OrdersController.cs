@@ -6,11 +6,12 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using V2boardApi.Models.OrdersModel;
+using V2boardApi.Tools;
 
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [Authorize]
+    [AuthorizeApp(Roles = "1,2")]
     public class OrdersController : Controller
     {
         private Entities _db;
@@ -27,8 +28,12 @@ namespace V2boardApi.Areas.App.Controllers
         {
 
             var Use = UsersRepository.Where(p => p.Username == User.Identity.Name).First();
-           
-            var Orders = OrdersRepository.Where(p=> p.tbTelegramUsers.Tel_RobotID == Use.tbServers.Robot_ID).OrderByDescending(p=> p.OrderDate).Take(100).ToList();
+
+            var Orders = new List<tbOrders>();
+            foreach (var item in Use.tbTelegramUsers.ToList())
+            {
+                Orders.AddRange(item.tbOrders.ToList());
+            }
             return View(Orders);
         }
     }

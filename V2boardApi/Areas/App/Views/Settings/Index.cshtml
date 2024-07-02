@@ -4,18 +4,21 @@
     Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
 }
 
-
-
+@{
+    var RequestRole = Request.Cookies["Role"];
+    var Role = "";
+    if (RequestRole != null)
+    {
+        Role = RequestRole.Value;
+    }
+}
 
 <div style="overflow-y:auto;overflow-x:hidden;height:750px;">
     <div class="page-header">
         <h3 class="page-title"> تنظیمات پنل </h3>
     </div>
     <div class="row">
-        <div class="col-md-6 grid-margin stretch-card">
-            @Html.Action("_BaseSetting", "Settings")
-        </div>
-        <div class="col-md-6 grid-margin stretch-card">
+        <div class="col-md-12 grid-margin stretch-card">
             @Html.Action("_BotSetting", "Settings")
         </div>
     </div>
@@ -24,6 +27,14 @@
             @Html.Action("_BankNumbers", "Settings")
         </div>
     </div>
+    @if (Role.Contains("1"))
+    {
+        <div class="row">
+            <div class="col-md-6 grid-margin stretch-card">
+                @Html.Action("_BaseSetting", "Settings")
+            </div>
+        </div>
+    }
 
 </div>
 
@@ -31,289 +42,363 @@
 @section scripts {
     <script>
 
-    $(function () {
+        $(function () {
 
 
-        new DataTable("#cards", {
-            paging: true,
-            scrollCollapse: false,
-            scrollX: true,
-            scrollY: "300px",
-            pageLength: 13,
-            bFilter: true,
-            lengthChange: false,
-            searchPlaceholder: "جستجو ",
-            sSearch: "Quick Search:",
-            language: {
-                lengthMenu: "Display _MENU_ records per page",
-                zeroRecords: "اطلاعاتی یافت نشد",
-                info: "",
-                infoEmpty: "اطلاعاتی وجود ندارد",
-                infoFiltered: "(filtered from _MAX_ total records)",
-                sSearch: "جستجو : ",
-                paginate: {
-                    previous: "قبلی",
-                    next: "بعدی"
-                }
-            }
-        });
-
-        // کد های مربوط به بخش تنظیمات MYSQL
-
-        $("#testConnection").click(function () {
-
-            var IPAddress = $("#IPAddress").val();
-            var DatabaseName = $("#DatabaseName").val();
-            var Username = $("#Username").val();
-            var Password = $("#Password").val();
-
-
-            if (IPAddress.length == 0) {
-                Swal.fire({
-                    title: "خطا",
-                    text: "لطفا آیپی سرور را وارد کنید",
-                    icon: "info"
-                });
-            } else if (DatabaseName.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا نام دیتابیس MYSQL را وارد کنید",
-                    icon: "info"
-                });
-            }
-            else if (Username.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا نام کابری MYSQL را وارد کنید",
-                    icon: "info"
-                });
-            }
-            else if (Password.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا رمز عبور MYSQL را وارد کنید",
-                    icon: "info"
-                });
-            }
-            else {
-                $("#loading").css("display", "flex");
-                $.ajax({
-                    url: "@Url.Action("ScanPort","Settings")",
-                    type: "post",
-                    dataType: "html",
-                    data: { IPAddress: IPAddress, DatabaseName: DatabaseName, Username: Username, Password: Password },
-                    success: function (res) {
-                        $("#loading").css("display", "none");
-
-                        var spl = res.split('-');
-
-                        Swal.fire({
-                            title: "وضعیت ارتباط",
-                            text: spl[1],
-                            icon: spl[0]
-                        });
+            new DataTable("#cards", {
+                paging: true,
+                scrollCollapse: false,
+                scrollX: true,
+                scrollY: "300px",
+                pageLength: 13,
+                bFilter: true,
+                lengthChange: false,
+                searchPlaceholder: "جستجو ",
+                sSearch: "Quick Search:",
+                language: {
+                    lengthMenu: "Display _MENU_ records per page",
+                    zeroRecords: "اطلاعاتی یافت نشد",
+                    info: "",
+                    infoEmpty: "اطلاعاتی وجود ندارد",
+                    infoFiltered: "(filtered from _MAX_ total records)",
+                    sSearch: "جستجو : ",
+                    paginate: {
+                        previous: "قبلی",
+                        next: "بعدی"
                     }
-                });
-            }
+                }
+            });
 
-        });
+            // کد های مربوط به بخش تنظیمات MYSQL
 
+            $("#testConnection").click(function () {
 
-        $("#SaveServerInfo").click(function () {
-
-            var IPAddress = $("#IPAddress").val();
-            var DatabaseName = $("#DatabaseName").val();
-            var Username = $("#Username").val();
-            var Password = $("#Password").val();
-            var SubAddr = $("#SubAddr").val();
-            var ServerAddress = $("#ServerAddress").val();
+                var IPAddress = $("#IPAddress").val();
+                var DatabaseName = $("#DatabaseName").val();
+                var Username = $("#Username").val();
+                var Password = $("#Password").val();
 
 
-            if (IPAddress.length == 0) {
-                Swal.fire({
-                    title: "خطا",
-                    text: "لطفا آیپی سرور را وارد کنید",
-                    icon: "warning"
-                });
-            } else if (DatabaseName.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا نام دیتابیس MYSQL را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else if (Username.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا نام کابری MYSQL را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else if (Password.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا رمز عبور MYSQL را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else if (SubAddr.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا دامنه سابسکرایب را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else if (ServerAddress.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا دامنه سرور V2board را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else {
-                $("#loading").css("display", "flex");
-                $.ajax({
-                    url: "@Url.Action("ScanPort","Settings")",
-                    type: "post",
-                    dataType: "html",
-                    data: { IPAddress: IPAddress, DatabaseName: DatabaseName, Username: Username, Password: Password  },
-                    success: function (res) {
-                        $("#loading").css("display", "none");
+                if (IPAddress.length == 0) {
+                    Swal.fire({
+                        title: "خطا",
+                        text: "لطفا آیپی سرور را وارد کنید",
+                        icon: "info"
+                    });
+                } else if (DatabaseName.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا نام دیتابیس MYSQL را وارد کنید",
+                        icon: "info"
+                    });
+                }
+                else if (Username.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا نام کابری MYSQL را وارد کنید",
+                        icon: "info"
+                    });
+                }
+                else if (Password.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا رمز عبور MYSQL را وارد کنید",
+                        icon: "info"
+                    });
+                }
+                else {
+                    $("#loading").css("display", "flex");
+                    $.ajax({
+                        url: "@Url.Action("ScanPort","Settings")",
+                        type: "post",
+                        dataType: "html",
+                        data: { IPAddress: IPAddress, DatabaseName: DatabaseName, Username: Username, Password: Password },
+                        success: function (res) {
+                            $("#loading").css("display", "none");
 
-                        var spl = res.split('-');
-
-                        if (spl[0] == "warning") {
+                            var spl = res.split('-');
 
                             Swal.fire({
-                                title: "آیا مطمئن هستید",
-                                text: "ارتباط با سرویس MYSQL برقرار نیست آیا ذخیره شود ؟",
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonColor: "#3085d6",
-                                cancelButtonColor: "#d33",
-                                confirmButtonText: "بله ذخیره کن",
-                                cancelButtonText: "خیر",
-                                customClass: {
-                                    cancelButton: 'order-1 right-gap',
-                                    confirmButton: 'order-2',
-                                }
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    $("#loading").css("display", "flex");
-                                    $.ajax({
-                                        url: "@Url.Action("SaveServerSetting","Settings")",
-                                        type: "post",
-                                        dataType: "html",
-                                        data: { IPAddress: IPAddress, ServerAddress: ServerAddress, DatabaseName: DatabaseName, Username: Username, Password: Password, SubAddr: SubAddr },
-                                        success: function (res) {
-                                            $("#loading").css("display", "none");
-
-                                            var spl = res.split('-');
-
-                                            Swal.fire({
-                                                title: "وضعیت",
-                                                text: spl[1],
-                                                icon: spl[0]
-                                            });
-                                        }
-                                    });
-
-                                }
+                                title: "وضعیت ارتباط",
+                                text: spl[1],
+                                icon: spl[0]
                             });
                         }
-                        else {
-                            $("#loading").css("display", "flex");
-                            $.ajax({
-                                url: "@Url.Action("SaveServerSetting","Settings")",
-                                type: "post",
-                                dataType: "html",
-                                data: { IPAddress: IPAddress, ServerAddress: ServerAddress, DatabaseName: DatabaseName, Username: Username, Password: Password, SubAddr: SubAddr },
-                                success: function (res) {
-                                    $("#loading").css("display", "none");
+                    });
+                }
 
-                                    var spl = res.split('-');
+            });
 
-                                    Swal.fire({
-                                        title: "وضعیت",
-                                        text: spl[1],
-                                        icon: spl[0]
-                                    });
-                                }
-                            });
+
+            $("#SaveServerInfo").click(function () {
+
+                var IPAddress = $("#IPAddress").val();
+                var DatabaseName = $("#DatabaseName").val();
+                var Username = $("#Username").val();
+                var Password = $("#Password").val();
+                var SubAddr = $("#SubAddr").val();
+                var ServerAddress = $("#ServerAddress").val();
+
+
+                if (IPAddress.length == 0) {
+                    Swal.fire({
+                        title: "خطا",
+                        text: "لطفا آیپی سرور را وارد کنید",
+                        icon: "warning"
+                    });
+                } else if (DatabaseName.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا نام دیتابیس MYSQL را وارد کنید",
+                        icon: "warning"
+                    });
+                }
+                else if (Username.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا نام کابری MYSQL را وارد کنید",
+                        icon: "warning"
+                    });
+                }
+                else if (Password.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا رمز عبور MYSQL را وارد کنید",
+                        icon: "warning"
+                    });
+                }
+                else if (SubAddr.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا دامنه سابسکرایب را وارد کنید",
+                        icon: "warning"
+                    });
+                }
+                else if (ServerAddress.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا دامنه سرور V2board را وارد کنید",
+                        icon: "warning"
+                    });
+                }
+                else {
+                    $("#loading").css("display", "flex");
+                    $.ajax({
+                        url: "@Url.Action("ScanPort","Settings")",
+                        type: "post",
+                        dataType: "html",
+                        data: { IPAddress: IPAddress, DatabaseName: DatabaseName, Username: Username, Password: Password },
+                        success: function (res) {
+                            $("#loading").css("display", "none");
+
+                            var spl = res.split('-');
+
+                            if (spl[0] == "warning") {
+
+                                Swal.fire({
+                                    title: "آیا مطمئن هستید",
+                                    text: "ارتباط با سرویس MYSQL برقرار نیست آیا ذخیره شود ؟",
+                                    icon: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonColor: "#3085d6",
+                                    cancelButtonColor: "#d33",
+                                    confirmButtonText: "بله ذخیره کن",
+                                    cancelButtonText: "خیر",
+                                    customClass: {
+                                        cancelButton: 'order-1 right-gap',
+                                        confirmButton: 'order-2',
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $("#loading").css("display", "flex");
+                                        $.ajax({
+                                            url: "@Url.Action("SaveServerSetting","Settings")",
+                                            type: "post",
+                                            dataType: "html",
+                                            data: { IPAddress: IPAddress, ServerAddress: ServerAddress, DatabaseName: DatabaseName, Username: Username, Password: Password, SubAddr: SubAddr },
+                                            success: function (res) {
+                                                $("#loading").css("display", "none");
+
+                                                var spl = res.split('-');
+
+                                                Swal.fire({
+                                                    title: "وضعیت",
+                                                    text: spl[1],
+                                                    icon: spl[0]
+                                                });
+                                            }
+                                        });
+
+                                    }
+                                });
+                            }
+                            else {
+                                $("#loading").css("display", "flex");
+                                $.ajax({
+                                    url: "@Url.Action("SaveServerSetting","Settings")",
+                                    type: "post",
+                                    dataType: "html",
+                                    data: { IPAddress: IPAddress, ServerAddress: ServerAddress, DatabaseName: DatabaseName, Username: Username, Password: Password, SubAddr: SubAddr },
+                                    success: function (res) {
+                                        $("#loading").css("display", "none");
+
+                                        var spl = res.split('-');
+
+                                        Swal.fire({
+                                            title: "وضعیت",
+                                            text: spl[1],
+                                            icon: spl[0]
+                                        });
+                                    }
+                                });
+                            }
+
                         }
+                    });
 
-                    }
-                });
+                }
 
-            }
+            });
 
-        });
+            // پایان کد های مربوط به بخش تنظیمات MYSQL
 
-        // پایان کد های مربوط به بخش تنظیمات MYSQL
+            //کد های مربوط به بخش تنظیمات ربات
 
-        //کد های مربوط به بخش تنظیمات ربات
+            $("#SaveBotInfo").click(function () {
 
-        $("#SaveBotInfo").click(function () {
+                var BotId = $("#BotId").val();
+                var BotToken = $("#BotToken").val();
+                var TelegramUserId = $("#TelegramUserId").val();
+                var ChannelId = $("#ChannelId").val();
+                var PricePerGig_Major = $("#PricePerGig_Major").val();
+                var PricePerGig_Admin = $("#PricePerGig_Admin").val();
+                var PricePerMonth_Major = $("#PricePerMonth_Major").val();
+                var PricePerMonth_Admin = $("#PricePerMonth_Admin").val();
+                var Present_Discount = $("#Present_Discount").val();
 
-            var BotId = $("#BotId").val();
-            var BotToken = $("#BotToken").val();
-            var TelegramUserId = $("#TelegramUserId").val();
-            var ChannelId = $("#ChannelId").val();
+                if (BotId.indexOf("@@") != -1) {
+                    Swal.fire({
+                        title: "خطا",
+                        text: "آیدی ربات را بدون @@ وارد کنید",
+                        icon: "warning"
+                    });
+                    return;
+                }else
+                    if (ChannelId.indexOf("@@") != -1) {
+                    Swal.fire({
+                        title: "خطا",
+                        text: "آیدی کانال را بدون @@ وارد کنید",
+                        icon: "warning"
+                    });
+                    return;
+                }
 
-
-            if (BotId.length == 0) {
-                Swal.fire({
-                    title: "خطا",
-                    text: "لطفا آیدی ربات را وارد کنید",
-                    icon: "warning"
-                });
-            } else if (BotToken.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا توکن ربات را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else if (TelegramUserId.length == 0) {
-                Swal.fire({
-                    title: "وضعیت",
-                    text: "لطفا شناسه کابری تلگرام ادمین را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else {
-
-                $("#loading").css("display", "flex");
-                $.ajax({
-                    url: "@Url.Action("SaveBotSetting","Settings")",
-                    type: "post",
-                    dataType: "html",
-                    data: { BotId: BotId, BotToken: BotToken, TelegramUserId: TelegramUserId, ChannelId: ChannelId },
-                    success: function (res) {
-                        $("#loading").css("display", "none");
-
-                        var spl = res.split('-');
-
+                if (PricePerGig_Major < PricePerGig_Admin) {
+                    Swal.fire({
+                        title: "خطا",
+                        text: "مبلغ به ازای هر گیگ شما نمی تواند کمتر از قیمت تنظیم شده ادمین باشد",
+                        icon: "warning"
+                    });
+                    return;
+                } else {
+                    if (PricePerMonth_Major < PricePerMonth_Admin) {
                         Swal.fire({
-                            title: "پیغام",
-                            text: spl[1],
-                            icon: spl[0]
+                            title: "خطا",
+                            text: "مبلغ به ازای هر ماه شما نمی تواند کمتر از قیمت تنظیم شده ادمین باشد",
+                            icon: "warning"
                         });
+                        return;
                     }
-                });
-            }
+                }
+
+                var RequiredJoinChannel = false;
+                var Active = false;
+
+
+                if ($("#RequiredJoinChannel").is(':checked'))
+                {
+                    if (ChannelId.length <= 0) {
+                        Swal.fire({
+                            title: "خطا",
+                            text: "برای فعال بودن عضو شدن اجباری در کانال باید آیدی کانال را وارد کنید",
+                            icon: "warning"
+                        });
+                        return;
+                    }
+                    else {
+                        RequiredJoinChannel = true;
+                    }
+                }
+
+                if ($("#Active").is(':checked')) {
+                    Active = true;
+                }
+
+
+
+
+                if (BotId.length == 0) {
+                    Swal.fire({
+                        title: "خطا",
+                        text: "لطفا آیدی ربات را وارد کنید",
+                        icon: "warning"
+                    });
+                } else if (BotToken.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا توکن ربات را وارد کنید",
+                        icon: "warning"
+                    });
+                }
+                else if (TelegramUserId.length == 0) {
+                    Swal.fire({
+                        title: "وضعیت",
+                        text: "لطفا شناسه کابری تلگرام ادمین را وارد کنید",
+                        icon: "warning"
+                    });
+                }
+                else {
+
+                    $("#loading").css("display", "flex");
+                    $.ajax({
+                        url: "@Url.Action("SaveBotSetting","Settings")",
+                        type: "post",
+                        dataType: "html",
+                        data: { BotId: BotId, BotToken: BotToken, TelegramUserId: TelegramUserId, ChannelId: ChannelId, RequiredJoinChannel: RequiredJoinChannel, Active: Active, PricePerGig_Major: PricePerGig_Major, PricePerMonth_Major: PricePerMonth_Major, Present_Discount: Present_Discount },
+                        success: function (res) {
+                            $("#loading").css("display", "none");
+
+                            var spl = res.split('-');
+
+                            Swal.fire({
+                                title: "پیغام",
+                                text: spl[1],
+                                icon: spl[0]
+                            });
+                        }
+                    });
+                }
+
+            });
+
+            // پایان کد های ربات
+
+            // بخش ذخیره کردن کارت بانکی ها
+            $("#SaveBankCards").click(function () {
+
+
+            });
+            // پایان بخش کد های کارت بانکی
 
         });
 
-        // پایان کد های ربات
 
-        // بخش ذخیره کردن کارت بانکی ها
-        $("#SaveBankCards").click(function () {
-
+        function SaveBankCards() {
             var CardNumber = $("#CardNumber").val();
             var NameOfCard = $("#NameOfCard").val();
             var SmsNumberOfCard = $("#SmsNumberOfCard").val();
             var phoneNumber = $("#phoneNumber").val();
+            var Card_ID = $("#Card_ID").val();
 
             if (CardNumber.length == 0) {
                 Swal.fire({
@@ -364,7 +449,7 @@
                         url: "@Url.Action("SaveBankNumbers", "Settings")",
                         type: "post",
                         dataType: "html",
-                        data: { CardNumber: CardNumber, NameOfCard: NameOfCard, SmsNumberOfCard: SmsNumberOfCard, phoneNumber: phoneNumber },
+                        data: { CardNumber: CardNumber, NameOfCard: NameOfCard, SmsNumberOfCard: SmsNumberOfCard, phoneNumber: phoneNumber, Card_ID: Card_ID },
                         success: function (res) {
                             $("#loading").css("display", "none");
 
@@ -374,18 +459,16 @@
                                 title: "پیغام",
                                 text: spl[1],
                                 icon: spl[0]
-                            });
+                            }).then(() => {
+                                location.reload();
+                            })
 
                         }
                     });
                 }
 
             }
-        });
-
-        // پایان بخش کد های کارت بانکی
-
-    });
+        }
 
         function DeleteCard(CardNumber) {
             Swal.fire({
@@ -426,8 +509,28 @@
 
                 }
             });
+
+
+
         }
 
+
+
+        function EditCard(CardID) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("_EditBankNumber", "Settings")",
+                type: "get",
+                dataType: "html",
+                data: { CardID: CardID },
+                success: function (res) {
+                    $("#loading").css("display", "none");
+
+                    $("#EditBankPartial").html(res);
+
+                }
+            });
+        }
 
     </script>
 }

@@ -8,7 +8,8 @@ namespace V2boardApi.Areas.App.Data
 {
     public class CountAccountCreatedFromMajorModel
     {
-        public List<string> Users { get; set; }
+        public List<int> Months { get; set; }
         public List<int> Prices { get; set;}
+        public List<int> PriceBots { get; set;}
     }
 }

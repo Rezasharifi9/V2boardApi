@@ -121,6 +121,9 @@
     <Compile Include="DomainModel\tbBankCardNumbers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbBotSettings.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbConnectionHelp.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

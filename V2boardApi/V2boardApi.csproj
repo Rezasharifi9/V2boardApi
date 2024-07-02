@@ -70,6 +70,10 @@
     <Reference Include="K4os.Hash.xxHash, Version=1.0.8.0, Culture=neutral, PublicKeyToken=32cd54395057cec3, processorArchitecture=MSIL">
       <HintPath>..\packages\K4os.Hash.xxHash.1.0.8\lib\net462\K4os.Hash.xxHash.dll</HintPath>
     </Reference>
+    <Reference Include="LibExcel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dashboards.WEB\.NETFramework4.5.2\LibExcel.dll</HintPath>
+    </Reference>
     <Reference Include="LiteDB, Version=5.0.17.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
       <HintPath>..\packages\LiteDB.5.0.17\lib\net45\LiteDB.dll</HintPath>
     </Reference>
@@ -90,6 +94,66 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="QRCoder, Version=1.4.3.0, Culture=neutral, PublicKeyToken=c4ed5b9ae8358a28, processorArchitecture=MSIL">
       <HintPath>..\packages\QRCoder.1.4.3\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Base, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Blockly, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Blockly.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Dashboard, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Dashboard.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Dashboard.Drawing, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Dashboard.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Dashboard.Export, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Dashboard.Export.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Data, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Map, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Map.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.MathFX, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.MathFX.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Report, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Report.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Report.Check, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Report.Check.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Report.Helper, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Report.Helper.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Report.Mvc, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Report.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Report.Web, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Report.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Report.WebDesign, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Report.WebDesign.dll</HintPath>
+    </Reference>
+    <Reference Include="Stimulsoft.Svg, Version=2023.1.1.0, Culture=neutral, PublicKeyToken=ebe6666cba19647a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Stimulsoft.Svg.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -247,6 +311,7 @@
     <Compile Include="Models\CreateUserModel.cs" />
     <Compile Include="Models\GetUserDataModel.cs" />
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
+    <Compile Include="Tools\AuthorizeApp.cs" />
     <Compile Include="Tools\CustomKeyboards.cs" />
     <Compile Include="Tools\ExceptionHandling.cs" />
     <Compile Include="Tools\Keyboards.cs" />
@@ -450,6 +515,7 @@
     <Content Include="Areas\App\Views\Admin\PaymentList.cshtml" />
     <Content Include="Areas\App\Views\BotFactors\Index.cshtml" />
     <Content Include="Areas\App\Views\Admin\_Profile.cshtml" />
+    <Content Include="Areas\App\Views\Settings\_EditBankNumber.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -458,6 +524,9 @@
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Reports\Report.mrt" />
+    <Content Include="Key\license.key" />
+    <Content Include="Reports\SalesOverview.mrt" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\cdn.jsdelivr.net_gh_davidshimjs_qrcodejs%40gh-pages_qrcode.min.js" />
     <Content Include="Scripts\cdn.jsdelivr.net_npm_alpinejs-i18n%402.4.0_dist_cdn.min.js" />
@@ -539,6 +608,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource\LogActions.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

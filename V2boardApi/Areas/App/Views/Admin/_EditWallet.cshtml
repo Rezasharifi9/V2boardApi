@@ -1,6 +1,19 @@
 ﻿@model DataLayer.DomainModel.tbUsers
 
 @using V2boardApi.Tools;
+
+@{
+    var PerGig = 0;
+    var PerMonth = 0;
+
+    var Setting = Model.tbBotSettings.FirstOrDefault();
+    if (Setting != null)
+    {
+        PerGig = Setting.PricePerGig_Admin.Value;
+        PerMonth = Setting.PricePerMonth_Admin.Value;
+    }
+}
+
 <div class="modal-content">
     <div class="modal-body">
         <div class="card">
@@ -16,6 +29,27 @@
                             </div>
                         </div>
                     </form>
+                    <hr />
+                    <h4 class="card-title">قیمت هر گیگ</h4>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group row">
+                                <input type="text" class="form-control" name="PricePerGig_Admin" id="PricePerGig_Admin" value="@PerGig.ConvertToMony()" oninput="separateDigits($(this).val(),'PricePerGig_Admin')">
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <h4 class="card-title">قیمت هر ماه</h4>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group row">
+                                <input type="text" class="form-control" name="PricePerMonth_Admin" id="PricePerMonth_Admin" value="@PerMonth.ConvertToMony()" oninput="separateDigits($(this).val(),'PricePerMonth_Admin')">
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -35,13 +69,15 @@
     function SaveChange(input) {
         debugger
         var wallet = $("input[name='Wallet']").val();
+        var PricePerGig_Admin = $("input[name='PricePerGig_Admin']").val();
+        var PricePerMonth_Admin = $("input[name='PricePerMonth_Admin']").val();
 
         if (wallet.length >= 0 && wallet!="") {
             $("#loading").css("display", "flex");
             $.ajax({
                 url: "@Url.Action("EditWallet", "Admin",new {area="App"})",
                 type: "Post",
-                data: { wallet: wallet, id: '@Model.User_ID' },
+                data: { wallet: wallet, id: '@Model.User_ID', PricePerMonth_Admin: PricePerMonth_Admin, PricePerGig_Admin: PricePerGig_Admin },
                 datatype: "html",
                 success: function (res) {
                     $("#loading").css("display", "none");

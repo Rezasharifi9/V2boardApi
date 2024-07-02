@@ -103,7 +103,7 @@ namespace V2boardApi.Areas.api.Controllers
                 {
                     var Server = User.tbServers;
 
-                    var ActiveBank = Server.tbBankCardNumbers.Where(p=> p.Active == true).FirstOrDefault();
+                    var ActiveBank = User.tbBankCardNumbers.Where(p=> p.Active == true).FirstOrDefault();
 
                     return Ok(new { phoneNumber = User.PhoneNumber, BankSmsNumbers = ActiveBank.BankSmsNumber.Split(',').ToList() });
 

@@ -32,7 +32,7 @@ using System.IO;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [Authorize]
+    
     public class AdminController : Controller
     {
         private Entities db;
@@ -58,7 +58,7 @@ namespace V2boardApi.Areas.App.Controllers
 
 
         #region تغییر پروفایل
-
+        [System.Web.Mvc.Authorize]
         public ActionResult _Profile()
         {
             var Us = db.tbUsers.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
@@ -72,6 +72,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
         }
 
+        [System.Web.Mvc.Authorize]
         [System.Web.Mvc.HttpPost]
         public ActionResult ChangeProfile(HttpPostedFileBase profile)
         {
@@ -90,23 +91,23 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 return RedirectToAction("index", "dashboard");
             }
-            
+
         }
 
         #endregion
 
         #region لیست کاربران
 
-        [System.Web.Mvc.Authorize]
+        [AuthorizeApp(Roles = "1")]
         public ActionResult Index()
         {
 
-            
+
 
             return View();
         }
 
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult _PartialGetAllUsers(string username = null)
         {
             var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
@@ -127,13 +128,13 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region افزودن کاربر
 
-        [System.Web.Mvc.Authorize]
+        [AuthorizeApp(Roles = "1")]
         public ActionResult _PartialCreate()
         {
             return View();
         }
 
-        [System.Web.Mvc.Authorize]
+        [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
         public ActionResult Create(tbUsers tbUser, List<int> Plans)
         {
@@ -188,7 +189,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ویرایش اطلاعات کاربر
 
-        [System.Web.Mvc.Authorize]
+        [AuthorizeApp(Roles = "1")]
         public ActionResult _PartialEdit(int id)
         {
             var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
@@ -204,7 +205,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
 
-        [System.Web.Mvc.Authorize]
+        [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
         public ActionResult Edit(tbUsers tbUser, List<int> Plans)
         {
@@ -225,7 +226,7 @@ namespace V2boardApi.Areas.App.Controllers
                     Us.FirstName = tbUser.FirstName;
                     Us.Username = tbUser.Username;
                     Us.LastName = tbUser.LastName;
-                    if(tbUser.Password != null)
+                    if (tbUser.Password != null)
                     {
                         Us.Password = tbUser.Password.ToSha256();
                     }
@@ -271,7 +272,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region شارژ کیف پول کاربر
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult _EditWallet(int id)
         {
             var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
@@ -286,28 +287,52 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [System.Web.Mvc.HttpPost]
-        public ActionResult EditWallet(int id, string wallet)
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult EditWallet(int id, string wallet, string PricePerMonth_Admin, string PricePerGig_Admin)
         {
             var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
             if (us != null)
             {
                 var intWallet = 0;
+                var PricePerMonth = 0;
+                var PricePerGig = 0;
+
                 try
                 {
                     intWallet = int.Parse(wallet, NumberStyles.Currency);
+                    PricePerGig = int.Parse(PricePerGig_Admin, NumberStyles.Currency);
+                    PricePerMonth = int.Parse(PricePerMonth_Admin, NumberStyles.Currency);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     return Content("3");
                 }
 
-                tbUserFactors factor = new tbUserFactors();
-                factor.tbUf_Value = us.Wallet - intWallet;
-                factor.tbUf_CreateTime = DateTime.Now;
-                factor.FK_User_ID = id;
-                factor.IsPayed = true;
-                us.Wallet = intWallet;
-                us.tbUserFactors.Add(factor);
+                if (us.tbBotSettings.FirstOrDefault() != null && PricePerGig != 0 && PricePerMonth != 0)
+                {
+                    var Setting = us.tbBotSettings.FirstOrDefault();
+                    Setting.PricePerGig_Admin = PricePerGig;
+                    Setting.PricePerMonth_Admin = PricePerMonth;
+                }
+
+                if (PricePerGig != 0 && PricePerMonth != 0)
+                {
+                    var Setting = new tbBotSettings();
+                    Setting.PricePerGig_Admin = PricePerGig;
+                    Setting.PricePerMonth_Admin = PricePerMonth;
+                    us.tbBotSettings.Add(Setting);
+                }
+
+                if (us.Wallet != intWallet)
+                {
+                    tbUserFactors factor = new tbUserFactors();
+                    factor.tbUf_Value = us.Wallet - intWallet;
+                    factor.tbUf_CreateTime = DateTime.Now;
+                    factor.FK_User_ID = id;
+                    factor.IsPayed = true;
+                    us.Wallet = intWallet;
+                    us.tbUserFactors.Add(factor);
+                }
                 RepositoryUser.Save();
                 return Content("1");
             }
@@ -338,7 +363,7 @@ namespace V2boardApi.Areas.App.Controllers
             try
             {
 
-                tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username && p.Role == 1).FirstOrDefault();
+                tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username).FirstOrDefault();
                 if (User != null)
                 {
 
@@ -346,6 +371,17 @@ namespace V2boardApi.Areas.App.Controllers
 
                     if (User.Password == Sha)
                     {
+                        if (Request.Cookies["Role"] != null)
+                        {
+                            Response.Cookies["Role"].Value = User.Role.Value.ToString();
+                        }
+                        else
+                        {
+                            HttpCookie cookie = new HttpCookie("Role");
+                            cookie.Value = User.Role.Value.ToString();
+                            Response.Cookies.Add(cookie);
+                        }
+
                         FormsAuthentication.SetAuthCookie(User.Username, false);
                         return RedirectToAction("Index", "Dashboard");
                     }
@@ -372,7 +408,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region خروج
-
+        [System.Web.Mvc.Authorize]
         public ActionResult LogOut()
         {
             FormsAuthentication.SignOut();
@@ -382,7 +418,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region مسدود کردن کاربر
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult BanUser(int id)
         {
             try
@@ -413,7 +449,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region لیست تعرفه ها در قالب Select2
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult Select2Plans()
         {
             var Us = db.tbUsers.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
@@ -432,7 +468,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region نمایش لاگ ایجاد یا تمدید کاربر عمده 
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult GetUserAccountLog(int id)
         {
             var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
@@ -471,14 +507,14 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region فاکتور های پرداخت شده کاربر 
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult Factors(int id)
         {
 
             var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
             if (User != null)
             {
-                return PartialView(User.tbUserFactors.Where(p=> p.IsPayed == true).ToList());
+                return PartialView(User.tbUserFactors.Where(p => p.IsPayed == true).ToList());
             }
             return PartialView();
         }
@@ -486,7 +522,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region حذف اکانت عمده فروش
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult DeleteAccountLog(int id)
         {
             try
@@ -506,7 +542,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                         var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
                         var exp2 = Reader2.GetBodyDefinition("expired_at");
-                        
+
                         if (!string.IsNullOrWhiteSpace(exp2))
                         {
                             var expireTime = DateTime.Now;
@@ -529,7 +565,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         Log.tbLinkUserAndPlans.tbUsers.Wallet -= Log.tbLinkUserAndPlans.tbPlans.Price;
                     }
-                    
+
                     var Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Log.tbLinkUserAndPlans.tbUsers.FK_Server_ID).OrderByDescending(p => p.User_ID).ToList();
                     RepositoryLogs.Delete(Log.log_ID);
                     RepositoryLogs.Save();
@@ -547,7 +583,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region مربوط به پرداخت کاربران عمده
 
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult Pay(string TOKEN)
         {
             if (!string.IsNullOrEmpty(TOKEN))
@@ -600,6 +636,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.Authorize]
         public ActionResult Pay(tbUsers tbUser)
         {
             var User = RepositoryUser.Where(p => p.Token == tbUser.Token && p.Status == true).FirstOrDefault();
@@ -640,6 +677,6 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        
+
     }
 }

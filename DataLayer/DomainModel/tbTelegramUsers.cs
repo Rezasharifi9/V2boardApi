@@ -21,7 +21,7 @@ namespace DataLayer.DomainModel
             this.tbLinks = new HashSet<tbLinks>();
             this.tbOrders = new HashSet<tbOrders>();
             this.tbTelegramUsers1 = new HashSet<tbTelegramUsers>();
-            this.tbUsers = new HashSet<tbUsers>();
+            this.tbUsers1 = new HashSet<tbUsers>();
         }
     
         public int Tel_UserID { get; set; }
@@ -38,6 +38,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> Tel_Traffic { get; set; }
         public Nullable<System.DateTime> Tel_UpdateMessage { get; set; }
         public Nullable<bool> Tel_GetedTestAccount { get; set; }
+        public Nullable<int> FK_User_ID { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }
@@ -48,7 +49,8 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbTelegramUsers> tbTelegramUsers1 { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers2 { get; set; }
+        public virtual tbUsers tbUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbUsers> tbUsers { get; set; }
+        public virtual ICollection<tbUsers> tbUsers1 { get; set; }
     }
 }

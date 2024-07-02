@@ -1,6 +1,17 @@
 ﻿<!DOCTYPE html>
 <html lang="en" dir="rtl">
 <head>
+
+
+    @{
+        var RequestRole = Request.Cookies["Role"];
+        var Role = "";
+        if (RequestRole != null)
+        {
+            Role = RequestRole.Value;
+        }
+    }
+
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -150,7 +161,7 @@
             <!-- partial:partials/_sidebar.html -->
             <nav class="sidebar sidebar-offcanvas" id="sidebar">
                 <ul class="nav" style="padding: 0;">
-                    @Html.Action("_Profile","Admin")
+                    @Html.Action("_Profile", "Admin")
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","Dashboard",new {area="App"})">
                             <i class="mdi mdi-home menu-icon"></i>
@@ -172,13 +183,16 @@
 
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index","Admin",new {area="App"})">
-                            <i class="mdi mdi-account-group menu-icon"></i>
-                            <span class="menu-title">کاربران عمده</span>
+                    @if (Role.Contains("1"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index","Admin",new {area="App"})">
+                                <i class="mdi mdi-account-group menu-icon"></i>
+                                <span class="menu-title">کاربران عمده</span>
 
-                        </a>
-                    </li>
+                            </a>
+                        </li>
+                    }
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","TelegramUsers",new {area="App"})">
                             <i class="mdi mdi-telegram menu-icon"></i>
@@ -186,13 +200,16 @@
 
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index","Plan",new {area="App"})">
-                            <i class="mdi mdi-basket menu-icon"></i>
-                            <span class="menu-title">تعرفه ها</span>
+                    @if (Role.Contains("1"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index","Plan",new {area="App"})">
+                                <i class="mdi mdi-basket menu-icon"></i>
+                                <span class="menu-title">تعرفه ها</span>
 
-                        </a>
-                    </li>
+                            </a>
+                        </li>
+                    }
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","Settings",new {area="App"})">
                             <i class="mdi mdi-settings menu-icon"></i>

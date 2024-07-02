@@ -13,7 +13,7 @@ using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [System.Web.Mvc.Authorize]
+    
     public class TelegramUsersController : Controller
     {
         private Entities db;
@@ -38,50 +38,49 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region لیست کاربران
 
-        [System.Web.Mvc.Authorize]
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult Index()
         {
             return View();
         }
 
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult _PartialGetAllUsers(string username = null)
         {
             var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
-            var Users = new List<tbTelegramUsers>();
-            if (username != null)
-            {
-                Users = RepositoryTelegramUsers.Where(p => p.Tel_RobotID == Use.tbServers.Robot_ID && p.Tel_Username == username).ToList();
-            }
-            else
-            {
-                Users = RepositoryTelegramUsers.Where(p => p.Tel_RobotID == Use.tbServers.Robot_ID).ToList();
-            }
-            return View(Users);
+            return View(Use.tbTelegramUsers.ToList());
         }
 
 
         #endregion
 
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult _PartialPublicMessage()
         {
             return PartialView();
         }
 
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult SendPublicMessage(string message)
         {
             try
             {
                 var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
 
-                var Users = RepositoryTelegramUsers.Where(p => p.Tel_RobotID == Use.tbServers.Robot_ID).ToList();
-                TelegramBotClient botClient = new TelegramBotClient(Use.tbServers.Robot_Token);
-                foreach (var item in Users)
+                var BotSetting = Use.tbBotSettings.FirstOrDefault();
+                if (BotSetting != null)
                 {
-                    botClient.SendTextMessageAsync(item.Tel_UniqUserID, message);
+                    if (BotSetting.Bot_Token != null)
+                    {
+                        TelegramBotClient botClient = new TelegramBotClient(BotSetting.Bot_Token);
+                        foreach (var item in Use.tbTelegramUsers.ToList())
+                        {
+                            botClient.SendTextMessageAsync(item.Tel_UniqUserID, message);
+                        }
+                    }
                 }
+
+                
 
                 return Content("1");
             }
@@ -93,7 +92,7 @@ namespace V2boardApi.Areas.App.Controllers
 
 
         #region شارژ کیف پول کاربر
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult _EditWallet(int id)
         {
             var us = RepositoryTelegramUsers.Where(p => p.Tel_UserID == id).FirstOrDefault();
@@ -128,6 +127,7 @@ namespace V2boardApi.Areas.App.Controllers
         #region پیام به کاربر
 
         [HttpGet]
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult _SendMessage(int id)
         {
             var TelegramUser = RepositoryTelegramUsers.Where(p => p.Tel_UserID == id).FirstOrDefault();
@@ -137,6 +137,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [HttpPost]
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult SendMessage(string message, int id)
         {
 
@@ -170,11 +171,12 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         [HttpGet]
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult Orders(int TelegramUserId)
         {
             return View();
         }
-
+        [AuthorizeApp(Roles = "1,2")]
         public ActionResult Accounts(int id)
         {
             var Links = RepositoryLinks.Where(p => p.FK_TelegramUserID == id).ToList();
