@@ -118,6 +118,9 @@
       <DependentUpon>DomainModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\MySqlEntities.cs" />
+    <Compile Include="DomainModel\NLog.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbBankCardNumbers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

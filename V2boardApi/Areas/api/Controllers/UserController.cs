@@ -50,12 +50,15 @@ using System.Windows.Controls;
 using LiteDB;
 using DeviceDetectorNET.Class;
 using V2boardBotApp.Models;
+using NLog;
 
 namespace V2boardApi.Areas.api.Controllers
 {
     [EnableCors(origins: "*", "*", "*")]
+    [LogActionFilter]
     public class UserController : ApiController
     {
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbServers> RepositoryServer { get; set; }
@@ -104,17 +107,19 @@ namespace V2boardApi.Areas.api.Controllers
                     var Server = User.tbServers;
 
                     var ActiveBank = User.tbBankCardNumbers.Where(p=> p.Active == true).FirstOrDefault();
-
+                    logger.Info("ورود موفق با اپلیکیشن");
                     return Ok(new { phoneNumber = User.PhoneNumber, BankSmsNumbers = ActiveBank.BankSmsNumber.Split(',').ToList() });
 
                 }
                 else
                 {
+                    logger.Info("ورود ناموفق در اپلیکیشن");
                     return Content(System.Net.HttpStatusCode.NotFound, "نام کاربری یا رمز عبور اشتباه است");
                 }
             }
             catch(Exception ex)
             {
+                logger.Error(ex, "ورود ناموفق در اپلیکیشن");
                 return BadRequest("خطا در ارتباط با سرور");
             }
         }
@@ -138,15 +143,19 @@ namespace V2boardApi.Areas.api.Controllers
 
                     User.Token = (User.Username + User.Password).ToSha256();
                     RepositoryUser.Save();
+                    logger.Info("ورود موفق در پنل فروش");
+                    FormsAuthentication.SetAuthCookie(User.Username,false);
                     return Ok(new { FirstName = User.FirstName, LastName = User.LastName, Role = User.Role, Token = User.Token });
                 }
                 else
                 {
+                    logger.Warn("ورود ناموفق در پنل فروش");
                     return Content(System.Net.HttpStatusCode.NotFound, "نام کاربری یا رمز عبور اشتباه است");
                 }
             }
             catch (Exception ex)
             {
+                logger.Error(ex,"در ورود پنل فروش خطایی رخ داد");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
             }
         }
@@ -356,8 +365,7 @@ namespace V2boardApi.Areas.api.Controllers
             }
             catch (Exception ex)
             {
-                var User = RepositoryUser.Where(p => p.Token == Request.Headers.Authorization.Scheme).FirstOrDefault();
-                ExceptionHandling.InsertLog(ex, User.User_ID);
+                logger.Error(ex,"نمایش لیست اشتراکات در پنل فروش با خطا مواجه شد");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط");
 
             }
@@ -437,6 +445,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 RepositoryLinks.Save();
                                 RepositoryUser.Save();
                                 AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, createUser.name, (int)plan.Price, plan.Plan_Name);
+                                logger.Info("اشتراک در پنل فروش با موفقیت ساخته شد");
                                 return Content(System.Net.HttpStatusCode.OK, "اکانت با موفقیت ساخته شد");
                             }
                             else
@@ -476,6 +485,7 @@ namespace V2boardApi.Areas.api.Controllers
                 {
                     return Content(System.Net.HttpStatusCode.BadRequest, "این کاربر از قبل وجود دارد");
                 }
+                logger.Error(ex,"در ساخت اشتراک در پنل فروش با خطایی مواجه شدیم");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
             }
 
@@ -657,10 +667,12 @@ namespace V2boardApi.Areas.api.Controllers
                 tbLogs.SalePrice = price;
                 tbLogs.PlanName = planName;
                 RepositoryLogs.Insert(tbLogs);
+                logger.Info("لاگ ساخت اشتراک اضافه شد");
                 return RepositoryLogs.Save();
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "در لاگ ساخت اشتراک خطایی رخ داد");
                 return false;
             }
         }
@@ -722,7 +734,8 @@ namespace V2boardApi.Areas.api.Controllers
                     reader2.Close();
                     RepositoryLinks.Save();
                     RepositoryUser.Save();
-                    return Ok("اکانت با موفقیت تمدید شد");
+                    logger.Info("اشتراک با موفقیت تمدید شد");
+                    return Ok("اشتراک با موفقیت تمدید شد");
 
 
                 }
@@ -797,6 +810,8 @@ namespace V2boardApi.Areas.api.Controllers
                 string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
                 var query = "update v2_user set token = '" + token + "',uuid='" + Guid.NewGuid() + "' where id=" + model.AccountID;
                 var reader = mySql.GetData(query);
+
+                logger.Info("لینک اشتراک با موفقیت تغییر یافت");
                 return Ok("لینک اشتراک با موفقیت تغییر یافت");
             }
             else
@@ -831,10 +846,12 @@ namespace V2boardApi.Areas.api.Controllers
                 }
 
                 var mess = " کاربر با موفقیت " + state + " شد ";
+                logger.Info(mess);
                 return Ok(mess);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "در مسدود سازی کاربر خطایی رخ داد");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
             }
         }
@@ -923,7 +940,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
                                     transaction.Commit();
 
-
+                                    logger.Info("فاکتور به مبلغ " + pr.ConvertToMony() + " با موفقیت پرداخت شد");
                                     return Ok();
                                 }
                             }
@@ -950,16 +967,10 @@ namespace V2boardApi.Areas.api.Controllers
                 }
                 catch (Exception ex)
                 {
-
-                    var Server = RepositoryServer.Where(p => p.Robot_ID == "darkbaz_bot").FirstOrDefault();
-                    if (Server != null)
-                    {
-                        TelegramBotClient client = new TelegramBotClient(Server.Robot_Token);
-                        await client.SendTextMessageAsync(Server.AdminTelegramUniqID, "Error api : " + "Data:" + SMSMessageText + " " + "Mobile :" + Mobile + "|" + ex.Message + " - Trace :" + ex.StackTrace);
-                    }
-
+                    int pr = int.Parse(SMSMessageText, NumberStyles.Currency);
                     transaction.Rollback();
-                    return BadRequest("Error api:" + ex.Message + "Data:" + SMSMessageText + " " + "Mobile :" + Mobile);
+                    logger.Error(ex,"خطا در پرداخت فاکتور به مبلغ " + pr.ConvertToMony() + " رخ داد");
+                    return BadRequest();
                 }
             }
         }
@@ -1009,6 +1020,7 @@ namespace V2boardApi.Areas.api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "دریافت تاریخچه مصرف اشتراک با خطا مواجه شد");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "دریافت اطلاعات با خطا مواجه شد");
             }
 

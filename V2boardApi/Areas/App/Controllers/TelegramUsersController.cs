@@ -1,5 +1,6 @@
 ﻿using DataLayer.DomainModel;
 using DataLayer.Repository;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    
+    [LogActionFilter]
     public class TelegramUsersController : Controller
     {
         private Entities db;
@@ -24,6 +25,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbServers> RepositoryServers { get; set; }
         Repository<tbLinks> RepositoryLinks { get; set; }
         private System.Timers.Timer Timer { get; set; }
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public TelegramUsersController()
         {
             db = new Entities();
@@ -80,12 +82,13 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                 }
 
-                
+                logger.Info("پیام همگانی ارسال شد");
 
                 return Content("1");
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ارسال پیام همگانی با خطا مواجه شد");
                 return Content("2");
             }
         }
@@ -114,6 +117,7 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 us.Tel_Wallet = wallet;
                 RepositoryUser.Save();
+                logger.Info("شارژ کیف پول کاربر تلگرام تغییر کرد");
                 return Content("1");
             }
             else
@@ -152,6 +156,7 @@ namespace V2boardApi.Areas.App.Controllers
                     TelegramBotClient bot = new TelegramBotClient(server.Robot_Token);
                     bot.SendTextMessageAsync(TelegramUser.Tel_UniqUserID, message);
                     bot.CloseAsync();
+                    logger.Info("به کاربر تلرام " + TelegramUser.Tel_Username + " پیام ارسال شد");
                     return Content("1");
 
                 }
@@ -162,6 +167,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch(Exception ex)
             {
+                logger.Error(ex,"ارسال پیام با خطا مواجه شد");
                 return Content("3");
             }
             

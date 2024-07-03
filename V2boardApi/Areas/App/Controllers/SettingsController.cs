@@ -1,5 +1,6 @@
 ﻿using DataLayer.DomainModel;
 using DataLayer.Repository;
+using NLog;
 using Org.BouncyCastle.Asn1.X509;
 using System;
 using System.Collections.Generic;
@@ -12,14 +13,15 @@ using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-
+    [LogActionFilter]
     public class SettingsController : Controller
     {
         private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbServers> RepositoryServer { get; set; }
         private Repository<tbBankCardNumbers> RepositoryCards { get; set; }
-
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        
         public SettingsController()
         {
             db = new Entities();
@@ -50,6 +52,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "عدم برقراری ارتباط با MYSQL ");
                 return Content("warning-" + "عدم برقرار ارتباط با سرویس MYSQL");
             }
 
@@ -86,7 +89,7 @@ namespace V2boardApi.Areas.App.Controllers
                     Use.tbServers.Password = Password;
                     Use.tbServers.SubAddress = SubAddr;
                     RepositoryUser.Save();
-
+                    logger.Info("تنظیمات سرور ویرایش شد");
                     return Content("success-" + "اطلاعات سرور با موفقیت ذخیره شد");
                 }
                 else
@@ -104,11 +107,13 @@ namespace V2boardApi.Areas.App.Controllers
                     Use.FK_Server_ID = server.ServerID;
 
                     RepositoryUser.Save();
+                    logger.Info("تنظیمات سرور ویرایش شد");
                     return Content("success-" + "اطلاعات سرور با موفقیت ذخیره شد");
                 }
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ذخیره سازی تنظیمات سرور با خطا مواجه شد");
                 return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
         }
@@ -136,9 +141,6 @@ namespace V2boardApi.Areas.App.Controllers
 
             try
             {
-
-
-
                 var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
 
                 if (ChannelId != null && RequiredJoinChannel)
@@ -166,8 +168,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 }
                             }
                             return Content("error-" + "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
-                        }
-                    }
+                        }                }
                     catch (Exception ex)
                     {
                         return Content("error-" + "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
@@ -218,6 +219,7 @@ namespace V2boardApi.Areas.App.Controllers
                     botSettings.PricePerGig_Major = PricePerGig_Major;
                     Use.tbBotSettings.Add(botSettings);
                     RepositoryUser.Save();
+                    logger.Info("تنظیمات ربات اضافه شد");
                 }
                 else
                 {
@@ -238,12 +240,14 @@ namespace V2boardApi.Areas.App.Controllers
                     botSettings.PricePerMonth_Major = PricePerMonth_Major;
                     botSettings.PricePerGig_Major = PricePerGig_Major;
                     RepositoryUser.Save();
+                    logger.Info("تنظیمات ربات ویرایش شد");
                 }
-
+                
                 return Content("success-" + "اطلاعات ربات با موفقیت ذخیره شد");
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ذخیره سازی تنظیمات ربات با خطا مواجه شد");
                 return Content("error-" + "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
 
@@ -280,6 +284,7 @@ namespace V2boardApi.Areas.App.Controllers
                             Card.BankSmsNumber = SmsNumberOfCard;
                             Card.phoneNumber = phoneNumber;
                             RepositoryUser.Save();
+                            logger.Info("تنظیمات کارت بانکی ویرایش شد");
                         }
                     }
                     else
@@ -292,6 +297,7 @@ namespace V2boardApi.Areas.App.Controllers
                         Card1.Active = false;
                         Use.tbBankCardNumbers.Add(Card1);
                         RepositoryUser.Save();
+                        logger.Info("کارت بانکی جدید اضافه شد");
                     }
                 }
                 else
@@ -304,12 +310,14 @@ namespace V2boardApi.Areas.App.Controllers
                     Card.Active = true;
                     Use.tbBankCardNumbers.Add(Card);
                     RepositoryUser.Save();
+                    logger.Info("کارت بانکی جدید اضافه شد");
 
                 }
                 return Content("success-" + "اطلاعات بانکی با موفقیت ذخیره شد");
             }
             catch (Exception ex)
             {
+                logger.Error(ex,"ذخیره سازی تنظیمات کارت با خطا مواجه شد");
                 return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
         }
@@ -329,10 +337,12 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     RepositoryUser.Save();
                 }
+                logger.Info("کارت با موفقیت حذف شد");
                 return Content("success-" + "کارت با موفقیت حذف شد");
             }
             catch (Exception ex)
             {
+                logger.Error(ex,"حذف کارت با خطا مواجه شد");
                 return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
         }
@@ -355,11 +365,13 @@ namespace V2boardApi.Areas.App.Controllers
                         Card.Active = true;
                     }
                     RepositoryUser.Save();
+                    logger.Info("کارت با موفقیت غیرفعال شد");
                 }
                 return RedirectToAction("Index", "Settings");
             }
             catch (Exception ex)
             {
+                logger.Error(ex,"غیرفعال سازی کارت با خطا مواجه شد");
                 return RedirectToAction("Index", "Settings");
             }
         }

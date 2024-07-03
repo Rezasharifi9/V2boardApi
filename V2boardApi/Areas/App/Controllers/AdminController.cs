@@ -29,12 +29,17 @@ using Telegram.Bot.Types;
 using System.Data.Entity.Validation;
 using System.Web;
 using System.IO;
+using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    
+    [LogActionFilter]
     public class AdminController : Controller
     {
+
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbTelegramUsers> RepositoryTelegramUser { get; set; }
@@ -83,7 +88,7 @@ namespace V2boardApi.Areas.App.Controllers
                 Us.Profile_Filename = Us.Username + Path.GetExtension(profile.FileName);
                 profile.SaveAs(ServerPath + Us.Username + Path.GetExtension(profile.FileName));
                 RepositoryUser.Save();
-
+                logger.Info("پروفایل تغییر کرد");
                 return RedirectToAction("index", "dashboard");
 
             }
@@ -169,7 +174,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                         RepositoryUser.Insert(tbUser);
                         RepositoryUser.Save();
-
+                        logger.Error("کاربر عمده فروش جدید با موفقیت اضافه شد");
                         return Content("1");
                     }
 
@@ -181,6 +186,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "افزودن کاربر عمده جدید با خطا مواجه شد");
                 return Content("3");
             }
         }
@@ -254,6 +260,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                     }
                     RepositoryUser.Save();
+                    logger.Info("کاربر عمده با موفقیت ویرایش شد");
                     return Content("1");
                 }
                 else
@@ -263,6 +270,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex,"ویرایش کاربر عمده با خطا مواجه شد");
                 return Content("3");
             }
 
@@ -362,8 +370,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
-
-                tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username).FirstOrDefault();
+                 tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username).FirstOrDefault();
                 if (User != null)
                 {
 
@@ -381,12 +388,13 @@ namespace V2boardApi.Areas.App.Controllers
                             cookie.Value = User.Role.Value.ToString();
                             Response.Cookies.Add(cookie);
                         }
-
+                        logger.Info("ورود موفق");
                         FormsAuthentication.SetAuthCookie(User.Username, false);
                         return RedirectToAction("Index", "Dashboard");
                     }
                     else
                     {
+                        logger.Warn("ورود ناموفق");
                         TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
                         return RedirectToAction("Login", "Admin");
                     }
@@ -394,12 +402,14 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 else
                 {
+                    logger.Warn("ورود ناموفق");
                     TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
                     return RedirectToAction("Login", "Admin");
                 }
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "خطا در ورود کاربر");
                 TempData["Error"] = "خطا در برقراری ارتباط با سرور";
                 return RedirectToAction("Login", "Admin");
             }
@@ -412,6 +422,7 @@ namespace V2boardApi.Areas.App.Controllers
         public ActionResult LogOut()
         {
             FormsAuthentication.SignOut();
+            logger.Info("خروج موفق");
             return RedirectToAction("Login", "Admin");
         }
 
@@ -438,10 +449,12 @@ namespace V2boardApi.Areas.App.Controllers
                 }
 
                 RepositoryUser.Save();
+                logger.Info("وضعیت کاربر تغییر یافت");
                 return Content("1");
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "در تغییر وضعیت کاربر خطایی رخ داد");
                 return Content("2");
             }
         }
@@ -471,35 +484,42 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1")]
         public ActionResult GetUserAccountLog(int id)
         {
-            var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
-            var Logs = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == id).OrderByDescending(p => p.CreateDatetime.Value).ToList();
-            if (Logs != null)
+            try
             {
-
-                UserLogViewModel userLogViewModel = new UserLogViewModel();
-                userLogViewModel.Logs = Logs;
-                var LastPay = User.tbUserFactors.OrderByDescending(p => p.tbUf_CreateTime).FirstOrDefault();
-                if (LastPay != null)
+                var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
+                var Logs = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == id).OrderByDescending(p => p.CreateDatetime.Value).ToList();
+                if (Logs != null)
                 {
-                    userLogViewModel.SumSaleFromLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Sum(p => p.SalePrice.Value);
-                    userLogViewModel.CountCreatedFormLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Count();
+
+                    UserLogViewModel userLogViewModel = new UserLogViewModel();
+                    userLogViewModel.Logs = Logs;
+                    var LastPay = User.tbUserFactors.OrderByDescending(p => p.tbUf_CreateTime).FirstOrDefault();
+                    if (LastPay != null)
+                    {
+                        userLogViewModel.SumSaleFromLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Sum(p => p.SalePrice.Value);
+                        userLogViewModel.CountCreatedFormLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Count();
+                    }
+                    else
+                    {
+                        userLogViewModel.SumSaleFromLastPay = 0;
+                        userLogViewModel.CountCreatedFormLastPay = 0;
+                    }
+                    userLogViewModel.SumSale = Logs.Sum(p => p.SalePrice.Value);
+                    userLogViewModel.CountCreated = Logs.Count();
+                    ViewBag.Name = User.Username;
+
+                    return View(userLogViewModel);
                 }
                 else
                 {
-                    userLogViewModel.SumSaleFromLastPay = 0;
-                    userLogViewModel.CountCreatedFormLastPay = 0;
+                    return View();
                 }
-                userLogViewModel.SumSale = Logs.Sum(p => p.SalePrice.Value);
-                userLogViewModel.CountCreated = Logs.Count();
-                ViewBag.Name = User.Username;
-
-                return View(userLogViewModel);
             }
-            else
+            catch(Exception ex)
             {
+                logger.Error(ex, "در نمایش تاریخچه ساخت کاربر با خطایی مواجه شدیم !!");
                 return View();
             }
-
         }
 
 
@@ -569,12 +589,14 @@ namespace V2boardApi.Areas.App.Controllers
                     var Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Log.tbLinkUserAndPlans.tbUsers.FK_Server_ID).OrderByDescending(p => p.User_ID).ToList();
                     RepositoryLogs.Delete(Log.log_ID);
                     RepositoryLogs.Save();
+                    logger.Info("حذف اشتراک با موفقیت انجام شد");
                     return PartialView("_PartialGetAllUsers", Users);
                 }
                 return Content("2");
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "در حذف اشتراک با خطایی مواجه شدیم !");
                 return Content("2");
             }
 
@@ -639,40 +661,50 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.Authorize]
         public ActionResult Pay(tbUsers tbUser)
         {
-            var User = RepositoryUser.Where(p => p.Token == tbUser.Token && p.Status == true).FirstOrDefault();
-            if (User != null)
+            try
             {
-                var wallet = (User.Wallet * 10);
-                ViewBag.wallet = wallet;
-                var Admin = RepositoryUser.Where(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
-
-                if (Admin != null)
+                var User = RepositoryUser.Where(p => p.Token == tbUser.Token && p.Status == true).FirstOrDefault();
+                if (User != null)
                 {
-                    ViewBag.CardNumber = Admin.Card_Number;
-                    ViewBag.FullName = Admin.FirstName + " " + Admin.LastName;
-                }
+                    var wallet = (User.Wallet * 10);
+                    ViewBag.wallet = wallet;
+                    var Admin = RepositoryUser.Where(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
 
-                var Factor = User.tbUserFactors.Where(p => p.tbUf_Value == wallet && p.IsPayed == true).Any();
-                if (Factor)
-                {
-                    if (wallet == tbUser.Wallet)
+                    if (Admin != null)
                     {
-                        User.Wallet = 0;
-                        RepositoryUser.Save();
-                        TempData["MessageSuccess"] = "صورتحساب با موفقیت پرداخت شد";
+                        ViewBag.CardNumber = Admin.Card_Number;
+                        ViewBag.FullName = Admin.FirstName + " " + Admin.LastName;
+                    }
+
+                    var Factor = User.tbUserFactors.Where(p => p.tbUf_Value == wallet && p.IsPayed == true).Any();
+                    if (Factor)
+                    {
+                        if (wallet == tbUser.Wallet)
+                        {
+                            User.Wallet = 0;
+                            RepositoryUser.Save();
+                            logger.Info("کاربر با موفقیت صورتحساب خود را پرداخت کرد");
+                            TempData["MessageSuccess"] = "صورتحساب با موفقیت پرداخت شد";
+                            return View(tbUser);
+                        }
+                    }
+                    else
+                    {
+                        TempData["MessageWarning"] = "شما هنوز واریزی انجام نداده اید";
                         return View(tbUser);
                     }
-                }
-                else
-                {
-                    TempData["MessageWarning"] = "شما هنوز واریزی انجام نداده اید";
+
+                    TempData["MessageError"] = "صورتحساب قبلا پرداخت شده";
                     return View(tbUser);
                 }
-
-                TempData["MessageError"] = "صورتحساب قبلا پرداخت شده";
-                return View(tbUser);
+                return HttpNotFound();
             }
-            return HttpNotFound();
+            catch(Exception ex)
+            {
+                
+                logger.Error(ex, "پرداخت صورتحساب کاربر با خطا مواجه شد");
+                return HttpNotFound();
+            }
         }
 
         #endregion

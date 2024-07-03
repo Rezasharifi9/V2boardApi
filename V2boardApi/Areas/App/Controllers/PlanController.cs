@@ -1,5 +1,6 @@
 ﻿using DataLayer.DomainModel;
 using DataLayer.Repository;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +12,10 @@ using V2boardApi.Tools;
 namespace V2boardApi.Areas.App.Controllers
 {
     [AuthorizeApp(Roles = "1")]
+    [LogActionFilter]
     public class PlanController : Controller
     {
-
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbPlans> RepositoryPlans { get; set; }
@@ -159,6 +161,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                     RepositoryServer.Save();
                     RepositoryPlans.Save();
+                    logger.Info("بروزرسانی تعرفه ها با موفقیت انجام شد");
                     return Content("1");
                 }
                 else
@@ -168,6 +171,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "بروزرسانی تعرفه ها با خطا مواجه شد");
                 return Content("2");
             }
 

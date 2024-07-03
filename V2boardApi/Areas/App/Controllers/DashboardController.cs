@@ -10,12 +10,14 @@ using System.Web;
 using System.Web.Mvc;
 using V2boardApi.Areas.App.Data;
 using V2boardApi.Tools;
+using NLog;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-
+    [LogActionFilter]
     public class DashboardController : Controller
     {
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
         private Repository<tbPlans> RepositoryPlans { get; set; }
@@ -47,32 +49,34 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,2")]
         public ActionResult GetReport()
         {
-            var report = StiReport.CreateNewDashboard();
-
-            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
-
-            if (user.Role != 1)
+            try
             {
-                var path = Server.MapPath("~/Reports/Report.mrt");
-                report.Load(path);
+                var report = StiReport.CreateNewDashboard();
 
-                report.Dictionary.DataSources[0].Parameters["User_ID"].Value = user.User_ID.ToString();
+                var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+
+                if (user.Role != 1)
+                {
+                    var path = Server.MapPath("~/Reports/Report.mrt");
+                    report.Load(path);
+
+                    report.Dictionary.DataSources[0].Parameters["User_ID"].Value = user.User_ID.ToString();
+                }
+                else
+                {
+
+                    var path = Server.MapPath("~/Reports/ReportAdmin.mrt");
+                    report.Load(path);
+
+                }
+
+                return StiMvcViewer.GetReportResult(report);
             }
-            else
+            catch(Exception ex)
             {
-
-                var path = Server.MapPath("~/Reports/ReportAdmin.mrt");
-                report.Load(path);
-
+                logger.Error(ex, "در نمایش داشبورد با خطایی مواجه شدیم");
+                return View();
             }
-
-
-
-
-
-
-
-            return StiMvcViewer.GetReportResult(report);
         }
 
         [AuthorizeApp(Roles = "1,2")]
