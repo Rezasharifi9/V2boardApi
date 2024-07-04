@@ -35,6 +35,28 @@
                             <a class="dropdown-item" onclick="BanUser('@item.User_ID')">فعال سازی</a>
                         }
                         <a class="dropdown-item" onclick="EditWallet(this)" id="Wallet_@item.User_ID">شارژ کیف پول</a>
+
+                        @{
+                            var bot = BotManager.GetBot(item.Username);
+                        }
+
+                        @if (bot != null)
+                        {
+                            if (bot.Started)
+                            {
+                                <a class="dropdown-item" onclick="RunBot('@item.User_ID')" id="">خاموش کردن ربات</a>
+                            }
+                            else
+                            {
+                                <a class="dropdown-item" onclick="RunBot('@item.User_ID')" id="">روشن کردن ربات</a>
+                            }
+                        }
+                        else
+                        {
+                            <a class="dropdown-item" onclick="RunBot('@item.User_ID')" id="">روشن کردن ربات</a>
+                        }
+
+
                     </div>
                 </td>
                 @if (item.Wallet != null)

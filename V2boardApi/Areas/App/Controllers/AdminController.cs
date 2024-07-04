@@ -270,7 +270,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"ویرایش کاربر عمده با خطا مواجه شد");
+                logger.Error(ex, "ویرایش کاربر عمده با خطا مواجه شد");
                 return Content("3");
             }
 
@@ -370,7 +370,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
-                 tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username).FirstOrDefault();
+                tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username).FirstOrDefault();
                 if (User != null)
                 {
 
@@ -388,6 +388,11 @@ namespace V2boardApi.Areas.App.Controllers
                             cookie.Value = User.Role.Value.ToString();
                             Response.Cookies.Add(cookie);
                         }
+                        
+
+                        
+
+                      
                         logger.Info("ورود موفق");
                         FormsAuthentication.SetAuthCookie(User.Username, false);
                         return RedirectToAction("Index", "Dashboard");
@@ -515,7 +520,7 @@ namespace V2boardApi.Areas.App.Controllers
                     return View();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex, "در نمایش تاریخچه ساخت کاربر با خطایی مواجه شدیم !!");
                 return View();
@@ -699,15 +704,62 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 return HttpNotFound();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                
+
                 logger.Error(ex, "پرداخت صورتحساب کاربر با خطا مواجه شد");
                 return HttpNotFound();
             }
         }
 
         #endregion
+
+        public ActionResult StartBot(int userId)
+        {
+            var User = RepositoryUser.Where(p => p.User_ID == userId && p.Status == true).FirstOrDefault();
+            try
+            {
+                if (User != null)
+                {
+                    var Bot = BotManager.GetBot(User.Username);
+                    if(Bot != null)
+                    {
+                        if (Bot.Started)
+                        {
+                            BotManager.Bots[User.Username].Started = false;
+                        }
+                        else
+                        {
+                            BotManager.Bots[User.Username].Started = true;
+                        }
+                    }
+
+                    var Method = "http";
+
+                    if (HttpContext.Request.Url.AbsoluteUri.Contains("https"))
+                    {
+                        Method = "https";
+                    }
+
+                    var url = Method + "://" + HttpContext.Request.Url.Authority;
+
+                    var s = Task.Run(async ()=> { await BotManager.Register(User.Username, url); });
+
+                    if (s.Status == TaskStatus.Created)
+                    {
+                        logger.Info("ربات " + User.Username + " با موفقیت راه اندازی شد");
+                        return Content("success-" + "ربات با موفقیت راه اندازی شد");
+                    }
+                    return Content("success-" + "ربات با موفقیت راه اندازی شد");
+                }
+                return Content("error-" + "ربات راه اندازی نشد");
+            }
+            catch(Exception ex)
+            {
+                logger.Error("راه اندازی ربات " + User.Username + " با خطا مواجه شد", ex);
+                return Content("error-" + "راه اندازی ربات با خطا مواجه شد");
+            }
+        }
 
 
     }

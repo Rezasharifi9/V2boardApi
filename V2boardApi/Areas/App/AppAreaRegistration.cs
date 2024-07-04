@@ -20,6 +20,12 @@ namespace V2boardApi.Areas.App
                 "App/{controller}/{action}/{id}",
                 new { Controller = "Dashboard", action = "Index", id = UrlParameter.Optional }
             );
+
+            context.MapRoute(
+            name: "Bot",
+            url: "App/Bot/{action}/{botName}",
+            defaults: new { controller = "Bot", action = "Update" }
+        );
         }
     }
 }

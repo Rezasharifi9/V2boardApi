@@ -163,6 +163,31 @@
         }
 
 
+        function RunBot(id)
+        {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("StartBot","Admin")?userId=" + id,
+                type: "get",
+                dataType: "html",
+                success: function (res) {
+                    $("#loading").css("display", "none");
+
+
+                    var spl = res.split('-');
+
+                    Swal.fire({
+                        title: "پیغام",
+                        text: spl[1],
+                        icon: spl[0]
+                    }).then(() => {
+                        location.reload();
+                    })
+                }
+            });
+        }
+
+
         //function ShowAccountLog(Url) {
         //    $("#loading").css("display", "flex");
         //    $.ajax({

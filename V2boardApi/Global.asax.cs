@@ -32,6 +32,19 @@ namespace V2boardApi
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             ViewEngines.Engines.Add(new CustomRazorViewEngine());
 
+            Repository<tbUsers> Rep = new Repository<tbUsers>();
+            var Res = Rep.Where(p => p.tbBotSettings.Count > 0 && p.tbBotSettings.Where(s => s.Bot_Token != null).Any()).ToList();
+            foreach (var item in Res)
+            {
+                BotManager.AddBot(item.Username, item.tbBotSettings.First().Bot_Token);
+            }
+
+            var User = Res.FirstOrDefault();
+
+            if (User != null)
+            {
+                BotManager.Server = User.tbServers;
+            }
         }
 
 

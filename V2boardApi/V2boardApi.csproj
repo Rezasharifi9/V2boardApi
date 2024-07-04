@@ -301,6 +301,7 @@
     <Compile Include="Areas\api\Controllers\ClientController.cs" />
     <Compile Include="Areas\api\Controllers\ServerController.cs" />
     <Compile Include="Areas\api\Controllers\UserController.cs" />
+    <Compile Include="Areas\App\Controllers\BotController.cs" />
     <Compile Include="Areas\App\Controllers\BotFactorsController.cs" />
     <Compile Include="Areas\App\Controllers\DashboardController.cs" />
     <Compile Include="Areas\App\Controllers\ErrorController.cs" />
@@ -323,6 +324,7 @@
     <Compile Include="Models\GetUserDataModel.cs" />
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
+    <Compile Include="Tools\BotManager.cs" />
     <Compile Include="Tools\CustomKeyboards.cs" />
     <Compile Include="Tools\ExceptionHandling.cs" />
     <Compile Include="Tools\Keyboards.cs" />
@@ -587,6 +589,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Areas\api\Views\Admin\" />
     <Folder Include="Areas\api\Views\Shared\" />
+    <Folder Include="Areas\App\Views\Bot\" />
     <Folder Include="Areas\App\Views\Default\" />
     <Folder Include="Content\Manifests\" />
     <Folder Include="Controllers\" />
@@ -648,11 +651,12 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50997</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:50997/</IISUrl>
+          <IISUrl>http://localhost:4480/</IISUrl>
+          <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
+          <IISAppRootUrl>http://localhost:4480/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
+          <CustomServerUrl>https://bf7d-2a01-4f8-1c17-c242-00-1.ngrok-free.app</CustomServerUrl>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>

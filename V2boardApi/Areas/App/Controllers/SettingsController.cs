@@ -21,7 +21,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbServers> RepositoryServer { get; set; }
         private Repository<tbBankCardNumbers> RepositoryCards { get; set; }
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        
+
         public SettingsController()
         {
             db = new Entities();
@@ -168,7 +168,8 @@ namespace V2boardApi.Areas.App.Controllers
                                 }
                             }
                             return Content("error-" + "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
-                        }                }
+                        }
+                    }
                     catch (Exception ex)
                     {
                         return Content("error-" + "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
@@ -207,6 +208,15 @@ namespace V2boardApi.Areas.App.Controllers
                     botSettings.Bot_ID = BotId;
                     botSettings.Active = Active;
                     botSettings.AdminBot_ID = TelegramUserId;
+                    var res = BotManager.GetBot(Use.Username);
+                    if (res == null)
+                    {
+                        BotManager.AddBot(Use.Username, BotToken);
+                    }
+                    else
+                    {
+                        BotManager.Bots[Use.Username].Token = BotToken;
+                    }
                     if (ChannelId != null)
                     {
                         botSettings.ChannelID = ChannelId;
@@ -232,6 +242,22 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         botSettings.Present_Discount = Present_Discount / 100;
                     }
+
+                    var res = BotManager.GetBot(Use.Username);
+                    if (res == null)
+                    {
+                        BotManager.AddBot(Use.Username, BotToken);
+                    }
+                    else
+                    {
+
+                        if (BotManager.Bots[Use.Username].Token != BotToken)
+                        {
+                            BotManager.Bots[Use.Username].Token = BotToken;
+                        }
+                    }
+
+
                     botSettings.RequiredJoinChannel = RequiredJoinChannel;
                     botSettings.Bot_Token = BotToken;
                     botSettings.Bot_ID = BotId;
@@ -240,9 +266,10 @@ namespace V2boardApi.Areas.App.Controllers
                     botSettings.PricePerMonth_Major = PricePerMonth_Major;
                     botSettings.PricePerGig_Major = PricePerGig_Major;
                     RepositoryUser.Save();
+
                     logger.Info("تنظیمات ربات ویرایش شد");
                 }
-                
+
                 return Content("success-" + "اطلاعات ربات با موفقیت ذخیره شد");
             }
             catch (Exception ex)
@@ -317,7 +344,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"ذخیره سازی تنظیمات کارت با خطا مواجه شد");
+                logger.Error(ex, "ذخیره سازی تنظیمات کارت با خطا مواجه شد");
                 return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
         }
@@ -342,7 +369,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"حذف کارت با خطا مواجه شد");
+                logger.Error(ex, "حذف کارت با خطا مواجه شد");
                 return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
             }
         }
@@ -371,7 +398,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"غیرفعال سازی کارت با خطا مواجه شد");
+                logger.Error(ex, "غیرفعال سازی کارت با خطا مواجه شد");
                 return RedirectToAction("Index", "Settings");
             }
         }
