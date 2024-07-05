@@ -6,17 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using V2boardApi.Tools;
-using V2boardBot.Functions;
 
 namespace V2boardBotApp.Models
 {
     public class CustomTrafficKeyboard
     {
-        tbServers server;
+        tbBotSettings tbBotSettings;
         InlineKeyboardMarkup keyboardButtons;
         int Traffic;
         int Month;
-        public CustomTrafficKeyboard(tbServers tbServers, int? TrafficUser = null, int? MonthUser = null)
+        public CustomTrafficKeyboard(tbBotSettings botSettings, int? TrafficUser = null, int? MonthUser = null)
         {
             if (TrafficUser == null)
             {
@@ -34,7 +33,7 @@ namespace V2boardBotApp.Models
             {
                 Month = MonthUser.Value;
             }
-            server = tbServers;
+            tbBotSettings = botSettings;
             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
 
             List<InlineKeyboardButton> StaticRow1 = new List<InlineKeyboardButton>();
@@ -61,14 +60,14 @@ namespace V2boardBotApp.Models
 
             inlineKeyboards.Add(DynamicRow4);
 
-            var Price = tbServers.PricePerMonth * Month;
-            Price += tbServers.PricePerGig * Traffic;
+            var Price = tbBotSettings.PricePerMonth_Major * Month;
+            Price += tbBotSettings.PricePerGig_Major * Traffic;
 
-            if (server.Discount_Percent != null)
+            if (botSettings.Present_Discount != null && botSettings.Present_Discount != 0)
             {
                 List<InlineKeyboardButton> DiscountRow = new List<InlineKeyboardButton>();
 
-                var DiscountPrice = Price * server.Discount_Percent;
+                var DiscountPrice = Price * botSettings.Present_Discount;
                 DiscountRow.Add(InlineKeyboardButton.WithCallbackData(Convert.ToInt32(DiscountPrice).ConvertToMony() + " تومان", "**"));
                 DiscountRow.Add(InlineKeyboardButton.WithCallbackData("🌻 تخفیف :", "🌻 تخفیف"));
 
@@ -76,21 +75,21 @@ namespace V2boardBotApp.Models
 
             }
 
-
+            
 
 
             List<InlineKeyboardButton> PriceRow = new List<InlineKeyboardButton>();
 
-            if (server.Discount_Percent != null)
+            if (botSettings.Present_Discount != null)
             {
-                var DiscountPrice = Price * server.Discount_Percent;
+                var DiscountPrice = Price * botSettings.Present_Discount;
                 PriceRow.Add(InlineKeyboardButton.WithCallbackData(Convert.ToInt32((Price - DiscountPrice)).ConvertToMony() + " تومان", "40,000 تومان"));
             }
             else
             {
                 PriceRow.Add(InlineKeyboardButton.WithCallbackData(Price.Value.ConvertToMony() + " تومان", "40,000 تومان"));
             }
-
+            
             PriceRow.Add(InlineKeyboardButton.WithCallbackData("💸 قیمت نهایی :", "💸 قیمت نهایی :"));
 
             inlineKeyboards.Add(PriceRow);
@@ -116,8 +115,5 @@ namespace V2boardBotApp.Models
             var s = keyboardButtons.InlineKeyboard.ToList()[1].ToList()[1];
             return keyboardButtons;
         }
-        
-
-
     }
 }

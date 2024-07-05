@@ -39,15 +39,23 @@ namespace V2boardApi.Tools
             return Bots.Values;
         }
 
-        public static async Task Register(string Name,string url)
+        public static async Task Register(string Name, string url)
         {
+            if (!Bots.ContainsKey(Name))
+            {
+                throw new ArgumentException($"Bot with name {Name} not found.");
+            }
+
+            var botClient = Bots[Name].Client;
+
+            // حذف Webhook فعلی
+            await botClient.DeleteWebhookAsync(true);
+
+            // تنظیم Webhook جدید
             var webhookUrl = $"{url}/App/Bot/Update/?botName={Bots[Name].Name}";
-
-            Bots[Name].Started = true;
-            await Bots[Name].Client.SetWebhookAsync(webhookUrl);
-
-
+            await botClient.SetWebhookAsync(webhookUrl);
         }
+
     }
 
 

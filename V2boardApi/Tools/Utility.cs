@@ -1,6 +1,7 @@
 ﻿using DataLayer.DomainModel;
 using DataLayer.Repository;
 using Microsoft.Ajax.Utilities;
+using Newtonsoft.Json.Linq;
 using QRCoder;
 using System;
 using System.Collections.Generic;
@@ -8,9 +9,11 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace V2boardApi.Tools
@@ -254,6 +257,167 @@ namespace V2boardApi.Tools
             Charshanbe = 4,
             Panjshanbe = 5,
             Jome = 6
+        }
+
+        /// <summary>
+        /// Convert Btye To GB Or MB
+        /// </summary>
+        /// <param name="volume"></param>
+        /// <returns></returns>
+        public static string ConvertToMbOrGb(this double volume)
+        {
+            //Data Type GB or MB
+            string dataType = "GB";
+
+            // Convert Byte To GB
+            float data = (float)Math.Round((((volume / 1024) / 1024) / 1024), 2);
+
+            // If Data Is MB True Convert To Mb
+            if (data < 1)
+            {
+                data = (float)(data * 1024);
+                dataType = "MB";
+            }
+
+            //Convert To String Object
+            return data + dataType;
+        }
+
+        public static long ConvertGBToByte(this int GigaByte)
+        {
+
+            var result = ((GigaByte * 1024) * 1024) * 1024;
+
+            return result;
+        }
+
+        public static long ConvertGBToByte(this double GigaByte)
+        {
+
+            var result = ((GigaByte * 1024) * 1024) * 1024;
+
+            return Convert.ToInt64(result);
+        }
+
+        /// <summary>
+        /// تبدیل میلی ثانیه به تاریخ شمسی
+        /// </summary>
+        /// <param name="data">میلی ثانیه</param>
+        /// <returns>تاریخ شمسی</returns>
+        public static string ConvertMillisecondToShamsiDate(this long data)
+        {
+            if (data != 0)
+            {
+                var date = DateTimeOffset.FromUnixTimeSeconds((long)data);
+                PersianCalendar pc = new PersianCalendar();
+                int year = pc.GetYear(date.DateTime);
+                int month = pc.GetMonth(date.DateTime);
+                int day = pc.GetDayOfMonth(date.DateTime);
+                int hour = pc.GetHour(date.DateTime);
+                int minute = pc.GetMinute(date.DateTime);
+                int second = pc.GetSecond(date.DateTime);
+                var PersianDate = year + "/" + month + "/" + day;
+
+                return PersianDate;
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// تبدیل میلی ثانیه به تاریخ شمسی
+        /// </summary>
+        /// <param name="data">میلی ثانیه</param>
+        /// <returns>تاریخ شمسی</returns>
+        public static string ConvertDatetimeToShamsiDate(this DateTime data)
+        {
+            if (data != default)
+            {
+                var date = data;
+                PersianCalendar pc = new PersianCalendar();
+                int year = pc.GetYear(date);
+                int month = pc.GetMonth(date);
+                int day = pc.GetDayOfMonth(date);
+                int hour = pc.GetHour(date);
+                int minute = pc.GetMinute(date);
+                int second = pc.GetSecond(date);
+                var PersianDate = year + "/" + month + "/" + day + " " + hour + ":" + minute + ":" + second;
+
+                return PersianDate;
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+
+        public static async Task<string> GenerateQRCodeImageUrl(string text)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                // Replace "http://api.qrserver.com/v1/create-qr-code/" with the desired QR code generation service
+                var response = await httpClient.GetStringAsync($"http://api.qrserver.com/v1/create-qr-code/?data={text}");
+
+                // Check if the response contains the QR code image URL
+                if (response.Contains("http://chart.apis.google.com/chart"))
+                {
+                    // Extract the QR code image URL from the response
+                    var startIndex = response.IndexOf("http://chart.apis.google.com/chart", StringComparison.Ordinal);
+                    var endIndex = response.IndexOf("\"", startIndex, StringComparison.Ordinal);
+
+                    // Check if both start and end indexes are valid
+                    if (startIndex >= 0 && endIndex > startIndex)
+                    {
+                        return response.Substring(startIndex, endIndex - startIndex);
+                    }
+                }
+
+                // If the response does not contain the expected URL, return an empty string
+                return string.Empty;
+            }
+        }
+
+
+
+
+        public static string GetPriceUSDT()
+        {
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("https://api.tetherland.com");
+            var res = client.GetAsync("/currencies");
+            if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var model = JObject.Parse(res.Result.Content.ReadAsStringAsync().Result);
+                var price = model["data"]["currencies"]["USDT"]["price"];
+
+                return price.ToString();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static bool ContainsPersianText(string input)
+        {
+            foreach (char c in input)
+            {
+                // محدوده کد Unicode برای حروف فارسی
+                if (c >= 0x0600 && c <= 0x06FF)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool IsPersian(string input)
+        {
+            // Check if the text contains any Persian characters
+            return input.Any(c => (c >= '\u0600' && c <= '\u06FF') || (c >= '\u0750' && c <= '\u077F') || (c >= '\uFB50' && c <= '\uFDFF') || (c >= '\uFE70' && c <= '\uFEFF'));
         }
     }
 }

@@ -309,6 +309,7 @@
     <Compile Include="Areas\App\Controllers\PlanController.cs" />
     <Compile Include="Areas\App\Controllers\SettingsController.cs" />
     <Compile Include="Areas\App\Controllers\TelegramUsersController.cs" />
+    <Compile Include="Areas\App\Data\BotViewModel\UseageViewModel.cs" />
     <Compile Include="Areas\App\Data\CountAccountCreatedFromMajorModel.cs" />
     <Compile Include="Areas\App\Data\DashboardViewModel.cs" />
     <Compile Include="Areas\App\Data\PlanViewModels\PermissionsViewModel.cs" />
@@ -325,7 +326,7 @@
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
     <Compile Include="Tools\BotManager.cs" />
-    <Compile Include="Tools\CustomKeyboards.cs" />
+    <Compile Include="Tools\CustomTrafficKeyboard.cs" />
     <Compile Include="Tools\ExceptionHandling.cs" />
     <Compile Include="Tools\Keyboards.cs" />
     <Compile Include="Models\ManifestModel.cs" />
