@@ -47,12 +47,13 @@ namespace V2boardApi.Tools
             }
 
             var botClient = Bots[Name].Client;
+            //var allowedUpdates = new[] { "message", "callback_query" };
 
             // حذف Webhook فعلی
             await botClient.DeleteWebhookAsync(true);
 
             // تنظیم Webhook جدید
-            var webhookUrl = $"{url}/App/Bot/Update/?botName={Bots[Name].Name}";
+            var webhookUrl = $"{url}/Bot/Update/?botName={Bots[Name].Name}";
             await botClient.SetWebhookAsync(webhookUrl);
         }
 

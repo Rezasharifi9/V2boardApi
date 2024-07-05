@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
+using System.Web.Http;
 using System.Web.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -23,11 +24,13 @@ using V2boardBot.Models;
 using V2boardBotApp.Models;
 using V2boardBotApp.Models.ViewModels;
 
-namespace V2boardApi.Areas.App.Controllers
+namespace V2boardApi.Areas.api.Controllers
 {
-    [AllowAnonymous]
-    public class BotController : Controller
+    [System.Web.Http.AllowAnonymous]
+    [LogActionFilter]
+    public class BotController : ApiController
     {
+
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         // Database Instance
@@ -55,8 +58,6 @@ namespace V2boardApi.Areas.App.Controllers
         private static Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan;
         private static Repository<tbDepositWallet_Log> tbDepositLogRepo;
         private static tbServers Server;
-
-        private static string StaticToken { get; set; }
         private static string RobotIDforTimer { get; set; }
 
         public BotController()
@@ -100,7 +101,7 @@ namespace V2boardApi.Areas.App.Controllers
             DeleteTestAccount.Elapsed += DeleteTestSub;
             DeleteTestAccount.Start();
             DeleteTestAccount.Enabled = true;
-
+            Server = BotManager.Server;
         }
 
         #region تابع چک کردن قیمت دلار
@@ -359,12 +360,13 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Http.HttpPost]
+
         public async Task Update(string botName, Update update)
         {
             try
             {
+
                 var bot = BotManager.GetBot(botName);
                 if (bot == null)
                 {
@@ -489,18 +491,6 @@ namespace V2boardApi.Areas.App.Controllers
                                         }
                                     }
                                 }
-                                //else if (update.Message.Type == MessageType.Poll)
-                                //{
-                                //    if (message.Poll.Question.StartsWith("/all"))
-                                //    {
-                                //        foreach (var item in tbTelegramUserRepository.Where(p => p.Tel_RobotID == tbServer.Robot_ID && p.Tel_UniqUserID == "6067999621").ToList())
-                                //        {
-                                //            var text = message.Poll.Question.Replace("/all", "");
-
-                                //            await bot.SendPollAsync(item.Tel_UniqUserID, text, options:message.Poll.Options.Select(p=> p.Text).AsEnumerable());
-                                //        }
-                                //    }
-                                //}
                             }
 
 
@@ -634,7 +624,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 }
 
                                 #endregion
-
+                                else
                                 #region بخش نمایش منو اصلی
                                 if (mess == "/start" || mess.StartsWith("/start") || mess.StartsWith("⬅️ برگشت به صفحه اصلی"))
                                 {
@@ -672,12 +662,12 @@ namespace V2boardApi.Areas.App.Controllers
                                 #endregion
 
                                 #region بخش چک کردن برای اینکه کاربر نام اکانت جدید خودش را وارد کند
-
+                                else
                                 if (User.Tel_Step == "WaitForEnterName")
                                 {
                                     if (mess.Length < 15)
                                     {
-                                        if (CheckExistsAccountInBot(mess))
+                                        if (CheckExistsAccountInBot(mess, BotSettings))
                                         {
                                             SendTrafficCalculator(User, message.MessageId, BotSettings, bot.Client, mess, Tel_Step: User.Tel_Step);
                                         }
@@ -1875,27 +1865,23 @@ namespace V2boardApi.Areas.App.Controllers
 
                                 if (callbackQuery.Data == "BackToCalc")
                                 {
-                                    var BotSetting = BotSettingRepository.Where(p => p.Bot_Token == StaticToken).FirstOrDefault();
+                                    CustomTrafficKeyboard keyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
+                                    var key = keyboard.GetKeyboard();
 
-                                    if (BotSetting != null)
-                                    {
-                                        CustomTrafficKeyboard keyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
-                                        var key = keyboard.GetKeyboard();
+                                    StringBuilder str = new StringBuilder();
+                                    str.AppendLine("🔐 سرویست رو خودت بساز");
+                                    str.AppendLine("");
+                                    str.AppendLine("💸 هر گیگ : " + BotSettings.PricePerGig_Major.Value.ConvertToMony() + " تومان");
+                                    str.AppendLine("");
+                                    str.AppendLine("⏳ هر ماه : " + BotSettings.PricePerMonth_Major.Value.ConvertToMony() + " تومان");
 
-                                        StringBuilder str = new StringBuilder();
-                                        str.AppendLine("🔐 سرویست رو خودت بساز");
-                                        str.AppendLine("");
-                                        str.AppendLine("💸 هر گیگ : " + BotSetting.PricePerGig_Major.Value.ConvertToMony() + " تومان");
-                                        str.AppendLine("");
-                                        str.AppendLine("⏳ هر ماه : " + BotSetting.PricePerMonth_Major.Value.ConvertToMony() + " تومان");
-
-                                        var editedMessage = await bot.Client.EditMessageTextAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId, str.ToString(), replyMarkup: key);
+                                    var editedMessage = await bot.Client.EditMessageTextAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId, str.ToString(), replyMarkup: key);
 
 
-                                        //RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlan", db, mess + "%");
+                                    //RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlan", db, mess + "%");
 
-                                        return;
-                                    }
+                                    return;
+
                                 }
 
                                 #endregion
@@ -1918,7 +1904,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     var PirceWithoutDiscount = (User.Tel_Traffic * BotSettings.PricePerGig_Major) + (User.Tel_Monthes * BotSettings.PricePerMonth_Major);
                                     if (Wallet >= Price)
                                     {
-                                        var Link = tbLinksRepository.Where(p => p.tbL_Email == AccountName && BotSettings.Bot_Token == StaticToken).FirstOrDefault();
+                                        var Link = tbLinksRepository.Where(p => p.tbL_Email == AccountName).FirstOrDefault();
                                         if (Link != null)
                                         {
                                             MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
@@ -2381,15 +2367,14 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error("خطا در برقراری ارتباط سرور تلگرام", ex);
+                logger.Error(ex, "خطا در برقراری ارتباط سرور تلگرام");
             }
 
             return;
         }
-        [AllowAnonymous]
-        public static bool CheckExistsAccountInBot(string username)
+
+        public static bool CheckExistsAccountInBot(string username, tbBotSettings BotSetting)
         {
-            var BotSetting = BotSettingRepository.Where(p => p.Bot_Token == StaticToken).FirstOrDefault();
 
 
             username = username + "@" + BotSetting.tbUsers.Username;
@@ -2404,7 +2389,7 @@ namespace V2boardApi.Areas.App.Controllers
 
 
         }
-        [AllowAnonymous]
+
         public static bool EndedVolumeOrDate(string username)
         {
             MySqlEntities mysql = new MySqlEntities(Server.ConnectionString);
@@ -2435,7 +2420,7 @@ namespace V2boardApi.Areas.App.Controllers
 
             return false;
         }
-        [AllowAnonymous]
+
         private static void SendTrafficCalculator(tbTelegramUsers User, int MessageId, tbBotSettings BotSetting, TelegramBotClient bot, string Data = null, string Tel_Step = null)
         {
 
@@ -2467,6 +2452,7 @@ namespace V2boardApi.Areas.App.Controllers
                 bot.EditMessageTextAsync(chatId: User.Tel_UniqUserID, messageId: MessageId, str.ToString(), replyMarkup: key);
             }
         }
+
 
 
     }
