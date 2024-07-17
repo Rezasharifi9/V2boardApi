@@ -42,7 +42,7 @@
             </div>
         </div>
         <!-- partial:partials/_navbar.html -->
-        <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="padding-top: 0 !important;margin-top: 0 !important;">
+        <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="padding-top: 0 !important; margin-top: 0 !important; z-index: 100000000000000000000">
             <div class="navbar-menu-wrapper d-flex align-items-stretch" style="width: 20%;">
                 <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
                     <span class="mdi mdi-menu"></span>
@@ -157,9 +157,9 @@
 
         </nav>
         <!-- partial -->
-        <div class="container-fluid page-body-wrapper">
+        <div class="container-fluid page-body-wrapper" style="z-index:100000000000000000000">
             <!-- partial:partials/_sidebar.html -->
-            <nav class="sidebar sidebar-offcanvas" id="sidebar">
+            <nav class="sidebar sidebar-offcanvas" id="sidebar" style="z-index:100000000000000000000">
                 <ul class="nav" style="padding: 0;">
                     @Html.Action("_Profile", "Admin")
                     <li class="nav-item">
@@ -210,6 +210,13 @@
                             </a>
                         </li>
                     }
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index","Learns",new {area="App"})">
+                            <i class="mdi mdi-help menu-icon"></i>
+                            <span class="menu-title">آموزش ها</span>
+
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index","Settings",new {area="App"})">
                             <i class="mdi mdi-settings menu-icon"></i>

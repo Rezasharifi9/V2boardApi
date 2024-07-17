@@ -4,12 +4,14 @@ using DeviceDetectorNET.Class;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Transactions;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
@@ -270,7 +272,7 @@ namespace V2boardApi.Areas.api.Controllers
                     var tbLinksRepository = new Repository<tbLinks>(db);
                     var tbServerRepository = new Repository<tbServers>(db);
 
-                    var Order = tbOrdersRepository.Where(p => p.OrderType == "تمدید" && p.OrderStatus == "FOR_RESERVE" && p.tbTelegramUsers.Tel_RobotID == RobotIDforTimer).ToList();
+                    var Order = tbOrdersRepository.Where(p => p.OrderType == "تمدید" && p.OrderStatus == "FOR_RESERVE").ToList();
 
                     if (Order.Count >= 1)
                     {
@@ -310,7 +312,9 @@ namespace V2boardApi.Areas.api.Controllers
                                     Reader.Close();
                                     if (Ended)
                                     {
-                                        var Link = tbLinksRepository.Where(p => p.tbL_Email == item.AccountName).FirstOrDefault();
+
+
+                                        var Link = item.tbTelegramUsers.tbLinks.Where(p => p.tbL_Email == item.AccountName).FirstOrDefault();
                                         if (Link != null)
                                         {
                                             var t = Utility.ConvertGBToByte(Convert.ToInt64(item.Traffic));
@@ -406,10 +410,127 @@ namespace V2boardApi.Areas.api.Controllers
                         {
                             chatid = update.Message.From.Id;
                             var mess = message.Text;
-                            #region ارسال پیغام همگانی توسط ادمین
+
+                            #region ارسال رسید تراکنش برای ادمین
+
+                            if (update.Message.Type == MessageType.Photo)
+                            {
+                                var fileId = message.Photo[message.Photo.Length - 1].FileId; // Get the highest quality photo
+                                var filed = await bot.Client.GetFileAsync(fileId);
+
+                                var file = InputFile.FromFileId(fileId);
+                                StringBuilder str = new StringBuilder();
+                                str.AppendLine("ارسالی از");
+                                str.Append(" 👤 ");
+                                str.AppendLine(update.Message.From.Username + " (" + update.Message.From.FirstName + update.Message.From.LastName + ")");
+                                str.AppendLine("");
+                                str.Append("✅");
+                                str.Append("برای تایید تراکنش مبلغ تراکنش را با ");
+                                str.Append("/p-");
+                                str.Append(" وارد کنید ");
+                                str.AppendLine("");
+                                str.AppendLine("");
+                                str.Append("♨️");
+                                str.AppendLine("مثال : ");
+                                str.Append("/p-400485");
+                                str.AppendLine("");
+                                str.AppendLine("");
+                                if (update.Message.Caption != null)
+                                {
+                                    if (update.Message.Caption.Length >= 1)
+                                    {
+                                        str.AppendLine("💬 متن کاربر : " + update.Message.Caption);
+                                    }
+                                }
+
+                                await bot.Client.SendPhotoAsync(BotSettings.AdminBot_ID, file, parseMode: ParseMode.Html, caption: str.ToString());
+                                return;
+                            }
+
+                            #endregion
 
                             if (chatid.ToString() == BotSettings.AdminBot_ID.ToString())
                             {
+                                #region تایید تراکنش توسط ادمین
+
+                                if ((bool)BotSettings.IsActiveSendReceipt)
+                                {
+                                    if (mess.Contains("/p-"))
+                                    {
+                                        var sp = mess.Split('-');
+                                        if (sp.Length == 2)
+                                        {
+                                            var sp2 = sp[1];
+                                            var num = int.TryParse(sp2, out int num2);
+                                            if (num)
+                                            {
+                                                var date2 = DateTime.Now.AddDays(-2);
+                                                var tbDepositLog = tbDepositLogRepo.Where(p => p.dw_Price == num2 && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2).ToList();
+
+                                                foreach (var item in tbDepositLog)
+                                                {
+                                                    item.dw_Status = "FINISH";
+                                                    item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                                                    StringBuilder str = new StringBuilder();
+                                                    str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد");
+                                                    str.AppendLine("");
+                                                    str.AppendLine("💳 موجودی کیف پول شما : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                                                    str.AppendLine("");
+                                                    str.AppendLine("❗️ الان می تونید برای خرید یا تمدید اقدام کنید");
+
+                                                    var keyboard = new ReplyKeyboardMarkup(new[]
+                                                {
+                            new[]
+                            {
+
+                                new KeyboardButton("💰 خرید سرویس"),
+                                new KeyboardButton("💸 تمدید سرویس"),
+                                new KeyboardButton("⚙️ سرویس ها")
+                            },new[]
+                            {
+                                new KeyboardButton("👜 کیف پول"),
+                                new KeyboardButton("📊 تعرفه ها"),
+                                new KeyboardButton("♨️ اشتراک تست"),
+                            },
+                            new[]
+                            {
+                                new KeyboardButton("🔗 اضافه کردن لینک"),
+                                new KeyboardButton("📚 راهنمای اتصال"),
+                            },
+                            new[]
+                            {
+                                new KeyboardButton("📞 ارتباط با پشتیبانی"),
+                                new KeyboardButton("❔ سوالات متداول"),
+                            }
+
+                        });
+
+                                                    keyboard.IsPersistent = true;
+                                                    keyboard.ResizeKeyboard = true;
+                                                    keyboard.OneTimeKeyboard = false;
+
+                                                    RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
+                                                    var botSetting = BotSettings;
+                                                    if (botSetting != null)
+                                                    {
+                                                        TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
+                                                        tbDepositLogRepo.Save();
+                                                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                                        
+
+                                                        logger.Info("فاکتور به مبلغ " + num2.ConvertToMony() + " با موفقیت پرداخت شد");
+                                                        return;
+                                                    }
+
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                #endregion
+
+                                #region ارسال پیغام همگانی توسط ادمین
                                 if (update.Message.Type == MessageType.Photo && message.Caption != null)
                                 {
                                     if (message.Caption.StartsWith("/all"))
@@ -491,14 +612,9 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                     }
                                 }
+
+                                #endregion
                             }
-
-
-
-
-
-                            #endregion
-
                             if (update.Message.Type == MessageType.Text)
                             {
 
@@ -531,7 +647,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         if (inites.Count() == 2)
                                         {
                                             var id = inites[1];
-                                            var Parent = tbTelegramUserRepository.Where(p => p.Tel_UniqUserID == id).FirstOrDefault();
+                                            var Parent = tbTelegramUserRepository.Where(p => p.Tel_UniqUserID == id && p.tbUsers.Username == botName).FirstOrDefault();
                                             if (Parent != null)
                                             {
                                                 Usr.Tel_Parent_ID = Parent.Tel_UserID;
@@ -578,7 +694,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
 
                                     UserAcc = User;
-                                    RealUser.SetUpdateMessageTime(User.Tel_UniqUserID, db, DateTime.UtcNow);
+                                    RealUser.SetUpdateMessageTime(User.Tel_UniqUserID, db, DateTime.UtcNow, botName);
 
 
 
@@ -624,7 +740,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 }
 
                                 #endregion
-                                else
+
                                 #region بخش نمایش منو اصلی
                                 if (mess == "/start" || mess.StartsWith("/start") || mess.StartsWith("⬅️ برگشت به صفحه اصلی"))
                                 {
@@ -647,7 +763,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     st.AppendLine("📌 جهت استفاده از ربات لطفا یکی از گزینه های زیر را انتخاب کنید:");
                                     st.AppendLine("");
                                     st.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                    RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db);
+                                    RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
                                     var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
@@ -663,13 +779,13 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region بخش چک کردن برای اینکه کاربر نام اکانت جدید خودش را وارد کند
                                 else
-                                if (User.Tel_Step == "WaitForEnterName")
+                                if (UserAcc.Tel_Step == "WaitForEnterName")
                                 {
                                     if (mess.Length < 15)
                                     {
                                         if (CheckExistsAccountInBot(mess, BotSettings))
                                         {
-                                            SendTrafficCalculator(User, message.MessageId, BotSettings, bot.Client, mess, Tel_Step: User.Tel_Step);
+                                            SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName, mess, Tel_Step: User.Tel_Step);
                                         }
                                         else
                                         {
@@ -686,7 +802,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str1.AppendLine("تعداد کاراکتر های نام شما باید کمتر از 15 باشد");
 
                                         var backkey = Keyboards.GetBackButton();
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForEnterName", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForEnterName", db, botName);
                                         await bot.Client.SendTextMessageAsync(message.From.Id, str1.ToString(), replyMarkup: backkey, replyToMessageId: message.MessageId);
                                     }
                                 }
@@ -699,9 +815,9 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 else if (mess == "💰 خرید سرویس")
                                 {
-                                    RealUser.SetEmptyState(User.Tel_UniqUserID, db);
+                                    RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
-                                    if (User.tbLinks.Any())
+                                    if (UserAcc.tbLinks.Any())
                                     {
                                         StringBuilder str1 = new StringBuilder();
                                         str1.AppendLine("لطفا نامی برای اشتراک جدید خود وارد کنید");
@@ -710,13 +826,13 @@ namespace V2boardApi.Areas.api.Controllers
                                         str1.AppendLine("❗️حداکثر باید 15 کاراکتر وارد کنید");
 
                                         var backkey = Keyboards.GetBackButton();
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForEnterName", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForEnterName", db, botName);
                                         await bot.Client.SendTextMessageAsync(message.From.Id, str1.ToString(), replyMarkup: backkey, replyToMessageId: message.MessageId);
                                         return;
                                     }
                                     else
                                     {
-                                        SendTrafficCalculator(User, message.MessageId, BotSettings, bot.Client);
+                                        SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
                                     }
 
 
@@ -742,7 +858,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyToMessageId: message.MessageId); return;
                                     }
-                                    RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_AccountForShowInfo", db);
+                                    RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_AccountForShowInfo", db, botName);
                                     StringBuilder str = new StringBuilder();
                                     str.AppendLine("💢 لطفا اشتراک مورد نظر را انتخاب کنید 👇");
                                     str.AppendLine("");
@@ -758,7 +874,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 else if (mess == "💸 تمدید سرویس")
                                 {
                                     #region بخش نمایش لینک های موجود کاربر
-                                    RealUser.SetEmptyState(User.Tel_UniqUserID, db);
+                                    RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
                                     var keyboard = Keyboards.GetServiceLinksKeyboard(UserAcc.Tel_UserID, tbLinksRepository);
                                     if (keyboard == null)
                                     {
@@ -769,7 +885,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString());
                                         return;
                                     }
-                                    RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db);
+                                    RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db, botName);
 
                                     StringBuilder str3 = new StringBuilder();
                                     str3.AppendLine("♨️  لطفا اشتراک مورد نظر را انتخاب کنید");
@@ -811,7 +927,25 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine(" لطفا مبلغ " + "<code>" + fullPrice.ConvertToMony() + "</code>" + " ریال " + " را به شماره کارت " + FirstCard.CardNumber + " " + " به نام " + FirstCard.InTheNameOf + " واریز نمائید");
                                         str.AppendLine("");
                                         str.AppendLine("❗️ روی مبلغ کلیک کنید مبلغ کپی می شود و نیازی به حفظ نیست");
-                                        str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
+                                        if((bool)BotSettings.IsActiveSendReceipt && (bool)BotSettings.IsActiveCardToCard)
+                                        {
+                                            str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
+                                            str.AppendLine("");
+                                            str.AppendLine("❗️ در صورت عدم تایید خودکار رسید واریزیتون رو برای ربات بفرستید");
+                                        }
+                                        else
+                                        {
+                                            if ((bool)BotSettings.IsActiveCardToCard)
+                                            {
+                                                str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
+                                            }
+                                            if ((bool)BotSettings.IsActiveSendReceipt)
+                                            {
+                                                str.AppendLine("");
+                                                str.Append("✅");
+                                                str.AppendLine("بعد واریزی حتما رسید را برای ربات بفرستید");
+                                            }
+                                        }
                                         tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
                                         tbDeposit.dw_Price = fullPrice;
                                         tbDeposit.dw_CreateDatetime = DateTime.Now;
@@ -821,7 +955,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         tbDepositLogRepo.Save();
                                         str.AppendLine("");
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
                                         return;
                                     }
@@ -837,7 +971,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("❗️ مبلغ را با اعداد انگلیسی وارد کنید");
                                         str.AppendLine("");
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db, botName);
 
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
                                         return;
@@ -916,7 +1050,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys, replyToMessageId: message.MessageId);
 
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlatform", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlatform", db, botName);
                                     }
                                     else
                                     {
@@ -967,7 +1101,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         var inlineKeyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_Way_To_Increase", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_Way_To_Increase", db, botName);
 
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboard, disableWebPagePreview: true, replyToMessageId: message.MessageId);
 
@@ -1010,7 +1144,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (mess == "♨️ اشتراک تست")
                                 {
-                                    if (User.Tel_GetedTestAccount == false || User.Tel_GetedTestAccount == null)
+                                    if (UserAcc.Tel_GetedTestAccount == false || UserAcc.Tel_GetedTestAccount == null)
                                     {
                                         MySqlEntities mySql = new MySqlEntities(BotSettings.tbUsers.tbServers.ConnectionString);
                                         mySql.Open();
@@ -1057,7 +1191,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         var SubLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + token;
                                         str.AppendLine("<code>" + SubLink + "</code>");
                                         str.AppendLine("");
-                                        RealUser.SetGetedAccountTest(User.Tel_UniqUserID, db);
+                                        RealUser.SetGetedAccountTest(User.Tel_UniqUserID, db, botName);
                                         mySql.Close();
 
                                         str.AppendLine("");
@@ -1123,7 +1257,7 @@ namespace V2boardApi.Areas.api.Controllers
                             var callback = update.CallbackQuery.Data.Split('%');
 
                             #region چک کردن اینکه آیا کاربر وجود دارد در دیتابیس یا نه
-                            var User = tbTelegramUserRepository.Where(p => p.Tel_UniqUserID == update.CallbackQuery.From.Id.ToString()).FirstOrDefault();
+                            var User = tbTelegramUserRepository.Where(p => p.Tel_UniqUserID == update.CallbackQuery.From.Id.ToString() && p.tbUsers.Username == botName).FirstOrDefault();
                             if (User == null)
                             {
                                 tbTelegramUsers Usr = new tbTelegramUsers();
@@ -1162,7 +1296,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (User.Tel_UpdateMessage == null)
                                 {
                                     User.Tel_UpdateMessage = DateTime.UtcNow;
-                                    RealUser.SetUpdateMessageTime(User.Tel_UniqUserID, db, DateTime.UtcNow);
+                                    RealUser.SetUpdateMessageTime(User.Tel_UniqUserID, db, DateTime.UtcNow, botName);
                                 }
                                 UserAcc = User;
                             }
@@ -1197,7 +1331,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         st.AppendLine("");
                                         st.AppendLine("📌 جهت استفاده از ربات لطفا یکی از گزینه های زیر را انتخاب کنید:");
 
-                                        RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db);
+                                        RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
                                         var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), null, null, null, null, null, null, null, null, inlineKeyboardMarkup);
 
@@ -1235,7 +1369,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                             if (ThisTime > MessageTime)
                             {
-                                RealUser.SetUpdateMessageTime(User.Tel_UniqUserID, db, DateTime.UtcNow);
+                                RealUser.SetUpdateMessageTime(User.Tel_UniqUserID, db, DateTime.UtcNow, botName);
 
                                 #region چک کردن وضعیت پرداخت ارز دیجیتال
 
@@ -1258,14 +1392,14 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (callbackQuery.Data == "back" && UserAcc.Tel_Step == "Created_Factor")
                                     {
                                         inlineKeyboardMarkup = Keyboards.GetHomeButton();
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db, botName);
                                         var editedMessage = await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, "لطفا یکی از گزینه های زیر را انتخاب کنید", replyMarkup: inlineKeyboardMarkup);
                                         return;
                                     }
                                     if (!string.IsNullOrEmpty(callbackQuery.Message.Text))
                                     {
                                         inlineKeyboardMarkup = Keyboards.GetHomeButton();
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db, botName);
                                         var editedMessage = await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, "لطفا یکی از گزینه های زیر را انتخاب کنید");
                                         return;
 
@@ -1273,7 +1407,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     else
                                     {
                                         inlineKeyboardMarkup = Keyboards.GetHomeButton();
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db, botName);
                                         await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
                                         await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, "لطفا یکی از گزینه های زیر را انتخاب کنید", replyMarkup: inlineKeyboardMarkup);
                                         return;
@@ -1283,7 +1417,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (callbackQuery.Data == "backToInfo")
                                 {
                                     inlineKeyboardMarkup = Keyboards.GetHomeButton();
-                                    RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db);
+                                    RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db, botName);
                                     await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
                                     return;
                                 }
@@ -1395,7 +1529,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             //inlineKeyboards.Add(row3);
 
                                             var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
-                                            RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Back_ToUserLinks", db);
+                                            RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Back_ToUserLinks", db, botName);
 
                                             //await bot.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
 
@@ -1614,7 +1748,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("📲 لطفا با توجه به نوع دستگاه خود یکی از گزینه های زیر را انتخاب کنید");
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys);
 
-                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlatform", db);
+                                        RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlatform", db, botName);
 
                                     }
 
@@ -1636,7 +1770,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 10,000 تومان تا 5,000,000 تومان می باشد");
                                     str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
 
-                                    RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db);
+                                    RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db, botName);
 
                                     List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
                                     List<KeyboardButton> row2 = new List<KeyboardButton>();
@@ -1734,7 +1868,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     CustomTrafficKeyboard customTrafficKeyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
                                     var key = customTrafficKeyboard.GetKeyboard();
 
-                                    RealUser.SetTraffic(User.Tel_UniqUserID, db, User.Tel_Traffic);
+                                    RealUser.SetTraffic(User.Tel_UniqUserID, db, User.Tel_Traffic, botName);
                                     await bot.Client.EditMessageReplyMarkupAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, key);
 
                                     return;
@@ -1757,7 +1891,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     CustomTrafficKeyboard customTrafficKeyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
                                     var key = customTrafficKeyboard.GetKeyboard();
 
-                                    RealUser.SetTraffic(User.Tel_UniqUserID, db, User.Tel_Traffic);
+                                    RealUser.SetTraffic(User.Tel_UniqUserID, db, User.Tel_Traffic, botName);
                                     await bot.Client.EditMessageReplyMarkupAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, key);
 
                                     return;
@@ -1786,7 +1920,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     CustomTrafficKeyboard customTrafficKeyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
                                     var key = customTrafficKeyboard.GetKeyboard();
 
-                                    RealUser.SetMonth(User.Tel_UniqUserID, db, User.Tel_Monthes);
+                                    RealUser.SetMonth(User.Tel_UniqUserID, db, User.Tel_Monthes, botName);
                                     await bot.Client.EditMessageReplyMarkupAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, key);
 
                                     return;
@@ -1812,7 +1946,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     CustomTrafficKeyboard customTrafficKeyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
                                     var key = customTrafficKeyboard.GetKeyboard();
 
-                                    RealUser.SetMonth(User.Tel_UniqUserID, db, User.Tel_Monthes);
+                                    RealUser.SetMonth(User.Tel_UniqUserID, db, User.Tel_Monthes, botName);
                                     await bot.Client.EditMessageReplyMarkupAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, key);
 
                                     return;
@@ -1952,7 +2086,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 order.PriceWithOutDiscount = PirceWithoutDiscount;
                                                 order.V2_Plan_ID = Server.DefaultPlanIdInV2board;
                                                 order.FK_Tel_UserID = UserAcc.Tel_UserID;
-                                                var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID).FirstOrDefault();
+                                                var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID && p.tbUsers.Username == botName).FirstOrDefault();
                                                 UserAc.Tel_Wallet -= Price;
                                                 var t = Utility.ConvertGBToByte(Convert.ToInt64(order.Traffic));
 
@@ -1970,7 +2104,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var InlineKeyboardMarkup = Keyboards.GetHomeButton();
                                                 if (Link.tbTelegramUsers.Tel_Parent_ID != null)
                                                 {
-                                                    var TelParentUser = tbTelegramUserRepository.Where(p => p.Tel_UserID == Link.tbTelegramUsers.Tel_Parent_ID).FirstOrDefault();
+                                                    var TelParentUser = tbTelegramUserRepository.Where(p => p.Tel_UserID == Link.tbTelegramUsers.Tel_Parent_ID && p.tbUsers.Username == botName).FirstOrDefault();
                                                     TelParentUser.Tel_Wallet += Convert.ToInt32((Price * Server.FreeCredit));
                                                     tbTelegramUserRepository.Save();
 
@@ -1997,7 +2131,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 str2.AppendLine("✅ بسته شما با موفقیت تمدید شد");
                                                 str2.AppendLine("");
                                                 str2.AppendLine("♨️ می توانید برای مشاهده اطلاعات اکانت و بسته به بخش سرویس ها مراجعه کنید");
-                                                RealUser.SetEmptyState(User.Tel_UniqUserID, db);
+                                                RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
                                                 var kyes = Keyboards.GetHomeButton();
                                                 await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, str2.ToString(), true);
                                                 await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
@@ -2021,7 +2155,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 order.V2_Plan_ID = Server.DefaultPlanIdInV2board;
                                                 order.FK_Tel_UserID = UserAcc.Tel_UserID;
 
-                                                var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID).FirstOrDefault();
+                                                var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID && p.tbUsers.Username == botName).FirstOrDefault();
                                                 UserAc.Tel_Wallet -= Price;
                                                 order.Order_Price = Price;
                                                 if (UserAc.Tel_Parent_ID != null)
@@ -2036,7 +2170,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                     str1.AppendLine("");
                                                     str1.AppendLine("📌 موجودی کیف پول شما : " + TelParentUser.Tel_Wallet.Value.ConvertToMony() + " تومان");
 
-                                                    RealUser.SetUserStep(TelParentUser.Tel_UniqUserID, "Start", db);
+                                                    RealUser.SetUserStep(TelParentUser.Tel_UniqUserID, "Start", db, botName);
                                                     var Keys = Keyboards.GetHomeButton();
                                                     await bot.Client.SendTextMessageAsync(TelParentUser.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys);
 
@@ -2053,7 +2187,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 str.AppendLine("");
                                                 str.AppendLine("⚠️ بعد از اتمام حجم بسته یا زمان بسته فعلی اکانت شما به صورت خودکار تمدید می شود");
                                                 str.AppendLine("");
-                                                RealUser.SetEmptyState(User.Tel_UniqUserID, db);
+                                                RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
                                                 await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, str.ToString(), true);
                                                 await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
                                                 var kyes = Keyboards.GetHomeButton();
@@ -2168,7 +2302,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             mySql.Close();
 
 
-                                            var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID).FirstOrDefault();
+                                            var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID && p.tbUsers.Username == botName).FirstOrDefault();
                                             if (UserAc != null)
                                             {
                                                 UserAc.Tel_Wallet -= Price;
@@ -2177,7 +2311,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             if (UserAc.Tel_Parent_ID != null)
                                             {
-                                                var TelParentUser = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAc.Tel_Parent_ID).FirstOrDefault();
+                                                var TelParentUser = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAc.Tel_Parent_ID && p.tbUsers.Username == botName).FirstOrDefault();
                                                 TelParentUser.Tel_Wallet += Convert.ToInt32((Price * Server.FreeCredit));
 
 
@@ -2220,7 +2354,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, "به منو اصلی بازگشتید 🏘", parseMode: ParseMode.Html, replyMarkup: keys);
                                             await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
-                                            RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db);
+                                            RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
                                             BotSettings.tbUsers.Wallet += PirceWithoutDiscount;
                                             BotSettingRepository.Save();
@@ -2247,7 +2381,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (User.Tel_Step == "WaitForSelectAccount")
                                 {
-                                    SendTrafficCalculator(User, callbackQuery.Message.MessageId, BotSettings, bot.Client, callbackQuery.Data);
+                                    SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
 
                                     return;
                                 }
@@ -2421,7 +2555,7 @@ namespace V2boardApi.Areas.api.Controllers
             return false;
         }
 
-        private static void SendTrafficCalculator(tbTelegramUsers User, int MessageId, tbBotSettings BotSetting, TelegramBotClient bot, string Data = null, string Tel_Step = null)
+        private static void SendTrafficCalculator(tbTelegramUsers User, int MessageId, tbBotSettings BotSetting, TelegramBotClient bot, string botName, string Data = null, string Tel_Step = null)
         {
 
             CustomTrafficKeyboard keyboard = new CustomTrafficKeyboard(BotSetting, User.Tel_Traffic, User.Tel_Monthes);
@@ -2436,11 +2570,11 @@ namespace V2boardApi.Areas.api.Controllers
 
             if (Data != null)
             {
-                RealUser.SetUserStep(User.Tel_UniqUserID, "WaitForCalulate", db, Data + "%");
+                RealUser.SetUserStep(User.Tel_UniqUserID, "WaitForCalulate", db, botName, Data + "%");
             }
             else
             {
-                RealUser.SetUserStep(User.Tel_UniqUserID, "WaitForCalulate", db);
+                RealUser.SetUserStep(User.Tel_UniqUserID, "WaitForCalulate", db, botName);
             }
 
             if (Tel_Step == "WaitForEnterName" || Tel_Step == null)

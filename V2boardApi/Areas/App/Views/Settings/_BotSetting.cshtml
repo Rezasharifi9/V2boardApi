@@ -23,6 +23,9 @@
                     <div class="form-group col-md-3">
                         <label for="exampleInputEmail1">شناسه کاربری تلگرام ادمین <span class="text-danger">*</span></label>
                         <input type="number" dir="ltr" class="form-control" id="TelegramUserId" placeholder="65845695212" value="@Model.AdminBot_ID">
+                        <span class="text-danger" style="font-size:11px;">
+                            قبل از تنظیم کردن تنظیمات ربات حتما داخل ربات واژه start/ را بفرستید
+                        </span>
                     </div>
                     <div class="form-group col-md-3">
                         <label for="exampleInputPassword1">آیدی کانال </label>
@@ -71,8 +74,12 @@
                             Model.Present_Discount = Model.Present_Discount * 100;
                             <input type="number" dir="ltr" class="form-control" id="Present_Discount" placeholder="15%" value="@Model.Present_Discount">
                         }
+                        else
+                        {
+                            <input type="number" dir="ltr" class="form-control" id="Present_Discount" placeholder="15%" value="">
+                        }
                     </div>
-                    
+                    <span class="text-danger text-small">درصد تخفیف برای خریداران شما تنظیم می شود</span>
                 </div>
                 <div class="row">
                     <div class="form-group col-md-2">
@@ -81,14 +88,14 @@
                             @if (Model.Active == true)
                             {
                                 <label class="form-check-label">
-                                    <input checked type="checkbox" class="form-check-input" id="Active" value="@Model.Active"> ربات فعال باشد <i class="input-helper"></i>
+                                    <input checked type="checkbox" class="form-check-input" id="Active" value="@Model.Active"> وضعیت ربات <i class="input-helper"></i>
                                 </label>
                             }
                             else
                             {
-                                <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" id="Active" value="@Model.Active"> ربات فعال باشد <i class="input-helper"></i>
-                                </label>
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="Active" value="@Model.Active"> وضعیت ربات <i class="input-helper"></i>
+                        </label>
                             }
                         </div>
 
@@ -100,14 +107,50 @@
                             @if (Model.RequiredJoinChannel == true)
                             {
                                 <label class="form-check-label">
-                                    <input checked type="checkbox" class="form-check-input" id="RequiredJoinChannel" value="@Model.RequiredJoinChannel"> عضو شدن در کانال اجباری است<i class="input-helper"></i>
+                                    <input checked type="checkbox" class="form-check-input" id="RequiredJoinChannel" value="@Model.RequiredJoinChannel"> عضویت اجباری<i class="input-helper"></i>
                                 </label>
                             }
                             else
                             {
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="RequiredJoinChannel" value="@Model.RequiredJoinChannel"> عضویت اجباری <i class="input-helper"></i>
+                        </label>
+                            }
+                        </div>
+
+                    </div>
+                    <div class="form-group col-md-2">
+
+                        <div class="form-check form-check-flat form-check-success" style="margin-top:41px;">
+                            @if (Model.IsActiveSendReceipt == true)
+                            {
                                 <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" id="RequiredJoinChannel" value="@Model.RequiredJoinChannel"> عضو شدن در کانال اجباری است <i class="input-helper"></i>
+                                    <input checked type="checkbox" class="form-check-input" id="IsActiveSendReceipt" value="@Model.IsActiveSendReceipt"> ارسال رسید تراکنش<i class="input-helper"></i>
                                 </label>
+                            }
+                            else
+                            {
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="IsActiveSendReceipt" value="@Model.IsActiveSendReceipt"> ارسال رسید تراکنش <i class="input-helper"></i>
+                        </label>
+                            }
+                        </div>
+
+                    </div>
+                    <div class="form-group col-md-2">
+
+                        <div class="form-check form-check-flat form-check-success" style="margin-top:41px;">
+                            @if (Model.IsActiveCardToCard == true)
+                            {
+                                <label class="form-check-label">
+                                    <input checked type="checkbox" class="form-check-input" id="IsActiveCardToCard" value="@Model.IsActiveCardToCard"> تایید خودکار تراکنش<i class="input-helper"></i>
+                                </label>
+                            }
+                            else
+                            {
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="IsActiveCardToCard" value="@Model.IsActiveCardToCard"> تایید خودکار تراکنش <i class="input-helper"></i>
+                        </label>
                             }
                         </div>
 

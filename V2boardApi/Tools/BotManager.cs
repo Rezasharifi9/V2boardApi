@@ -39,25 +39,39 @@ namespace V2boardApi.Tools
             return Bots.Values;
         }
 
-        public static async Task Register(string Name, string url)
+    }
+
+    public class BotService
+    {
+
+        public async Task<bool> Register(string name)
         {
-            if (!Bots.ContainsKey(Name))
+
+            var method = "http";
+            if (HttpContext.Current.Request.Url.AbsoluteUri.Contains("https"))
             {
-                throw new ArgumentException($"Bot with name {Name} not found.");
+                method = "https";
             }
 
-            var botClient = Bots[Name].Client;
-            //var allowedUpdates = new[] { "message", "callback_query" };
+            var url = method + "://" + HttpContext.Current.Request.Url.Authority;
+            //var url = "https://aa86-45-76-44-165.ngrok-free.app";
 
-            // حذف Webhook فعلی
-            await botClient.DeleteWebhookAsync(true);
+            if (!BotManager.Bots.ContainsKey(name))
+            {
+                throw new ArgumentException($"Bot with name {name} not found.");
+            }
 
-            // تنظیم Webhook جدید
-            var webhookUrl = $"{url}/Bot/Update/?botName={Bots[Name].Name}";
+            var botClient = BotManager.Bots[name].Client;
+
+            await botClient.DeleteWebhookAsync(false);
+
+            var webhookUrl = $"{url}/Bot/Update/?botName={BotManager.Bots[name].Name}";
             await botClient.SetWebhookAsync(webhookUrl);
-        }
 
+            return true;
+        }
     }
+
 
 
     public class BotInfo

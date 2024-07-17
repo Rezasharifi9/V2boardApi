@@ -61,6 +61,7 @@ namespace V2boardApi.Areas.App.Controllers
                     report.Load(path);
 
                     report.Dictionary.DataSources[0].Parameters["User_ID"].Value = user.User_ID.ToString();
+                    report.Dictionary.DataSources[1].Parameters["tbUserID"].Value = user.User_ID.ToString();
                 }
                 else
                 {
@@ -83,6 +84,11 @@ namespace V2boardApi.Areas.App.Controllers
         public ActionResult ViewerEvent()
         {
             return StiMvcViewer.ViewerEventResult();
+        }
+
+        public ActionResult _Dashboard()
+        {
+            return PartialView();
         }
 
     }

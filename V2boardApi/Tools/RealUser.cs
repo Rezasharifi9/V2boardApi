@@ -10,45 +10,45 @@ namespace V2boardBot.Functions
 {
     public static class RealUser
     {
-        public static void SetUserStep(string UserUniq, string Step, Entities db, string Data = null)
+        public static void SetUserStep(string UserUniq, string Step, Entities db, string botName ,string Data = null)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_Step = Step;
+            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Step = Step;
             if (Data != null)
             {
-                db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_Data += Data;
+                db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Data += Data;
             }
             db.SaveChanges();
         }
-        public static void SetEmptyState(string UserUniq, Entities db)
+        public static void SetEmptyState(string UserUniq, Entities db, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_Step = null;
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_Data = null;
+            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Step = null;
+            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Data = null;
             db.SaveChanges();
         }
 
 
-        public static void SetTraffic(string UserUniq, Entities db, int? Traffic)
+        public static void SetTraffic(string UserUniq, Entities db, int? Traffic, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_Traffic = Traffic;
+            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Traffic = Traffic;
             db.SaveChanges();
         }
 
 
-        public static void SetMonth(string UserUniq, Entities db, int? Month)
+        public static void SetMonth(string UserUniq, Entities db, int? Month, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_Monthes = Month;
+            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Monthes = Month;
             db.SaveChanges();
         }
 
-        public static void SetUpdateMessageTime(string UserUniq, Entities db, DateTime time)
+        public static void SetUpdateMessageTime(string UserUniq, Entities db, DateTime time, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_UpdateMessage = time;
+            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_UpdateMessage = time;
             db.SaveChanges();
         }
 
-        public static void SetGetedAccountTest(string UserUniq, Entities db)
+        public static void SetGetedAccountTest(string UserUniq, Entities db, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq).First().Tel_GetedTestAccount = true;
+            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_GetedTestAccount = true;
             db.SaveChanges();
         }
 

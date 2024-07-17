@@ -305,6 +305,7 @@
     <Compile Include="Areas\App\Controllers\BotFactorsController.cs" />
     <Compile Include="Areas\App\Controllers\DashboardController.cs" />
     <Compile Include="Areas\App\Controllers\ErrorController.cs" />
+    <Compile Include="Areas\App\Controllers\LearnsController.cs" />
     <Compile Include="Areas\App\Controllers\OrdersController.cs" />
     <Compile Include="Areas\App\Controllers\PlanController.cs" />
     <Compile Include="Areas\App\Controllers\SettingsController.cs" />
@@ -531,6 +532,8 @@
     <Content Include="Areas\App\Views\BotFactors\Index.cshtml" />
     <Content Include="Areas\App\Views\Admin\_Profile.cshtml" />
     <Content Include="Areas\App\Views\Settings\_EditBankNumber.cshtml" />
+    <Content Include="Areas\App\Views\Learns\Index.cshtml" />
+    <Content Include="Areas\App\Views\Dashboard\_Dashboard.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -590,7 +593,6 @@
     <Folder Include="App_Data\" />
     <Folder Include="Areas\api\Views\Admin\" />
     <Folder Include="Areas\api\Views\Shared\" />
-    <Folder Include="Areas\App\Views\Bot\" />
     <Folder Include="Areas\App\Views\Default\" />
     <Folder Include="Content\Manifests\" />
     <Folder Include="Controllers\" />

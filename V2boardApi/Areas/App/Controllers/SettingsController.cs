@@ -2,6 +2,7 @@
 using DataLayer.Repository;
 using NLog;
 using Org.BouncyCastle.Asn1.X509;
+using Stimulsoft.Base.Drawing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Windows;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
@@ -136,7 +138,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [HttpPost]
         [AuthorizeApp(Roles = "1,2")]
-        public ActionResult SaveBotSetting(string BotId, string BotToken, long TelegramUserId, string ChannelId, int PricePerMonth_Major, int PricePerGig_Major, bool Active, bool RequiredJoinChannel, double? Present_Discount = null)
+        public ActionResult SaveBotSetting(string BotId, string BotToken, long TelegramUserId, string ChannelId, int PricePerMonth_Major, int PricePerGig_Major, bool Active, bool RequiredJoinChannel, bool IsActiveCardToCard, bool IsActiveSendReceipt, double? Present_Discount = null)
         {
 
             try
@@ -181,9 +183,8 @@ namespace V2boardApi.Areas.App.Controllers
                     TelegramBotClient bot = new TelegramBotClient(BotToken);
                     try
                     {
-                        var joined = bot.GetChatMemberAsync(900535071, TelegramUserId);
-                        var s = joined.Result.Status;
-
+                        var res =  bot.SendTextMessageAsync(TelegramUserId, "پیغام جهت صحت سنجی اطلاعات ثبت شده در تنظیمات می باشد");
+                        var s = res.Result;
                     }
                     catch (Exception ex)
                     {
@@ -199,37 +200,46 @@ namespace V2boardApi.Areas.App.Controllers
 
                 }
 
+                
+
                 if (Use.tbBotSettings.Count == 0)
                 {
-                    tbBotSettings botSettings = new tbBotSettings();
+                    //tbBotSettings botSettings = new tbBotSettings();
 
-                    botSettings.RequiredJoinChannel = RequiredJoinChannel;
-                    botSettings.Bot_Token = BotToken;
-                    botSettings.Bot_ID = BotId;
-                    botSettings.Active = Active;
-                    botSettings.AdminBot_ID = TelegramUserId;
-                    var res = BotManager.GetBot(Use.Username);
-                    if (res == null)
-                    {
-                        BotManager.AddBot(Use.Username, BotToken);
-                    }
-                    else
-                    {
-                        BotManager.Bots[Use.Username].Token = BotToken;
-                    }
-                    if (ChannelId != null)
-                    {
-                        botSettings.ChannelID = ChannelId;
-                    }
-                    if (Present_Discount != null && Present_Discount != 0)
-                    {
-                        botSettings.Present_Discount = Present_Discount / 100;
-                    }
-                    botSettings.PricePerMonth_Major = PricePerMonth_Major;
-                    botSettings.PricePerGig_Major = PricePerGig_Major;
-                    Use.tbBotSettings.Add(botSettings);
-                    RepositoryUser.Save();
-                    logger.Info("تنظیمات ربات اضافه شد");
+                    //botSettings.RequiredJoinChannel = RequiredJoinChannel;
+                    //botSettings.Bot_Token = BotToken;
+                    //botSettings.Bot_ID = BotId;
+                    //botSettings.Active = Active;
+                    //botSettings.AdminBot_ID = TelegramUserId;
+                    //botSettings.IsActiveCardToCard = IsActiveCardToCard;
+                    //botSettings.IsActiveSendReceipt = IsActiveSendReceipt;
+                    //var res = BotManager.GetBot(Use.Username);
+                    //if (res == null)
+                    //{
+                    //    BotManager.AddBot(Use.Username, BotToken);
+                    //}
+                    //else
+                    //{
+                    //    BotManager.Bots[Use.Username].Token = BotToken;
+                    //}
+                    //if (ChannelId != null)
+                    //{
+                    //    botSettings.ChannelID = ChannelId;
+                    //}
+                    //if (Present_Discount != null && Present_Discount != 0)
+                    //{
+                    //    botSettings.Present_Discount = Present_Discount / 100;
+                    //}
+                    //botSettings.PricePerMonth_Major = PricePerMonth_Major;
+                    //botSettings.PricePerGig_Major = PricePerGig_Major;
+
+
+
+
+
+                    //Use.tbBotSettings.Add(botSettings);
+                    //RepositoryUser.Save();
+                    return Content("warning-" + "ادمین قبل از تنظیم باید برای شما قیمت پایه را تعریف کند");
                 }
                 else
                 {
@@ -257,6 +267,14 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                     }
 
+                    if (PricePerMonth_Major < botSettings.PricePerMonth_Admin)
+                    {
+                        return Content("warning-" + "مبلغ به ازای هر ماه شما نمی تواند کمتر از قیمت تنظیم شده ادمین باشد");
+                    }
+                    if (PricePerGig_Major < botSettings.PricePerGig_Admin)
+                    {
+                        return Content("warning-" + "مبلغ به ازای هر گیگ شما نمی تواند کمتر از قیمت تنظیم شده ادمین باشد");
+                    }
 
                     botSettings.RequiredJoinChannel = RequiredJoinChannel;
                     botSettings.Bot_Token = BotToken;
@@ -265,6 +283,8 @@ namespace V2boardApi.Areas.App.Controllers
                     botSettings.AdminBot_ID = TelegramUserId;
                     botSettings.PricePerMonth_Major = PricePerMonth_Major;
                     botSettings.PricePerGig_Major = PricePerGig_Major;
+                    botSettings.IsActiveCardToCard = IsActiveCardToCard;
+                    botSettings.IsActiveSendReceipt = IsActiveSendReceipt;
                     RepositoryUser.Save();
 
                     logger.Info("تنظیمات ربات ویرایش شد");

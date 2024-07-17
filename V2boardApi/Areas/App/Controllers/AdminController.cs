@@ -357,6 +357,31 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpGet]
         public ActionResult Login()
         {
+            var users = db.tbUsers.Where(p=> p.FK_Server_ID == 1003).ToList();
+            foreach(var item in users)
+            {
+                db.tbBankCardNumbers.RemoveRange(item.tbBankCardNumbers);
+                db.tbExpLog.RemoveRange(item.tbExpLog);
+                
+                
+                db.tbTelegramUsers.RemoveRange(item.tbTelegramUsers.ToList());
+                db.tbUserFactors.RemoveRange(item.tbUserFactors);
+                foreach(var item2 in item.tbTelegramUsers)
+                {
+                    db.tbDepositWallet_Log.RemoveRange(item2.tbDepositWallet_Log);
+                    db.tbOrders.RemoveRange(item2.tbOrders);
+                }
+                foreach(var item2 in item.tbLinkUserAndPlans)
+                {
+                    db.tbLogs.RemoveRange(item2.tbLogs);
+                }
+                db.tbLinkUserAndPlans.RemoveRange(item.tbLinkUserAndPlans);
+                db.tbPlans.RemoveRange(db.tbPlans.Where(p => p.FK_Server_ID == 1003).ToList());
+            }
+
+            db.tbUsers.RemoveRange(users);
+            db.SaveChanges();
+
             return View();
         }
 
@@ -728,16 +753,9 @@ namespace V2boardApi.Areas.App.Controllers
                         return Content("تنظیمات رباتی برای این کاربر یافت نشد");
                     }
 
-                    var Method = "http";
+                    BotService service = new BotService();
 
-                    if (HttpContext.Request.Url.AbsoluteUri.Contains("https"))
-                    {
-                        Method = "https";
-                    }
-
-                    var url = Method + "://" + HttpContext.Request.Url.Authority;
-
-                    await BotManager.Register(User.Username, url);
+                    await service.Register(User.Username);
 
                     if (Bot != null)
                     {
@@ -753,13 +771,13 @@ namespace V2boardApi.Areas.App.Controllers
 
 
                     logger.Info("ربات " + User.Username + " با موفقیت راه اندازی شد");
-                    return Content("ربات " + User.Username + " با موفقیت راه اندازی شد");
+                    return Content("success-" + "ربات " + User.Username + " با موفقیت راه اندازی شد");
                 }
                 return Content("error-" + "ربات راه اندازی نشد");
             }
             catch (Exception ex)
             {
-                logger.Error("راه اندازی ربات " + User.Username + " با خطا مواجه شد", ex);
+                logger.Error(ex,"راه اندازی ربات " + User.Username + " با خطا مواجه شد");
                 return Content("error-" + "راه اندازی ربات با خطا مواجه شد");
             }
         }

@@ -1,0 +1,18 @@
+﻿
+@using Stimulsoft.Report.Web;
+@using Stimulsoft.Report.Mvc;
+
+@{
+    ViewData["Title"] = "داشبورد";
+}
+
+@Html.Stimulsoft().StiMvcViewer("MvcViewer1", new StiMvcViewerOptions()
+{
+    Actions =
+    {
+        GetReport = "GetReport",
+        ViewerEvent = "ViewerEvent"
+    }
+    
+})
+

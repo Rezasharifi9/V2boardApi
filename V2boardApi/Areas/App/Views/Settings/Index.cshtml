@@ -26,15 +26,15 @@
         <div class="col-md-6 grid-margin stretch-card">
             @Html.Action("_BankNumbers", "Settings")
         </div>
-    </div>
-    @if (Role.Contains("1"))
-    {
-        <div class="row">
+        @if (Role.Contains("1"))
+        {
             <div class="col-md-6 grid-margin stretch-card">
                 @Html.Action("_BaseSetting", "Settings")
             </div>
-        </div>
-    }
+
+        }
+    </div>
+
 
 </div>
 
@@ -275,6 +275,8 @@
                 var PricePerMonth_Major = $("#PricePerMonth_Major").val();
                 var PricePerMonth_Admin = $("#PricePerMonth_Admin").val();
                 var Present_Discount = $("#Present_Discount").val();
+                var IsActiveSendReceipt = false;
+                var IsActiveCardToCard = false;
 
                 if (BotId.indexOf("@@") != -1) {
                     Swal.fire({
@@ -293,23 +295,7 @@
                     return;
                 }
 
-                if (PricePerGig_Major < PricePerGig_Admin) {
-                    Swal.fire({
-                        title: "خطا",
-                        text: "مبلغ به ازای هر گیگ شما نمی تواند کمتر از قیمت تنظیم شده ادمین باشد",
-                        icon: "warning"
-                    });
-                    return;
-                } else {
-                    if (PricePerMonth_Major < PricePerMonth_Admin) {
-                        Swal.fire({
-                            title: "خطا",
-                            text: "مبلغ به ازای هر ماه شما نمی تواند کمتر از قیمت تنظیم شده ادمین باشد",
-                            icon: "warning"
-                        });
-                        return;
-                    }
-                }
+                
 
                 var RequiredJoinChannel = false;
                 var Active = false;
@@ -333,8 +319,12 @@
                 if ($("#Active").is(':checked')) {
                     Active = true;
                 }
-
-
+                if ($("#IsActiveSendReceipt").is(':checked')) {
+                    IsActiveSendReceipt = true;
+                }
+                if ($("#IsActiveCardToCard").is(':checked')) {
+                    IsActiveCardToCard = true;
+                }
 
 
                 if (BotId.length == 0) {
@@ -364,7 +354,7 @@
                         url: "@Url.Action("SaveBotSetting","Settings")",
                         type: "post",
                         dataType: "html",
-                        data: { BotId: BotId, BotToken: BotToken, TelegramUserId: TelegramUserId, ChannelId: ChannelId, RequiredJoinChannel: RequiredJoinChannel, Active: Active, PricePerGig_Major: PricePerGig_Major, PricePerMonth_Major: PricePerMonth_Major, Present_Discount: Present_Discount },
+                        data: { BotId: BotId, BotToken: BotToken, TelegramUserId: TelegramUserId, ChannelId: ChannelId, RequiredJoinChannel: RequiredJoinChannel, Active: Active, PricePerGig_Major: PricePerGig_Major, PricePerMonth_Major: PricePerMonth_Major, Present_Discount: Present_Discount, IsActiveSendReceipt: IsActiveSendReceipt, IsActiveCardToCard: IsActiveCardToCard },
                         success: function (res) {
                             $("#loading").css("display", "none");
 

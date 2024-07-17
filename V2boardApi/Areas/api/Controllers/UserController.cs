@@ -106,7 +106,7 @@ namespace V2boardApi.Areas.api.Controllers
                 {
                     var Server = User.tbServers;
 
-                    var ActiveBank = User.tbBankCardNumbers.Where(p=> p.Active == true).FirstOrDefault();
+                    var ActiveBank = User.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
                     logger.Info("ورود موفق با اپلیکیشن");
                     return Ok(new { phoneNumber = User.PhoneNumber, BankSmsNumbers = ActiveBank.BankSmsNumber.Split(',').ToList() });
 
@@ -117,7 +117,7 @@ namespace V2boardApi.Areas.api.Controllers
                     return Content(System.Net.HttpStatusCode.NotFound, "نام کاربری یا رمز عبور اشتباه است");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex, "ورود ناموفق در اپلیکیشن");
                 return BadRequest("خطا در ارتباط با سرور");
@@ -144,7 +144,7 @@ namespace V2boardApi.Areas.api.Controllers
                     User.Token = (User.Username + User.Password).ToSha256();
                     RepositoryUser.Save();
                     logger.Info("ورود موفق در پنل فروش");
-                    FormsAuthentication.SetAuthCookie(User.Username,false);
+                    FormsAuthentication.SetAuthCookie(User.Username, false);
                     return Ok(new { FirstName = User.FirstName, LastName = User.LastName, Role = User.Role, Token = User.Token });
                 }
                 else
@@ -155,7 +155,7 @@ namespace V2boardApi.Areas.api.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"در ورود پنل فروش خطایی رخ داد");
+                logger.Error(ex, "در ورود پنل فروش خطایی رخ داد");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
             }
         }
@@ -365,7 +365,7 @@ namespace V2boardApi.Areas.api.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"نمایش لیست اشتراکات در پنل فروش با خطا مواجه شد");
+                logger.Error(ex, "نمایش لیست اشتراکات در پنل فروش با خطا مواجه شد");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط");
 
             }
@@ -485,7 +485,7 @@ namespace V2boardApi.Areas.api.Controllers
                 {
                     return Content(System.Net.HttpStatusCode.BadRequest, "این کاربر از قبل وجود دارد");
                 }
-                logger.Error(ex,"در ساخت اشتراک در پنل فروش با خطایی مواجه شدیم");
+                logger.Error(ex, "در ساخت اشتراک در پنل فروش با خطایی مواجه شدیم");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط با سرور");
             }
 
@@ -927,23 +927,21 @@ namespace V2boardApi.Areas.api.Controllers
                             keyboard.ResizeKeyboard = true;
                             keyboard.OneTimeKeyboard = false;
 
-                            RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db);
+                            RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
 
-                            var botID = item.tbTelegramUsers.Tel_RobotID;
-                            if (botID != null)
+
+                            var botSetting = User.tbBotSettings.FirstOrDefault();
+                            if (botSetting != null)
                             {
-                                var Server = RepositoryServer.Where(p => p.Robot_ID == botID).FirstOrDefault();
-                                if (Server != null)
-                                {
-                                    TelegramBotClient botClient = new TelegramBotClient(Server.Robot_Token);
-                                    RepositoryDepositWallet.Save();
-                                    await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-                                    transaction.Commit();
+                                TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
+                                RepositoryDepositWallet.Save();
+                                await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                transaction.Commit();
 
-                                    logger.Info("فاکتور به مبلغ " + pr.ConvertToMony() + " با موفقیت پرداخت شد");
-                                    return Ok();
-                                }
+                                logger.Info("فاکتور به مبلغ " + pr.ConvertToMony() + " با موفقیت پرداخت شد");
+                                return Ok();
                             }
+
 
                         }
 
@@ -969,7 +967,7 @@ namespace V2boardApi.Areas.api.Controllers
                 {
                     int pr = int.Parse(SMSMessageText, NumberStyles.Currency);
                     transaction.Rollback();
-                    logger.Error(ex,"خطا در پرداخت فاکتور به مبلغ " + pr.ConvertToMony() + " رخ داد");
+                    logger.Error(ex, "خطا در پرداخت فاکتور به مبلغ " + pr.ConvertToMony() + " رخ داد");
                     return BadRequest();
                 }
             }

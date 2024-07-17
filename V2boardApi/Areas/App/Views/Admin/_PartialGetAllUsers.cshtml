@@ -34,7 +34,7 @@
                         {
                             <a class="dropdown-item" onclick="BanUser('@item.User_ID')">فعال سازی</a>
                         }
-                        <a class="dropdown-item" onclick="EditWallet(this)" id="Wallet_@item.User_ID">شارژ کیف پول</a>
+                        <a class="dropdown-item" onclick="EditWallet(this)" id="Wallet_@item.User_ID">تنظیمات حساب</a>
 
                         @{
                             var bot = BotManager.GetBot(item.Username);
