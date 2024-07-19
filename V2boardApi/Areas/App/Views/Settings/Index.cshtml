@@ -426,13 +426,6 @@
                         icon: "warning"
                     });
                 }
-                else if (phoneNumber.length != 11) {
-                    Swal.fire({
-                        title: "خطا",
-                        text: "شماره تلفن باید 11 رقم باشد",
-                        icon: "warning"
-                    });
-                }
                 else {
                     $("#loading").css("display", "flex");
                     $.ajax({

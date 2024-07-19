@@ -16,7 +16,7 @@
                     <table id="AccountLogTable" class="table" style="width:100%;direction:rtl">
                         <thead>
                             <tr>
-                                <th style="text-align:right">نام اشتراک در V2board</th>
+                                <th style="text-align:right">نام اشتراک </th>
                                 <th style="text-align:right">کاربر</th>
                                 <th style="text-align:right">تعرفه</th>
                                 <th style="text-align:right">تاریخ ایجاد</th>
@@ -29,7 +29,7 @@
                             @foreach (var item in Model)
                             {
                                 <tr>
-                                    <td>@item.AccountName</td>
+                                    <td>@item.AccountName.Split('@')[0]</td>
                                     <td>@item.tbTelegramUsers.Tel_Username (@item.tbTelegramUsers.Tel_FirstName @item.tbTelegramUsers.Tel_LastName)</td>
                                     @if (item.Month != null && item.Month != null)
                                     {
@@ -44,11 +44,11 @@
                                     <td>
                                         @if (item.OrderStatus == "FOR_RESERVE")
                                         {
-                                            <label class="badge badge-gradient-warning text-black">در صف رزرو</label>
+                                            <label class="badge badge-warning text-dark">در صف رزرو</label>
                                         }
                                         else if (item.OrderStatus == "FINISH")
                                         {
-                                            <label class="badge badge-gradient-success">انجام شده</label>
+                                            <label class="badge badge-success text-dark">انجام شده</label>
                                         }
 
                                     </td>

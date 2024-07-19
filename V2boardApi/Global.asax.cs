@@ -37,6 +37,7 @@ namespace V2boardApi
             foreach (var item in Res)
             {
                 BotManager.AddBot(item.Username, item.tbBotSettings.First().Bot_Token);
+                BotService Service = new BotService();
             }
 
             var User = Res.FirstOrDefault();

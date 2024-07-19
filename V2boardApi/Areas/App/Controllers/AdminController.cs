@@ -89,7 +89,7 @@ namespace V2boardApi.Areas.App.Controllers
                 profile.SaveAs(ServerPath + Us.Username + Path.GetExtension(profile.FileName));
                 RepositoryUser.Save();
                 logger.Info("پروفایل تغییر کرد");
-                return RedirectToAction("index", "dashboard");
+                return Redirect("~/App/Dashboard");
 
             }
             else
@@ -106,9 +106,6 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1")]
         public ActionResult Index()
         {
-
-
-
             return View();
         }
 
@@ -119,11 +116,11 @@ namespace V2boardApi.Areas.App.Controllers
             var Users = new List<tbUsers>();
             if (username != null)
             {
-                Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Use.FK_Server_ID && p.Username.Contains(username)).OrderByDescending(p => p.User_ID).ToList();
+                Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Use.FK_Server_ID && p.Username.Contains(username) && p.Status == true).OrderByDescending(p => p.User_ID).ToList();
             }
             else
             {
-                Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Use.FK_Server_ID).OrderByDescending(p => p.User_ID).ToList();
+                Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Use.FK_Server_ID && p.Status == true).OrderByDescending(p => p.User_ID).ToList();
             }
             return View(Users);
         }
@@ -357,32 +354,44 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpGet]
         public ActionResult Login()
         {
-            var users = db.tbUsers.Where(p=> p.FK_Server_ID == 1003).ToList();
-            foreach(var item in users)
+            try
             {
-                db.tbBankCardNumbers.RemoveRange(item.tbBankCardNumbers);
-                db.tbExpLog.RemoveRange(item.tbExpLog);
-                
-                
-                db.tbTelegramUsers.RemoveRange(item.tbTelegramUsers.ToList());
-                db.tbUserFactors.RemoveRange(item.tbUserFactors);
-                foreach(var item2 in item.tbTelegramUsers)
-                {
-                    db.tbDepositWallet_Log.RemoveRange(item2.tbDepositWallet_Log);
-                    db.tbOrders.RemoveRange(item2.tbOrders);
-                }
-                foreach(var item2 in item.tbLinkUserAndPlans)
-                {
-                    db.tbLogs.RemoveRange(item2.tbLogs);
-                }
-                db.tbLinkUserAndPlans.RemoveRange(item.tbLinkUserAndPlans);
-                db.tbPlans.RemoveRange(db.tbPlans.Where(p => p.FK_Server_ID == 1003).ToList());
+                //var users = db.tbUsers.Where(p => p.FK_Server_ID == 1002).ToList();
+                //foreach (var item in users)
+                //{
+                //    db.tbBankCardNumbers.RemoveRange(item.tbBankCardNumbers);
+
+
+
+
+                //    foreach (var item2 in item.tbTelegramUsers)
+                //    {
+                //        db.tbDepositWallet_Log.RemoveRange(item2.tbDepositWallet_Log);
+                //        db.tbOrders.RemoveRange(item2.tbOrders);
+                //        db.tbLinks.RemoveRange(item2.tbLinks);
+                //    }
+                //    db.tbUserFactors.RemoveRange(item.tbUserFactors);
+                //    db.tbTelegramUsers.RemoveRange(item.tbTelegramUsers.ToList());
+
+                //    foreach (var item2 in item.tbLinkUserAndPlans)
+                //    {
+                //        db.tbLogs.RemoveRange(item2.tbLogs);
+                //    }
+                //    db.tbLinkUserAndPlans.RemoveRange(item.tbLinkUserAndPlans);
+
+                //}
+
+                //db.tbPlans.RemoveRange(db.tbPlans.Where(p => p.FK_Server_ID == 1002 && p.tbLinkUserAndPlans.Count() <= 0).ToList());
+
+                //db.tbUsers.RemoveRange(users);
+                //db.SaveChanges();
             }
+            catch (Exception ex)
+            {
 
-            db.tbUsers.RemoveRange(users);
-            db.SaveChanges();
-
-            return View();
+            }
+            tbUsers users = new tbUsers();
+            return View(users);
         }
 
         /// <summary>
@@ -420,13 +429,13 @@ namespace V2boardApi.Areas.App.Controllers
 
                         logger.Info("ورود موفق");
                         FormsAuthentication.SetAuthCookie(User.Username, false);
-                        return RedirectToAction("Index", "Dashboard");
+                        return Redirect("/App/Dashboard");
                     }
                     else
                     {
                         logger.Warn("ورود ناموفق");
                         TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
-                        return RedirectToAction("Login", "Admin");
+                        return View(user);
                     }
 
                 }
@@ -434,7 +443,7 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     logger.Warn("ورود ناموفق");
                     TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
-                    return RedirectToAction("Login", "Admin");
+                    return View(user);
                 }
             }
             catch (Exception ex)
@@ -739,9 +748,11 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+        #region روشن کردن ربات عمده فروش
+        [AuthorizeApp(Roles = "1")]
         public async Task<ActionResult> StartBot(int userId)
         {
-            var User = RepositoryUser.Where(p => p.User_ID == userId && p.Status == true).FirstOrDefault();
+            var User = RepositoryUser.Where(p => p.User_ID == userId).FirstOrDefault();
             try
             {
                 if (User != null)
@@ -750,7 +761,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                     if (Bot == null)
                     {
-                        return Content("تنظیمات رباتی برای این کاربر یافت نشد");
+                        return Content("warning-" + "تنظیمات ربات برای این کاربر انجام نشده است !!");
                     }
 
                     BotService service = new BotService();
@@ -777,10 +788,69 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"راه اندازی ربات " + User.Username + " با خطا مواجه شد");
+                logger.Error(ex, "راه اندازی ربات " + User.Username + " با خطا مواجه شد");
                 return Content("error-" + "راه اندازی ربات با خطا مواجه شد");
             }
         }
+
+        [AuthorizeApp(Roles = "1")]
+        public async Task<ActionResult> StartBots()
+        {
+            var User = RepositoryUser.Where(p => p.tbBotSettings.Where(s => s.Bot_Token != null).Any()).ToList();
+
+            try
+            {
+                foreach (var item in User)
+                {
+                    if (User != null)
+                    {
+                        var Bot = BotManager.GetBot(item.Username);
+
+                        if (Bot == null)
+                        {
+                            return Content("warning-" + "تنظیمات ربات برای این کاربر انجام نشده است !!");
+                        }
+
+                        BotService service = new BotService();
+
+                        try
+                        {
+                            await service.Register(item.Username);
+
+                            if (Bot != null)
+                            {
+                                if (Bot.Started)
+                                {
+                                    BotManager.Bots[item.Username].Started = false;
+                                }
+                                else
+                                {
+                                    BotManager.Bots[item.Username].Started = true;
+                                }
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            logger.Error(ex, "ربات " + item.Username + " با خطا مواجه شد");
+                        }
+
+
+                        
+                    }
+                }
+
+                return Content("success-" + "ربات ها راه اندازی شدند");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "راه اندازی ربات ها با خطا مواجه شد");
+                return Content("error-" + "راه اندازی ربات با خطا مواجه شد");
+
+            }
+        }
+
+
+        #endregion
 
 
     }

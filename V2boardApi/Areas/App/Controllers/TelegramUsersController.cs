@@ -11,6 +11,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using V2boardApi.Models.AdminModel;
 using V2boardApi.Tools;
+using V2boardBot.Functions;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -56,6 +57,8 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+        #region ارسال پیام همگانی
+
         [AuthorizeApp(Roles = "1,2")]
         public ActionResult _PartialPublicMessage()
         {
@@ -93,6 +96,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
         }
 
+        #endregion
 
         #region شارژ کیف پول کاربر
         [AuthorizeApp(Roles = "1,2")]
@@ -165,28 +169,30 @@ namespace V2boardApi.Areas.App.Controllers
                     return Content("2");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                logger.Error(ex,"ارسال پیام با خطا مواجه شد");
+                logger.Error(ex, "ارسال پیام با خطا مواجه شد");
                 return Content("3");
             }
-            
+
         }
 
 
         #endregion
 
-        [HttpGet]
-        [AuthorizeApp(Roles = "1,2")]
-        public ActionResult Orders(int TelegramUserId)
-        {
-            return View();
-        }
+        //[HttpGet]
+        //[AuthorizeApp(Roles = "1,2")]
+        //public ActionResult Orders(int TelegramUserId)
+        //{
+        //    return View();
+        //}
+        #region لیست اشتراک های کاربر تلگرام
+
         [AuthorizeApp(Roles = "1,2")]
         public ActionResult Accounts(int id)
         {
             var Links = RepositoryLinks.Where(p => p.FK_TelegramUserID == id).ToList();
-
+            var TelUser = RepositoryTelegramUsers.GetById(id);
             var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
 
             MySqlEntities mysql = new MySqlEntities(Use.tbServers.ConnectionString);
@@ -195,24 +201,25 @@ namespace V2boardApi.Areas.App.Controllers
             List<AccountsViewModel> accounts = new List<AccountsViewModel>();
             foreach (var link in Links)
             {
-                
+
                 var Reader = mysql.GetData("select * from v2_user where email='" + link.tbL_Email + "'");
                 if (Reader.Read())
                 {
                     AccountsViewModel account = new AccountsViewModel();
+                    account.LinkID = link.tbLink_ID;
                     account.V2boardUsername = link.tbL_Email;
-                    account.State = "فعال";
-                    account.TotalVolume = Utility.ConvertByteToGB(Reader.GetInt64("transfer_enable"));
+                    account.State = "Active";
+                    account.TotalVolume = Utility.ConvertByteToGB(Reader.GetInt64("transfer_enable")) + " GB";
                     var exp = Reader.GetBodyDefinition("expired_at");
                     var OnlineTime = Reader.GetBodyDefinition("t");
                     if (exp != "")
                     {
                         var e = Convert.ToInt64(exp);
                         var ex = Utility.ConvertSecondToDatetime(e);
-                        account.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
+                        account.ExpireDate = Utility.ConvertDatetimeToShamsiDate(ex);
                         if (ex <= DateTime.Now)
                         {
-                            account.State = "پایان تاریخ اشتراک";
+                            account.State = "ExpireTime";
                         }
                     }
                     var u = Reader.GetInt64("u");
@@ -225,12 +232,12 @@ namespace V2boardApi.Areas.App.Controllers
 
                     if (vol <= 0)
                     {
-                        account.State = "اتمام حجم";
+                        account.State = "EndVolume";
                     }
                     else
                     if (Convert.ToBoolean(Reader.GetSByte("banned")))
                     {
-                        account.State = "مسدود";
+                        account.State = "Ban";
                     }
 
                     account.RemainingVolume = Math.Round(dd, 2) + " GB";
@@ -240,7 +247,35 @@ namespace V2boardApi.Areas.App.Controllers
             }
             mysql.Close();
 
+            TempData["FullName"] = TelUser.Tel_Username + " (" + TelUser.Tel_FirstName + " " + TelUser.Tel_LastName + ")";
             return PartialView(accounts);
         }
+
+        #endregion
+
+        #region انتقال اشتراک
+        [AuthorizeApp(Roles = "1,2")]
+        public ActionResult _MoveAccount(int LinkID)
+        {
+            var TelegramUsers = RepositoryTelegramUsers.Where(p => p.tbUsers.Username == User.Identity.Name).ToList();
+            TempData["LinkID"] = LinkID;
+            return PartialView(TelegramUsers);
+        }
+
+        [AuthorizeApp(Roles = "1,2")]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public ActionResult MoveAccount(int LinkID, int TelUser)
+        {
+            var Link = RepositoryLinks.Where(p => p.tbLink_ID == LinkID).FirstOrDefault();
+            if (Link != null)
+            {
+                Link.FK_TelegramUserID = TelUser;
+            }
+            RepositoryLinks.Save();
+            return RedirectToAction("Accounts", "TelegramUsers", new { id = TelUser });
+        }
+
+        #endregion
     }
 }

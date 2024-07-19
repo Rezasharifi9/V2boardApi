@@ -1,0 +1,49 @@
+﻿@model List<DataLayer.DomainModel.tbTelegramUsers>
+<form class="form-sample" action="@Url.Action("MoveAccount","TelegramUsers")" method="post">
+    
+    <div class="modal-content">
+
+        <div class="modal-body">
+            <div class="card">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">انتقال اشتراک</h4>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="LinkID" value="@TempData["LinkID"]" />
+                        <div class="form-group">
+                            <select class="form-control-sm" id="TelUsers" name="TelUser">
+                                @foreach (var item in Model)
+                                {
+                                    <option value="@item.Tel_UserID">@item.Tel_Username ( @item.Tel_FirstName @item.Tel_LastName )  </option>
+                                }
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-dark close" data-dismiss="modal">بستن</button>
+            <button type="submit" class="btn btn-success">انتقال</button>
+
+        </div>
+
+    </div>
+</form>
+
+<script>
+    $(".close").click(function () {
+        $('.modal').modal('hide');
+
+    });
+
+    $(document).ready(function () {
+        $('#TelUsers').select2({
+            dropdownParent: $('.modal-content'),
+            width: '75%',
+            placeholder: 'جستجو تعرفه',
+        });
+
+    });
+</script>

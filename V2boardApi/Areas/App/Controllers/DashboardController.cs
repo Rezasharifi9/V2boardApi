@@ -58,7 +58,7 @@ namespace V2boardApi.Areas.App.Controllers
                 if (user.Role != 1)
                 {
                     var path = Server.MapPath("~/Reports/Report.mrt");
-                    report.Load(path);
+                    report = StiTools.Load(path);
 
                     report.Dictionary.DataSources[0].Parameters["User_ID"].Value = user.User_ID.ToString();
                     report.Dictionary.DataSources[1].Parameters["tbUserID"].Value = user.User_ID.ToString();
@@ -67,13 +67,13 @@ namespace V2boardApi.Areas.App.Controllers
                 {
 
                     var path = Server.MapPath("~/Reports/ReportAdmin.mrt");
-                    report.Load(path);
+                    report = StiTools.Load(path);
 
                 }
 
                 return StiMvcViewer.GetReportResult(report);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex, "در نمایش داشبورد با خطایی مواجه شدیم");
                 return View();

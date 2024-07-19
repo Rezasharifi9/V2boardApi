@@ -47,14 +47,17 @@ namespace V2boardApi.Tools
         public async Task<bool> Register(string name)
         {
 
-            var method = "http";
-            if (HttpContext.Current.Request.Url.AbsoluteUri.Contains("https"))
-            {
-                method = "https";
-            }
+            //var method = "http";
+            //if (HttpContext.Current.Request.Url.AbsoluteUri.Contains("https"))
+            //{
+            //    method = "https";
+            //}
 
-            var url = method + "://" + HttpContext.Current.Request.Url.Authority;
-            //var url = "https://aa86-45-76-44-165.ngrok-free.app";
+            //var url = method + "://" + HttpContext.Current.Request.Url.Authority;
+            //var url = "https://8c5b-2a01-4f8-c010-93e-00-1.ngrok-free.app";
+
+
+            var url = "https://" + HttpContext.Current.Request.Url.Authority;
 
             if (!BotManager.Bots.ContainsKey(name))
             {

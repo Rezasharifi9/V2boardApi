@@ -8,38 +8,70 @@
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body table-responsive">
-                <h4 class="card-title">لیست اکانت ها</h4>
+                <h4 class="card-title">لیست اشتراک های @TempData["FullName"]</h4>
                 <div id="PartialUsers">
-                    <table class="table" id="TableTelegramUser" style="width:100%;" dir="ltr">
+                    <table class="table" id="TableAccounts" style="width:100%;" dir="ltr">
                         <thead>
                             <tr>
-                                <th style="background-color:white;">منو</th>
+                                <th>منو</th>
                                 <th> وضعیت </th>
                                 <th> تاریخ انقضا </th>
                                 <th> حجم باقی مانده </th>
+                                <th> حجم مصرف شده </th>
                                 <th> حجم کل </th>
-                                <th> نام اکانت </th>
+                                <th> نام اشتراک </th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var item in Model.ToList())
                             {
                                 <tr>
-                                    <td style="background-color:white;">
+                                    <td>
                                         <div class="btn-group">
                                             <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
                                             <div class="dropdown-menu" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 46px);cursor: pointer;text-align:right;">
-                                                <a class="dropdown-item" >مسدود کردن</a>
-                                                <a class="dropdown-item" >کپی لینک</a>
-                                                <a class="dropdown-item" >حذف اکانت</a>
+                                                <a class="dropdown-item">مسدود</a>
+                                                <a class="dropdown-item">کپی لینک</a>
+                                                <a class="dropdown-item">حذف</a>
+                                                <a class="dropdown-item" onclick="ShowMoveUsers('@item.LinkID')">انتقال</a>
                                             </div>
                                         </div>
                                     </td>
-                                    <td> @item.State </td>
-                                    <td> @item.ExpireDate </td>
+
+                                    <td>
+                                        @if (item.State == "Active")
+                                        {
+                                            <label class="badge badge-success text-dark">فعال</label>
+                                        }
+                                        else if (item.State == "EndVolume")
+                                        {
+                                            <label class="badge badge-danger text-dark">اتمام حجم</label>
+                                        }
+                                        else if (item.State == "ExpireTime")
+                                        {
+                                            <label class="badge badge-danger text-dark">پایان تاریخ اشتراک</label>
+                                        }
+                                        else if (item.State == "Ban")
+                                        {
+                                            <label class="badge badge-danger text-dark">مسدود</label>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (item.ExpireDate != null)
+                                        {
+                                            
+                                            <label class="badge badge-danger text-dark">@item.ExpireDate</label>
+                                        }
+                                        else
+                                        {
+                                            <label class="badge badge-success text-dark">بدون تاریخ انقضا</label>
+                                        }
+                                    </td>
                                     <td> @item.RemainingVolume </td>
                                     <td> @item.UsedVolume </td>
-                                    <td> @item.V2boardUsername </td>
+                                    <td> @item.TotalVolume </td>
+                                    <td> @item.V2boardUsername.Split('@')[0] </td>
                                 </tr>
                             }
                         </tbody>
@@ -50,3 +82,25 @@
     </div>
 </div>
 
+@section scripts {
+    <script>
+        ConvertToDataTable("#TableAccounts", 0, [{ width: 2, targets: 6 }]);
+
+        
+
+        function ShowMoveUsers(LinkID) {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("_MoveAccount", "TelegramUsers", new { area = "App" })" + "?LinkID=" + LinkID,
+                dataType: "html",
+                type: "get",
+                success: function (res) {
+                    $("#loading").css("display", "none");
+                    $("#modal-dialog-lg").html(res);
+                    $('#modal-lg').modal('show');
+                }
+            });
+        }
+
+        
+    </script>}

@@ -296,6 +296,7 @@
     <Compile Include="Areas\api\Controllers\BotController.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AccountHistoryViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AddAccountWithOutPlanInputModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\GetFactorsViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\NotPayedUserModel.cs" />
     <Compile Include="Areas\App\AppAreaRegistration.cs" />
     <Compile Include="Areas\App\Controllers\AdminController.cs" />
@@ -349,6 +350,7 @@
     <Compile Include="Tools\LogActionFilter.cs" />
     <Compile Include="Tools\Network.cs" />
     <Compile Include="Tools\RealUser.cs" />
+    <Compile Include="Tools\Stimulsoft.cs" />
     <Compile Include="Tools\UserLog.cs" />
     <Compile Include="Tools\Utility.cs" />
   </ItemGroup>
@@ -534,6 +536,7 @@
     <Content Include="Areas\App\Views\Settings\_EditBankNumber.cshtml" />
     <Content Include="Areas\App\Views\Learns\Index.cshtml" />
     <Content Include="Areas\App\Views\Dashboard\_Dashboard.cshtml" />
+    <Content Include="Areas\App\Views\TelegramUsers\_MoveAccount.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Scripts\alpine.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -551,6 +554,7 @@
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="Reports\ReportAdmin.mrt" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\cdn.jsdelivr.net_gh_davidshimjs_qrcodejs%40gh-pages_qrcode.min.js" />
     <Content Include="Scripts\cdn.jsdelivr.net_npm_alpinejs-i18n%402.4.0_dist_cdn.min.js" />
@@ -593,7 +597,6 @@
     <Folder Include="App_Data\" />
     <Folder Include="Areas\api\Views\Admin\" />
     <Folder Include="Areas\api\Views\Shared\" />
-    <Folder Include="Areas\App\Views\Default\" />
     <Folder Include="Content\Manifests\" />
     <Folder Include="Controllers\" />
   </ItemGroup>

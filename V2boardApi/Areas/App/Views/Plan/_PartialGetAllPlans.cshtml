@@ -21,7 +21,7 @@
         @foreach (var item in Model.OrderBy(p => p.Status == true).ToList())
         {
             <tr>
-                <td style="background-color:white;">
+                <td>
                     <div class="btn-group" style="margin-right: 37px;">
                         <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
                         <div class="dropdown-menu" data-popper-placement="bottom-start" style="cursor: pointer;text-align:right;">
@@ -43,13 +43,13 @@
                 @if (item.Status.Value)
                 {
                     <td>
-                        <label class="badge badge-gradient-success">فعال</label>
+                        <label class="badge badge-success">فعال</label>
                     </td>
                 }
                 else
                 {
                     <td>
-                        <label class="badge badge-gradient-danger">غیرفعال</label>
+                        <label class="badge badge-danger">غیرفعال</label>
                     </td>
                 }
                 <td>

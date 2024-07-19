@@ -5,22 +5,27 @@
     ViewBag.Title = "Account Log";
 }
 
+
+
+
 @using V2boardApi.Tools;
 <table class="table" id="tblUser" style="width: 100%;" dir="ltr">
-    <thead>
+    <thead >
         <tr>
             <th>منو</th>
             <th> محدودیت | مصرف (تومان) </th>
             <th> وضعیت </th>
+            <th> جمع فروش (تومان) </th>
+            <th> تعداد فروش </th>
             <th> نام کاربری </th>
             <th> پروفایل </th>
         </tr>
     </thead>
-    <tbody>
-        @foreach (var item in Model.OrderByDescending(p => p.Wallet >= (p.Limit - (p.Limit * 0.2))).ToList())
+    <tbody style="text-align:center;">
+        @foreach (var item in Model.OrderByDescending(s=> s.tbLinkUserAndPlans.Select(p => p.tbLogs.Count).Sum()).OrderByDescending(p => p.Wallet >= (p.Limit - (p.Limit * 0.2))).OrderByDescending(p=> p.Wallet >= p.Limit).ToList())
         {
             <tr>
-                <td style="background-color:white;">
+                <td>
                     <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
                     <div class="dropdown-menu" data-popper-placement="bottom-start" style="cursor: pointer;text-align:right;">
                         <a class="dropdown-item" href="@Url.Action("GetUserAccountLog","Admin",new {area="App",id=item.User_ID})">تاریخچه ساخت کاربر</a>
@@ -77,36 +82,38 @@
                             if (item.Wallet.Value >= item.Limit.Value)
                             {
                                 <td>
-                                    <label class="badge badge-danger">اتمام سقف مصرف</label>
+                                    <label class="badge badge-danger text-dark">اتمام سقف مصرف</label>
                                 </td>
                             }
                             else
                             {
                                 <td>
-                                    <label class="badge badge-gradient-warning text-black">نزدیک به اتمام سقف مصرف</label>
+                                    <label class="badge badge-warning text-dark">نزدیک به اتمام سقف مصرف</label>
                                 </td>
                             }
                         }
                         else
                         {
                             <td>
-                                <label class="badge badge-gradient-success">عادی</label>
+                                <label class="badge badge-success text-dark">عادی</label>
                             </td>
                         }
                     }
                     else
                     {
                         <td>
-                            <label class="badge badge-gradient-success">عادی</label>
+                            <label class="badge badge-success text-dark">عادی</label>
                         </td>
                     }
                 }
                 else
                 {
                     <td>
-                        <label class="badge badge-gradient-danger">غیرفعال</label>
+                        <label class="badge badge-danger text-dark">غیرفعال</label>
                     </td>
                 }
+                <td> @item.tbLinkUserAndPlans.Select(p => p.tbLogs.Select(v=> v.SalePrice).Sum()).Sum().Value.ConvertToMony() </td>
+                <td> @item.tbLinkUserAndPlans.Select(p => p.tbLogs.Count).Sum() </td>
                 <td> @item.Username </td>
                 <td class="py-1">
                     <img src="~/Areas/App/assets/images/faces-clipart/pic-1.png" alt="image">

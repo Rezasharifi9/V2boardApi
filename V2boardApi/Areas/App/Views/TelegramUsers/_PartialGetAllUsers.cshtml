@@ -9,9 +9,10 @@
 <table class="table" id="TableTelegramUser" style="width:100%;" dir="ltr">
     <thead>
         <tr>
-            <th style="background-color:white;">منو</th>
+            <th>منو</th>
             <th> دعوت شده ؟ </th>
             <th> کیف پول (تومان) </th>
+            <th> جمع خرید (تومان) </th>
             <th> نام خانوادگی </th>
             <th> نام </th>
             <th> نام کاربری </th>
@@ -22,13 +23,13 @@
         @foreach (var item in Model.ToList())
         {
             <tr>
-                <td style="background-color:white;">
+                <td>
                     <div class="btn-group">
                         <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
                         <div class="dropdown-menu" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 46px);cursor: pointer;text-align:right;">
                             <a class="dropdown-item" onclick="EditWallet('@item.Tel_UserID')">شارژ کیف پول</a>
                             <a class="dropdown-item" onclick="SendMessage('@item.Tel_UserID')">پیام به کاربر</a>
-                            <a class="dropdown-item" href="@Url.Action("Accounts","TelegramUsers",new {id=item.Tel_UserID})">اکانت ها</a>
+                            <a class="dropdown-item" href="@Url.Action("Accounts","TelegramUsers",new {id=item.Tel_UserID})">اشتراک ها</a>
                         </div>
                     </div>
                 </td>
@@ -41,6 +42,7 @@
                     <td> خیر </td>
                 }
                 <td> @item.Tel_Wallet.Value.ConvertToMony() </td>
+                <td> @item.tbDepositWallet_Log.Where(p=> p.dw_Status == "FINISH").Sum(s=> s.dw_Price).Value.ConvertToMony() </td>
                 <td> @item.Tel_LastName </td>
                 <td> @item.Tel_FirstName </td>
                 <td> @item.Tel_Username </td>

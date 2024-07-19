@@ -40,9 +40,10 @@
                 </div>
             </div>
             <span class="text-info text-small">نکته : اگر بانک شما بیش از یک شماره SMS داشت با ( , ) شماره ها را جدا کنید</span>
+            <span class="text-info text-small">شماره همراه را با +98 وارد کنید</span>
             <div class="row">
                 <div class="col-md-12" style="margin-top:27px;">
-                    <button type="button" onclick="SaveBankCards()" class="btn btn-gradient-success me-2 float-start">افزودن</button>
+                    <button type="button" onclick="SaveBankCards()" class="btn btn-success me-2 float-start">افزودن</button>
                 </div>
             </div>
         </div>
@@ -70,14 +71,14 @@
                                 <td>
                                     @if (item.Active == true)
                                     {
-                                        <label class="badge badge-gradient-success">فعال</label>
+                                        <label class="badge badge-success">فعال</label>
                                     }
                                     else
                                     {
-                                        <label class="badge badge-gradient-danger">غیرفعال</label>
+                                        <label class="badge badge-danger">غیرفعال</label>
                                     }
                                 </td>
-                                <td style="background-color:white;">
+                                <td>
                                     <a class="" data-bs-toggle="dropdown" aria-expanded="true"><i class="mdi mdi-menu" style=" font-size: 25px;cursor:pointer;"></i></a>
                                     <div class="dropdown-menu" data-popper-placement="bottom-start" style="cursor: pointer;text-align:right;">
                                         @if (item.Active != true)

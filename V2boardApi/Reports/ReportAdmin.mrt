@@ -95,7 +95,7 @@
   <Pages isList="true" count="1">
     <Dashboard1 Ref="6" type="Stimulsoft.Dashboard.Components.StiDashboard" isKey="true">
       <AltSize>480,800</AltSize>
-      <BackColor>Transparent</BackColor>
+      <BackColor>34, 40, 49</BackColor>
       <Components isList="true" count="9">
         <Chart1 Ref="7" type="Stimulsoft.Dashboard.Components.Chart.StiChartElement" isKey="true">
           <AltClientRectangle>260,360,220,220</AltClientRectangle>
@@ -138,11 +138,12 @@
               <Label>ماه</Label>
             </Item7>
           </Arguments>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ChartConditions isList="true" count="0" />
           <ClientRectangle>0,0,600,280</ClientRectangle>
           <CloseValues isList="true" count="0" />
           <ConstantLines isList="true" count="0" />
+          <CustomStyleName isNull="true" />
           <DataFilters isList="true" count="0" />
           <EndValues isList="true" count="0" />
           <Expressions isList="true" count="0" />
@@ -175,8 +176,8 @@
           <Parent isRef="6" />
           <ParetoSeriesColors />
           <RoundValues>True</RoundValues>
-          <SeriesColors />
-          <Style>Turquoise</Style>
+          <SeriesColors>[0:176:240], [195:214:155]</SeriesColors>
+          <Style>DarkGray</Style>
           <Title Ref="26" type="Stimulsoft.Dashboard.Components.StiTitle" isKey="true">
             <BackColor>Transparent</BackColor>
             <Font>B Titr,11.25,Bold,Point,False,178</Font>
@@ -255,11 +256,12 @@
               <Label>روز</Label>
             </Item11>
           </Arguments>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ChartConditions isList="true" count="0" />
           <ClientRectangle>600,280,600,320</ClientRectangle>
           <CloseValues isList="true" count="0" />
           <ConstantLines isList="true" count="0" />
+          <CustomStyleName isNull="true" />
           <DashboardInteraction Ref="44" type="Stimulsoft.Dashboard.Interactions.StiChartDashboardInteraction" isKey="true">
             <AllowUserDrillDown>True</AllowUserDrillDown>
             <DrillDownParameters isList="true" count="0" />
@@ -297,8 +299,8 @@
           <Parent isRef="6" />
           <ParetoSeriesColors />
           <RoundValues>True</RoundValues>
-          <SeriesColors />
-          <Style>Blue</Style>
+          <SeriesColors>[75:172:198], [192:80:77]</SeriesColors>
+          <Style>DarkGray</Style>
           <Title Ref="51" type="Stimulsoft.Dashboard.Components.StiTitle" isKey="true">
             <BackColor>Transparent</BackColor>
             <Font>B Titr,11.25,Bold,Point,False,178</Font>
@@ -340,8 +342,9 @@
         <ComboBox1 Ref="56" type="Stimulsoft.Dashboard.Components.ComboBox.StiComboBoxElement" isKey="true">
           <AltClientRectangle>0,0,220,40</AltClientRectangle>
           <AltParentKey>50b13f574c874160980c3e350e58f909</AltParentKey>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ClientRectangle>600,0,320,40</ClientRectangle>
+          <CustomStyleName isNull="true" />
           <DataFilters isList="true" count="0" />
           <Expressions isList="true" count="0" />
           <Font>B Titr,10</Font>
@@ -361,6 +364,7 @@
           </NameMeter>
           <Page isRef="6" />
           <Parent isRef="6" />
+          <Style>DarkGray</Style>
           <TransformActions isList="true" count="0" />
           <TransformFilters isList="true" count="0" />
           <TransformSorts isList="true" count="1">
@@ -373,8 +377,9 @@
         <Indicator1 Ref="60" type="Stimulsoft.Dashboard.Components.Indicator.StiIndicatorElement" isKey="true">
           <AltClientRectangle>0,40,300,120</AltClientRectangle>
           <AltParentKey>50b13f574c874160980c3e350e58f909</AltParentKey>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ClientRectangle>600,40,320,120</ClientRectangle>
+          <CustomStyleName isNull="true" />
           <DataFilters isList="true" count="1">
             <Item17 Ref="61" type="Stimulsoft.Data.Engine.StiDataFilterRule" isKey="true">
               <IsExpression>True</IsExpression>
@@ -389,6 +394,7 @@
           <ForeColor>Transparent</ForeColor>
           <GlyphColor>Transparent</GlyphColor>
           <Guid>555e3f043b384376830806cd8a6d2c5e</Guid>
+          <Icon>UserPlus</Icon>
           <IconRangeMode>Percentage</IconRangeMode>
           <IconRanges isList="true" count="0" />
           <IconSet>Rating</IconSet>
@@ -398,6 +404,7 @@
           <Name>Indicator1</Name>
           <Page isRef="6" />
           <Parent isRef="6" />
+          <Style>DarkGray</Style>
           <TextFormat Ref="62" type="NumberFormat" isKey="true">
             <DecimalDigits>0</DecimalDigits>
             <GroupSeparator>,</GroupSeparator>
@@ -426,8 +433,9 @@
         <Indicator2 Ref="66" type="Stimulsoft.Dashboard.Components.Indicator.StiIndicatorElement" isKey="true">
           <AltClientRectangle>300,40,180,160</AltClientRectangle>
           <AltParentKey>50b13f574c874160980c3e350e58f909</AltParentKey>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ClientRectangle>600,160,160,120</ClientRectangle>
+          <CustomStyleName isNull="true" />
           <DataFilters isList="true" count="1">
             <Item19 Ref="67" type="Stimulsoft.Data.Engine.StiDataFilterRule" isKey="true">
               <IsExpression>True</IsExpression>
@@ -442,6 +450,7 @@
           <ForeColor>Transparent</ForeColor>
           <GlyphColor>Transparent</GlyphColor>
           <Guid>ec75cd37299b4120a1c8cf029b6cf90c</Guid>
+          <Icon>Users</Icon>
           <IconRangeMode>Percentage</IconRangeMode>
           <IconRanges isList="true" count="0" />
           <IconSet>Rating</IconSet>
@@ -451,6 +460,7 @@
           <Name>Indicator2</Name>
           <Page isRef="6" />
           <Parent isRef="6" />
+          <Style>DarkGray</Style>
           <TextFormat Ref="68" type="NumberFormat" isKey="true">
             <DecimalDigits>0</DecimalDigits>
             <GroupSeparator>,</GroupSeparator>
@@ -479,8 +489,9 @@
         <Indicator3 Ref="72" type="Stimulsoft.Dashboard.Components.Indicator.StiIndicatorElement" isKey="true">
           <AltClientRectangle>300,200,180,160</AltClientRectangle>
           <AltParentKey>50b13f574c874160980c3e350e58f909</AltParentKey>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ClientRectangle>760,160,160,120</ClientRectangle>
+          <CustomStyleName isNull="true" />
           <DataFilters isList="true" count="1">
             <Item21 Ref="73" type="Stimulsoft.Data.Engine.StiDataFilterRule" isKey="true">
               <IsExpression>True</IsExpression>
@@ -495,6 +506,7 @@
           <ForeColor>Transparent</ForeColor>
           <GlyphColor>Transparent</GlyphColor>
           <Guid>a27100947ef94699918da69b0474a432</Guid>
+          <Icon>User</Icon>
           <IconRangeMode>Percentage</IconRangeMode>
           <IconRanges isList="true" count="0" />
           <IconSet>Rating</IconSet>
@@ -504,6 +516,7 @@
           <Name>Indicator3</Name>
           <Page isRef="6" />
           <Parent isRef="6" />
+          <Style>DarkGray</Style>
           <TextFormat Ref="74" type="NumberFormat" isKey="true">
             <DecimalDigits>0</DecimalDigits>
             <GroupSeparator>,</GroupSeparator>
@@ -547,11 +560,12 @@
               <Label>PerYear</Label>
             </Item23>
           </Arguments>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ChartConditions isList="true" count="0" />
           <ClientRectangle>920,40,280,240</ClientRectangle>
           <CloseValues isList="true" count="0" />
           <ConstantLines isList="true" count="0" />
+          <CustomStyleName isNull="true" />
           <DataFilters isList="true" count="0" />
           <EndValues isList="true" count="0" />
           <Expressions isList="true" count="0" />
@@ -584,8 +598,8 @@
           <Parent isRef="6" />
           <ParetoSeriesColors />
           <RoundValues>True</RoundValues>
-          <SeriesColors />
-          <Style>Green</Style>
+          <SeriesColors>[49:133:155], [95:73:122]</SeriesColors>
+          <Style>DarkGray</Style>
           <Title Ref="89" type="Stimulsoft.Dashboard.Components.StiTitle" isKey="true">
             <BackColor>Transparent</BackColor>
             <Font>B Titr,12,Bold,Point,False,178</Font>
@@ -628,8 +642,9 @@
         <ComboBox2 Ref="94" type="Stimulsoft.Dashboard.Components.ComboBox.StiComboBoxElement" isKey="true">
           <AltClientRectangle>220,0,260,40</AltClientRectangle>
           <AltParentKey>50b13f574c874160980c3e350e58f909</AltParentKey>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ClientRectangle>920,0,280,40</ClientRectangle>
+          <CustomStyleName isNull="true" />
           <DataFilters isList="true" count="0" />
           <Expressions isList="true" count="0" />
           <Font>B Titr,10</Font>
@@ -646,6 +661,7 @@
           <Parent isRef="6" />
           <SelectionMode>Multi</SelectionMode>
           <ShowAllValue>True</ShowAllValue>
+          <Style>DarkGray</Style>
           <TransformActions isList="true" count="0" />
           <TransformFilters isList="true" count="0" />
           <TransformSorts isList="true" count="1">
@@ -696,11 +712,12 @@
               <Label>نام کاربری</Label>
             </Item29>
           </Arguments>
-          <BackColor>Transparent</BackColor>
+          <BackColor>34, 40, 49</BackColor>
           <ChartConditions isList="true" count="0" />
           <ClientRectangle>0,280,600,320</ClientRectangle>
           <CloseValues isList="true" count="0" />
           <ConstantLines isList="true" count="0" />
+          <CustomStyleName isNull="true" />
           <DashboardInteraction Ref="110" type="Stimulsoft.Dashboard.Interactions.StiChartDashboardInteraction" isKey="true">
             <AllowUserDrillDown>True</AllowUserDrillDown>
             <DrillDownParameters isList="true" count="0" />
@@ -746,8 +763,8 @@
           <Parent isRef="6" />
           <ParetoSeriesColors />
           <RoundValues>True</RoundValues>
-          <SeriesColors />
-          <Style>Turquoise</Style>
+          <SeriesColors>[147:150:255], [78:83:255]</SeriesColors>
+          <Style>DarkGray</Style>
           <Title Ref="118" type="Stimulsoft.Dashboard.Components.StiTitle" isKey="true">
             <BackColor>Transparent</BackColor>
             <Font>B Titr,11.25,Bold,Point,False,178</Font>
@@ -812,10 +829,10 @@
     <value>Stimulsoft.Report.Dll</value>
   </ReferencedAssemblies>
   <ReportAlias>Report</ReportAlias>
-  <ReportChanged>6/27/2024 12:03:19 PM</ReportChanged>
+  <ReportChanged>7/19/2024 9:31:04 PM</ReportChanged>
   <ReportCreated>6/25/2024 5:52:39 PM</ReportCreated>
   <ReportFile>D:\VPN\VPN Projects\V2boardApi\V2boardApi\Reports\ReportAdmin.mrt</ReportFile>
-  <ReportGuid>a12afd9086454f80a54e639b8c3fef80</ReportGuid>
+  <ReportGuid>c6573f0f4ae14b9bbf8929c02ff1f272</ReportGuid>
   <ReportName>Report</ReportName>
   <ReportUnit>Inches</ReportUnit>
   <ReportVersion>2023.1.1.0</ReportVersion>

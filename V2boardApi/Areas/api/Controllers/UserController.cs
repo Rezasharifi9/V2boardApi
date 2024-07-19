@@ -107,8 +107,9 @@ namespace V2boardApi.Areas.api.Controllers
                     var Server = User.tbServers;
 
                     var ActiveBank = User.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
+                    var Token = (User.Username + User.Password).ToSha256();
                     logger.Info("ورود موفق با اپلیکیشن");
-                    return Ok(new { phoneNumber = User.PhoneNumber, BankSmsNumbers = ActiveBank.BankSmsNumber.Split(',').ToList() });
+                    return Ok(new { Token = Token, phoneNumber = User.PhoneNumber, BankSmsNumbers = ActiveBank?.BankSmsNumber?.Split(',').ToList() });
 
                 }
                 else
@@ -951,13 +952,8 @@ namespace V2boardApi.Areas.api.Controllers
                     }
                     else
                     {
-                        var Server = RepositoryServer.Where(p => p.Robot_ID == "darkbaz_bot").FirstOrDefault();
-                        if (Server != null)
-                        {
-                            TelegramBotClient client = new TelegramBotClient(Server.Robot_Token);
-                            await client.SendTextMessageAsync(Server.AdminTelegramUniqID, "Error api : " + "شماره تلفن یافت نشد");
-                        }
 
+                        logger.Warn("چنین شماره ای " + Mobile + " در سیستم یافت نشد");
                         return BadRequest("FINISHED");
                     }
 
@@ -1058,6 +1054,28 @@ namespace V2boardApi.Areas.api.Controllers
         }
 
 
+
+        #endregion
+
+        #region دریافت فاکتور ها
+
+        [System.Web.Http.HttpGet]
+        [Authorize]
+        public IHttpActionResult GetFactors()
+        {
+            var Date = DateTime.Now.AddDays(-1);
+            var Factors = db.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= Date && p.dw_Status == "FOR_PAY").OrderByDescending(p => p.dw_CreateDatetime).ToList();
+            List<GetFactorsViewModel> data = new List<GetFactorsViewModel>();
+            foreach (var item in Factors)
+            {
+                GetFactorsViewModel factor = new GetFactorsViewModel();
+                factor.FullName = item.tbTelegramUsers.Tel_Username + " " + "(" + item.tbTelegramUsers.Tel_FirstName + " " + item.tbTelegramUsers.Tel_LastName + ")";
+                factor.Price = item.dw_Price.Value.ConvertToMony();
+                data.Add(factor);
+            }
+
+            return Ok(new { reuslt = data });
+        }
 
         #endregion
 

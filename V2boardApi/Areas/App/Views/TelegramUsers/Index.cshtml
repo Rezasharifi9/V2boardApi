@@ -13,7 +13,7 @@
         <div class="card">
             <div class="card-body table-responsive">
                 <h4 class="card-title">مدیریت کاربران ربات</h4>
-                <button class="btn btn-success btn-sm" style="margin-bottom:20px;float:left;" onclick="PublicSendMessageModal()">ارسال پیغام همگانی</button>
+                <button class="btn btn-success btn-sm text-dark" style="margin-bottom:20px;float:left;" onclick="PublicSendMessageModal()">ارسال پیغام همگانی</button>
                 <div id="PartialUsers">
                     @Html.Action("_PartialGetAllUsers", "TelegramUsers", new { area = "App" })
                 </div>
@@ -104,6 +104,9 @@
                 }
             });
         }
+
+
+
 
 
     </script>

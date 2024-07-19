@@ -17,10 +17,10 @@ namespace DataLayer.DomainModel
         public int CardNumber_ID { get; set; }
         public string CardNumber { get; set; }
         public string BankSmsNumber { get; set; }
-        public Nullable<int> FK_User_ID { get; set; }
         public Nullable<bool> Active { get; set; }
         public string InTheNameOf { get; set; }
         public string phoneNumber { get; set; }
+        public Nullable<int> FK_User_ID { get; set; }
     
         public virtual tbUsers tbUsers { get; set; }
     }

@@ -12,7 +12,8 @@
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body table-responsive">
-                <button class="btn btn-outline-success btn-sm" id="addUser" style="margin-bottom:10px;float:left;">تعریف کاربر</button>
+                <button class="btn btn-success btn-sm text-dark" id="addUser" style="margin-bottom:10px;float:left;">تعریف کاربر</button>
+                <button class="btn btn-info btn-sm text-dark" onclick="RunBots()" style="margin-bottom:10px;margin-left:10px; float:left;">اجرا تمامی ربات ها</button>
                 <div id="PartialUsers">
                     @Html.Action("_PartialGetAllUsers", "Admin", new { area = "App" })
                 </div>
@@ -57,7 +58,33 @@
 
     <script>
 
-        ConvertToDataTable("#tblUser", 0, [{ width: 2, targets: 4 }]);
+
+        new DataTable("#tblUser", {
+            columnDefs: [{ width: 2, targets: 4 }],
+            paging: true,
+            scrollCollapse: false,
+            scrollX: true,
+            scrollY: "600px",
+            pageLength: 13,
+            bFilter: true,
+            lengthChange: false,
+            searchPlaceholder: "جستجو ",
+            sSearch: "Quick Search:",
+            ordering: false, // اضافه کردن این خط برای غیرفعال کردن مرتب‌سازی
+            language: {
+                lengthMenu: "Display _MENU_ records per page",
+                zeroRecords: "اطلاعاتی یافت نشد",
+                info: "",
+                infoEmpty: "اطلاعاتی وجود ندارد",
+                infoFiltered: "(filtered from _MAX_ total records)",
+                sSearch: "جستجو : ",
+                paginate: {
+                    previous: "قبلی",
+                    next: "بعدی"
+                }
+            }
+        });
+
 
 
         $("#addUser").click(function () {
@@ -180,9 +207,7 @@
                         title: "پیغام",
                         text: spl[1],
                         icon: spl[0]
-                    }).then(() => {
-                        location.reload();
-                    })
+                    });
                 }
             });
         }
@@ -203,6 +228,28 @@
         //        }
         //    });
         //}
+
+
+        function RunBots() {
+            $("#loading").css("display", "flex");
+            $.ajax({
+                url: "@Url.Action("StartBots","Admin")" ,
+                type: "get",
+                dataType: "html",
+                success: function (res) {
+                    $("#loading").css("display", "none");
+
+
+                    var spl = res.split('-');
+
+                    Swal.fire({
+                        title: "پیغام",
+                        text: spl[1],
+                        icon: spl[0]
+                    });
+                }
+            });
+        }
 
     </script>
 

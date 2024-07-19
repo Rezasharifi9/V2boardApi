@@ -18,10 +18,10 @@
         <table class="table table-striped" id="payList" style="width: 100%;" dir="ltr">
             <thead>
                 <tr>
-                    <th style="text-align:center;"> مبلغ </th>
-                    <th style="text-align:center;"> وضعیت </th>
-                    <th style="text-align:center;"> تاریخ </th>
-                    <th style="text-align:center;"> کاربر </th>
+                    <th> مبلغ </th>
+                    <th> وضعیت </th>
+                    <th> تاریخ </th>
+                    <th> کاربر </th>
                 </tr>
             </thead>
             <tbody>
@@ -32,11 +32,11 @@
                         <td style="text-align:center;">
                             @if (item.dw_Status == "FOR_PAY")
                             {
-                                <label class="badge badge-danger">در حال پرداخت</label>
+                                <label class="badge badge-danger text-dark">در حال پرداخت</label>
                             }
                             else if (item.dw_Status == "FINISH")
                             {
-                                <label class="badge badge-success">پرداخت شده</label>
+                                <label class="badge badge-success text-dark">پرداخت شده</label>
                             }
                         </td>
                         <td style="text-align:center;"> @Utility.ConvertDateTimeToShamsi2(item.dw_CreateDatetime.Value) </td>

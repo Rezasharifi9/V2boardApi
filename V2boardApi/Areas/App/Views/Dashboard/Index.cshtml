@@ -1,1 +1,16 @@
 ﻿@Html.Action("_Dashboard","Dashboard")
+
+
+@section scripts {
+    
+    <script>
+
+        $(function () {
+            $("#sidebar").css("z-index", "100000000000000000000");
+            $("#navsidebar").css("z-index", "100000000000000000000");
+            $("#mobilenav").css("z-index", "100000000000000000000");
+        });
+
+    </script>
+    
+}
