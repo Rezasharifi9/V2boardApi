@@ -297,11 +297,6 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_AllSales' does not have a
           <Property Name="BotId" Type="varchar" MaxLength="50" />
         </EntityType>
         <!--Errors Found During Generation:
-warning 6013: The table/view 'V2boardSiteNazari.dbo.vi_Dayes' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
-        <EntityType Name="vi_Dayes">
-          <Property Name="DayShamsi" Type="int" />
-        </EntityType>-->
-        <!--Errors Found During Generation:
 warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_FullSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="vi_FullSales">
           <Key>
@@ -316,11 +311,6 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_FullSales' does not have 
           <Property Name="SaleRobot" Type="int" Nullable="false" />
           <Property Name="SalePanel" Type="int" Nullable="false" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6013: The table/view 'V2boardSiteNazari.dbo.vi_Months' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
-        <EntityType Name="vi_Months">
-          <Property Name="MonthShamsi" Type="int" />
-        </EntityType>-->
         <!--Errors Found During Generation:
 warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromBot' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="vi_SaleFromBot">
@@ -347,11 +337,6 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <Property Name="PerMonth" Type="int" />
           <Property Name="PeyDay" Type="int" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6013: The table/view 'V2boardSiteNazari.dbo.vi_Years' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
-        <EntityType Name="vi_Years">
-          <Property Name="YearShamsi" Type="int" />
-        </EntityType>-->
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
           <End Role="tbBankCardNumbers" Type="Self.tbBankCardNumbers" Multiplicity="*" />
@@ -604,14 +589,6 @@ warning 6013: The table/view 'V2boardSiteNazari.dbo.vi_Years' does not have a pr
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        
-        
-        
-        
-        
-        
-        
-        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
