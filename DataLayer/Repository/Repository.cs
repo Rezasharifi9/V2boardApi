@@ -31,6 +31,10 @@ namespace DataLayer.Repository
         {
             return table.Where(predicate).ToList();
         }
+        public List<T> GetAll()
+        {
+            return table.ToList();
+        }
 
         public T GetById(object id)
         {

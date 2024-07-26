@@ -1,0 +1,213 @@
+﻿@model int
+@{
+    ViewBag.Title = "Deatils";
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+}
+
+@section vendorStyle{
+
+    <link href="../../assets/vendor/libs/node-waves/node-waves.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/typeahead-js/typeahead.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/animate-css/animate.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/select2/select2.css" rel="stylesheet" />
+    <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
+    <link href="../../assets/vendor/css/pages/page-user-view.css" rel="stylesheet" />
+}
+
+<h4 class="py-3 mb-4">
+    <span class="text-muted fw-light">مشاهده کاربر/</span>
+    حساب کاربری
+</h4>
+<div class="row">
+    <!-- User Sidebar -->
+    <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
+        <!-- User Card -->
+        @Html.Action("_UserCard", "TelegramUsers", new { area = "App", user_id = Model })
+        <!-- /User Card -->
+        <!-- /Plan Card -->
+    </div>
+    <!--/ User Sidebar -->
+    <!-- User Content -->
+    <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
+        <!-- User Pills -->
+        <ul class="nav nav-pills flex-column flex-md-row mb-4">
+            <li class="nav-item">
+                @if (ViewBag.Type == "accounts")
+                {
+                    <a class="nav-link active" href="@Url.Action("Details","TelegramUsers",new {area="App",type="accounts",user_id=Model})">
+                        <i class="ti ti-users ti-xs me-1"></i>
+                        اشتراک ها
+                    </a>
+                }
+                else
+                {
+                    <a class="nav-link" href="@Url.Action("Details","TelegramUsers",new {area="App",type="accounts",user_id=Model})">
+                        <i class="ti ti-users ti-xs me-1"></i>
+                        اشتراک ها
+                    </a>
+                }
+            </li>
+            <li class="nav-item">
+                @if (ViewBag.Type == "Orders")
+                {
+                    <a class="nav-link active" href="@Url.Action("Details","TelegramUsers",new {area="App",type="Orders",user_id=Model})">
+                        <i class="ti ti-users ti-xs me-1"></i>
+                        سفارشات
+                    </a>
+                }
+                else
+                {
+                    <a class="nav-link" href="@Url.Action("Details","TelegramUsers",new {area="App",type="Orders",user_id=Model})">
+                        <i class="ti ti-users ti-xs me-1"></i>
+                        سفارشات
+                    </a>
+                }
+            </li>
+        </ul>
+
+        <!--/ User Pills -->
+        <!-- Invoice table -->
+        <div class="card mb-4">
+            <div class="table-responsive mb-3">
+                @if (ViewBag.Type == "Orders")
+                {
+                    <table class="table datatable-orders border-top">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>نام اشتراک</th>
+                                <th>تعرفه</th>
+                                <th>تاریخ ایجاد</th>
+                                <th>وضعیت</th>
+                                <th>مبلغ</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                    </table>
+                }
+                else if (ViewBag.Type == "Factors")
+                {
+                    <table class="table datatable-invoice border-top">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>تاریخ پرداخت</th>
+                                <th>مبلغ پرداختی</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                    </table>
+                }
+                else if (ViewBag.Type == "accounts")
+                {
+                    <table class="table datatable-accounts border-top">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>نام اشتراک</th>
+                                <th>حجم کل</th>
+                                <th>حجم مصرف شده</th>
+                                <th>حجم باقی مانده</th>
+                                <th>تاریخ انقضا</th>
+                                <th>وضعیت</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                    </table>
+                }
+            </div>
+        </div>
+        <!-- /Invoice table -->
+        <!-- Activity Timeline -->
+    </div>
+    <!--/ User Content -->
+</div>
+<!-- Modal -->
+<!-- Edit Setting Modal -->
+<div aria-hidden="true" class="modal fade" id="editSetting" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+        <div class="modal-content p-3 p-md-5">
+            <div class="modal-body">
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                <div class="text-center mb-4">
+                    <h3 class="mb-2">ربات</h3>
+                </div>
+                <form class="row g-3" id="editUserForm" onsubmit="return false">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="modalEditUserFirstName">قیمت هر گیگ</label>
+                        <input class="form-control" id="modalEditUserFirstName" name="modalEditUserFirstName" placeholder="2,000" type="text" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="modalEditUserLastName">قیمت هرماه</label>
+                        <input class="form-control" id="modalEditUserLastName" name="modalEditUserLastName" placeholder="5,000" type="text" />
+                    </div>
+                    <div class="col-12 text-center">
+                        <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
+                        <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset"> لغو</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!--/ Edit Setting Modal -->
+<!-- Edit Wallet Modal -->
+@Html.Action("_EditWallet", "TelegramUsers", new { area = "App", user_id = Model })
+
+<!--/ Edit Wallet Modal -->
+
+
+@section vendorScripts {
+
+    <script src="../../assets/vendor/libs/moment/moment.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
+    <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
+    <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
+    <script src="../../assets/vendor/libs/select2/select2.js"></script>
+    <script src="../../assets/vendor/libs/select2/i18n/fa.js"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+}
+
+
+@section customScripts {
+
+    <script src="../../assets/js/modal-edit-wallet.js"></script>
+    <script src="../../assets/js/app-user-view.js"></script>
+    <script src="../../assets/js/app-telegramuser-view-account.js"></script>
+
+
+    <script>
+        $("#ZeroWallet").click(function () {
+
+            $("#Deposit").val(0);
+
+        });
+
+        $("#SaveDeposit").click(function () {
+
+            $("#user_id").val(getUrlParameter("user_id"));
+
+            AjaxFormPost("/App/TelegramUsers/EditWallet", "#editWalletForm").then(res => {
+
+
+                eval(res.data);
+                if (res.status == "success") {
+                    $("#editWallet").modal("hide");
+                }
+
+            });
+
+        });
+    </script>
+
+}

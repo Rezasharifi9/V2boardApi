@@ -20,6 +20,7 @@ using System.Net.Mail;
 using System.Net;
 using System.Web.Http.Cors;
 using System.Runtime.Remoting.Messaging;
+using V2boardApi.Areas.App.Data.SubscriptionsViewModels;
 
 namespace V2boardApi.Areas.api.Controllers
 {
@@ -163,7 +164,7 @@ namespace V2boardApi.Areas.api.Controllers
                         {
                             GetUserDataModel getUserData = new GetUserDataModel();
                             getUserData.id = reader.GetInt32("id");
-                            getUserData.IsActive = "فعال";
+                            getUserData.IsActive = 1;
                             getUserData.Name = reader.GetString("email").Split('@')[0];
                             getUserData.IsBanned = reader.GetBoolean("banned");
                             getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetDouble("transfer_enable")).ToString() + " GB";
@@ -182,7 +183,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (ex <= DateTime.Now)
                                 {
-                                    getUserData.IsActive = "پایان تاریخ اشتراک";
+                                    getUserData.IsActive = 2;
                                 }
                                 if (getUserData.DaysLeft <= 2)
                                 {
@@ -192,7 +193,7 @@ namespace V2boardApi.Areas.api.Controllers
                             }
                             if (getUserData.IsBanned)
                             {
-                                getUserData.IsActive = "مسدود";
+                                getUserData.IsActive = 4;
                             }
 
                             getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
@@ -204,7 +205,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                             if (vol <= 0)
                             {
-                                getUserData.IsActive = "اتمام حجم";
+                                getUserData.IsActive = 3;
                             }
                             var d = Utility.ConvertByteToGB(vol);
                             if (d <= 2)

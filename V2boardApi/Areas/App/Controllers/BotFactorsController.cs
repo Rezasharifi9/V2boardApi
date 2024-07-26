@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using V2boardApi.Areas.App.Data.BotFactoresViewModels;
 using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
@@ -22,23 +23,41 @@ namespace V2boardApi.Areas.App.Controllers
             db = new Entities();
             RepositoryDepositLog = new Repository<tbDepositWallet_Log>(db);
         }
+
+
         public ActionResult Index()
+        {
+            return View();
+        }
+
+        public ActionResult GetFactores()
         {
             try
             {
-                var Us = db.tbUsers.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
-                List<tbDepositWallet_Log> PayList = new List<tbDepositWallet_Log>();
-                if (Us != null)
+                List<BotFactoresResponseModel> BotFactores = new List<BotFactoresResponseModel>();
+
+                var Factors = RepositoryDepositLog.Where(p => p.tbTelegramUsers.tbUsers.Username == User.Identity.Name).ToList();
+
+                foreach (var item in Factors)
                 {
-                    var Logs = new List<tbDepositWallet_Log>();
-                    foreach (var us in Us.tbTelegramUsers.ToList())
+                    BotFactoresResponseModel factor = new BotFactoresResponseModel();
+                    if (item.dw_Status == "FOR_PAY")
                     {
-                        Logs.AddRange(us.tbDepositWallet_Log.ToList());
+                        factor.Status = 0;
+                    }
+                    else if (item.dw_Status == "FINISH")
+                    {
+                        factor.Status = 1;
                     }
 
-
-                    return View(Logs);
+                    factor.Date = item.dw_CreateDatetime.Value.ConvertDateTimeToShamsi2();
+                    factor.User = item.tbTelegramUsers.Tel_Username + "(" + item.tbTelegramUsers.Tel_FirstName + " " + item.tbTelegramUsers.Tel_LastName + ")";
+                    factor.Price = item.dw_Price.Value.ConvertToMony();
+                    BotFactores.Add(factor);
                 }
+
+
+                return Json(new { data = BotFactores }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {

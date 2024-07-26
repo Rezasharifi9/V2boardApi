@@ -1,0 +1,85 @@
+﻿
+@model DataLayer.DomainModel.tbTelegramUsers
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="user-avatar-section">
+            <div class="d-flex align-items-center flex-column">
+                <img alt="آواتار کاربر" class="img-fluid rounded mb-3 pt-1 mt-4" height="100" src="../../assets/img/avatars/15.png" width="100" />
+                <div class="user-info text-center">
+                    @if (Model.Tel_FirstName != null || Model.Tel_LastName != null)
+                    {
+                        <h4 class="mb-2">@Model.Tel_FirstName @Model.Tel_LastName</h4>
+                    }
+                    else
+                    {
+                        <h4 class="mb-2">@Model.Tel_Username</h4>
+                    }
+
+                    <span class="badge bg-label-secondary mt-1">کاربر تلگرام</span>
+
+                </div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-around flex-wrap mt-3 pt-3 pb-4 border-bottom">
+            <div class="d-flex align-items-start me-4 mt-3 gap-2">
+                <span class="badge bg-label-primary p-2 rounded">
+                    <i class="ti ti-shopping-cart ti-sm"></i>
+                </span>
+                <div>
+                    <p class="mb-0 fw-medium">@V2boardApi.Tools.Utility.ConvertToMony(Model.tbOrders.Count())</p>
+                    <small>تعداد خرید</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-start mt-3 gap-2">
+                <span class="badge bg-label-primary p-2 rounded">
+                    <i class="ti ti-cash ti-sm"></i>
+                </span>
+                <div>
+                    <p class="mb-0 fw-medium">@V2boardApi.Tools.Utility.ConvertToMony(Model.tbOrders.Sum(p => p.Order_Price).Value) تومان</p>
+                    <small>جمع خرید</small>
+                </div>
+            </div>
+        </div>
+        <p class="mt-4 small text-uppercase text-muted">جزئیات</p>
+        <div class="info-container">
+            <ul class="list-unstyled">
+                <li class="mb-2">
+                    <span class="fw-medium me-1">نام و نام خانوادگی:</span>
+                    <span>@Model.Tel_FirstName @Model.Tel_LastName</span>
+                </li>
+                <li class="mb-2 pt-1">
+                    <span class="fw-medium me-1">نام کاربری:</span>
+                    <span>@Model.Tel_Username</span>
+                </li>
+                <li class="mb-2 pt-1">
+                    <span class="fw-medium me-1">وضعیت:</span>
+                    @if (Model.Tel_Status == 1)
+                    {
+                        <span class="badge bg-label-success">فعال</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-label-danger">غیرفعال</span>
+                    }
+                </li>
+                <li class="mb-2 pt-1">
+                    <span class="fw-medium me-1">آیدی منحصر به فرد:</span>
+                    <span>
+                        <bdi>@Model.Tel_UniqUserID</bdi>
+                    </span>
+                </li>
+                <li class="mb-2 pt-1">
+                    <span class="fw-medium me-1">کیف پول:</span>
+                    <span>
+                        @V2boardApi.Tools.Utility.ConvertToMony(Model.Tel_Wallet.Value)  تومان
+                    </span>
+                </li>
+
+            </ul>
+            <div class="d-flex justify-content-center">
+                <a class="btn btn-success me-3" data-bs-target="#editWallet" data-bs-toggle="modal" href="javascript:">شارژ کیف پول</a>
+                <a class="btn btn-primary me-3" data-bs-target="#editSetting" data-bs-toggle="modal" href="javascript:">تنظیمات</a>
+            </div>
+        </div>
+    </div>
+</div>

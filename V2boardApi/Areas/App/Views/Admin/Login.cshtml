@@ -1,73 +1,114 @@
 ﻿@{
-    Layout = null;
-}
-@model DataLayer.DomainModel.tbUsers
 
+    Layout = null;
+
+}
 <!DOCTYPE html>
-<html lang="en">
+<html class="light-style layout-wide customizer-hide" data-assets-path="../../assets/" data-template="vertical-menu-template" data-theme="theme-default" dir="rtl" lang="fa">
+
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>ADMIN PANEL</title>
-    <!-- plugins:css -->
-    <link rel="stylesheet" href="~/Areas/App/assets/vendors/mdi/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="~/Areas/App/assets/vendors/css/vendor.bundle.base.css">
-    <!-- endinject -->
-    <!-- Plugin css for this page -->
-    <!-- End plugin css for this page -->
-    <!-- inject:css -->
-    <!-- endinject -->
-    <!-- Layout styles -->
-    <link rel="stylesheet" href="~/Areas/App/assets/css/style.css">
-    <!-- End layout styles -->
-    <link rel="shortcut icon" href="~/Areas/App/assets/images/favicon.ico" />
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" name="viewport" />
+    <title>صفحات - ورود | Vuexy - قالب مدیریت بوت استرپ</title>
+    <meta content="" name="description" />
+    <!-- Favicon -->
+    <link href="../../assets/img/favicon/favicon.ico" rel="icon" type="image/x-icon" />
+    <!-- Icons -->
+    <link href="../../assets/vendor/fonts/fontawesome.css" rel="stylesheet" />
+    <link href="../../assets/vendor/fonts/tabler-icons.css" rel="stylesheet" />
+    <link href="../../assets/vendor/fonts/flag-icons.css" rel="stylesheet" />
+    <!-- Core CSS -->
+    <link class="template-customizer-core-css" href="../../assets/vendor/css/rtl/core.css" rel="stylesheet" />
+    <link class="template-customizer-theme-css" href="../../assets/vendor/css/rtl/theme-default.css" rel="stylesheet" />
+    <link href="../../assets/css/demo.css" rel="stylesheet" />
+    <!-- Vendors CSS -->
+    <link href="../../assets/vendor/libs/node-waves/node-waves.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/typeahead-js/typeahead.css" rel="stylesheet" />
+    <!-- Vendor -->
+    <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
+    <!-- Page CSS -->
+    <!-- Page -->
+    <link href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="../../assets/vendor/css/pages/page-auth.css" rel="stylesheet" />
+    <!-- Helpers -->
+    <script src="../../assets/vendor/js/helpers.js"></script>
+    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
+    <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
+    <script src="../../assets/vendor/js/template-customizer.js"></script>
+    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
+    <script src="../../assets/js/config.js"></script>
+    <!-- Better experience of RTL -->
+    <link href="../../assets/css/rtl.css" rel="stylesheet" />
 </head>
+
 <body>
-    <div class="container-scroller">
-        <div class="container-fluid page-body-wrapper full-page-wrapper">
-            <div class="content-wrapper d-flex align-items-center auth">
-                <div class="row flex-grow">
-                    <div class="col-lg-4 mx-auto">
-                        <div class="auth-form-light text-left p-5">
-                            <div class="brand-logo" style="text-align: center; font-size: 25px;">
-                                <span>پنل مدیریت</span>
+    <!-- Content -->
+    <div class="container-xxl">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner py-4">
+                <!-- Login -->
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="mb-1 pt-2">خوش آمدید! 👋</h4>
+                        <p class="mb-4">لطفا به حساب کاربری خود وارد شوید تا از امکانات سامانه استفاده کنید.</p>
+                        <form class="mb-3" id="formAuthentication">
+                            <div class="mb-3">
+                                <label class="form-label" for="userUsername">ایمیل یا نام کاربری</label>
+                                <input autofocus class="form-control" id="userUsername" name="userUsername" placeholder="ایمیل یا نام کاربری خود را وارد کنید" type="text" />
                             </div>
-                            <form class="pt-3" action="@Url.Action("Login", "Admin",new {area="App"})" method="post">
-                                <div class="form-group">
-                                    <input type="text" class="form-control form-control-lg" id="Username" name="Username" value="@Model.Username" placeholder="نام کاربری">
+                            <div class="mb-3 form-password-toggle">
+                                <div class="d-flex justify-content-between">
+                                    <label class="form-label" for="userPassword">رمز عبور</label>
+                                    @*<a href="auth-forgot-password-basic.html">
+                                            <small>فراموش کرده‌اید؟</small>
+                                        </a>*@
                                 </div>
-                                <div class="form-group">
-                                    <input type="password" class="form-control form-control-lg" id="Password" name="Password" value="@Model.Password" placeholder="رمز عبور">
+                                <div class="input-group input-group-merge">
+                                    <input aria-describedby="password" class="form-control" id="userPassword" name="userPassword" placeholder="············" type="password" />
+                                    <span class="input-group-text cursor-pointer">
+                                        <i class="ti ti-eye-off"></i>
+                                    </span>
                                 </div>
-                                <div class="mt-3">
-                                    <button class="btn btn-light btn-fw" type="submit">ورود</button>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" id="userRemember" name="userRemember" type="checkbox" value="false" />
+                                    <label class="form-check-label" for="userRemember"> مرا به خاطر بسپار</label>
                                 </div>
-                                <div class="my-2 d-flex justify-content-between align-items-center">
-                                    @if (TempData["Error"] != null)
-                                    {
-                                        <span class="text-2xl text-danger">@TempData["Error"]</span>
-                                    }
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+                            <div class="mb-3">
+                                <button class="btn btn-primary d-grid w-100" type="submit" id="Login">ورود به سیستم</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
+                <!-- /Register -->
             </div>
-            <!-- content-wrapper ends -->
         </div>
-        <!-- page-body-wrapper ends -->
     </div>
-    <!-- container-scroller -->
-    <!-- plugins:js -->
-    <script src="~/Areas/App/assets/vendors/js/vendor.bundle.base.js"></script>
-    <!-- endinject -->
-    <!-- Plugin js for this page -->
-    <!-- End plugin js for this page -->
-    <!-- inject:js -->
-    <script src="~/Areas/App/assets/js/off-canvas.js"></script>
-    <script src="~/Areas/App/assets/js/hoverable-collapse.js"></script>
-    <script src="~/Areas/App/assets/js/misc.js"></script>
-    <!-- endinject -->
+    <!-- / Content -->
+    <!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+    <script src="../../assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="../../assets/vendor/libs/popper/popper.js"></script>
+    <script src="../../assets/vendor/js/bootstrap.js"></script>
+    <script src="../../assets/vendor/libs/node-waves/node-waves.js"></script>
+    <script src="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="../../assets/vendor/libs/hammer/hammer.js"></script>
+    <script src="../../assets/vendor/libs/i18n/i18n.js"></script>
+    <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
+    <script src="../../assets/vendor/js/menu.js"></script>
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <!-- endbuild -->
+    <!-- Vendors JS -->
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+    <!-- Main JS -->
+    <script src="../../assets/js/main.js"></script>
+    <!-- Page JS -->
+    <script src="../../assets/js/pages-auth.js"></script>
 </body>
+
 </html>

@@ -1,114 +1,136 @@
-﻿@model IEnumerable<DataLayer.DomainModel.tbUsers>
-
-@{
-    ViewBag.Title = "Index";
-    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
-
+﻿@section vendorStyle {
+    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/select2/select2.css" />
+    <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
 }
 
-
-
-<div class="row">
-    <div class="col-lg-12 grid-margin stretch-card">
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
         <div class="card">
-            <div class="card-body table-responsive">
-                <h4 class="card-title">مدیریت کاربران ربات</h4>
-                <button class="btn btn-success btn-sm text-dark" style="margin-bottom:20px;float:left;" onclick="PublicSendMessageModal()">ارسال پیغام همگانی</button>
-                <div id="PartialUsers">
-                    @Html.Action("_PartialGetAllUsers", "TelegramUsers", new { area = "App" })
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>مجموع کاربران</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2">21,459</h3>
+                            <p class="text-success mb-0">
+                                <bdi>(+29%)</bdi>
+                            </p>
+                        </div>
+                        <p class="mb-0">آمار هفته قبل</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-primary"> <i class="ti ti-user ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>کاربران وفادار</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2">4,567</h3>
+                            <p class="text-success mb-0">
+                                <bdi>(+18%)</bdi>
+                            </p>
+                        </div>
+                        <p class="mb-0">آمار هفته قبل</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-danger"> <i class="ti ti-user-plus ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>کاربران فعال</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2">19,860</h3>
+                            <p class="text-danger mb-0">
+                                <bdi>(-14%)</bdi>
+                            </p>
+                        </div>
+                        <p class="mb-0">آمار هفته قبل</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-success"> <i class="ti ti-user-check ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>کاربران مسدود</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2">237</h3>
+                            <p class="text-success mb-0">
+                                <bdi>(+42%)</bdi>
+                            </p>
+                        </div>
+                        <p class="mb-0">آمار هفته قبل</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-warning"> <i class="ti ti-user-exclamation ti-sm"></i> </span> </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!-- Users List Table -->
+<div class="card">
+    @*<div class="card-header border-bottom">
+            <h5 class="card-title mb-3">فیلتر جستجو</h5>
+            <div class="d-flex justify-content-between align-items-center row pb-2 gap-3 gap-md-0 mt-3">
+                <div class="col-md-4 user_role"></div>
+                <div class="col-md-4 user_plan"></div>
+                <div class="col-md-4 user_status"></div>
+            </div>
+        </div>*@
+    <div class="card-datatable table-responsive">
+        <table class="datatables-users table">
+            <thead class="border-top">
+                <tr>
+                    <th></th>
+                    <th>کاربر</th>
+                    <th>کیف پول</th>
+                    <th>جمع خرید</th>
+                    <th>وضعیت</th>
+                    <th>دعوت شده ؟</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
 
 
+@section vendorScripts {
 
-@*@section scripts {
+    <script src="../../assets/vendor/libs/moment/moment.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="../../assets/vendor/libs/select2/select2.js"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
+    <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
 
+}
 
-        <script>
+@section customScripts {
 
-
-            $("#UpdatePlan").click(function () {
-                $.ajax({
-                    beforeSend: function () {
-                        alert("پلن ها در حال آپدیت لطفا کمی صبر کنید ...")
-                    },
-                    url: "@Url.Action("UpdatePlans","Server",new {area=""})",
-                    dataType: "json",
-                    type: "get",
-                    success: function (res) {
-                        if (res.status) {
-                            alert(res.result);
-                        }
-                        else {
-                            alert(res.result);
-                        }
-                    }
-                });
-            });
-
-        </script>
-
-
-    }*@
-
-@section scripts {
-
-    <script>
-
-        ConvertToDataTable("#TableTelegramUser", 0, [{ width: 2, targets: 6 }]);
-
-        function PublicSendMessageModal() {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("_PartialPublicMessage", "TelegramUsers", new { area = "App" })",
-                dataType: "html",
-                type: "get",
-                success: function (res) {
-                    $("#loading").css("display", "none");
-                    $("#modal-dialog-lg").html(res);
-                    $('#modal-lg').modal('show');
-                }
-            });
-        }
-
-
-        function EditWallet(id) {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("_EditWallet", "TelegramUsers", new { area = "App" })",
-                type: "get",
-                data: { id: id },
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#modal-dialog-sm").html(result);
-                    $('#modal-sm').modal('show');
-                }
-            });
-        }
-
-        function SendMessage(id) {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("_SendMessage", "TelegramUsers", new { area = "App" })",
-                type: "get",
-                data: { id: id },
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#modal-dialog-sm").html(result);
-                    $('#modal-sm').modal('show');
-                }
-            });
-        }
-
-
-
-
-
-    </script>
+    <script src="../../assets/js/app-user-telegram-list.js"></script>
+    <script src="~/assets/vendor/libs/jquery-form/jquery.form.js"></script>
 
 }

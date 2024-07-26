@@ -31,6 +31,9 @@ using System.Web;
 using System.IO;
 using NLog;
 using Microsoft.Extensions.Logging;
+using V2boardApi.Areas.App.Data.UsersViewModels;
+using V2boardApi.Areas.App.Data.RequestModels;
+using V2boardApi.Models;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -48,6 +51,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbServers> RepositoryServer { get; set; }
         private Repository<tbUserFactors> RepositoryUserFactors { get; set; }
+        private Repository<tbLinkUserAndPlans> RepositoryUserPlanLinks { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public AdminController()
         {
@@ -59,6 +63,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryTelegramUser = new Repository<tbTelegramUsers>(db);
             RepositoryDepositLog = new Repository<tbDepositWallet_Log>(db);
             RepositoryUserFactors = new Repository<tbUserFactors>(db);
+            RepositoryUserPlanLinks = new Repository<tbLinkUserAndPlans>(db);
         }
 
 
@@ -101,6 +106,9 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+
+        #region نمایندگان
+
         #region لیست کاربران
 
         [AuthorizeApp(Roles = "1")]
@@ -110,242 +118,275 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [AuthorizeApp(Roles = "1")]
-        public ActionResult _PartialGetAllUsers(string username = null)
+        public ActionResult _PartialGetAllUsers()
         {
-            var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
-            var Users = new List<tbUsers>();
-            if (username != null)
+            var Users = RepositoryUser.GetAll().OrderByDescending(p => p.User_ID).ToList();
+            List<UserViewModel> users = new List<UserViewModel>();
+            foreach (var item in Users)
             {
-                Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Use.FK_Server_ID && p.Username.Contains(username) && p.Status == true).OrderByDescending(p => p.User_ID).ToList();
-            }
-            else
-            {
-                Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Use.FK_Server_ID && p.Status == true).OrderByDescending(p => p.User_ID).ToList();
-            }
-            return View(Users);
-        }
-
-
-        #endregion
-
-        #region افزودن کاربر
-
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult _PartialCreate()
-        {
-            return View();
-        }
-
-        [AuthorizeApp(Roles = "1")]
-        [System.Web.Mvc.HttpPost]
-        public ActionResult Create(tbUsers tbUser, List<int> Plans)
-        {
-
-            try
-            {
-                var Us = db.tbUsers.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
-                if (Us != null)
+                UserViewModel user = new UserViewModel();
+                user.id = item.User_ID;
+                user.profile = item.Profile_Filename;
+                user.username = item.Username;
+                user.status = 1;
+                user.sumSellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => s.SalePrice.Value).Sum().ConvertToMony() + " تومان";
+                user.sellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => s.SalePrice.Value).Count();
+                if (item.Wallet >= item.Limit)
                 {
-                    var CheckExistsUser = RepositoryUser.Where(p => p.Username == tbUser.Username).Any();
-                    if (CheckExistsUser)
-                    {
-                        return Content("2");
-                    }
-                    else
-                    {
-                        tbUser.Token = (tbUser.Username + tbUser.Password).ToSha256();
-                        tbUser.Password = tbUser.Password.ToSha256();
-                        tbUser.IsRenew = false;
-                        tbUser.Status = true;
-                        tbUser.Wallet = 0;
-                        tbUser.Role = 2;
-                        tbUser.FK_Server_ID = Us.FK_Server_ID;
-                        tbUser.tbLinkUserAndPlans = new List<tbLinkUserAndPlans>();
-                        foreach (var item in Plans)
-                        {
-                            tbLinkUserAndPlans plan = new tbLinkUserAndPlans();
-                            plan.L_FK_P_ID = Convert.ToInt32(item);
-                            plan.L_Status = true;
-                            tbUser.tbLinkUserAndPlans.Add(plan);
-                        }
-
-                        RepositoryUser.Insert(tbUser);
-                        RepositoryUser.Save();
-                        logger.Error("کاربر عمده فروش جدید با موفقیت اضافه شد");
-                        return Content("1");
-                    }
-
+                    user.status = 3;
                 }
                 else
+                if (item.Wallet >= (item.Limit - (item.Limit * 0.2)))
                 {
-                    return Content("3");
+                    user.status = 2;
                 }
+                if (item.Status == false)
+                {
+                    user.status = 4;
+                }
+                user.used = item.Wallet.Value.ConvertToMony() + " تومان";
+                user.limit = item.Limit.Value.ConvertToMony() + " تومان";
+                user.RobotStatus = 0;
+                if (item.tbBotSettings.Count() >= 1)
+                {
+                    if (item.tbBotSettings.ToList()[0].Active == true)
+                    {
+                        user.RobotStatus = 1;
+                    }
+                }
+
+                users.Add(user);
             }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "افزودن کاربر عمده جدید با خطا مواجه شد");
-                return Content("3");
-            }
+
+            return Json(new { data = users }, JsonRequestBehavior.AllowGet);
         }
 
+
         #endregion
+
+        #region افزودن و ویرایش کاربر
 
         #region ویرایش اطلاعات کاربر
 
         [AuthorizeApp(Roles = "1")]
-        public ActionResult _PartialEdit(int id)
+        public ActionResult Edit(int id)
         {
             var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
-            if (us != null)
-            {
-                return View(us);
-            }
-            else
-            {
-                return RedirectToAction("Login", "Admin");
-            }
 
-        }
-
-
-        [AuthorizeApp(Roles = "1")]
-        [System.Web.Mvc.HttpPost]
-        public ActionResult Edit(tbUsers tbUser, List<int> Plans)
-        {
-            try
-            {
-                var Us = db.tbUsers.Where(p => p.User_ID == tbUser.User_ID).FirstOrDefault();
-                if (Us != null)
-                {
-                    if (tbUser.Username != Us.Username)
-                    {
-                        var CheckExistsUser = RepositoryUser.Where(p => p.Username == tbUser.Username).Any();
-                        if (CheckExistsUser)
-                        {
-                            return Content("2");
-                        }
-                    }
-
-                    Us.FirstName = tbUser.FirstName;
-                    Us.Username = tbUser.Username;
-                    Us.LastName = tbUser.LastName;
-                    if (tbUser.Password != null)
-                    {
-                        Us.Password = tbUser.Password.ToSha256();
-                    }
-                    Us.Email = tbUser.Email;
-                    Us.Limit = tbUser.Limit;
-                    Us.TelegramID = tbUser.TelegramID;
-                    foreach (var item in Us.tbLinkUserAndPlans.ToList())
-                    {
-                        item.L_Status = false;
-                    }
-
-                    foreach (var item in Plans)
-                    {
-                        var first = Us.tbLinkUserAndPlans.Where(p => p.L_FK_P_ID == Convert.ToInt32(item) && p.L_Status == false).FirstOrDefault();
-                        if (first == null)
-                        {
-                            tbLinkUserAndPlans link = new tbLinkUserAndPlans();
-                            link.L_FK_P_ID = Convert.ToInt32(item);
-                            link.L_Status = true;
-                            Us.tbLinkUserAndPlans.Add(link);
-                        }
-                        else
-                        {
-                            first.L_Status = true;
-                        }
-                    }
-                    RepositoryUser.Save();
-                    logger.Info("کاربر عمده با موفقیت ویرایش شد");
-                    return Content("1");
-                }
-                else
-                {
-                    return Content("3");
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "ویرایش کاربر عمده با خطا مواجه شد");
-                return Content("3");
-            }
+            UserRequestModel user = new UserRequestModel();
+            user.userId = us.User_ID;
+            user.userLimit = us.Limit.Value.ConvertToMony();
+            user.userContact = us.PhoneNumber;
+            user.userEmail = us.Email;
+            user.userFullname = us.FullName;
+            user.userTelegramid = us.TelegramID;
+            user.userUsername = us.Username;
+            user.userPlan = us.tbLinkUserAndPlans.Select(p => p.L_FK_P_ID.Value).ToList();
+            var data = user.ToDictionary();
 
 
+            return Json(new { status = "success", data = data }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion
 
-        #region شارژ کیف پول کاربر
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult _EditWallet(int id)
-        {
-            var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
-            if (us != null)
-            {
-                return PartialView(us);
-            }
-            else
-            {
-                return RedirectToAction("Login", "Admin");
-            }
-        }
+        #region ثبت ویرایش و افزودن اطلاعات کاربر
 
+        [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult EditWallet(int id, string wallet, string PricePerMonth_Admin, string PricePerGig_Admin)
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateOrEdit(UserRequestModel user)
         {
-            var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
-            if (us != null)
+            try
             {
-                var intWallet = 0;
-                var PricePerMonth = 0;
-                var PricePerGig = 0;
+                if (ModelState.IsValid)
+                {
 
-                try
-                {
-                    intWallet = int.Parse(wallet, NumberStyles.Currency);
-                    PricePerGig = int.Parse(PricePerGig_Admin, NumberStyles.Currency);
-                    PricePerMonth = int.Parse(PricePerMonth_Admin, NumberStyles.Currency);
+                    if (user.userId == 0)
+                    {
+                        if (user.userPassword == null)
+                        {
+                            return MessageBox.Warning("هشدار", "لطفا رمز عبور را وارد کنید", icon: icon.warning);
+                        }
+                        var CheckExistsUser = RepositoryUser.Where(p => p.Username == user.userUsername).Any();
+                        if (CheckExistsUser)
+                        {
+                            return MessageBox.Warning("هشدار", "نماینده ای با این نام کاربری وجود دارد", icon: icon.warning);
+                        }
+                        else
+                        {
+                            tbUsers tbUser = new tbUsers();
+                            tbUser.Username = user.userUsername;
+                            tbUser.FullName = user.userFullname;
+                            tbUser.Email = user.userEmail;
+                            tbUser.Password = user.userPassword.ToSha256();
+
+                            try
+                            {
+                                var Number = int.Parse(user.userLimit, NumberStyles.Currency);
+                                tbUser.Limit = Number;
+                            }
+                            catch
+                            {
+                                return MessageBox.Warning("هشدار", "لطفا مبلغ را صحیح وارد کنید", icon: icon.warning);
+                            }
+                            var CurrentUser = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+                            tbUser.PhoneNumber = user.userContact;
+                            tbUser.Token = (user.userUsername + user.userPassword).ToSha256();
+                            tbUser.Password = user.userPassword.ToSha256();
+                            tbUser.IsRenew = false;
+                            tbUser.Status = true;
+                            tbUser.Wallet = 0;
+                            tbUser.Role = 2;
+                            tbUser.FK_Server_ID = CurrentUser.FK_Server_ID;
+                            tbUser.tbLinkUserAndPlans = new List<tbLinkUserAndPlans>();
+                            foreach (var item in user.userPlan)
+                            {
+                                tbLinkUserAndPlans plan = new tbLinkUserAndPlans();
+                                plan.L_FK_P_ID = Convert.ToInt32(item);
+                                plan.L_Status = true;
+                                tbUser.tbLinkUserAndPlans.Add(plan);
+                            }
+
+                            RepositoryUser.Insert(tbUser);
+                            RepositoryUser.Save();
+
+                            logger.Info("نماینده افزوده شد");
+                            return MessageBox.Success("موفق", "نماینده با موفقیت افزوده شد");
+                        }
+                    }
+                    else
+                    {
+                        tbUsers tbUser = RepositoryUser.Where(p => p.User_ID == user.userId).FirstOrDefault();
+                        tbUser.Username = user.userUsername;
+                        tbUser.FullName = user.userFullname;
+                        tbUser.Email = user.userEmail;
+                        if (user.userPassword != null)
+                        {
+                            tbUser.Password = user.userPassword.ToSha256();
+                        }
+                        try
+                        {
+                            var Number = int.Parse(user.userLimit, NumberStyles.Currency);
+                            tbUser.Limit = Number;
+                        }
+                        catch
+                        {
+                            return MessageBox.Warning("هشدار", "لطفا مبلغ را صحیح وارد کنید", icon: icon.warning);
+                        }
+                        tbUser.PhoneNumber = user.userContact;
+                        tbUser.Token = (user.userUsername + user.userPassword).ToSha256();
+
+                        foreach (var item in tbUser.tbLinkUserAndPlans.ToList())
+                        {
+                            item.L_Status = false;
+                        }
+
+                        foreach (var item in user.userPlan)
+                        {
+                            var first = tbUser.tbLinkUserAndPlans.Where(p => p.L_FK_P_ID == Convert.ToInt32(item) && p.L_Status == false).FirstOrDefault();
+                            if (first == null)
+                            {
+                                tbLinkUserAndPlans link = new tbLinkUserAndPlans();
+                                link.L_FK_P_ID = Convert.ToInt32(item);
+                                link.L_Status = true;
+                                tbUser.tbLinkUserAndPlans.Add(link);
+                            }
+                            else
+                            {
+                                first.L_Status = true;
+                            }
+                        }
+
+
+                        RepositoryUser.Save();
+                        logger.Info("نماینده ویرایش شد");
+                        return MessageBox.Success("موفق", "نماینده با موفقیت ویرایش شد");
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    return Content("3");
+                    var errors = ModelState.GetError();
+                    return MessageBox.Warning("هشدار", errors, icon: icon.warning);
                 }
 
-                if (us.tbBotSettings.FirstOrDefault() != null && PricePerGig != 0 && PricePerMonth != 0)
-                {
-                    var Setting = us.tbBotSettings.FirstOrDefault();
-                    Setting.PricePerGig_Admin = PricePerGig;
-                    Setting.PricePerMonth_Admin = PricePerMonth;
-                }
-
-                if (PricePerGig != 0 && PricePerMonth != 0)
-                {
-                    var Setting = new tbBotSettings();
-                    Setting.PricePerGig_Admin = PricePerGig;
-                    Setting.PricePerMonth_Admin = PricePerMonth;
-                    us.tbBotSettings.Add(Setting);
-                }
-
-                if (us.Wallet != intWallet)
-                {
-                    tbUserFactors factor = new tbUserFactors();
-                    factor.tbUf_Value = us.Wallet - intWallet;
-                    factor.tbUf_CreateTime = DateTime.Now;
-                    factor.FK_User_ID = id;
-                    factor.IsPayed = true;
-                    us.Wallet = intWallet;
-                    us.tbUserFactors.Add(factor);
-                }
-                RepositoryUser.Save();
-                return Content("1");
             }
-            else
+            catch (Exception ex)
             {
-                return Content("2");
+                logger.Error(ex, "افزودن نماینده جدید با خطا مواجه شد");
+                return MessageBox.Warning("ناموفق", "ثبت نماینده با خطا مواجه شد", icon: icon.error);
             }
         }
+
+        #endregion
+
+        #endregion
+
+        #region نمایش جزئیات کاربر
+
+        #region صفحه جزئیات کاربر
+
+        /// <summary>
+        /// جزئیات کاربر انتخاب شده
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult Details(int user_id, string type = "history")
+        {
+            ViewBag.Type = type;
+            return View(user_id);
+        }
+
+
+        #endregion
+
+        #region کارت جزئیات کاربر
+
+        //نمایش پروفایل کاربر
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult _UserCard(int userid)
+        {
+            var User = RepositoryUser.Where(p => p.User_ID == userid).FirstOrDefault();
+            return PartialView(User);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region مسدود کردن کاربر
+        //[AuthorizeApp(Roles = "1")]
+        public ActionResult BanUser(int id)
+        {
+            try
+            {
+
+                var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
+                if (User != null)
+                {
+                    if (User.Status.Value)
+                    {
+                        User.Status = false;
+                    }
+                    else
+                    {
+                        User.Status = true;
+                    }
+                }
+
+                RepositoryUser.Save();
+                logger.Info("وضعیت کاربر تغییر یافت");
+                return Json(new { result = true }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "در تغییر وضعیت کاربر خطایی رخ داد");
+                return Json(new { result = false }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -400,42 +441,51 @@ namespace V2boardApi.Areas.App.Controllers
         /// <param name="loginModel"></param>
         /// <returns></returns>
         [System.Web.Http.HttpPost]
-        public ActionResult Login(tbUsers user)
+        public ActionResult Login(string userUsername, string userPassword, bool userRemember)
         {
             try
             {
-                tbUsers User = RepositoryUser.table.Where(p => p.Username == user.Username).FirstOrDefault();
+                var Sha = userPassword.ToSha256();
+                tbUsers User = RepositoryUser.table.Where(p => p.Username == userUsername && p.Password == Sha).FirstOrDefault();
                 if (User != null)
                 {
-
-                    var Sha = user.Password.ToSha256();
-
-                    if (User.Password == Sha)
+                    if (Request.Cookies["Role"] != null)
                     {
-                        if (Request.Cookies["Role"] != null)
-                        {
-                            Response.Cookies["Role"].Value = User.Role.Value.ToString();
-                        }
-                        else
-                        {
-                            HttpCookie cookie = new HttpCookie("Role");
-                            cookie.Value = User.Role.Value.ToString();
-                            Response.Cookies.Add(cookie);
-                        }
-
-
-
-
-
-                        logger.Info("ورود موفق");
-                        FormsAuthentication.SetAuthCookie(User.Username, false);
-                        return Redirect("/App/Dashboard");
+                        Response.Cookies["Role"].Value = User.Role.Value.ToString();
                     }
                     else
                     {
-                        logger.Warn("ورود ناموفق");
-                        TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
-                        return View(user);
+                        HttpCookie cookie = new HttpCookie("Role");
+                        cookie.Value = User.Role.Value.ToString();
+                        if (userRemember)
+                        {
+                            cookie.Expires = DateTime.Now.AddDays(7);
+                        }
+
+                        Response.Cookies.Add(cookie);
+                    }
+
+
+                    if (userRemember)
+                    {
+                        FormsAuthentication.SetAuthCookie(User.Username, true);
+                    }
+                    else
+                    {
+                        FormsAuthentication.SetAuthCookie(User.Username, false);
+                    }
+
+                    logger.Info("ورود موفق");
+
+                    if(User.Role == 2)
+                    {
+                        var URL = Url.Action("Index", "Subscriptions");
+                        return Json(new { status = "success", redirectURL = URL });
+                    }
+                    else
+                    {
+                        var URL = Url.Action("Index", "Admin");
+                        return Json(new { status = "success", redirectURL = URL });
                     }
 
                 }
@@ -443,14 +493,14 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     logger.Warn("ورود ناموفق");
                     TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
-                    return View(user);
+                    return MessageBox.Warning("اشتباه", "نام کاربری یا رمز عبور اشتباه است");
                 }
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "خطا در ورود کاربر");
                 TempData["Error"] = "خطا در برقراری ارتباط با سرور";
-                return RedirectToAction("Login", "Admin");
+                return MessageBox.Error("خطا", "خطا در برقراری ارتباط با سرور");
             }
         }
 
@@ -460,6 +510,7 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.Authorize]
         public ActionResult LogOut()
         {
+            Response.Cookies.Clear();
             FormsAuthentication.SignOut();
             logger.Info("خروج موفق");
             return RedirectToAction("Login", "Admin");
@@ -467,87 +518,55 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region مسدود کردن کاربر
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult BanUser(int id)
-        {
-            try
-            {
-
-                var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
-                if (User != null)
-                {
-                    if (User.Status.Value)
-                    {
-                        User.Status = false;
-                    }
-                    else
-                    {
-                        User.Status = true;
-                    }
-                }
-
-                RepositoryUser.Save();
-                logger.Info("وضعیت کاربر تغییر یافت");
-                return Content("1");
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "در تغییر وضعیت کاربر خطایی رخ داد");
-                return Content("2");
-            }
-        }
-
-        #endregion
+        
 
         #region لیست تعرفه ها در قالب Select2
-        [AuthorizeApp(Roles = "1")]
+        //[AuthorizeApp(Roles = "1")]
         public ActionResult Select2Plans()
         {
-            var Us = db.tbUsers.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            var Plans = RepositoryPlans.Where(s => s.Status == true).Select(p => new { id = p.Plan_ID, Name = p.Plan_Name }).ToList();
+            return Json(new { result = Plans }, JsonRequestBehavior.AllowGet);
+        }
 
-            if (Us != null)
-            {
-                var Plans = RepositoryPlans.Where(p => p.FK_Server_ID == Us.FK_Server_ID && p.Status == true).ToList();
-                return PartialView(Plans);
-            }
-            else
-            {
-                return PartialView();
-            }
+        public ActionResult Select2UserPlans()
+        {
+            var UserLink = RepositoryUserPlanLinks.Where(p => p.tbUsers.Username == User.Identity.Name && p.tbPlans.Status == true).ToList();
+            var Plans = UserLink.Select(p => new { id = p.tbPlans.Plan_ID, Name = p.tbPlans.Plan_Name }).ToList();
+            return Json(new { result = Plans }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion
 
         #region نمایش لاگ ایجاد یا تمدید کاربر عمده 
         [AuthorizeApp(Roles = "1")]
-        public ActionResult GetUserAccountLog(int id)
+        public ActionResult GetUserAccountLog(int user_id)
         {
             try
             {
-                var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
-                var Logs = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == id).OrderByDescending(p => p.CreateDatetime.Value).ToList();
+                var user = RepositoryUser.Where(p => p.User_ID == user_id).FirstOrDefault();
+                var Logs = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == user_id).OrderByDescending(p => p.CreateDatetime.Value).ToList();
                 if (Logs != null)
                 {
-
-                    UserLogViewModel userLogViewModel = new UserLogViewModel();
-                    userLogViewModel.Logs = Logs;
-                    var LastPay = User.tbUserFactors.OrderByDescending(p => p.tbUf_CreateTime).FirstOrDefault();
-                    if (LastPay != null)
+                    List<UserLogResponseModel> logs = new List<UserLogResponseModel>();
+                    foreach (var item in Logs)
                     {
-                        userLogViewModel.SumSaleFromLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Sum(p => p.SalePrice.Value);
-                        userLogViewModel.CountCreatedFormLastPay = Logs.Where(p => p.CreateDatetime >= LastPay.tbUf_CreateTime).Count();
-                    }
-                    else
-                    {
-                        userLogViewModel.SumSaleFromLastPay = 0;
-                        userLogViewModel.CountCreatedFormLastPay = 0;
-                    }
-                    userLogViewModel.SumSale = Logs.Sum(p => p.SalePrice.Value);
-                    userLogViewModel.CountCreated = Logs.Count();
-                    ViewBag.Name = User.Username;
+                        UserLogResponseModel model = new UserLogResponseModel();
+                        model.id = item.log_ID;
+                        model.SubName = item.FK_NameUser_ID.Split('@')[0];
 
-                    return View(userLogViewModel);
+                        if (model.SubName.Length > 20)
+                        {
+                            model.SubName = model.SubName.Substring(0, 10);
+                        }
+
+                        model.Event = item.Action;
+                        model.CreateDate = item.CreateDatetime.Value.ConvertDateTimeToShamsi2();
+                        model.SellPrice = item.SalePrice.Value.ConvertToMony();
+                        model.Plan = item.tbLinkUserAndPlans.tbPlans.Plan_Name;
+                        logs.Add(model);
+                    }
+
+                    return Json(new { data = logs }, JsonRequestBehavior.AllowGet);
                 }
                 else
                 {
@@ -567,13 +586,23 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region فاکتور های پرداخت شده کاربر 
         [AuthorizeApp(Roles = "1")]
-        public ActionResult Factors(int id)
+        public ActionResult Factors(int user_id)
         {
 
-            var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
+            var User = RepositoryUser.Where(p => p.User_ID == user_id).FirstOrDefault();
             if (User != null)
             {
-                return PartialView(User.tbUserFactors.Where(p => p.IsPayed == true).ToList());
+                var Factors = User.tbUserFactors.Where(p => p.IsPayed == true).ToList();
+                List<UserFactorResponseModel> Factores = new List<UserFactorResponseModel>();
+                foreach (var item in Factors)
+                {
+                    UserFactorResponseModel factor = new UserFactorResponseModel();
+                    factor.PayDate = item.tbUf_CreateTime.Value.ConvertDateTimeToShamsi2();
+                    factor.Price = item.tbUf_Value.Value.ConvertToMony();
+                    Factores.Add(factor);
+                }
+
+                return Json(new { data = Factores }, JsonRequestBehavior.AllowGet);
             }
             return PartialView();
         }
@@ -748,11 +777,61 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+        #region شارژ کیف پول کاربر
+        [AuthorizeApp(Roles = "1")]
+
+        public ActionResult _EditWallet(int user_id)
+        {
+            var us = db.tbUsers.Where(p => p.User_ID == user_id).FirstOrDefault();
+            if (us != null)
+            {
+                return PartialView(us);
+            }
+            else
+            {
+                return RedirectToAction("Login", "Admin");
+            }
+        }
+
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditWallet(int user_id, string userDeposit)
+        {
+            try
+            {
+                var us = db.tbUsers.Where(p => p.User_ID == user_id).FirstOrDefault();
+                var intWallet = 0;
+                intWallet = int.Parse(userDeposit, NumberStyles.Currency);
+
+                if (us.Wallet != intWallet)
+                {
+                    tbUserFactors factor = new tbUserFactors();
+                    factor.tbUf_Value = us.Wallet - intWallet;
+                    factor.tbUf_CreateTime = DateTime.Now;
+                    factor.FK_User_ID = user_id;
+                    factor.IsPayed = true;
+                    us.Wallet = intWallet;
+                    us.tbUserFactors.Add(factor);
+                }
+                RepositoryUser.Save();
+                return MessageBox.Success("موفق", "اطلاعات کیف پول با موفقیت تغییر کرد");
+            }
+            catch (Exception ex)
+            {
+                return MessageBox.Warning("هشدار", "لطفا مبلغ را صحیح وارد کنید", icon: icon.warning);
+            }
+        }
+        #endregion
+
         #region روشن کردن ربات عمده فروش
         [AuthorizeApp(Roles = "1")]
-        public async Task<ActionResult> StartBot(int userId)
+        //[System.Web.Mvc.HttpPost]
+
+        public async Task<ActionResult> StartBot(int user_id)
         {
-            var User = RepositoryUser.Where(p => p.User_ID == userId).FirstOrDefault();
+            var User = RepositoryUser.Where(p => p.User_ID == user_id).FirstOrDefault();
             try
             {
                 if (User != null)
@@ -761,7 +840,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                     if (Bot == null)
                     {
-                        return Content("warning-" + "تنظیمات ربات برای این کاربر انجام نشده است !!");
+                        return MessageBox.Warning("هشدار", "تنظیمات ربات برای این کاربر انجام نشده است !!");
                     }
 
                     BotService service = new BotService();
@@ -782,14 +861,14 @@ namespace V2boardApi.Areas.App.Controllers
 
 
                     logger.Info("ربات " + User.Username + " با موفقیت راه اندازی شد");
-                    return Content("success-" + "ربات " + User.Username + " با موفقیت راه اندازی شد");
+                    return MessageBox.Success("موفق", "ربات " + User.Username + " با موفقیت راه اندازی شد");
                 }
-                return Content("error-" + "ربات راه اندازی نشد");
+                return MessageBox.Error("هشدار", "ربات راه اندازی نشد");
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "راه اندازی ربات " + User.Username + " با خطا مواجه شد");
-                return Content("error-" + "راه اندازی ربات با خطا مواجه شد");
+                return MessageBox.Error("هشدار", "راه اندازی ربات با خطا مواجه شد");
             }
         }
 
@@ -829,13 +908,13 @@ namespace V2boardApi.Areas.App.Controllers
                                 }
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             logger.Error(ex, "ربات " + item.Username + " با خطا مواجه شد");
                         }
 
 
-                        
+
                     }
                 }
 

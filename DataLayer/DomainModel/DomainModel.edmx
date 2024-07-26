@@ -219,6 +219,7 @@
           <Property Name="Tel_UpdateMessage" Type="datetime" />
           <Property Name="Tel_GetedTestAccount" Type="bit" />
           <Property Name="FK_User_ID" Type="int" />
+          <Property Name="Tel_Status" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -262,6 +263,7 @@
           <Property Name="User_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Username" Type="varchar" MaxLength="150" />
           <Property Name="Password" Type="varchar" MaxLength="250" />
+          <Property Name="FullName" Type="nvarchar" MaxLength="30" />
           <Property Name="FirstName" Type="nvarchar" MaxLength="250" />
           <Property Name="LastName" Type="nvarchar" MaxLength="250" />
           <Property Name="PhoneNumber" Type="varchar" MaxLength="50" />
@@ -1093,6 +1095,7 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <NavigationProperty Name="tbTelegramUsers2" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
+          <Property Name="Tel_Status" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -1165,6 +1168,7 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbTelegramUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
+          <Property Name="FullName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="vi_AllSales">
           <Key>
@@ -1684,6 +1688,7 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <EntitySetMapping Name="tbTelegramUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbTelegramUsers">
               <MappingFragment StoreEntitySet="tbTelegramUsers">
+                <ScalarProperty Name="Tel_Status" ColumnName="Tel_Status" />
                 <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="Tel_GetedTestAccount" ColumnName="Tel_GetedTestAccount" />
                 <ScalarProperty Name="Tel_UpdateMessage" ColumnName="Tel_UpdateMessage" />
@@ -1743,6 +1748,7 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="FullName" ColumnName="FullName" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
                 <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />

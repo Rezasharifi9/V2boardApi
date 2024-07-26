@@ -164,213 +164,217 @@ namespace V2boardApi.Areas.api.Controllers
         #endregion
 
         #region لیست کاربران
-        [System.Web.Http.HttpGet]
-        [Authorize]
-        public IHttpActionResult GetAll(int page = 1, string name = null, string KeySort = null, string type = null, string SortType = "DESC")
-        {
-            try
-            {
-                var Token = Request.Headers.Authorization;
-                var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).FirstOrDefault();
-                if (User.tbServers != null)
-                {
-                    string Query = "SELECT v2.id,v2.email,t,u,d,v2.transfer_enable,banned,token,expired_at,pl.name FROM `v2_user` as v2 join v2_plan as pl on plan_id = pl.id where ";
-                    if (!string.IsNullOrEmpty(name))
-                    {
-                        if (name.Contains("token="))
-                        {
-                            Query += "token='" + name.Split('=')[1] + "'and " + "email like '%" + User.Username + "%'";
-                        }
-                        else if (type == "uuid")
-                        {
-                            Query += "uuid='" + name + "'" + " and " + "email like '%" + User.Username + "%'";
-                        }
-                        else
-                        {
-                            Query += "email like'%" + name + "%'" + " and " + "email like '%" + User.Username + "%'";
-                        }
-                    }
-                    else
-                    {
-                        Query += "email like '%@" + User.Username + "%'";
-                    }
+        //[System.Web.Http.HttpGet]
+        //[Authorize]
+        //public IHttpActionResult GetAll(int page = 1, string name = null, string KeySort = null, string type = null, string SortType = "DESC")
+        //{
+        //    try
+        //    {
 
 
 
-                    if (KeySort != null)
-                    {
-                        if (KeySort.ToLower() == "name")
-                        {
-                            Query += " order by email " + SortType;
-                        }
-                        else if (KeySort.ToLower() == "date")
-                        {
-                            Query += " order by expired_at " + SortType;
-                        }
-                        else if (KeySort.ToLower() == "totalvolume")
-                        {
-                            Query += " order by transfer_enable " + SortType;
-                        }
-                        else if (KeySort.ToLower() == "usedvolume")
-                        {
-                            Query += " order by t " + SortType;
-                        }
-                    }
-                    else
-                    {
-                        Query += " Order by v2.id DESC";
-                    }
 
-                    if (page == 1)
-                    {
-                        Query += " LIMIT 10";
-                    }
-                    else if (page >= 2)
-                    {
-
-                        Query += " LIMIT " + (page - 1) * 10 + ",10";
-
-                    }
-                    MySqlEntities mySqlEntities = new MySqlEntities(User.tbServers.ConnectionString);
-
-                    mySqlEntities.Open();
-                    var reader = mySqlEntities.GetData(Query);
-
-                    List<GetUserDataModel> Users = new List<GetUserDataModel>();
-                    var Counter = 0;
-                    while (reader.Read())
-                    {
-                        GetUserDataModel getUserData = new GetUserDataModel();
-                        if (reader.HasRows)
-                        {
-                            getUserData.id = reader.GetInt32("id");
-                            getUserData.Name = reader.GetString("email").Split('@')[0];
-
-                            var log = RepositoryLogs.Where(p => p.FK_NameUser_ID.Equals(getUserData.Name) && p.tbLinkUserAndPlans.L_FK_U_ID == User.User_ID).ToList().LastOrDefault();
-
-
-                            getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetInt64("transfer_enable")).ToString();
-                            getUserData.PlanName = reader.GetString("name");
-                            if (log != null)
-                            {
-                                if (log.tbLinkUserAndPlans != null)
-                                {
-                                    getUserData.TotalVolume = log.tbLinkUserAndPlans.tbPlans.PlanVolume.Value.ToString();
-                                    if (log.PlanName != null)
-                                    {
-                                        getUserData.PlanName = log.PlanName;
-                                    }
-                                    else
-                                    {
-                                        getUserData.PlanName = log.tbLinkUserAndPlans.tbPlans.Plan_Name;
-                                    }
-                                }
-                            }
-
-                            getUserData.IsBanned = Convert.ToBoolean(reader.GetSByte("banned"));
-                            getUserData.IsActive = "فعال";
-                            var exp = reader.GetBodyDefinition("expired_at");
-                            var OnlineTime = reader.GetBodyDefinition("t");
-                            if (exp != "")
-                            {
-                                var e = Convert.ToInt64(exp);
-                                var ex = Utility.ConvertSecondToDatetime(e);
-                                getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
-
-                                getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
-                                if (getUserData.DaysLeft <= 2)
-                                {
-                                    getUserData.CanEdit = true;
-                                }
-                                if (ex <= DateTime.Now)
-                                {
-                                    getUserData.IsActive = "پایان تاریخ اشتراک";
-                                }
-                            }
-                            if (OnlineTime != "0")
-                            {
-                                var onlineTime = Utility.ConvertSecondToDatetime(Convert.ToInt64(OnlineTime));
-                                if (onlineTime >= DateTime.Now.AddMinutes(-1))
-                                {
-                                    getUserData.IsOnline = true;
-                                }
-                                else
-                                {
-                                    getUserData.IsOnline = false;
-                                }
-                                getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi2(onlineTime);
-                            }
-                            else
-                            {
-                                getUserData.IsOnline = false;
-                            }
+        //        var Token = Request.Headers.Authorization;
+        //        var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).FirstOrDefault();
+        //        if (User.tbServers != null)
+        //        {
+        //            string Query = "SELECT v2.id,v2.email,t,u,d,v2.transfer_enable,banned,token,expired_at,pl.name FROM `v2_user` as v2 join v2_plan as pl on plan_id = pl.id where ";
+        //            if (!string.IsNullOrEmpty(name))
+        //            {
+        //                if (name.Contains("token="))
+        //                {
+        //                    Query += "token='" + name.Split('=')[1] + "'and " + "email like '%" + User.Username + "%'";
+        //                }
+        //                else if (type == "uuid")
+        //                {
+        //                    Query += "uuid='" + name + "'" + " and " + "email like '%" + User.Username + "%'";
+        //                }
+        //                else
+        //                {
+        //                    Query += "email like'%" + name + "%'" + " and " + "email like '%" + User.Username + "%'";
+        //                }
+        //            }
+        //            else
+        //            {
+        //                Query += "email like '%@" + User.Username + "%'";
+        //            }
 
 
 
-                            getUserData.SubLink = "https://" + User.tbServers.SubAddress + "/api/v1/client/subscribe?token=" + reader.GetString("token");
-                            var u = reader.GetInt64("u");
-                            var d = reader.GetInt64("d");
-                            var re = Utility.ConvertByteToGB(u + d);
-                            getUserData.UsedVolume = Math.Round(re, 2) + " GB";
+        //            if (KeySort != null)
+        //            {
+        //                if (KeySort.ToLower() == "name")
+        //                {
+        //                    Query += " order by email " + SortType;
+        //                }
+        //                else if (KeySort.ToLower() == "date")
+        //                {
+        //                    Query += " order by expired_at " + SortType;
+        //                }
+        //                else if (KeySort.ToLower() == "totalvolume")
+        //                {
+        //                    Query += " order by transfer_enable " + SortType;
+        //                }
+        //                else if (KeySort.ToLower() == "usedvolume")
+        //                {
+        //                    Query += " order by t " + SortType;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                Query += " Order by v2.id DESC";
+        //            }
 
-                            var vol = reader.GetInt64("transfer_enable") - (u + d);
-                            var dd = Utility.ConvertByteToGB(vol);
-                            if (dd <= 2)
-                            {
-                                getUserData.CanEdit = true;
-                            }
+        //            if (page == 1)
+        //            {
+        //                Query += " LIMIT 10";
+        //            }
+        //            else if (page >= 2)
+        //            {
 
-                            if (vol <= 0)
-                            {
-                                getUserData.IsActive = "اتمام حجم";
-                            }
-                            else
-                                if (getUserData.IsBanned && getUserData.IsActive == "فعال")
-                            {
-                                getUserData.IsActive = "مسدود";
-                            }
-                            getUserData.RemainingVolume = Math.Round(dd, 2) + " GB";
-                            Users.Add(getUserData);
-                            Counter++;
-                        }
+        //                Query += " LIMIT " + (page - 1) * 10 + ",10";
 
+        //            }
+        //            MySqlEntities mySqlEntities = new MySqlEntities(User.tbServers.ConnectionString);
 
-                    }
-                    reader.Close();
+        //            mySqlEntities.Open();
+        //            var reader = mySqlEntities.GetData(Query);
 
-                    if (name != null)
-                    {
-                        reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "' and email like '" + name + "%'");
-                    }
-                    else
-                    {
-                        reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "%'");
-                    }
-                    reader.Read();
-                    var count = reader.GetInt32("Count");
-                    reader.Close();
+        //            List<GetUserDataModel> Users = new List<GetUserDataModel>();
+        //            var Counter = 0;
+        //            while (reader.Read())
+        //            {
+        //                GetUserDataModel getUserData = new GetUserDataModel();
+        //                if (reader.HasRows)
+        //                {
+        //                    getUserData.id = reader.GetInt32("id");
+        //                    getUserData.Name = reader.GetString("email").Split('@')[0];
 
-                    if (reader.IsClosed)
-                    {
-                        mySqlEntities.Close();
-                    }
+        //                    var log = RepositoryLogs.Where(p => p.FK_NameUser_ID.Equals(getUserData.Name) && p.tbLinkUserAndPlans.L_FK_U_ID == User.User_ID).ToList().LastOrDefault();
 
 
-                    return Ok(new { result = Users, total = count });
+        //                    getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetInt64("transfer_enable")).ToString();
+        //                    getUserData.PlanName = reader.GetString("name");
+        //                    if (log != null)
+        //                    {
+        //                        if (log.tbLinkUserAndPlans != null)
+        //                        {
+        //                            getUserData.TotalVolume = log.tbLinkUserAndPlans.tbPlans.PlanVolume.Value.ToString();
+        //                            if (log.PlanName != null)
+        //                            {
+        //                                getUserData.PlanName = log.PlanName;
+        //                            }
+        //                            else
+        //                            {
+        //                                getUserData.PlanName = log.tbLinkUserAndPlans.tbPlans.Plan_Name;
+        //                            }
+        //                        }
+        //                    }
 
-                }
-                else
-                {
-                    return Content(System.Net.HttpStatusCode.NotFound, "این کاربر مختص سروری نیست");
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "نمایش لیست اشتراکات در پنل فروش با خطا مواجه شد");
-                return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط");
+        //                    getUserData.IsBanned = Convert.ToBoolean(reader.GetSByte("banned"));
+        //                    getUserData.IsActive = "فعال";
+        //                    var exp = reader.GetBodyDefinition("expired_at");
+        //                    var OnlineTime = reader.GetBodyDefinition("t");
+        //                    if (exp != "")
+        //                    {
+        //                        var e = Convert.ToInt64(exp);
+        //                        var ex = Utility.ConvertSecondToDatetime(e);
+        //                        getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
 
-            }
-        }
+        //                        getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
+        //                        if (getUserData.DaysLeft <= 2)
+        //                        {
+        //                            getUserData.CanEdit = true;
+        //                        }
+        //                        if (ex <= DateTime.Now)
+        //                        {
+        //                            getUserData.IsActive = "پایان تاریخ اشتراک";
+        //                        }
+        //                    }
+        //                    if (OnlineTime != "0")
+        //                    {
+        //                        var onlineTime = Utility.ConvertSecondToDatetime(Convert.ToInt64(OnlineTime));
+        //                        if (onlineTime >= DateTime.Now.AddMinutes(-1))
+        //                        {
+        //                            getUserData.IsOnline = true;
+        //                        }
+        //                        else
+        //                        {
+        //                            getUserData.IsOnline = false;
+        //                        }
+        //                        getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi2(onlineTime);
+        //                    }
+        //                    else
+        //                    {
+        //                        getUserData.IsOnline = false;
+        //                    }
+
+
+
+        //                    getUserData.SubLink = "https://" + User.tbServers.SubAddress + "/api/v1/client/subscribe?token=" + reader.GetString("token");
+        //                    var u = reader.GetInt64("u");
+        //                    var d = reader.GetInt64("d");
+        //                    var re = Utility.ConvertByteToGB(u + d);
+        //                    getUserData.UsedVolume = Math.Round(re, 2) + " GB";
+
+        //                    var vol = reader.GetInt64("transfer_enable") - (u + d);
+        //                    var dd = Utility.ConvertByteToGB(vol);
+        //                    if (dd <= 2)
+        //                    {
+        //                        getUserData.CanEdit = true;
+        //                    }
+
+        //                    if (vol <= 0)
+        //                    {
+        //                        getUserData.IsActive = "اتمام حجم";
+        //                    }
+        //                    else
+        //                        if (getUserData.IsBanned && getUserData.IsActive == "فعال")
+        //                    {
+        //                        getUserData.IsActive = "مسدود";
+        //                    }
+        //                    getUserData.RemainingVolume = Math.Round(dd, 2) + " GB";
+        //                    Users.Add(getUserData);
+        //                    Counter++;
+        //                }
+
+
+        //            }
+        //            reader.Close();
+
+        //            if (name != null)
+        //            {
+        //                reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "' and email like '" + name + "%'");
+        //            }
+        //            else
+        //            {
+        //                reader = mySqlEntities.GetData("SELECT COUNT(id) as Count FROM `v2_user` where email like '%" + User.Username + "%'");
+        //            }
+        //            reader.Read();
+        //            var count = reader.GetInt32("Count");
+        //            reader.Close();
+
+        //            if (reader.IsClosed)
+        //            {
+        //                mySqlEntities.Close();
+        //            }
+
+
+        //            return Ok(new { result = Users, total = count });
+
+        //        }
+        //        else
+        //        {
+        //            return Content(System.Net.HttpStatusCode.NotFound, "این کاربر مختص سروری نیست");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.Error(ex, "نمایش لیست اشتراکات در پنل فروش با خطا مواجه شد");
+        //        return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در برقراری ارتباط");
+
+        //    }
+        //}
 
         #endregion
 

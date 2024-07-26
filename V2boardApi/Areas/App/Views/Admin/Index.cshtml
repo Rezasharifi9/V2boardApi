@@ -1,256 +1,196 @@
-﻿@model IEnumerable<DataLayer.DomainModel.tbUsers>
-
-@{
-    ViewBag.Title = "Index";
-    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
-
+﻿@section vendorStyle {
+    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/select2/select2.css" />
+    <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
 }
 
-
-
-<div class="row">
-    <div class="col-lg-12 grid-margin stretch-card">
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
         <div class="card">
-            <div class="card-body table-responsive">
-                <button class="btn btn-success btn-sm text-dark" id="addUser" style="margin-bottom:10px;float:left;">تعریف کاربر</button>
-                <button class="btn btn-info btn-sm text-dark" onclick="RunBots()" style="margin-bottom:10px;margin-left:10px; float:left;">اجرا تمامی ربات ها</button>
-                <div id="PartialUsers">
-                    @Html.Action("_PartialGetAllUsers", "Admin", new { area = "App" })
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>مجموع کاربران</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2">21,459</h3>
+                            <p class="text-success mb-0">
+                                <bdi>(+29%)</bdi>
+                            </p>
+                        </div>
+                        <p class="mb-0">آمار هفته قبل</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-primary"> <i class="ti ti-user ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>کاربران وفادار</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2">4,567</h3>
+                            <p class="text-success mb-0">
+                                <bdi>(+18%)</bdi>
+                            </p>
+                        </div>
+                        <p class="mb-0">آمار هفته قبل</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-danger"> <i class="ti ti-user-plus ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>کاربران فعال</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2">19,860</h3>
+                            <p class="text-danger mb-0">
+                                <bdi>(-14%)</bdi>
+                            </p>
+                        </div>
+                        <p class="mb-0">آمار هفته قبل</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-success"> <i class="ti ti-user-check ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>کاربران مسدود</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2">237</h3>
+                            <p class="text-success mb-0">
+                                <bdi>(+42%)</bdi>
+                            </p>
+                        </div>
+                        <p class="mb-0">آمار هفته قبل</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-warning"> <i class="ti ti-user-exclamation ti-sm"></i> </span> </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!-- Users List Table -->
+<div class="card">
+    @*<div class="card-header border-bottom">
+        <h5 class="card-title mb-3">فیلتر جستجو</h5>
+        <div class="d-flex justify-content-between align-items-center row pb-2 gap-3 gap-md-0 mt-3">
+            <div class="col-md-4 user_role"></div>
+            <div class="col-md-4 user_plan"></div>
+            <div class="col-md-4 user_status"></div>
+        </div>
+    </div>*@
+    <div class="card-datatable table-responsive">
+        <table class="datatables-users table">
+            <thead class="border-top">
+                <tr>
+                    <th></th>
+                    <th>نام کاربری</th>
+                    <th>بدهی</th>
+                    <th>محدودیت</th>
+                    <th>وضعیت</th>
+                    <th>تعداد فروش</th>
+                    <th>مجموع فروش</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <!-- Offcanvas to add new user -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasAddUser" aria-labelledby="offcanvasAddUserLabel">
+        <div class="offcanvas-header">
+            <h5 id="offcanvasAddUserLabel" class="offcanvas-title">اطلاعات کاربر</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="بستن"></button>
+        </div>
+        <div class="offcanvas-body mx-0 flex-grow-0 pt-0 h-100">
+            <form class="add-new-user pt-0" id="addNewUserForm">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" value="0" name="userId" />
+                <div class="mb-3">
+                    <label class="form-label" for="add-user-company">نام کاربری <span class="text-danger"> * </span></label>
+                    <input type="text" id="add-user-username" class="form-control" placeholder="rezasharifi" aria-label="rezasharifi"
+                           name="userUsername" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="add-user-contact">محدودیت<span class="text-danger"> * </span></label>
+                    <input type="text" id="userLimit" class="form-control" placeholder="3,000,000"
+                           aria-label="3,000,000 تومان" name="userLimit" onkeyup="separateDigits(this)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="userPlan">تعرفه<span class="text-danger"> * </span></label>
+                    <select id="userPlan" class="select2 form-select" multiple autocomplete="off" name="userPlan">
+                        <option value="">انتخاب کنید</option>
+                    </select>
+                    <div id="userPlanMessage" class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback d-none"><div data-field="userLimit" data-validator="notEmpty">تعرفه را وارد کنید</div></div>
+
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="add-user-fullname">رمز عبور<span class="text-danger"> * </span></label>
+                    <input type="text" class="form-control" id="add-user-password" placeholder="******" name="userPassword"
+                           aria-label="******" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="add-user-fullname">نام و نام خانوادگی</label>
+                    <input type="text" class="form-control" id="add-user-fullname" placeholder="نـوید" name="userFullname"
+                           aria-label="نـوید" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="add-user-email">ایمیل</label>
+                    <input type="text" id="add-user-email" class="form-control" placeholder="john.doe@example.com" aria-label="sharifir545@gmail.com"
+                           name="userEmail" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="add-user-contact">شماره موبایل</label>
+                    <input type="text" id="add-user-contact" class="form-control phone-mask bdi" placeholder="+1 (609) 988-44-11"
+                           aria-label="john.doe@example.com" name="userContact" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="add-user-telegramid">آیدی تلگرام</label>
+                    <input type="text" id="add-user-telegramid" class="form-control" placeholder="rezadev_ir" aria-label="rezadev_ir"
+                           name="userTelegramid" />
+                </div>
+
+                <button type="submit" class="btn btn-primary me-sm-3 me-1 data-submit">ارسال</button>
+                <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">لغو</button>
+            </form>
+        </div>
+    </div>
+</div>
 
 
+@section vendorScripts {
 
-@*@section scripts {
+    <script src="../../assets/vendor/libs/moment/moment.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="../../assets/vendor/libs/select2/select2.js"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
+    <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
 
+}
 
-        <script>
+@section customScripts {
 
-
-            $("#UpdatePlan").click(function () {
-                $.ajax({
-                    beforeSend: function () {
-                        alert("پلن ها در حال آپدیت لطفا کمی صبر کنید ...")
-                    },
-                    url: "@Url.Action("UpdatePlans","Server",new {area=""})",
-                    dataType: "json",
-                    type: "get",
-                    success: function (res) {
-                        if (res.status) {
-                            alert(res.result);
-                        }
-                        else {
-                            alert(res.result);
-                        }
-                    }
-                });
-            });
-
-        </script>
-
-
-    }*@
-
-@section scripts {
-
-    <script>
-
-
-        new DataTable("#tblUser", {
-            columnDefs: [{ width: 2, targets: 4 }],
-            paging: true,
-            scrollCollapse: false,
-            scrollX: true,
-            scrollY: "600px",
-            pageLength: 13,
-            bFilter: true,
-            lengthChange: false,
-            searchPlaceholder: "جستجو ",
-            sSearch: "Quick Search:",
-            ordering: false, // اضافه کردن این خط برای غیرفعال کردن مرتب‌سازی
-            language: {
-                lengthMenu: "Display _MENU_ records per page",
-                zeroRecords: "اطلاعاتی یافت نشد",
-                info: "",
-                infoEmpty: "اطلاعاتی وجود ندارد",
-                infoFiltered: "(filtered from _MAX_ total records)",
-                sSearch: "جستجو : ",
-                paginate: {
-                    previous: "قبلی",
-                    next: "بعدی"
-                }
-            }
-        });
-
-
-
-        $("#addUser").click(function () {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("_PartialCreate","Admin",new {area="App"})",
-                type: "get",
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#modal-dialog-lg").html(result);
-                    $('#modal-lg').modal('show');
-                }
-            });
-        });
-
-        function EditUser(input) {
-            $("#loading").css("display", "flex");
-            var id = $(input).attr("id").split("_")[1];
-            $.ajax({
-                url: "@Url.Action("_PartialEdit", "Admin", new { area = "App" })",
-                type: "get",
-                data: { id: id },
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#modal-dialog-lg").html(result);
-                    $('#modal-lg').modal('show');
-                }
-            });
-        }
-
-
-        function EditWallet(input) {
-            $("#loading").css("display", "flex");
-            var id = $(input).attr("id").split("_")[1];
-            $.ajax({
-                url: "@Url.Action("_EditWallet", "Admin", new { area = "App" })",
-                type: "get",
-                data: { id: id },
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#modal-dialog-sm").html(result);
-                    $('#modal-sm').modal('show');
-                }
-            });
-        }
-
-
-        $("#SearchUsername").change(function () {
-            var username = $(this).val();
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("_PartialGetAllUsers", "Admin", new { area = "App" })",
-                dataType: "html",
-                data: { username: username },
-                type: "get",
-                success: function (res) {
-                    $("#loading").css("display", "none");
-                    $("#PartialUsers").html(res);
-                    new DataTable('#TableUser', {
-                        order: [[0, 'desc']]
-                    });
-                }
-            });
-        });
-
-
-        function BanUser(id) {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("BanUser", "Admin", new { area = "App" })",
-                dataType: "html",
-                data: { id: id },
-                type: "get",
-                success: function (res) {
-
-                    if (res == "1") {
-                        location.reload();
-                    }
-
-                }
-            });
-        }
-
-
-        function Factors(id) {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("Factors", "Admin", new { area = "App" })",
-                type: "get",
-                data: { id: id },
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#PartialUsers").html(result);
-                    new DataTable('#TableUser', {
-                        order: [[0, 'desc']]
-                    });
-                }
-            });
-        }
-
-
-        function RunBot(id)
-        {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("StartBot","Admin")?userId=" + id,
-                type: "get",
-                dataType: "html",
-                success: function (res) {
-                    $("#loading").css("display", "none");
-
-
-                    var spl = res.split('-');
-
-                    Swal.fire({
-                        title: "پیغام",
-                        text: spl[1],
-                        icon: spl[0]
-                    });
-                }
-            });
-        }
-
-
-        //function ShowAccountLog(Url) {
-        //    $("#loading").css("display", "flex");
-        //    $.ajax({
-        //        url: Url,
-        //        type: "get",
-        //        dataType: "html",
-        //        success: function (result) {
-        //            $("#loading").css("display", "none");
-        //            $("#PartialUsers").html(result);
-        //            new DataTable('#TableUser', {
-        //                order: [[0, 'desc']]
-        //            });
-        //        }
-        //    });
-        //}
-
-
-        function RunBots() {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("StartBots","Admin")" ,
-                type: "get",
-                dataType: "html",
-                success: function (res) {
-                    $("#loading").css("display", "none");
-
-
-                    var spl = res.split('-');
-
-                    Swal.fire({
-                        title: "پیغام",
-                        text: spl[1],
-                        icon: spl[0]
-                    });
-                }
-            });
-        }
-
-    </script>
+    <script src="../../assets/js/app-user-list.js"></script>
+    <script src="~/assets/vendor/libs/jquery-form/jquery.form.js"></script>
 
 }

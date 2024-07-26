@@ -1,325 +1,684 @@
 ﻿<!DOCTYPE html>
-<html lang="en" dir="rtl">
-<head>
+<html class="light-style layout-navbar-fixed layout-menu-fixed layout-compact" data-assets-path="../../assets/" data-template="vertical-menu-template-starter" data-theme="theme-default" dir="rtl" lang="fa">
 
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" name="viewport" />
+    <title>کیت استارتر - صفحه 1 | Vuexy - قالب مدیریت بوت استرپ</title>
+    <meta content="" name="description" />
+    <!-- Favicon -->
+    <link href="../../assets/img/favicon/favicon.ico" rel="icon" type="image/x-icon" />
+    <link href="../../assets/vendor/fonts/tabler-icons.css" rel="stylesheet" />
+    <!-- <link rel="stylesheet" href="../../assets/vendor/fonts/fontawesome.css" /> -->
+    <!-- <link rel="stylesheet" href="../../assets/vendor/fonts/flag-icons.css" /> -->
+    <!-- Core CSS -->
+    <link class="template-customizer-core-css" href="../../assets/vendor/css/rtl/core.css" rel="stylesheet" />
+    <link class="template-customizer-theme-css" href="../../assets/vendor/css/rtl/theme-default.css" rel="stylesheet" />
+    <link href="../../assets/css/demo.css" rel="stylesheet" />
+    <!-- Vendors CSS -->
+    <link href="../../assets/vendor/libs/node-waves/node-waves.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" />
+    @RenderSection("vendorStyle", false)
+    <!-- Page CSS -->
+    <!-- Helpers -->
+    <script src="../../assets/vendor/js/helpers.js"></script>
+    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
+    <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
+    <script src="../../assets/vendor/js/template-customizer.js"></script>
+    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
+    <script src="../../assets/js/config.js"></script>
+    <!-- Better experience of RTL -->
+    <link href="../../assets/css/rtl.css" rel="stylesheet" />
+
+</head>
+
+<body>
 
     @{
-        var RequestRole = Request.Cookies["Role"];
-        var Role = "";
-        if (RequestRole != null)
-        {
-            Role = RequestRole.Value;
-        }
+        var Role = Request.Cookies["Role"];
     }
 
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>@ViewBag.Title</title>
-    <!-- plugins:css -->
-    <link rel="stylesheet" href="~/Areas/App/assets/vendors/mdi/css/materialdesignicons.min.css">
-    @*<link rel="stylesheet" href="~/Areas/App/assets/vendors/css/vendor.bundle.base.css">*@
-    <!-- endinject -->
-    <!-- Plugin css for this page -->
-    <!-- End plugin css for this page -->
-    <!-- inject:css -->
-    <!-- endinject -->
-    <!-- Layout styles -->
-    <link rel="stylesheet" href="~/Areas/App/assets/css/style.css">
-    <!-- End layout styles -->
-    <link rel="shortcut icon" href="~/Areas/App/assets/images/favicon.ico" />
-    <link href="~/Areas/App/assets/select2/select2.min.css" rel="stylesheet" />
-    <link href="~/Areas/App/assets/DataTable/datatables.min.css" rel="stylesheet" />
-    <link href="~/Areas/App/assets/DataTable/fixedColumns.dataTables.min.css" rel="stylesheet" />
-</head>
-<body style="font-family: 'MyFont'">
-    <div class="container-scroller">
-        <div id="loading" style="display:none;position: absolute; z-index: 100000;width: 100%; height: 100%; justify-content: center; align-items: center; background-color: #0000008a;">
-            <img src="~/Areas/App/assets/Loading.svg" style="width:70px;height:70px;" />
-        </div>
-        <div class="row p-0 m-0 proBanner" id="proBanner">
-            <div class="col-md-12 p-0 m-0">
-            </div>
-        </div>
-        <!-- partial:partials/_navbar.html -->
-        <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="padding-top: 0 !important; margin-top: 0 !important;" id="mobilenav">
-            <div class="navbar-menu-wrapper d-flex align-items-stretch" style="width: 20%;">
-                <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-                    <span class="mdi mdi-menu"></span>
-                </button>
-                <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
-                    <span class="mdi mdi-menu"></span>
-                </button>
-            </div>
-            <div class="navbar-menu-wrapper d-flex align-items-stretch" style="width: 80%; justify-content: left;">
-                <ul class="navbar-nav navbar-nav-right" style="padding:0;margin:0;">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link count-indicator dropdown-toggle" id="messageDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="mdi mdi-email-outline"></i>
-                            <span class="count-symbol bg-warning"></span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="messageDropdown">
-                            <h6 class="p-3 mb-0">Messages</h6>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <img src="~/Areas/App/assets/images/faces/face4.jpg" alt="image" class="profile-pic">
-                                </div>
-                                <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                                    <h6 class="preview-subject ellipsis mb-1 font-weight-normal">Mark send you a message</h6>
-                                    <p class="text-gray mb-0"> 1 Minutes ago </p>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <img src="~/Areas/App/assets/images/faces/face2.jpg" alt="image" class="profile-pic">
-                                </div>
-                                <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                                    <h6 class="preview-subject ellipsis mb-1 font-weight-normal">Cregh send you a message</h6>
-                                    <p class="text-gray mb-0"> 15 Minutes ago </p>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <img src="~/Areas/App/assets/images/faces/face3.jpg" alt="image" class="profile-pic">
-                                </div>
-                                <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                                    <h6 class="preview-subject ellipsis mb-1 font-weight-normal">Profile picture updated</h6>
-                                    <p class="text-gray mb-0"> 18 Minutes ago </p>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <h6 class="p-3 mb-0 text-center">4 new messages</h6>
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
-                            <i class="mdi mdi-bell-outline"></i>
-                            <span class="count-symbol bg-danger"></span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
-                            <h6 class="p-3 mb-0">Notifications</h6>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <div class="preview-icon bg-success">
-                                        <i class="mdi mdi-calendar"></i>
-                                    </div>
-                                </div>
-                                <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                                    <h6 class="preview-subject font-weight-normal mb-1">Event today</h6>
-                                    <p class="text-gray ellipsis mb-0"> Just a reminder that you have an event today </p>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <div class="preview-icon bg-warning">
-                                        <i class="mdi mdi-settings"></i>
-                                    </div>
-                                </div>
-                                <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                                    <h6 class="preview-subject font-weight-normal mb-1">Settings</h6>
-                                    <p class="text-gray ellipsis mb-0"> Update dashboard </p>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <div class="preview-icon bg-info">
-                                        <i class="mdi mdi-link-variant"></i>
-                                    </div>
-                                </div>
-                                <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                                    <h6 class="preview-subject font-weight-normal mb-1">Launch Admin</h6>
-                                    <p class="text-gray ellipsis mb-0"> New admin wow! </p>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <h6 class="p-3 mb-0 text-center">See all notifications</h6>
-                        </div>
-                    </li>
-                    <li class="nav-item nav-logout d-none d-lg-block">
-                        <a class="nav-link" href="@Url.Action("LogOut","Admin",new {area="App"})">
-                            <i class="mdi mdi-power"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item nav-settings d-none d-lg-block">
-                        <a class="nav-link" href="#">
-                            <i class="mdi mdi-format-line-spacing"></i>
-                        </a>
-                    </li>
-                </ul>
-
-            </div>
-
-        </nav>
-        <!-- partial -->
-        <div class="container-fluid page-body-wrapper" id="navsidebar" >
-            <!-- partial:partials/_sidebar.html -->
-            <nav class="sidebar sidebar-offcanvas" id="sidebar">
-                <ul class="nav" style="padding: 0;">
-                    @Html.Action("_Profile", "Admin")
-                    <li class="nav-item">
-                        <a class="nav-link" href="~/App/Dashboard">
-                            <i class="mdi mdi-home menu-icon"></i>
-                            <span class="menu-title">داشبورد</span>
-
-                        </a>
-                    </li>
-                    <li>
-                        <span class="text-white-50" style="margin-right: 20px;">ربات</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index","BotFactors",new {area="App"})">
-                            <i class="mdi mdi-cash-multiple menu-icon"></i>
-                            <span class="menu-title">فاکتور ها</span>
-
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index","Orders",new {area="App"})">
-                            <i class="mdi mdi-cart-arrow-down menu-icon"></i>
-                            <span class="menu-title">سفارشات</span>
-
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index","TelegramUsers",new {area="App"})">
-                            <i class="mdi mdi-telegram menu-icon"></i>
-                            <span class="menu-title">مشترکین</span>
-
-                        </a>
-                    </li>
-
-                    @if (Role.Contains("1"))
-                    {
-                        <li>
-                            <span class="text-white-50" style="margin-right: 20px;">نمایندگی</span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index","Admin",new {area="App"})">
-                                <i class="mdi mdi-account-group menu-icon"></i>
-                                <span class="menu-title">نمایندگان</span>
-
-                            </a>
-                        </li>
-
-
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index","Plan",new {area="App"})">
-                                <i class="mdi mdi-basket menu-icon"></i>
-                                <span class="menu-title">تعرفه ها</span>
-
-                            </a>
-                        </li>
-                    }
-
-                    @*<li class="nav-item">
-            <a class="nav-link" href="@Url.Action("Index","Learns",new {area="App"})">
-                <i class="mdi mdi-help menu-icon"></i>
-                <span class="menu-title">آموزش ها</span>
-
-            </a>
-        </li>*@
-                    <li>
-                        <span class="text-white-50" style="margin-right:20px;">پیکربندی</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index","Settings",new {area="App"})">
-                            <i class="mdi mdi-settings menu-icon"></i>
-                            <span class="menu-title">تنظیمات</span>
-
-                        </a>
-                    </li>
-
-                </ul>
-            </nav>
-            <!-- partial -->
-            <div class="main-panel">
-
-                <div class="content-wrapper" style="padding: 1rem 1rem;">
-
-                    @RenderBody()
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <!-- Menu -->
+            <aside class="layout-menu menu-vertical menu bg-menu-theme" id="layout-menu">
+                <div class="app-brand demo">
+                    <a class="app-brand-link" href="index.html">
+                        <span class="app-brand-logo demo">
+                            <svg fill="none" height="22" viewBox="0 0 32 22" width="32" xmlns="http://www.w3.org/2000/svg">
+                                <path clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="#7367F0" fill-rule="evenodd" />
+                                <path clip-rule="evenodd" d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616" fill-rule="evenodd" opacity="0.06" />
+                                <path clip-rule="evenodd" d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616" fill-rule="evenodd" opacity="0.06" />
+                                <path clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="#7367F0" fill-rule="evenodd" />
+                            </svg>
+                        </span>
+                        <span class="app-brand-text demo menu-text fw-bold">Vuexy</span>
+                    </a>
+                    <a class="layout-menu-toggle menu-link text-large ms-auto" href="javascript:void(0);">
+                        <i class="ti menu-toggle-icon d-none d-xl-block ti-sm align-middle"></i>
+                        <i class="ti ti-x d-block d-xl-none ti-sm align-middle"></i>
+                    </a>
                 </div>
-                <!-- content-wrapper ends -->
-                <!-- partial:partials/_footer.html -->
-                <footer class="footer">
-                    <div class="container-fluid d-flex justify-content-between">
-                        <span class="text-muted d-block text-center text-sm-start d-sm-inline-block">Copyright © RezaDev 2024</span>
-                        <span class="float-none float-sm-end mt-1 mt-sm-0 text-end">طراحی و توسعه <a href="https://t.me/rezadev_ir" target="_blank">رضاشریفی</a> </span>
-                    </div>
-                </footer>
-                <!-- partial -->
-            </div>
-            <!-- main-panel ends -->
-        </div>
-    </div>
-    <div class="modal fade bd-example-modal-lg" id="modal-lg" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" id="modal-dialog-lg" role="document">
+                <div class="menu-inner-shadow"></div>
+                <ul class="menu-inner py-1">
+                    <li class="menu-item" style="">
+                        <a class="menu-link" href="javascript:void(0);">
+                            <i class="menu-icon tf-icons ti ti-smart-home"></i>
+                            <div>داشبورد</div>
+                        </a>
+                    </li>
+                    <li class="menu-item" style="">
+                        <a class="menu-link" href="@Url.Action("Index","Subscriptions")">
+                            <i class="menu-icon tf-icons ti ti-users-group"></i>
+                            <div>اشتراک ها</div>
+                        </a>
+                    </li>
 
-        </div>
-    </div>
-    <div class="modal fade bd-example-modal-sm" id="modal-sm" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-sm" id="modal-dialog-sm" role="document">
-
-        </div>
-    </div>
-    <!-- container-scroller -->
-    <!-- plugins:js -->
-    <script src="~/Areas/App/assets/vendors/js/vendor.bundle.base.js"></script>
-    <!-- endinject -->
-    <!-- Plugin js for this page -->
-    <script src="~/Areas/App/assets/vendors/chart.js/Chart.min.js"></script>
-    <script src="~/Areas/App/assets/js/jquery.cookie.js" type="text/javascript"></script>
-    <!-- End plugin js for this page -->
-    <!-- inject:js -->
-    <script src="~/Areas/App/assets/js/off-canvas.js"></script>
-    <script src="~/Areas/App/assets/js/hoverable-collapse.js"></script>
-    <script src="~/Areas/App/assets/js/misc.js"></script>
-    <!-- endinject -->
-    <!-- Custom js for this page -->
-    @*<script src="~/Areas/App/assets/js/dashboard.js"></script>*@
-    <script src="~/Areas/App/assets/js/todolist.js"></script>
-    <!-- End custom js for this page -->
-    <script src="~/Scripts/jquery-3.4.1.js" type="text/html">
-    </script>
-    <script src="~/Areas/App/assets/DataTable/datatables.min.js"></script>
-    <script src="~/Areas/App/assets/DataTable/dataTables.fixedColumns.min.js" type="text/javascript"></script>
-    <script src="~/Areas/App/assets/sweetalert/sweetalert2@11.js"></script>
-    <script src="~/Areas/App/assets/select2/select2.min.js"></script>
-    <script>
-        function ConvertToDataTable(table, OrderColumn, colmnWidth) {
-            new DataTable(table, {
-                order: [[OrderColumn, 'desc']],
-                columnDefs: colmnWidth,
-                paging: true,
-                scrollCollapse: false,
-                scrollX: true,
-                scrollY: "600px",
-                pageLength: 13,
-                bFilter: true,
-                lengthChange: false,
-                searchPlaceholder: "جستجو ",
-                sSearch: "Quick Search:",
-                language: {
-                    lengthMenu: "Display _MENU_ records per page",
-                    zeroRecords: "اطلاعاتی یافت نشد",
-                    info: "",
-                    infoEmpty: "اطلاعاتی وجود ندارد",
-                    infoFiltered: "(filtered from _MAX_ total records)",
-                    sSearch: "جستجو : ",
-                    paginate: {
-                        previous: "قبلی",
-                        next: "بعدی"
+                    @if (Role != null)
+                    {
+                        if (Role.Value == "1")
+                        {
+                            <!-- نمایندگی -->
+                            <li class="menu-header small text-uppercase">
+                                <span class="menu-header-text" data-i18n="Components">نمایندگی</span>
+                            </li>
+                            <li class="menu-item" style="">
+                                <a class="menu-link" href="@Url.Action("Index","Admin",new {area="App"})">
+                                    <i class="menu-icon tf-icons ti ti-user-share"></i>
+                                    <div>نمایندگان</div>
+                                </a>
+                            </li>
+                            <li class="menu-item" style="">
+                                <a class="menu-link" href="@Url.Action("Index","Plan",new {area="App"})">
+                                    <i class="menu-icon tf-icons ti ti-color-swatch"></i>
+                                    <div>تعرفه ها</div>
+                                </a>
+                            </li>
+                        }
                     }
+
+                    <!-- ربات -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text" data-i18n="Components">ربات</span>
+                    </li>
+                    <li class="menu-item" style="">
+                        <a class="menu-link" href="@Url.Action("Index","BotFactors",new {area="App"})">
+                            <i class="menu-icon tf-icons ti ti-cash"></i>
+                            <div>فاکتور ها</div>
+                        </a>
+                    </li>
+                    <li class="menu-item" style="">
+                        <a class="menu-link" href="@Url.Action("Index","Orders",new {area="App"})">
+                            <i class="menu-icon tf-icons ti ti-shopping-cart"></i>
+                            <div>سفارشات</div>
+                        </a>
+                    </li>
+                    <li class="menu-item" style="">
+                        <a class="menu-link" href="@Url.Action("Index","TelegramUsers",new {area="App"})">
+                            <i class="menu-icon tf-icons ti ti-users"></i>
+                            <div>مشترکین</div>
+                        </a>
+                    </li>
+                    <!-- ربات -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text" data-i18n="Components">پیکربندی</span>
+                    </li>
+                    <li class="menu-item" style="">
+                        <a class="menu-link" href="javascript:void(0);">
+                            <i class="menu-icon tf-icons ti ti-server"></i>
+                            <div>سرور ها</div>
+                        </a>
+                    </li>
+                    <li class="menu-item" style="">
+                        <a class="menu-link" href="javascript:void(0);">
+                            <i class="menu-icon tf-icons ti ti-robot"></i>
+                            <div>ربات</div>
+                        </a>
+                    </li>
+
+                </ul>
+            </aside>
+            <!-- / Menu -->
+            <!-- Layout container -->
+            <div class="layout-page">
+                <!-- Navbar -->
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)"> <i class="ti ti-menu-2 ti-sm"></i> </a>
+                    </div>
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <!-- Search -->
+                        <div class="navbar-nav align-items-center">
+                            <div class="nav-item navbar-search-wrapper mb-0">
+                                <a class="nav-item nav-link search-toggler d-flex align-items-center px-0" href="javascript:void(0);"> <i class="ti ti-search ti-md me-2 h-mirror"></i> <span class="d-none d-md-inline-block text-muted">جستجو (/+Ctrl)</span> </a>
+                            </div>
+                        </div>
+                        <!-- /Search -->
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <!-- Language -->
+                            <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown"> <i class="ti ti-language rounded-circle ti-md"></i> </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" data-language="fa" data-text-direction="rtl"> <span class="align-middle">فارسی</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" data-language="en" data-text-direction="ltr"> <span class="align-middle">انگلیسی</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" data-language="fr" data-text-direction="ltr"> <span class="align-middle">فرانسوی</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" data-language="ar" data-text-direction="rtl"> <span class="align-middle">عربي</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" data-language="de" data-text-direction="ltr"> <span class="align-middle">آلمانی</span> </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!--/ Language -->
+                            <!-- Style Switcher -->
+                            <li class="nav-item dropdown-style-switcher dropdown me-2 me-xl-0">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown"> <i class="ti ti-md"></i> </a>
+                                <ul class="dropdown-menu dropdown-menu-end dropdown-styles">
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" data-theme="light"> <span class="align-middle"><i class="ti ti-sun me-2"></i>روز</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" data-theme="dark"> <span class="align-middle"><i class="ti ti-moon me-2"></i>شب</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" data-theme="system"> <span class="align-middle"><i class="ti ti-device-desktop me-2"></i>سیستم</span> </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!-- / Style Switcher-->
+                            <!-- Quick links  -->
+                            <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-2 me-xl-0">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                   aria-expanded="false"> <i class="ti ti-layout-grid-add ti-md"></i> </a>
+                                <div class="dropdown-menu dropdown-menu-end py-0">
+                                    <div class="dropdown-menu-header border-bottom">
+                                        <div class="dropdown-header d-flex align-items-center py-3">
+                                            <h5 class="text-body mb-0 me-auto">میانبرها</h5> <a href="javascript:void(0)" class="dropdown-shortcuts-add text-body" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                                                title="افزودن میانبر">
+                                                <i class="ti ti-sm ti-apps"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-shortcuts-list scrollable-container">
+                                        <div class="row row-bordered overflow-visible g-0">
+                                            <div class="dropdown-shortcuts-item col">
+                                                <span class="dropdown-shortcuts-icon rounded-circle mb-2 mt-1">
+                                                    <i class="ti ti-calendar fs-4"></i>
+                                                </span> <a href="app-calendar.html" class="stretched-link mb-0">تقویم</a> <small class="text-muted mb-0">قرارهای ملاقات</small>
+                                            </div>
+                                            <div class="dropdown-shortcuts-item col">
+                                                <span class="dropdown-shortcuts-icon rounded-circle mb-2 mt-1">
+                                                    <i class="ti ti-file-invoice fs-4"></i>
+                                                </span> <a href="app-invoice-list.html" class="stretched-link mb-0">صورتحساب‌</a> <small class="text-muted mb-0">مدیریت پرداخت‌ها</small>
+                                            </div>
+                                        </div>
+                                        <div class="row row-bordered overflow-visible g-0">
+                                            <div class="dropdown-shortcuts-item col">
+                                                <span class="dropdown-shortcuts-icon rounded-circle mb-2 mt-1">
+                                                    <i class="ti ti-users fs-4"></i>
+                                                </span> <a href="app-user-list.html" class="stretched-link mb-0">مشتریان</a> <small class="text-muted mb-0">مدیریت کاربران</small>
+                                            </div>
+                                            <div class="dropdown-shortcuts-item col">
+                                                <span class="dropdown-shortcuts-icon rounded-circle mb-2 mt-1">
+                                                    <i class="ti ti-lock fs-4"></i>
+                                                </span> <a href="app-access-roles.html" class="stretched-link mb-0">سطح دسترسی</a> <small class="text-muted mb-0">موارد امنیتی</small>
+                                            </div>
+                                        </div>
+                                        <div class="row row-bordered overflow-visible g-0">
+                                            <div class="dropdown-shortcuts-item col">
+                                                <span class="dropdown-shortcuts-icon rounded-circle mb-2 mt-1">
+                                                    <i class="ti ti-chart-bar fs-4"></i>
+                                                </span> <a href="index.html" class="stretched-link mb-0">داشبورد</a> <small class="text-muted mb-0">گزارش آماری</small>
+                                            </div>
+                                            <div class="dropdown-shortcuts-item col">
+                                                <span class="dropdown-shortcuts-icon rounded-circle mb-2 mt-1">
+                                                    <i class="ti ti-settings fs-4"></i>
+                                                </span> <a href="pages-account-settings-account.html" class="stretched-link mb-0">تنظیمات</a> <small class="text-muted mb-0">مدیریت سیستم</small>
+                                            </div>
+                                        </div>
+                                        <div class="row row-bordered overflow-visible g-0">
+                                            <div class="dropdown-shortcuts-item col">
+                                                <span class="dropdown-shortcuts-icon rounded-circle mb-2 mt-1">
+                                                    <i class="ti ti-help fs-4"></i>
+                                                </span> <a href="pages-faq.html" class="stretched-link mb-0">مرکز پشتیبانی</a> <small class="text-muted mb-0">سوالات متداول و راهنما</small>
+                                            </div>
+                                            <div class="dropdown-shortcuts-item col">
+                                                <span class="dropdown-shortcuts-icon rounded-circle mb-2 mt-1">
+                                                    <i class="ti ti-square fs-4"></i>
+                                                </span> <a href="modal-examples.html" class="stretched-link mb-0">مُـدال‌ها</a> <small class="text-muted mb-0">پاپ‌آپ‌های کاربردی</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <!-- Quick links -->
+                            <!-- Notification -->
+                            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-1">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                   aria-expanded="false"> <i class="ti ti-bell ti-md"></i> <span class="badge bg-danger rounded-pill badge-notifications">5</span> </a>
+                                <ul class="dropdown-menu dropdown-menu-end py-0">
+                                    <li class="dropdown-menu-header border-bottom">
+                                        <div class="dropdown-header d-flex align-items-center py-3">
+                                            <h5 class="text-body mb-0 me-auto">اعلانات</h5> <a href="javascript:void(0)" class="dropdown-notifications-all text-body" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                                               title="همه خوانده شده">
+                                                <i class="ti ti-mail-opened fs-4"></i>
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li class="dropdown-notifications-list scrollable-container">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar"> <img src="../../assets/img/avatars/1.png" alt class="h-auto rounded-circle" /> </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">تبریک به شما 🎉</h6>
+                                                        <p class="mb-1">نشان برترین فروشنده ماه رو گرفتید</p> <small class="text-muted">الان</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar"> <span class="avatar-initial rounded-circle bg-label-danger">ن‌م</span> </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">نوید محمدزاده</h6>
+                                                        <p class="mb-1">درخواست شمارا پذیرفت.</p> <small class="text-muted">1 ساعت قبل</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar"> <img src="../../assets/img/avatars/2.png" alt class="h-auto rounded-circle" /> </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">پیام جدید از بهاره ✉️</h6>
+                                                        <p class="mb-1">شما یک پیام جدید از بهاره افشاری دارید </p> <small class="text-muted">12 ساعت قبل</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar">
+                                                            <span class="avatar-initial rounded-circle bg-label-success">
+                                                                <i class="ti ti-shopping-cart"></i>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">ایول! سفارش جدید داری 🛒</h6>
+                                                        <p class="mb-1">شرکت یلدا سفارشی جدید ثبت کرد</p> <small class="text-muted">امروز</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar"> <img src="../../assets/img/avatars/9.png" alt class="h-auto rounded-circle" /> </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">اپلیکیشن بروزرسانی شد 🚀</h6>
+                                                        <p class="mb-1">پروژه شما باموفقیت آپدیت شد.</p> <small class="text-muted">دیروز</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar">
+                                                            <span class="avatar-initial rounded-circle bg-label-success">
+                                                                <i class="ti ti-chart-pie"></i>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">گزارش ماهانه دردسترس است</h6>
+                                                        <p class="mb-1">گزارش درآمد ماه شهریور آماده است</p> <small class="text-muted">2 روز قبل</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar"> <img src="../../assets/img/avatars/5.png" alt class="h-auto rounded-circle" /> </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">ارسال درخواست همکاری</h6>
+                                                        <p class="mb-1">حسام درخواست همکاری فرستاد</p> <small class="text-muted">1 هفته قبل</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar"> <img src="../../assets/img/avatars/6.png" alt class="h-auto rounded-circle" /> </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">پیام جدید از ترانه</h6>
+                                                        <p class="mb-1">شما یک پیام جدید دارید</p> <small class="text-muted">1 ماه قبل</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="avatar">
+                                                            <span class="avatar-initial rounded-circle bg-label-warning">
+                                                                <i class="ti ti-alert-triangle"></i>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-2">میزان مصرف CPU بالاست</h6>
+                                                        <p class="mb-1">درصد استفاده از CPU درحال حاضر 90%</p> <small class="text-muted">1 ماه قبل</small>
+                                                    </div>
+                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                        <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                                            <span class="badge badge-dot"></span>
+                                                        </a> <a href="javascript:void(0)" class="dropdown-notifications-archive">
+                                                            <span class="ti ti-x"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="dropdown-menu-footer border-top">
+                                        <a href="javascript:void(0);" class="dropdown-item d-flex justify-content-center text-primary p-2 h-px-40 mb-1 align-items-center">
+                                            نمایش همه اعلانات
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!--/ Notification -->
+                            <!-- User -->
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online"> <img src="../../assets/img/avatars/1.png" alt class="h-auto rounded-circle" /> </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="pages-account-settings-account.html">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online"> <img src="../../assets/img/avatars/1.png" alt class="h-auto rounded-circle" /> </div>
+                                                </div>
+                                                <div class="flex-grow-1"> <span class="fw-semibold d-block mb-1">نوید محمدزاده</span> <small class="text-muted">مدیرکل</small> </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="pages-profile-user.html"> <i class="ti ti-user-check me-2 ti-sm"></i> <span class="align-middle">پروفایل من</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="pages-account-settings-account.html"> <i class="ti ti-settings me-2 ti-sm"></i> <span class="align-middle">تنظیمات</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="pages-account-settings-billing.html">
+                                            <span class="d-flex align-items-center align-middle">
+                                                <i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
+                                                <span class="flex-grow-1 align-middle">خریدها</span> <span class="flex-shrink-0 badge badge-center rounded-pill bg-label-danger w-px-20 h-px-20">2</span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="pages-faq.html"> <i class="ti ti-help me-2 ti-sm"></i> <span class="align-middle">سوالات متداول</span> </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="pages-pricing.html"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت گذاری</span> </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="@Url.Action("LogOut","Admin",new {area="App"})" target="_blank"> <i class="ti ti-logout me-2 ti-sm"></i> <span class="align-middle">خروج از حساب</span> </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!--/ User -->
+                        </ul>
+                    </div>
+                    <!-- Search Small Screens -->
+                    <div class="navbar-search-wrapper search-input-wrapper d-none">
+                        <input type="text" class="form-control search-input container-xxl border-0" placeholder="جستجو..." aria-label="جستجو..." /> <i class="ti ti-x ti-sm search-toggler cursor-pointer"></i>
+                    </div>
+                </nav>
+                <!-- / Navbar -->
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+                    <!-- Content -->
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        @RenderBody()
+                    </div>
+                    <!-- / Content -->
+                    <div class="content-backdrop fade"></div>
+                </div>
+                <!-- Content wrapper -->
+            </div>
+            <!-- / Layout page -->
+        </div>
+        <!-- Overlay -->
+        <div class="layout-overlay layout-menu-toggle"></div>
+        <!-- Drag Target Area To SlideIn Menu On Small Screens -->
+        <div class="drag-target"></div>
+    </div>
+
+    <div aria-atomic="true" aria-live="assertive" class="bs-toast toast toast-placement-ex m-2" data-bs-delay="5000" role="alert">
+        <div class="toast-header">
+            <i class="ti ti-bell ti-xs me-2"></i>
+            <div class="me-auto fw-medium">موفق</div>
+            <button aria-label="بستن" class="btn-close" data-bs-dismiss="toast" type="button"></button>
+        </div>
+        <div class="toast-body">اشتراک با موفقیت ویرایش شد</div>
+    </div>
+
+    <!-- / Layout wrapper -->
+    <!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+    <script src="../../assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="../../assets/vendor/libs/popper/popper.js"></script>
+    <script src="../../assets/vendor/js/bootstrap.js"></script>
+    <script src="../../assets/vendor/libs/node-waves/node-waves.js"></script>
+    <script src="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="../../assets/vendor/libs/hammer/hammer.js"></script>
+    <script src="../../assets/vendor/js/menu.js"></script>
+    <script>
+        function AjaxFormGet(url, form) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: url,
+                    type: 'Get',
+                    data: $(form).serialize(),
+                    success: function (response) {
+                        resolve(response);
+                    },
+                    error: function (xhr, status, error) {
+                        reject({ xhr: xhr, status: status, error: error });
+                    }
+                });
+            });
+        }
+
+        function AjaxGet(url) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: url,
+                    type: 'Get',
+                    success: function (response) {
+                        resolve(response);
+                    },
+                    error: function (xhr, status, error) {
+                        reject({ xhr: xhr, status: status, error: error });
+                    }
+                });
+            });
+        }
+
+
+        function AjaxFormPost(url, form) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: $(form).serialize(),
+                    success: function (response) {
+                        resolve(response);
+                    },
+                    error: function (xhr, status, error) {
+                        reject({ xhr: xhr, status: status, error: error });
+                    }
+                });
+            });
+        }
+
+    </script>
+    <!-- endbuild -->
+    @RenderSection("vendorScripts", false)
+
+    <script>
+        /// تابع توستر برای استفاده در کلاس Toaster در سی شارپ
+        let toastPlacementExample = document.querySelector('.toast-placement-ex');
+        toastPlacementExample.classList.add("bottom-0", "end-0");
+
+        function showToast(headerText, bodyText, type) {
+            toastPlacementExample.querySelector('.ti').classList.add(type);
+            let toastHeader = toastPlacementExample.querySelector('.me-auto.fw-medium');
+            let toastBody = toastPlacementExample.querySelector('.toast-body');
+
+            toastHeader.textContent = headerText;
+            toastBody.textContent = bodyText;
+
+            let toastPlacement = new bootstrap.Toast(toastPlacementExample);
+            toastPlacement.show();
+        }
+    </script>
+
+    <!-- Vendors JS -->
+    <!-- Main JS -->
+    <script src="../../assets/js/main.js"></script>
+    @RenderSection("customScripts", false)
+    <script>
+
+
+
+
+        function blockUI(input) {
+            $(input).block({
+                message: '<div class="spinner-border text-primary" role="status"></div>',
+                css: {
+                    backgroundColor: 'transparent',
+                    border: '0'
+                },
+                overlayCSS: {
+                    backgroundColor: 'transparent',
+                    opacity: 0.8
                 }
             });
-
         }
+
+        function UnblockUI(input) {
+            $(input).unblock();
+        }
+
+        function BodyBlockUI() {
+            $('body').block({
+                message: '<div class="spinner-border text-primary" role="status"></div>',
+                css: {
+                    backgroundColor: 'transparent',
+                    border: '0'
+                },
+                overlayCSS: {
+                    backgroundColor: 'transparent',
+                    opacity: 0.8
+                }
+            });
+        }
+
+        function BodyUnblockUI(input) {
+            $('body').unblock();
+        }
+
+        $(function () {
+
+            $('input').attr("autocomplete", "off");
+
+        });
+
+
 
         $("#ChangeProf").click(function () {
             $('#Profile').trigger('click');
@@ -330,69 +689,70 @@
             $("#ProfileForm").submit();
         });
 
-        
 
-        function separateDigits(number) {
-            // تبدیل عدد به رشته
-            let numberString = String(number);
-
-            // بررسی اگر عدد منفی بود
-            let isNegative = false;
-            if (numberString[0] === '-') {
-                isNegative = true;
-                numberString = numberString.slice(1);
-            }
-
-            // جدا کردن ارقام به صورت سه رقم سه رقم
-            let separated = '';
-            let count = 0;
-            for (let i = numberString.length - 1; i >= 0; i--) {
-                separated = numberString[i] + separated;
-                count++;
-                if (count === 3 && i !== 0) {
-                    separated = ',' + separated;
-                    count = 0;
-                }
-            }
-
-            // اضافه کردن علامت منفی اگر بود
-            if (isNegative) {
-                separated = '-' + separated;
-            }
-
-            return separated;
-        }
-
-        // مثال استفاده
-        let number = 123456789;
-        console.log(separateDigits(number)); // خروجی: 123,456,789
 
 
     </script>
 
     <script>
-        function separateDigits(inputValue, InputId) {
-            // حذف همه اعداد از متن
-            let numberOnly = inputValue.replace(/\D/g, '');
 
-            // جدا کردن ارقام به صورت سه رقم سه رقم
-            let separated = '';
-            let count = 0;
-            for (let i = numberOnly.length - 1; i >= 0; i--) {
-                separated = numberOnly[i] + separated;
-                count++;
-                if (count === 3 && i !== 0) {
-                    separated = ',' + separated;
-                    count = 0;
+        function copyToClipboard(text) {
+            // Check if the Clipboard API is available
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    ;
+                    showToast("موفق", "لینک با موفقیت در کلیپ بورد کپی شد", "text-success");
+                }).catch(err => {
+                    showToast("ناموفق", "کپی لینک با خطا مواجه شد", "text-danger");
+                });
+            } else {
+                // Fallback for browsers that do not support the Clipboard API
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";  // Avoid scrolling to bottom
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    document.execCommand('copy');
+                    showToast("موفق", "لینک با موفقیت در کلیپ بورد کپی شد", "text-success");
+                } catch (err) {
+                    showToast("ناموفق", "کپی لینک با خطا مواجه شد", "text-danger");
                 }
-            }
 
-            // نمایش جدا کرده شده در input
-            document.getElementById(InputId).value = separated;
+                document.body.removeChild(textArea);
+            }
         }
+
+
+
+
+
+        function separateDigits(input) {
+            // دریافت مقدار فعلی input
+            var value = input.value;
+
+            // حذف همه کاراکترهای غیر عددی
+            value = value.replace(/\D/g, '');
+
+            // جدا کردن اعداد به صورت سه رقم سه رقم
+            var formattedValue = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+            // تنظیم مقدار جدید در input
+            input.value = formattedValue;
+        }
+
+        // تعریف یک تابع برای خواندن پارامترهای URL
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        };
     </script>
 
-
-    @RenderSection("scripts", false)
+    <!-- Page JS -->
 </body>
+
 </html>

@@ -13,6 +13,6 @@ namespace V2boardApi.Models.AdminModel
         public string RemainingVolume { get; set; }
         public string TotalVolume { get; set; }
         public string ExpireDate { get; set; }
-        public string State { get; set; }
+        public int State { get; set; }
     }
 }

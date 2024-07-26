@@ -113,12 +113,9 @@ namespace V2boardApi.Tools
                 {
                     foreach(var item in _rolesSplit)
                     {
-                        if(Use.Role.Value.ToString() == httpContext.Request.Cookies["Role"].Value)
+                        if (item == httpContext.Request.Cookies["Role"].Value && Use.Role.Value.ToString() == item)
                         {
-                            if (item == httpContext.Request.Cookies["Role"].Value)
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }

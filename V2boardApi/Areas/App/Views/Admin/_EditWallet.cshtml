@@ -1,123 +1,32 @@
 ﻿@model DataLayer.DomainModel.tbUsers
 
-@using V2boardApi.Tools;
-
-@{
-    var PerGig = 0;
-    var PerMonth = 0;
-
-    var Setting = Model.tbBotSettings.FirstOrDefault();
-    if (Setting != null)
-    {
-        PerGig = Setting.PricePerGig_Admin.Value;
-        PerMonth = Setting.PricePerMonth_Admin.Value;
-    }
-}
-
-<div class="modal-content">
-    <div class="modal-body">
-        <div class="card">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title">شارژ کیف پول</h4>
-                    <form class="form-sample">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group row">
-                                    <input type="text" class="form-control" name="Wallet" id="Wallet" value="@Model.Wallet.Value.ConvertToMony()" oninput="separateDigits($(this).val(),'Wallet')">
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                    <hr />
-                    <h4 class="card-title">قیمت هر گیگ (ربات)</h4>
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group row">
-                                <input type="text" class="form-control" name="PricePerGig_Admin" id="PricePerGig_Admin" value="@PerGig.ConvertToMony()" oninput="separateDigits($(this).val(),'PricePerGig_Admin')">
-                            </div>
-                        </div>
-                    </div>
-                    <hr />
-                    <h4 class="card-title">قیمت هر ماه (ربات)</h4>
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group row">
-                                <input type="text" class="form-control" name="PricePerMonth_Admin" id="PricePerMonth_Admin" value="@PerMonth.ConvertToMony()" oninput="separateDigits($(this).val(),'PricePerMonth_Admin')">
-                            </div>
-                        </div>
-                    </div>
-
+<div aria-hidden="true" class="modal fade" id="editWallet" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+        <div class="modal-content p-3 p-md-5">
+            <div class="modal-body">
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                <div class="text-center mb-4">
+                    <h3 class="mb-2">تنظیمات حساب</h3>
                 </div>
+                <form class="row g-3" id="editWalletForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" value="" name="user_id" id="user_id" />
+                    <div class="col-12 d-flex align-items-center justify-content-between">
+                        <div class="flex-grow-1 me-2">
+                            <label class="form-label" for="Deposit">بدهی</label>
+                            <input class="form-control" id="Deposit" name="userDeposit" placeholder="3,000,000" type="text" onkeyup="separateDigits(this)" value="@V2boardApi.Tools.Utility.ConvertToMony(Model.Wallet.Value)" />
+                        </div>
+                        <div class="text-center">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <button class="btn btn-label-info" id="ZeroWallet" type="button">صفر</button>
+                        </div>
+                    </div>
+                    <div class="col-12 text-center">
+                        <button class="btn btn-primary me-sm-3 me-1" type="button" id="SaveDeposit">ثبت</button>
+                        <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset">لغو</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-gradient-dark close" data-dismiss="modal">بستن</button>
-        <button type="button" class="btn btn-gradient-success" onclick="SaveChange(this)">ذخیره</button>
-    </div>
 </div>
-
-<script>
-    $(".close").click(function () {
-        $('.modal').modal('hide');
-
-    });
-
-    function SaveChange(input) {
-        debugger
-        var wallet = $("input[name='Wallet']").val();
-        var PricePerGig_Admin = $("input[name='PricePerGig_Admin']").val();
-        var PricePerMonth_Admin = $("input[name='PricePerMonth_Admin']").val();
-
-        if (wallet.length >= 0 && wallet!="") {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("EditWallet", "Admin",new {area="App"})",
-                type: "Post",
-                data: { wallet: wallet, id: '@Model.User_ID', PricePerMonth_Admin: PricePerMonth_Admin, PricePerGig_Admin: PricePerGig_Admin },
-                datatype: "html",
-                success: function (res) {
-                    $("#loading").css("display", "none");
-                    if (res == "1") {
-                        Swal.fire({
-                            title: "موفق",
-                            text: "کیف پول کاربر با موفقیت شارژ شد",
-                            icon: "success"
-                        }).then(function () {
-                            location.reload();
-
-                        });
-                    }
-                    else if (res == "3") {
-                        Swal.fire({
-                            title: "خطا",
-                            text: "لطفا مبلغ را به عدد وارد کنید",
-                            icon: "error"
-                        });
-                        return;
-                    }
-                    else {
-                        Swal.fire({
-                            title: "خطا",
-                            text: "خطا در برقراری ارتباط با سرور",
-                            icon: "error"
-                        });
-                    }
-                }
-            });
-        }
-        else {
-            Swal.fire({
-                title: "Warning",
-                text: "مقدار کیف پول نمی تواند خالی باشد",
-                icon: "error"
-            });
-        }
-
-    }
-
-</script>
-

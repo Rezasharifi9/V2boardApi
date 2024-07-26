@@ -56,7 +56,7 @@ namespace V2boardApi.Tools
             }
             catch (SocketException ex)
             {
-                MessageBox.Show("Error pinging host:'" + hostUri + ":" + portNumber.ToString() + "'");
+                
                 return false;
             }
         }

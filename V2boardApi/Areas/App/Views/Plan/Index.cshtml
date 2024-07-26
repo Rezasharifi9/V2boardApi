@@ -1,88 +1,119 @@
-﻿
-@{
-    ViewBag.Title = "Index";
-    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+﻿@section vendorStyle{
+
+    <link href="../../assets/vendor/libs/node-waves/node-waves.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/typeahead-js/typeahead.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/libs/flatpickr/flatpickr.css" rel="stylesheet" />
+    <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
 }
 
-<div class="row">
-    <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body table-responsive">
-                <button class="btn btn-outline-dribbble btn-sm" id="UpdatePlan" style="margin-bottom:10px;">بروزرسانی تعرفه ها</button>
-                <div id="PartialPlans">
-                    @Html.Action("_PartialGetAllPlans", "Plan", new { area = "App" })
-                </div>
-            </div>
-        </div>
+
+<!-- DataTable with Buttons -->
+<div class="card">
+    <div class="card-datatable table-responsive pt-0">
+        <table class="datatables-plan table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>نام تعرفه</th>
+                    <th>تعداد روز</th>
+                    <th>ترافیک (گیگابایت)</th>
+                    <th>قیمت</th>
+                    <th>وضعیت</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+        </table>
     </div>
 </div>
+<!-- Modal to add new record -->
+<div class="offcanvas offcanvas-end" id="add-new-record">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="exampleModalLabel">رکورد جدید</h5>
+        <button aria-label="بستن" class="btn-close text-reset" data-bs-dismiss="offcanvas" type="button"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1">
+        <form class="add-new-record pt-0 row g-2" id="form-add-new-record" onsubmit="return false">
+            <div class="col-sm-12">
+                <label class="form-label" for="basicFullname">نام و نام خانوادگی</label>
+                <div class="input-group input-group-merge">
+                    <span class="input-group-text" id="basicFullname2">
+                        <i class="ti ti-user"></i>
+                    </span>
+                    <input aria-describedby="basicFullname2" aria-label="نـوید" class="form-control dt-full-name" id="basicFullname" name="basicFullname" placeholder="نـوید" type="text" />
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <label class="form-label" for="basicPost">پست</label>
+                <div class="input-group input-group-merge">
+                    <span class="input-group-text" id="basicPost2">
+                        <i class="ti ti-briefcase"></i>
+                    </span>
+                    <input aria-describedby="basicPost2" aria-label="توسعه دهنده وب" class="form-control dt-post" id="basicPost" name="basicPost" placeholder="توسعه دهنده وب" type="text" />
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <label class="form-label" for="basicEmail">ایمیل</label>
+                <div class="input-group input-group-merge">
+                    <span class="input-group-text">
+                        <i class="ti ti-mail"></i>
+                    </span>
+                    <input aria-label="john.doe@example.com" class="form-control dt-email" id="basicEmail" name="basicEmail" placeholder="john.doe@example.com" type="text" />
+                </div>
+                <div class="form-text">می توانید از حروف، اعداد و نقطه استفاده کنید</div>
+            </div>
+            <div class="col-sm-12">
+                <label class="form-label" for="basicDate">تاریخ عضویت</label>
+                <div class="input-group input-group-merge">
+                    <span class="input-group-text" id="basicDate2">
+                        <i class="ti ti-calendar"></i>
+                    </span>
+                    <input aria-describedby="basicDate2" aria-label="MM/DD/YYYY" class="form-control dt-date" id="basicDate" name="basicDate" placeholder="MM/DD/YYYY" type="text" />
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <label class="form-label" for="basicSalary">حقوق</label>
+                <div class="input-group input-group-merge">
+                    <span class="input-group-text" id="basicSalary2">ءتء</span>
+                    <input aria-describedby="basicSalary2" aria-label="12000" class="form-control dt-salary" id="basicSalary" name="basicSalary" placeholder="12000" type="number" />
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <button class="btn btn-primary data-submit me-sm-3 me-1" type="submit">ارسال</button>
+                <button class="btn btn-outline-secondary" data-bs-dismiss="offcanvas" type="reset">لغو</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!--/ DataTable with Buttons -->
 
 
-@section scripts {
-
-    <script>
+@section vendorScripts {
 
 
-        ConvertToDataTable("#TablePlan", 4, [{ width: 2, targets: 5 }]);
+    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
 
-        $("#UpdatePlan").click(function () {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("UpdatePlans", "Plan",new {area="App"})",
-                type: "get",
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    if (result == "1") {
-                        Swal.fire({
-                            title: "موفق",
-                            text: "بروزرسانی تعرفه ها با موفقیت انجام شد",
-                            icon: "success"
-                        });
-                    }
-                }
-            });
-        });
+    <!-- Flat Picker -->
+    <script src="../../assets/vendor/libs/moment/moment.js"></script>
+    <script src="../../assets/libs/jdate/jdate.js"></script>
+    <script src="../../assets/libs/flatpickr/flatpickr-jalali.js"></script>
+    <script src="../../assets/libs/flatpickr/l10n/fa.js"></script>
+
+    <!-- Form Validation -->
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
 
 
-        function EditPlan(Url) {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: Url,
-                type: "get",
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#modal-dialog-lg").html(result);
-                    $('#modal-lg').modal('show');
-                }
-            });
-        }
+}
 
+@section customScripts {
 
-        function DisablePlan(Url) {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: Url,
-                type: "get",
-                dataType: "html",
-                success: function (result) {
-                    $("#loading").css("display", "none");
-                    $("#loading").css("display", "flex");
-                    $.ajax({
-                        url: "@Url.Action("_PartialGetAllPlans", "Plan", new { area = "App" })",
-                        dataType: "html",
-                        type: "get",
-                        success: function (res) {
-                            $("#loading").css("display", "none");
-                            $("#PartialPlans").html(res);
-                            ConvertToDataTable("#TablePlan", 5, [{ width: 2, targets: 5 }]);
+    <script src="../../assets/js/app-plan-list.js"></script>
 
-                        }
-                    });
-                }
-            });
-        }
-
-    </script>
 }
