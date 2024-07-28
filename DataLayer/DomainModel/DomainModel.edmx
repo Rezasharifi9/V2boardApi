@@ -199,6 +199,7 @@
           <Property Name="PricePerGig" Type="int" />
           <Property Name="PricePerMonth" Type="int" />
           <Property Name="DefaultPlanIdInV2board" Type="int" />
+          <Property Name="BotbaseAddress" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
           <Key>
@@ -281,63 +282,6 @@
           <Property Name="ExpireTimeToken" Type="datetime" />
           <Property Name="Admin_Telegram_ID" Type="int" />
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
-        </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_AllSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
-        <EntityType Name="vi_AllSales">
-          <Key>
-            <PropertyRef Name="Source" />
-          </Key>
-          <Property Name="date" Type="nvarchar" MaxLength="4000" />
-          <Property Name="year" Type="nvarchar" MaxLength="4000" />
-          <Property Name="month" Type="nvarchar" MaxLength="4000" />
-          <Property Name="day" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Order_Price" Type="int" />
-          <Property Name="FK_Tel_UserID" Type="int" />
-          <Property Name="User_Plan_ID" Type="int" />
-          <Property Name="Source" Type="varchar" MaxLength="4" Nullable="false" />
-          <Property Name="BotId" Type="varchar" MaxLength="50" />
-        </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_FullSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
-        <EntityType Name="vi_FullSales">
-          <Key>
-            <PropertyRef Name="SaleRobot" />
-            <PropertyRef Name="SalePanel" />
-          </Key>
-          <Property Name="PerYear" Type="int" />
-          <Property Name="User_ID" Type="int" />
-          <Property Name="PerMonth" Type="int" />
-          <Property Name="PerDay" Type="int" />
-          <Property Name="date" Type="date" />
-          <Property Name="SaleRobot" Type="int" Nullable="false" />
-          <Property Name="SalePanel" Type="int" Nullable="false" />
-        </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromBot' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
-        <EntityType Name="vi_SaleFromBot">
-          <Key>
-            <PropertyRef Name="User_ID" />
-          </Key>
-          <Property Name="User_ID" Type="int" Nullable="false" />
-          <Property Name="OrderDate" Type="date" />
-          <Property Name="PerYear" Type="int" />
-          <Property Name="PerMonth" Type="int" />
-          <Property Name="PeyDay" Type="int" />
-          <Property Name="Sales" Type="int" />
-        </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
-        <EntityType Name="vi_SaleFromMajor">
-          <Key>
-            <PropertyRef Name="User_ID" />
-          </Key>
-          <Property Name="Sale" Type="int" />
-          <Property Name="User_ID" Type="int" Nullable="false" />
-          <Property Name="CreateDatetime" Type="date" />
-          <Property Name="PerYear" Type="int" />
-          <Property Name="PerMonth" Type="int" />
-          <Property Name="PeyDay" Type="int" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
@@ -610,50 +554,6 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="vi_AllSales" EntityType="Self.vi_AllSales" store:Type="Views" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [vi_AllSales].[date] AS [date], 
-    [vi_AllSales].[year] AS [year], 
-    [vi_AllSales].[month] AS [month], 
-    [vi_AllSales].[day] AS [day], 
-    [vi_AllSales].[Order_Price] AS [Order_Price], 
-    [vi_AllSales].[FK_Tel_UserID] AS [FK_Tel_UserID], 
-    [vi_AllSales].[User_Plan_ID] AS [User_Plan_ID], 
-    [vi_AllSales].[Source] AS [Source], 
-    [vi_AllSales].[BotId] AS [BotId]
-    FROM [dbo].[vi_AllSales] AS [vi_AllSales]</DefiningQuery>
-          </EntitySet>
-          <EntitySet Name="vi_FullSales" EntityType="Self.vi_FullSales" store:Type="Views" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [vi_FullSales].[PerYear] AS [PerYear], 
-    [vi_FullSales].[User_ID] AS [User_ID], 
-    [vi_FullSales].[PerMonth] AS [PerMonth], 
-    [vi_FullSales].[PerDay] AS [PerDay], 
-    [vi_FullSales].[date] AS [date], 
-    [vi_FullSales].[SaleRobot] AS [SaleRobot], 
-    [vi_FullSales].[SalePanel] AS [SalePanel]
-    FROM [dbo].[vi_FullSales] AS [vi_FullSales]</DefiningQuery>
-          </EntitySet>
-          <EntitySet Name="vi_SaleFromBot" EntityType="Self.vi_SaleFromBot" store:Type="Views" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [vi_SaleFromBot].[User_ID] AS [User_ID], 
-    [vi_SaleFromBot].[OrderDate] AS [OrderDate], 
-    [vi_SaleFromBot].[PerYear] AS [PerYear], 
-    [vi_SaleFromBot].[PerMonth] AS [PerMonth], 
-    [vi_SaleFromBot].[PeyDay] AS [PeyDay], 
-    [vi_SaleFromBot].[Sales] AS [Sales]
-    FROM [dbo].[vi_SaleFromBot] AS [vi_SaleFromBot]</DefiningQuery>
-          </EntitySet>
-          <EntitySet Name="vi_SaleFromMajor" EntityType="Self.vi_SaleFromMajor" store:Type="Views" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [vi_SaleFromMajor].[Sale] AS [Sale], 
-    [vi_SaleFromMajor].[User_ID] AS [User_ID], 
-    [vi_SaleFromMajor].[CreateDatetime] AS [CreateDatetime], 
-    [vi_SaleFromMajor].[PerYear] AS [PerYear], 
-    [vi_SaleFromMajor].[PerMonth] AS [PerMonth], 
-    [vi_SaleFromMajor].[PeyDay] AS [PeyDay]
-    FROM [dbo].[vi_SaleFromMajor] AS [vi_SaleFromMajor]</DefiningQuery>
-          </EntitySet>
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="Self.FK_tbBankCardNumbers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
@@ -762,10 +662,6 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <EntitySet Name="tbUseages" EntityType="V2boardSiteModel.tbUseages" />
           <EntitySet Name="tbUserFactors" EntityType="V2boardSiteModel.tbUserFactors" />
           <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
-          <EntitySet Name="vi_AllSales" EntityType="V2boardSiteModel.vi_AllSales" />
-          <EntitySet Name="vi_FullSales" EntityType="V2boardSiteModel.vi_FullSales" />
-          <EntitySet Name="vi_SaleFromBot" EntityType="V2boardSiteModel.vi_SaleFromBot" />
-          <EntitySet Name="vi_SaleFromMajor" EntityType="V2boardSiteModel.vi_SaleFromMajor" />
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
@@ -1063,6 +959,7 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <Property Name="PricePerGig" Type="Int32" />
           <Property Name="PricePerMonth" Type="Int32" />
           <Property Name="DefaultPlanIdInV2board" Type="Int32" />
+          <Property Name="BotbaseAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbServers" ToRole="tbLinks" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
           <NavigationProperty Name="tbUpdateLogs" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
@@ -1088,6 +985,7 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <Property Name="Tel_UpdateMessage" Type="DateTime" Precision="3" />
           <Property Name="Tel_GetedTestAccount" Type="Boolean" />
           <Property Name="FK_User_ID" Type="Int32" />
+          <Property Name="Tel_Status" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbOrders" />
@@ -1095,7 +993,6 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <NavigationProperty Name="tbTelegramUsers2" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
-          <Property Name="Tel_Status" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -1142,6 +1039,7 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <Property Name="User_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Username" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="Password" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="FullName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
           <Property Name="FirstName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="LastName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="PhoneNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
@@ -1168,56 +1066,6 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbTelegramUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
-          <Property Name="FullName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
-        </EntityType>
-        <EntityType Name="vi_AllSales">
-          <Key>
-            <PropertyRef Name="Source" />
-          </Key>
-          <Property Name="date" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="year" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="month" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="day" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Order_Price" Type="Int32" />
-          <Property Name="FK_Tel_UserID" Type="Int32" />
-          <Property Name="User_Plan_ID" Type="Int32" />
-          <Property Name="Source" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
-          <Property Name="BotId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-        </EntityType>
-        <EntityType Name="vi_FullSales">
-          <Key>
-            <PropertyRef Name="SaleRobot" />
-            <PropertyRef Name="SalePanel" />
-          </Key>
-          <Property Name="PerYear" Type="Int32" />
-          <Property Name="User_ID" Type="Int32" />
-          <Property Name="PerMonth" Type="Int32" />
-          <Property Name="PerDay" Type="Int32" />
-          <Property Name="date" Type="DateTime" Precision="0" />
-          <Property Name="SaleRobot" Type="Int32" Nullable="false" />
-          <Property Name="SalePanel" Type="Int32" Nullable="false" />
-        </EntityType>
-        <EntityType Name="vi_SaleFromBot">
-          <Key>
-            <PropertyRef Name="User_ID" />
-          </Key>
-          <Property Name="User_ID" Type="Int32" Nullable="false" />
-          <Property Name="OrderDate" Type="DateTime" Precision="0" />
-          <Property Name="PerYear" Type="Int32" />
-          <Property Name="PerMonth" Type="Int32" />
-          <Property Name="PeyDay" Type="Int32" />
-          <Property Name="Sales" Type="Int32" />
-        </EntityType>
-        <EntityType Name="vi_SaleFromMajor">
-          <Key>
-            <PropertyRef Name="User_ID" />
-          </Key>
-          <Property Name="Sale" Type="Int32" />
-          <Property Name="User_ID" Type="Int32" Nullable="false" />
-          <Property Name="CreateDatetime" Type="DateTime" Precision="0" />
-          <Property Name="PerYear" Type="Int32" />
-          <Property Name="PerMonth" Type="Int32" />
-          <Property Name="PeyDay" Type="Int32" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
@@ -1663,6 +1511,7 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <EntitySetMapping Name="tbServers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbServers">
               <MappingFragment StoreEntitySet="tbServers">
+                <ScalarProperty Name="BotbaseAddress" ColumnName="BotbaseAddress" />
                 <ScalarProperty Name="DefaultPlanIdInV2board" ColumnName="DefaultPlanIdInV2board" />
                 <ScalarProperty Name="PricePerMonth" ColumnName="PricePerMonth" />
                 <ScalarProperty Name="PricePerGig" ColumnName="PricePerGig" />
@@ -1748,7 +1597,6 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
-                <ScalarProperty Name="FullName" ColumnName="FullName" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
                 <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
@@ -1766,61 +1614,10 @@ warning 6002: The table/view 'V2boardSiteNazari.dbo.vi_SaleFromMajor' does not h
                 <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
                 <ScalarProperty Name="LastName" ColumnName="LastName" />
                 <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="FullName" ColumnName="FullName" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="User_ID" ColumnName="User_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="vi_AllSales">
-            <EntityTypeMapping TypeName="V2boardSiteModel.vi_AllSales">
-              <MappingFragment StoreEntitySet="vi_AllSales">
-                <ScalarProperty Name="BotId" ColumnName="BotId" />
-                <ScalarProperty Name="Source" ColumnName="Source" />
-                <ScalarProperty Name="User_Plan_ID" ColumnName="User_Plan_ID" />
-                <ScalarProperty Name="FK_Tel_UserID" ColumnName="FK_Tel_UserID" />
-                <ScalarProperty Name="Order_Price" ColumnName="Order_Price" />
-                <ScalarProperty Name="day" ColumnName="day" />
-                <ScalarProperty Name="month" ColumnName="month" />
-                <ScalarProperty Name="year" ColumnName="year" />
-                <ScalarProperty Name="date" ColumnName="date" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="vi_FullSales">
-            <EntityTypeMapping TypeName="V2boardSiteModel.vi_FullSales">
-              <MappingFragment StoreEntitySet="vi_FullSales">
-                <ScalarProperty Name="SalePanel" ColumnName="SalePanel" />
-                <ScalarProperty Name="SaleRobot" ColumnName="SaleRobot" />
-                <ScalarProperty Name="date" ColumnName="date" />
-                <ScalarProperty Name="PerDay" ColumnName="PerDay" />
-                <ScalarProperty Name="PerMonth" ColumnName="PerMonth" />
-                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
-                <ScalarProperty Name="PerYear" ColumnName="PerYear" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="vi_SaleFromBot">
-            <EntityTypeMapping TypeName="V2boardSiteModel.vi_SaleFromBot">
-              <MappingFragment StoreEntitySet="vi_SaleFromBot">
-                <ScalarProperty Name="Sales" ColumnName="Sales" />
-                <ScalarProperty Name="PeyDay" ColumnName="PeyDay" />
-                <ScalarProperty Name="PerMonth" ColumnName="PerMonth" />
-                <ScalarProperty Name="PerYear" ColumnName="PerYear" />
-                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
-                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="vi_SaleFromMajor">
-            <EntityTypeMapping TypeName="V2boardSiteModel.vi_SaleFromMajor">
-              <MappingFragment StoreEntitySet="vi_SaleFromMajor">
-                <ScalarProperty Name="PeyDay" ColumnName="PeyDay" />
-                <ScalarProperty Name="PerMonth" ColumnName="PerMonth" />
-                <ScalarProperty Name="PerYear" ColumnName="PerYear" />
-                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
-                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
-                <ScalarProperty Name="Sale" ColumnName="Sale" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

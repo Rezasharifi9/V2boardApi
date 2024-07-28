@@ -261,9 +261,9 @@ namespace V2boardApi.Areas.App.Controllers
                     else
                     {
 
-                        if (BotManager.Bots[Use.Username].Token != BotToken)
+                        if (BotManager.GetBot(Use.Username).Token != BotToken)
                         {
-                            BotManager.Bots[Use.Username].Token = BotToken;
+                            BotManager.StopBot(Use.Username);
                         }
                     }
 

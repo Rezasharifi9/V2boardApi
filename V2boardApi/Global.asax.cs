@@ -18,6 +18,8 @@ using Newtonsoft.Json;
 using V2boardApi.Models.V2boardModel;
 using V2boardApi.Tools;
 using V2boardApi.Areas.api;
+using static Stimulsoft.Base.Drawing.StiFontReader;
+using System.Web.Caching;
 
 namespace V2boardApi
 {
@@ -37,15 +39,18 @@ namespace V2boardApi
             foreach (var item in Res)
             {
                 BotManager.AddBot(item.Username, item.tbBotSettings.First().Bot_Token);
-                BotService Service = new BotService();
-                Service.Register(item.Username);
             }
 
             var User = Res.FirstOrDefault();
 
             if (User != null)
             {
-                BotManager.Server = User.tbServers;
+                HttpRuntime.Cache.Insert("Server", User.tbServers, null, Cache.NoAbsoluteExpiration, Cache.NoSlidingExpiration);
+            }
+            else
+            {
+                var user = Rep.GetAll().First();
+                HttpRuntime.Cache.Insert("Server", user.tbServers, null, Cache.NoAbsoluteExpiration, Cache.NoSlidingExpiration);
             }
         }
 

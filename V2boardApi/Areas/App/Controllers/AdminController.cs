@@ -147,13 +147,16 @@ namespace V2boardApi.Areas.App.Controllers
                 user.used = item.Wallet.Value.ConvertToMony() + " تومان";
                 user.limit = item.Limit.Value.ConvertToMony() + " تومان";
                 user.RobotStatus = 0;
-                if (item.tbBotSettings.Count() >= 1)
+
+                var bot = BotManager.GetBot(user.username);
+                if (bot != null)
                 {
-                    if (item.tbBotSettings.ToList()[0].Active == true)
+                    if (bot.Started)
                     {
                         user.RobotStatus = 1;
                     }
                 }
+
 
                 users.Add(user);
             }
@@ -395,44 +398,7 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpGet]
         public ActionResult Login()
         {
-            try
-            {
-                //var users = db.tbUsers.Where(p => p.FK_Server_ID == 1002).ToList();
-                //foreach (var item in users)
-                //{
-                //    db.tbBankCardNumbers.RemoveRange(item.tbBankCardNumbers);
-
-
-
-
-                //    foreach (var item2 in item.tbTelegramUsers)
-                //    {
-                //        db.tbDepositWallet_Log.RemoveRange(item2.tbDepositWallet_Log);
-                //        db.tbOrders.RemoveRange(item2.tbOrders);
-                //        db.tbLinks.RemoveRange(item2.tbLinks);
-                //    }
-                //    db.tbUserFactors.RemoveRange(item.tbUserFactors);
-                //    db.tbTelegramUsers.RemoveRange(item.tbTelegramUsers.ToList());
-
-                //    foreach (var item2 in item.tbLinkUserAndPlans)
-                //    {
-                //        db.tbLogs.RemoveRange(item2.tbLogs);
-                //    }
-                //    db.tbLinkUserAndPlans.RemoveRange(item.tbLinkUserAndPlans);
-
-                //}
-
-                //db.tbPlans.RemoveRange(db.tbPlans.Where(p => p.FK_Server_ID == 1002 && p.tbLinkUserAndPlans.Count() <= 0).ToList());
-
-                //db.tbUsers.RemoveRange(users);
-                //db.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-
-            }
-            tbUsers users = new tbUsers();
-            return View(users);
+            return View();
         }
 
         /// <summary>
@@ -518,7 +484,6 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        
 
         #region لیست تعرفه ها در قالب Select2
         //[AuthorizeApp(Roles = "1")]
@@ -827,11 +792,9 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region روشن کردن ربات عمده فروش
         [AuthorizeApp(Roles = "1")]
-        //[System.Web.Mvc.HttpPost]
-
         public async Task<ActionResult> StartBot(int user_id)
         {
-            var User = RepositoryUser.Where(p => p.User_ID == user_id).FirstOrDefault();
+            var User = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == user_id);
             try
             {
                 if (User != null)
@@ -845,23 +808,34 @@ namespace V2boardApi.Areas.App.Controllers
 
                     BotService service = new BotService();
 
-                    await service.Register(User.Username);
+                    try
+                    {
+                        await service.Register(User.Username);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex, "راه اندازی ربات با خطا مواجه شد");
+                    }
+
+                    var message = "";
 
                     if (Bot != null)
                     {
                         if (Bot.Started)
                         {
-                            BotManager.Bots[User.Username].Started = false;
+                            BotManager.StopBot(User.Username);
+                            message = "ربات " + User.Username + " با موفقیت خاموش شد";
                         }
                         else
                         {
-                            BotManager.Bots[User.Username].Started = true;
+                            BotManager.StartBot(User.Username);
+                            message = "ربات " + User.Username + " با موفقیت روشن شد";
                         }
                     }
 
 
-                    logger.Info("ربات " + User.Username + " با موفقیت راه اندازی شد");
-                    return MessageBox.Success("موفق", "ربات " + User.Username + " با موفقیت راه اندازی شد");
+                    logger.Info(message);
+                    return MessageBox.Success("موفق", message);
                 }
                 return MessageBox.Error("هشدار", "ربات راه اندازی نشد");
             }
@@ -894,17 +868,24 @@ namespace V2boardApi.Areas.App.Controllers
 
                         try
                         {
-                            await service.Register(item.Username);
+                            try
+                            {
+                                await service.Register(item.Username);
+                            }
+                            catch(Exception ex)
+                            {
+                                logger.Error(ex, "راه اندازی ربات با خطا مواجه شد");
+                            }
 
                             if (Bot != null)
                             {
                                 if (Bot.Started)
                                 {
-                                    BotManager.Bots[item.Username].Started = false;
+                                    BotManager.StopBot(item.Username);
                                 }
                                 else
                                 {
-                                    BotManager.Bots[item.Username].Started = true;
+                                    BotManager.StartBot(item.Username);
                                 }
                             }
                         }

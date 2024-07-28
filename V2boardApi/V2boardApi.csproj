@@ -1732,6 +1732,7 @@
     <Content Include="Areas\App\Views\Admin\Details.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\Details.cshtml" />
     <Content Include="Areas\App\Views\Subscriptions\Index.cshtml" />
+    <Content Include="Areas\App\Views\Subscriptions\_Wallet.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

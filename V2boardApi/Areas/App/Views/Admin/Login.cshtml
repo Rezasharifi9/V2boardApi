@@ -108,7 +108,36 @@
     <!-- Main JS -->
     <script src="../../assets/js/main.js"></script>
     <!-- Page JS -->
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+    <script>
+        function BodyBlockUI() {
+            $('body').block({
+                message: '<div class="spinner-border text-primary" role="status"></div>',
+                css: {
+                    backgroundColor: 'transparent',
+                    border: '0'
+                },
+                overlayCSS: {
+                    backgroundColor: 'transparent',
+                    opacity: 0.8
+                }
+            });
+        }
+
+        function BodyUnblockUI(input) {
+            $('body').unblock();
+        }
+    </script>
+
     <script src="../../assets/js/pages-auth.js"></script>
+
+    <script>
+
+
+
+
+
+    </script>
 </body>
 
 </html>

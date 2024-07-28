@@ -55,7 +55,7 @@ $(function () {
                 { data: 'DaysLeft', className: "text-center" },
                 { data: 'PlanName', className: "text-center" },
                 { data: 'IsActive', className: "text-center" },
-                { data: '', width: '200px', className: "text-center" },
+                { data: '', width: '80px', className: "text-center" },
             ],
             columnDefs: [
                 {
@@ -82,17 +82,25 @@ $(function () {
                         var $OnlineState = "";
                         if ($IsOnline == true) {
                             $OnlineState += '<i class="ti ti-circle-filled fs-tiny me-2 text-success"></i>';
+
+                            $row_output += "<span data-bs-toggle='popover' data-bs-html='true' title='<span>" +
+                                '<span class="fw-medium">آنلاین</span> ' +
+                                "</span>'" +
+                                "<span>" + "<span>" + $OnlineState + "</span>" +
+                                $name +
+                                '</span>';
                         }
                         else {
                             $OnlineState += '<i class="ti ti-circle-filled fs-tiny me-2 text-danger"></i>';
+                            $row_output += "<span data-bs-toggle='popover' data-bs-html='true' title='<span>" +
+                                '<span class="fw-medium">اخرین آنلاین :</span> ' +
+                                $LastTimeOnline +
+                                "</span>'" +
+                                "<span>" + "<span>" + $OnlineState + "</span>" +
+                                $name +
+                                '</span>';
                         }
-                        $row_output += "<span data-bs-toggle='popover' data-bs-html='true' title='<span>" +
-                            '<span class="fw-medium">اخرین آنلاین :</span> ' +
-                            $LastTimeOnline +
-                            "</span>'" +
-                            "<span>" + "<span>" + $OnlineState + "</span>" +
-                            $name +
-                            '</span>';
+
 
 
 
@@ -139,8 +147,12 @@ $(function () {
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $DaysLeft = full['DaysLeft'];
-
-                        var $row_output = "<span>" + $DaysLeft + "</span>";
+                        if ($DaysLeft == -1) {
+                            var $row_output = "<span>" + "بدون محدودیت" + "</span>";
+                        }
+                        else {
+                            var $row_output = "<span>" + $DaysLeft + "</span>";
+                        }
 
                         return $row_output;
                     }
@@ -186,30 +198,26 @@ $(function () {
                         var $link = full["SubLink"];
                         var $IsActive = full["IsActive"];
                         var $DayCount = full["DaysLeft"];
+                        var $Volume = full["RemainingVolume"];
                         var $state = "";
-                        var $stateIcon = "";
-                        var $stateRenew = "";
-                        var $stateRenewText = "";
-                        if ($DayCount <= 2) {
+                        if (($DayCount == -1 && $Volume <= 2) || ((($DayCount > -1) && $DayCount <= 2) || $Volume <= 2)) {
                             $stateRenew = "ti-refresh";
                             $stateRenewText = "تمدید";
                         }
                         else {
                             $stateRenew = "ti-refresh-alert",
-                                $stateRenewText = ($DayCount - 2) + " روز دیگر تا امکان تمدید";
+                                $stateRenewText = "تمدید";
                         }
 
                         if ($IsActive == 1) {
                             $state = "مسدود";
-                            $stateIcon = "ti-lock-access";
                         }
                         else if ($IsActive == 4) {
                             $state = "رفع مسدودی";
-                            $stateIcon = "ti-lock-access-off";
                         }
                         else {
                             $state = "مسدود";
-                            $stateIcon = "ti-lock-access";
+
                         }
 
                         var Role = document.cookie;
@@ -221,21 +229,21 @@ $(function () {
                             menu += '<button data-id="' + user_id + '" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit" type="buttton"><i class="text-primary ti ti-pencil"></i></button>';
                         }
 
-
-                        //var menu = +'<button data-bs-toggle="popover" title="کپی لینک" onclick="copyToClipboard(\'' + $link + '\')"  class="btn btn-sm btn-icon item-copy"><i class="text-primary ti ti-copy"></i></button>' +
-                        //    '<button data-bs-toggle="popover" title="QR Code" onclick="ShowQRCode(\'' + $link + '\')" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
-                        //    '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" title="' + $state + '" class="btn btn-sm btn-icon item-access"><i class="text-primary ti ' + $stateIcon + '"></i></button>' +
-                        //    '<a data-bs-toggle="popover" data-id="' + full["DaysLeft"] + '" data-id2="' + user_id + '" title="' + $stateRenewText + '" class="btn btn-sm btn-icon item-refresh"><i class="text-primary ti ' + $stateRenew + '"></i></a>' +
-                        //    '<a data-bs-toggle="popover" title="تغییر لینک" href="javascript:;" class="btn btn-sm btn-icon item-unlink"><i class="text-primary ti ti-unlink"></i></a>' +
-                        //    '<a data-bs-toggle="popover" title="تاریخچه مصرف" href="javascript:;" class="btn btn-sm btn-icon item-report"><i class="text-primary ti ti-report"></i></a>';
-
-                        return (menu +
-                            '<button data-bs-toggle="popover" title="کپی لینک" onclick="copyToClipboard(\'' + $link + '\')"  class="btn btn-sm btn-icon item-copy"><i class="text-primary ti ti-copy"></i></button>' +
+                        return (
+                            '<div class="d-flex align-items-center">' +
                             '<button data-bs-toggle="popover" title="QR Code" onclick="ShowQRCode(\'' + $link + '\')" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
-                            '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" title="' + $state + '" class="btn btn-sm btn-icon item-access"><i class="text-primary ti ' + $stateIcon + '"></i></button>' +
-                            '<button data-bs-toggle="popover" data-id="' + full["DaysLeft"] + '" data-id2="' + user_id + '" title="' + $stateRenewText + '" class="btn btn-sm btn-icon item-refresh"><i class="text-primary ti ' + $stateRenew + '"></i></button>' +
-                            '<button data-bs-toggle="popover" data-id="' + user_id + '" title="تغییر لینک" class="btn btn-sm btn-icon item-unlink"><i class="text-primary ti ti-unlink"></i></button>' +
-                            '<button data-bs-toggle="popover" title="تاریخچه مصرف" href="javascript:;" class="btn btn-sm btn-icon item-report"><i class="text-primary ti ti-report"></i></button>'
+                            '<a href="javascript:;" class="text-primary dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical ti-sm mx-1"></i></a>' +
+                            '<div class="dropdown-menu dropdown-menu-start m-0">' +
+                            '<button  data-id="' + full["DaysLeft"] + '" data-id2="' + user_id + '" data-id3="' + $Volume + '" class="dropdown-item item-refresh">تمدید</button>' +
+                            '<button  onclick="copyToClipboard(\'' + $link + '\')"  class="dropdown-item item-copy">کپی</button>' +
+                            '<button  data-id="' + user_id + '" class="dropdown-item item-unlink">تغییر لینک</button>' +
+                            '<button class="dropdown-item item-report">تاریخچه مصرف</button>' +
+                            '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state +'</button>' +
+                            '<div class="dropdown-divider"></div>' +
+                            '<li><button data-id="' + user_id + '" data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
+                            '</ul>' +
+                            '</div>' + menu +
+                            '</div>'
                         );
                     }
                 }
@@ -296,8 +304,9 @@ $(function () {
     $('body').on('click', '.item-refresh', function () {
 
         var DayLeft = $(this).attr("data-id");
+        var Volume = $(this).attr("data-id3");
 
-        if (DayLeft <= 2) {
+        if ((DayLeft == -1 && Volume <= 2) || (((DayLeft > -1) && DayLeft <= 2) || Volume <= 2)) {
 
             $(".dtr-bs-modal").modal("hide");
 
@@ -308,7 +317,12 @@ $(function () {
             $("#modalRenew input[name='user_id']").val(user_id);
         }
         else {
-            showToast("هشدار", "امکان تمدید تا " + (DayLeft - 2) + " روز دیگر فعال می شود", "text-warning");
+            if (DayLeft == -1) {
+                showToast("هشدار", "امکان تمدید برای حجم باقی مانده کمتر از 2 گیگ فعال می شود ", "text-warning");
+            }
+            else {
+                showToast("هشدار", "امکان تمدید تا " + (DayLeft - 2) + " روز دیگر یا حجم باقی مانده کمتر از " + (2) + " گیگ" + " فعال می شود", "text-warning");
+            }
         }
 
 
@@ -347,7 +361,7 @@ $(function () {
     $('body').on('click', '.item-unlink', function () {
 
         var user_id = $(this).attr("data-id");
-        
+
         Swal.fire({
             title: 'هشدار',
             text: "مطمئنی میخای لینک رو تغییر بدی ؟!",
@@ -365,7 +379,7 @@ $(function () {
 
                 BodyBlockUI();
 
-                
+
 
                 AjaxGet("/App/Subscriptions/Reset?user_id=" + user_id).then(res => {
 
@@ -382,13 +396,55 @@ $(function () {
             }
         });
 
+    });
 
-        
 
+    //حذف اشتراک
+    $('body').on('click', '.item-delete', function () {
+
+        var user_id = $(this).attr("data-id");
+        var vol = $(this).attr("data-id-vol");
+        var time = $(this).attr("data-id-time");
+
+        if (vol < 0 || time == 0) {
+            Swal.fire({
+                title: 'هشدار',
+                text: "مطمئنی میخای لینک رو حذف کنی ؟!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله',
+                cancelButtonText: 'بازگشت',
+                customClass: {
+                    confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                    cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+                },
+                buttonsStyling: false
+            }).then(function (result) {
+                if (result.value) {
+
+                    BodyBlockUI();
+
+                    AjaxGet("/App/Subscriptions/delete?user_id=" + user_id).then(res => {
+
+                        BodyUnblockUI();
+                        eval(res.data);
+                        if (res.status == "success") {
+
+                            dt_basic.ajax.reload(null, false);
+                        }
+
+
+                    });
+
+                }
+            });
+        }
+        else {
+            showToast("هشدار", "حذف لینک بعد پایان مدت زمان یا اتمام حجم فعال می شود", "text-warning");
+        }
 
 
     });
-
 
 
 

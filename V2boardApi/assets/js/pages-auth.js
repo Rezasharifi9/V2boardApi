@@ -50,13 +50,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
             var password = $("input[name='userPassword']").val();
             var remember = $("input[name='userRemember']").val();
 
-
+            BodyBlockUI();
             $.ajax({
                 url: "/App/Admin/Login",
                 type: "post",
                 dataType: "json",
                 data: { userUsername: username, userPassword: password, userRemember: remember },
                 success: function (res) {
+                    BodyUnblockUI();
                     if (res.status == "success") {
                         location.replace(res.redirectURL);
                     }

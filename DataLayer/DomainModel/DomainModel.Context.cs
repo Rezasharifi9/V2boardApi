@@ -43,9 +43,5 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbUseages> tbUseages { get; set; }
         public virtual DbSet<tbUserFactors> tbUserFactors { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
-        public virtual DbSet<vi_AllSales> vi_AllSales { get; set; }
-        public virtual DbSet<vi_FullSales> vi_FullSales { get; set; }
-        public virtual DbSet<vi_SaleFromBot> vi_SaleFromBot { get; set; }
-        public virtual DbSet<vi_SaleFromMajor> vi_SaleFromMajor { get; set; }
     }
 }

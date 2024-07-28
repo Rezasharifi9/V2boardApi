@@ -12,6 +12,9 @@ using NLog;
 using V2boardApi.Tools;
 using System.Text;
 using System.Globalization;
+using MySql.Data.MySqlClient;
+using System.Data.Entity;
+using System.Threading.Tasks;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -47,7 +50,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [AuthorizeApp(Roles = "1,2")]
         [System.Web.Mvc.HttpPost]
-        public ActionResult GetAll()
+        public async Task<ActionResult> GetAll()
         {
             try
             {
@@ -61,7 +64,7 @@ namespace V2boardApi.Areas.App.Controllers
                 int pageSize = length != null ? Convert.ToInt32(length) : 0;
                 int skip = start != null ? Convert.ToInt32(start) : 0;
 
-                var user = usersRepository.table.FirstOrDefault(p => p.Username == User.Identity.Name);
+                var user = await usersRepository.table.FirstOrDefaultAsync(p => p.Username == User.Identity.Name);
                 if (user?.tbServers == null)
                 {
                     return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
@@ -111,89 +114,107 @@ namespace V2boardApi.Areas.App.Controllers
 
                 query += pageSize > 0 ? $" LIMIT {skip}, {pageSize}" : "";
 
-                MySqlEntities mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString);
-                mySqlEntities.Open();
-                var reader = mySqlEntities.GetData(query);
-
-                List<GetUserDataModel> users = new List<GetUserDataModel>();
-                while (reader.Read())
+                using (var mySqlEntities = new MySqlEntities2(user.tbServers.ConnectionString))
                 {
-                    if (reader.HasRows)
+                    await mySqlEntities.OpenAsync();
+                    using (var reader = await mySqlEntities.GetDataAsync(query))
                     {
-                        var getuserData = new GetUserDataModel
+                        List<GetUserDataModel> users = new List<GetUserDataModel>();
+                        while (await reader.ReadAsync())
                         {
-                            id = reader.GetInt32("id"),
-                            Name = reader.GetString("email").Split('@')[0],
-                            TotalVolume = Utility.ConvertByteToGB(reader.GetInt64("transfer_enable")).ToString(),
-                            PlanName = reader.GetString("name"),
-                            IsBanned = Convert.ToBoolean(reader.GetSByte("banned")),
-                            IsActive = 1,
-                            SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString("token")}"
-                        };
+                            if (reader.HasRows)
+                            {
+                                var getuserData = new GetUserDataModel
+                                {
+                                    id = reader.GetInt32(reader.GetOrdinal("id")),
+                                    Name = reader.GetString(reader.GetOrdinal("email")).Split('@')[0],
+                                    TotalVolume = Utility.ConvertByteToGB(reader.GetInt64(reader.GetOrdinal("transfer_enable"))).ToString(),
+                                    PlanName = reader.GetString(reader.GetOrdinal("name")),
+                                    IsBanned = Convert.ToBoolean(reader.GetSByte(reader.GetOrdinal("banned"))),
+                                    IsActive = 1,
+                                    SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}"
+                                };
 
-                        var exp = reader["expired_at"].ToString();
-                        if (!string.IsNullOrEmpty(exp))
-                        {
-                            var e = Convert.ToInt64(exp);
-                            var ex = Utility.ConvertSecondToDatetime(e);
-                            getuserData.DaysLeft = Utility.CalculateLeftDayes(ex);
-                            if (getuserData.DaysLeft <= 2) getuserData.IsActive = 5;
-                            if (ex <= DateTime.Now) getuserData.IsActive = 2;
+                                var exp = reader["expired_at"].ToString();
+                                if (!string.IsNullOrEmpty(exp))
+                                {
+                                    var e = Convert.ToInt64(exp);
+                                    var ex = Utility.ConvertSecondToDatetime(e);
+                                    getuserData.DaysLeft = Utility.CalculateLeftDayes(ex);
+                                    if (getuserData.DaysLeft <= 2) getuserData.IsActive = 5;
+                                    if (ex <= DateTime.Now) getuserData.IsActive = 2;
+                                }
+                                else
+                                {
+                                    getuserData.DaysLeft = -1;
+                                }
+                                var onlineTime = reader["t"].ToString();
+                                if (onlineTime != "0")
+                                {
+                                    var onlineTimeDt = Utility.ConvertSecondToDatetime(Convert.ToInt64(onlineTime));
+
+                                    if (onlineTimeDt >= DateTime.Now.AddMinutes(-1))
+                                    {
+                                        getuserData.IsOnline = true;
+                                    }
+                                    else
+                                    {
+                                        getuserData.LastTimeOnline = Utility.ConvertDatetimeToShamsiDate(onlineTimeDt);
+                                    }
+                                }
+                                if (getuserData.LastTimeOnline == null)
+                                {
+                                    getuserData.LastTimeOnline = "آنلاین نشده";
+                                }
+                                var u = reader.GetInt64(reader.GetOrdinal("u"));
+                                var d = reader.GetInt64(reader.GetOrdinal("d"));
+                                var usedVolume = Utility.ConvertByteToGB(u + d);
+                                getuserData.UsedVolume = $"{Math.Round(usedVolume, 2)}";
+
+                                var remainingVolume = reader.GetInt64(reader.GetOrdinal("transfer_enable")) - (u + d);
+                                var remainingVolumeGB = Utility.ConvertByteToGB(remainingVolume);
+                                if (remainingVolumeGB <= 2) getuserData.CanEdit = true;
+                                if (remainingVolume <= 0) getuserData.IsActive = 3;
+                                getuserData.RemainingVolume = $"{Math.Round(remainingVolumeGB, 2)}";
+
+                                if (Convert.ToBoolean(reader.GetInt16(reader.GetOrdinal("banned"))))
+                                {
+                                    getuserData.IsActive = 4;
+                                }
+
+                                users.Add(getuserData);
+                            }
                         }
 
-                        var onlineTime = reader["t"].ToString();
-                        if (onlineTime != "0")
-                        {
-                            var onlineTimeDt = Utility.ConvertSecondToDatetime(Convert.ToInt64(onlineTime));
-                            getuserData.IsOnline = onlineTimeDt >= DateTime.Now.AddMinutes(-1);
-                            getuserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi2(onlineTimeDt);
-                        }
-                        if (getuserData.LastTimeOnline == null)
-                        {
-                            getuserData.LastTimeOnline = "آنلاین نشده";
-                        }
-                        var u = reader.GetInt64("u");
-                        var d = reader.GetInt64("d");
-                        var usedVolume = Utility.ConvertByteToGB(u + d);
-                        getuserData.UsedVolume = $"{Math.Round(usedVolume, 2)}";
+                        // Ensure the reader is closed before proceeding
+                        reader.Close();
 
-                        var remainingVolume = reader.GetInt64("transfer_enable") - (u + d);
-                        var remainingVolumeGB = Utility.ConvertByteToGB(remainingVolume);
-                        if (remainingVolumeGB <= 2) getuserData.CanEdit = true;
-                        if (remainingVolume <= 0) getuserData.IsActive = 3;
-                        getuserData.RemainingVolume = $"{Math.Round(remainingVolumeGB, 2)}";
-
-
-                        if (System.Convert.ToBoolean(reader.GetInt16("Banned")))
+                        var countQuery = $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%@{user.Username}%'";
+                        if (!string.IsNullOrEmpty(searchValue))
                         {
-                            getuserData.IsActive = 4;
+                            countQuery = searchValue.Contains("token=")
+                                ? $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE token='{searchValue.Split('=')[1]}' AND email LIKE '%@{user.Username}%'"
+                                : $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%{searchValue}%' AND email LIKE '%@{user.Username}%'";
                         }
 
-                        users.Add(getuserData);
+                        using (var countCommand = new MySqlCommand(countQuery, mySqlEntities.SqlConnection))
+                        {
+                            using (var countReader = await countCommand.ExecuteReaderAsync())
+                            {
+                                await countReader.ReadAsync();
+                                var totalRecords = countReader.GetInt32(countReader.GetOrdinal("Count"));
+
+                                return Json(new
+                                {
+                                    draw,
+                                    recordsTotal = totalRecords,
+                                    recordsFiltered = totalRecords,
+                                    data = users
+                                }, JsonRequestBehavior.AllowGet);
+                            }
+                        }
                     }
                 }
-                reader.Close();
-
-                var countQuery = $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%@{user.Username}%'";
-                if (!string.IsNullOrEmpty(searchValue))
-                {
-                    countQuery = searchValue.Contains("token=")
-                        ? $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE token='{searchValue.Split('=')[1]}' AND email LIKE '%@{user.Username}%'"
-                        : $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%{searchValue}%' AND email LIKE '%@{user.Username}%'";
-                }
-                reader = mySqlEntities.GetData(countQuery);
-                reader.Read();
-                var totalRecords = reader.GetInt32("Count");
-                reader.Close();
-                mySqlEntities.Close();
-
-                return Json(new
-                {
-                    draw,
-                    recordsTotal = totalRecords,
-                    recordsFiltered = totalRecords, // باید تعداد رکوردهای فیلتر شده را برگرداند
-                    data = users
-                }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
@@ -201,6 +222,14 @@ namespace V2boardApi.Areas.App.Controllers
                 return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
             }
         }
+
+
+
+
+
+
+
+
 
         #endregion
 
@@ -364,9 +393,14 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     var Traffic = Utility.ConvertByteToGB(read.GetDouble("transfer_enable"));
                     var Subname = read.GetBodyDefinition("email").Split('@')[0];
-                    var Date = read.GetInt64("expired_at");
+                    var Date = read.GetBodyDefinition("expired_at");
                     var SpeedLimit = read.GetBodyDefinition("speed_limit");
-                    var ShamsiDate = Utility.ConvertMillisecondToShamsiDate(Date);
+                    var ShamsiDate = "";
+                    if (Date != "")
+                    {
+                        ShamsiDate = Utility.ConvertMillisecondToShamsiDate(Convert.ToInt64(Date));
+                    }
+
 
                     return Json(new { data = new { userSubname = Subname, userTraffic = Traffic, userSpeed = SpeedLimit, userExpire = ShamsiDate }, status = "success" }, JsonRequestBehavior.AllowGet);
 
@@ -564,7 +598,6 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-
         #region ریست لینک اکانت
         [System.Web.Http.HttpPost]
         [AuthorizeApp(Roles = "1,2")]
@@ -595,5 +628,48 @@ namespace V2boardApi.Areas.App.Controllers
         }
         #endregion
 
+        #region حذف لینک
+
+        public ActionResult delete(int user_id)
+        {
+            try
+            {
+                var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+
+                var Server = user.tbServers;
+
+                MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
+                mySql.Open();
+
+                var Query = "delete from v2_user where id=" + user_id;
+                var reader = mySql.GetData(Query);
+
+
+                logger.Info("اشتراک حذف شد");
+                return Toaster.Success("موفق", "اشتراک با موفقیت حذف شد");
+
+            }
+            catch (Exception ex)
+            {
+                return Toaster.Error("ناموفق", "حذف اشتراک با خطا مواجه شد");
+            }
+
+        }
+
+
+        #endregion
+
+        #region اطلاعات کیف پول
+
+        [AuthorizeApp(Roles ="1,2")]
+        public ActionResult _Wallet()
+        {
+            var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+
+            return PartialView(user);
+
+        }
+
+        #endregion
     }
 }

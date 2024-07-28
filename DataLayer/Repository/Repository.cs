@@ -31,9 +31,15 @@ namespace DataLayer.Repository
         {
             return table.Where(predicate).ToList();
         }
+
         public List<T> GetAll()
         {
             return table.ToList();
+        }
+
+        public async Task<List<T>> GetAllAsync()
+        {
+            return await table.ToListAsync();
         }
 
         public T GetById(object id)
@@ -57,6 +63,11 @@ namespace DataLayer.Repository
             return Convert.ToBoolean(db.SaveChanges());
         }
 
+        public async Task<int> SaveChangesAsync()
+        {
+            return await db.SaveChangesAsync();
+        }
+
         public void Delete(int id)
         {
             T existing = table.Find(id);
@@ -67,5 +78,15 @@ namespace DataLayer.Repository
         {
             table.Remove(obj);
         }
+
+        public async Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await table.Where(predicate).ToListAsync();
+        }
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await table.Where(predicate).FirstOrDefaultAsync();
+        }
+
     }
 }

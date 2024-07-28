@@ -1,4 +1,4 @@
-﻿@model V2boardApi.Models.GetUserDataModel
+﻿@model V2boardApi.Areas.App.Data.SubscriptionsViewModels.GetUserDataModel
 @{
     Layout = null;
 
@@ -831,13 +831,21 @@
                              class="radial-progress font-black text-2xl" id="progress__bar" style="--size:9rem;
                             --thickness: 1.2rem;"></div>
                         <span class="inline-block dark:text-white text-black font-semibold text-lg">@Model.Name</span>
-                        @if (Model.IsActive == "فعال")
+                        @if (Model.IsActive == 1)
                         {
-                            <span style="background-color: #2d7818; " class="px-4 py-2 rounded-full inline-block shadow-md font-bold text-gray-200">@Model.IsActive</span>
+                            <span style="background-color: #2d7818; " class="px-4 py-2 rounded-full inline-block shadow-md font-bold text-gray-200">فعال</span>
                         }
-                        else
+                        else if (Model.IsActive == 2)
                         {
-                            <span style="background-color: #8f2f2f; width: 108%; text-align: center;" class="px-4 py-2 rounded-full inline-block shadow-md shadow-green-900 font-bold" style="background-color:green;width: 150px;text-align: center;">@Model.IsActive</span>
+                            <span style="background-color: #8f2f2f; width: 108%; text-align: center;" class="px-4 py-2 rounded-full inline-block shadow-md shadow-green-900 font-bold" style="background-color:green;width: 150px;text-align: center;">پایان تاریخ اشتراک</span>
+                        }
+                        else if (Model.IsActive == 3)
+                        {
+                            <span style="background-color: #8f2f2f; width: 108%; text-align: center;" class="px-4 py-2 rounded-full inline-block shadow-md shadow-green-900 font-bold" style="background-color:green;width: 150px;text-align: center;">اتمام حجم</span>
+                        }
+                        else if (Model.IsActive == 4)
+                        {
+                            <span style="background-color: #8f2f2f; width: 108%; text-align: center;" class="px-4 py-2 rounded-full inline-block shadow-md shadow-green-900 font-bold" style="background-color:green;width: 150px;text-align: center;">مسدود</span>
                         }
                     </div>
                     <div style="padding: 0px;" x-data="{ usedTraffic: {{ user.used_traffic }}, dataLimit: {% if not user.data_limit %}∞{% else %}{{ user.data_limit }}{% endif %} }"

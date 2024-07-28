@@ -1,7 +1,9 @@
 ﻿using DataLayer.DomainModel;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using V2boardBotApp;
 using V2boardBotApp.Models;
@@ -10,46 +12,54 @@ namespace V2boardBot.Functions
 {
     public static class RealUser
     {
-        public static void SetUserStep(string UserUniq, string Step, Entities db, string botName ,string Data = null)
+        public static async Task SetUserStep(string UserUniq, string Step, Entities db, string botName ,string Data = null)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Step = Step;
+            var res = await db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).FirstAsync();
             if (Data != null)
             {
-                db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Data += Data;
+                res.Tel_Data += Data;
             }
-            db.SaveChanges();
+            res.Tel_Step = Step;
+            await db.SaveChangesAsync();
         }
-        public static void SetEmptyState(string UserUniq, Entities db, string botName)
+        public static async Task  SetEmptyState(string UserUniq, Entities db, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Step = null;
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Data = null;
-            db.SaveChanges();
-        }
-
-
-        public static void SetTraffic(string UserUniq, Entities db, int? Traffic, string botName)
-        {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Traffic = Traffic;
-            db.SaveChanges();
+            var res = await db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).FirstAsync();
+            res.Tel_Step = null;
+            res.Tel_Data = null;
+            await db.SaveChangesAsync();
         }
 
 
-        public static void SetMonth(string UserUniq, Entities db, int? Month, string botName)
+        public static async Task SetTraffic(string UserUniq, Entities db, int? Traffic, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_Monthes = Month;
-            db.SaveChanges();
+            var res = await db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).FirstAsync();
+            res.Tel_Traffic = Traffic;
+            await db.SaveChangesAsync();
         }
 
-        public static void SetUpdateMessageTime(string UserUniq, Entities db, DateTime time, string botName)
+
+        public static async Task SetMonth(string UserUniq, Entities db, int? Month, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_UpdateMessage = time;
-            db.SaveChanges();
+            var res = await db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).FirstAsync();
+            res.Tel_Monthes = Month;
+            await db.SaveChangesAsync();
         }
 
-        public static void SetGetedAccountTest(string UserUniq, Entities db, string botName)
+        public static async Task SetUpdateMessageTime(string UserUniq, Entities db, DateTime time, string botName)
         {
-            db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).First().Tel_GetedTestAccount = true;
-            db.SaveChanges();
+            var res  = await db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).FirstAsync();
+
+            res.Tel_UpdateMessage = time;
+
+            await db.SaveChangesAsync();
+        }
+
+        public static async Task SetGetedAccountTest(string UserUniq, Entities db, string botName)
+        {
+            var res = await db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).FirstAsync();
+            res.Tel_GetedTestAccount = true;
+            await db.SaveChangesAsync();
         }
 
     }
