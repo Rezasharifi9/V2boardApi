@@ -54,6 +54,40 @@ namespace V2boardApi
             }
         }
 
+        void Application_Error(object sender, EventArgs e)
+        {
+            Exception exception = Server.GetLastError();
 
+            // بررسی اینکه آیا استثنای رخ داده یک HttpException است
+            if (exception is HttpException httpException)
+            {
+                int httpCode = httpException.GetHttpCode();
+
+                // اگر کد خطای HTTP برابر 404 باشد
+                if (httpCode == 404)
+                {
+                    Server.ClearError();
+                    Response.Redirect("~/App/Error/Error404"); // انتقال به اکشن Error404
+                }
+                else if(httpCode == 401)
+                {
+                    // برای سایر خطاها
+                    Server.ClearError();
+                    Response.Redirect("~/App/Error/Error401"); // انتقال به اکشن Error401
+                }
+                else if (httpCode == 500)
+                {
+                    // برای سایر خطاها
+                    Server.ClearError();
+                    Response.Redirect("~/App/Error/Error500"); // انتقال به اکشن Error500
+                }
+            }
+            else
+            {
+                // برای سایر خطاها
+                Server.ClearError();
+                Response.Redirect("~/Home/Error"); // انتقال به اکشن Error در کنترلر Home
+            }
+        }
     }
 }

@@ -23,6 +23,20 @@ $(function () {
         Plans("#userPlan");
 
     }
+    
+
+    var Role = "";
+    if (document.cookie.split(';').length != 0) {
+        var Cookies = document.cookie.split(';');
+        var RoleCookie = Cookies.find(cookie => cookie.trim().startsWith("Role="));
+        if (RoleCookie) {
+            Role = RoleCookie.split('=')[1];
+        }
+    } else {
+        Role = document.cookie;
+        Role = Role.split('=')[1];
+
+    }
 
     // DataTable with buttons
     // --------------------------------------------------------------------
@@ -31,7 +45,12 @@ $(function () {
         dt_basic = dt_basic_table.DataTable({
             ajax: {
                 url: '/App/Subscriptions/GetAll',
-                type: 'POST'
+                type: 'POST',
+                error: function (jqXHR, textStatus, errorThrown) {
+
+                    location.replace(location.href);
+
+                },
             },
             initComplete: function (setting, json) {
 
@@ -220,12 +239,10 @@ $(function () {
 
                         }
 
-                        var Role = document.cookie;
-
-                        var RoleData = Role.split('=');
+                        
 
                         var menu = "";
-                        if (RoleData[1] == "1") {
+                        if (Role == "1") {
                             menu += '<button data-id="' + user_id + '" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit" type="buttton"><i class="text-primary ti ti-pencil"></i></button>';
                         }
 
@@ -240,7 +257,7 @@ $(function () {
                             '<button class="dropdown-item item-report">تاریخچه مصرف</button>' +
                             '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state +'</button>' +
                             '<div class="dropdown-divider"></div>' +
-                            '<li><button data-id="' + user_id + '" data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
+                            '<li><button data-id="' + user_id + '"data-user="' + full["Name"]+'"  data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
                             '</ul>' +
                             '</div>' + menu +
                             '</div>'
@@ -405,11 +422,12 @@ $(function () {
         var user_id = $(this).attr("data-id");
         var vol = $(this).attr("data-id-vol");
         var time = $(this).attr("data-id-time");
+        var Name = $(this).attr("data-user");
 
-        if (vol < 0 || time == 0) {
+        if ((vol < 0 || time == 0) || Role == "1") {
             Swal.fire({
                 title: 'هشدار',
-                text: "مطمئنی میخای لینک رو حذف کنی ؟!",
+                text: "مطمئنی میخای لینک " + Name + " رو حذف کنی !؟",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'بله',

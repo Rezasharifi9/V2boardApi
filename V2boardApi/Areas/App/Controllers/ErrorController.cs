@@ -13,5 +13,16 @@ namespace V2boardApi.Areas.App.Controllers
         {
             return View();
         }
+
+        // GET: App/Error
+        public ActionResult Error401()
+        {
+            return View();
+        }
+
+        public ActionResult Error500()
+        {
+            return View();
+        }
     }
 }

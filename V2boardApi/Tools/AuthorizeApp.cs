@@ -104,6 +104,11 @@ namespace V2boardApi.Tools
                 return false;
             }
 
+            var Role = httpContext.Request.Cookies["Role"];
+            if (Role == null)
+            {
+                return false;
+            }
 
 
             using (var db = new Entities())
@@ -118,9 +123,11 @@ namespace V2boardApi.Tools
                             return true;
                         }
                     }
+                    httpContext.Response.Redirect("~/App/Error/Error401");
                 }
             }
 
+            
             return false;
         }
 

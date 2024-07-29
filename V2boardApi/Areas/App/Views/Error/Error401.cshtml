@@ -1,5 +1,5 @@
 ﻿
-@{ 
+@{
     Layout = null;
 }
 
@@ -9,7 +9,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" name="viewport" />
-    <title>خطای 404</title>
+    <title>عدم دسترسی</title>
     <meta content="" name="description" />
     <!-- Favicon -->
     <link href="../../assets/img/logo.png" rel="icon" type="image/x-icon" />
@@ -41,21 +41,25 @@
 
 <body>
     <!-- Content -->
-    <!-- Error -->
+    <!-- Not Authorized -->
     <div class="container-xxl container-p-y">
         <div class="misc-wrapper">
-            <h2 class="mb-3 mt-4">صفحه یافت نشد :(</h2>
-            <p class="mb-4 mx-2">اوه! 😖 URL درخواست شده در این سرور یافت نشد.</p>
-            <a class="btn btn-primary mb-4" href="@Url.Action("Index","Subscriptions")">بازگشت به خانه</a>
+            <h2 class="mb-3 mx-2">عدم دسترسی!</h2>
+            <p class="mb-4 mx-2">
+                شما اشتباها به این صفحه منتقل شدید یا دسترسی به این صفحه را ندارید
+                <br />
+                در صورت هرگونه مشکل با پشتیبانی ارتباط برقرار کنید
+            </p>
+            <a class="btn btn-primary mb-4" href="@Url.Action("Index","Subscriptions", new {area="App"})">بازگشت به خانه</a>
             <div class="mt-4">
-                <img alt="خطای متنوع صفحه" class="img-fluid" src="../../assets/img/illustrations/page-misc-error.png" width="225" />
+                <img alt="صفحه-متفرقه-مجاز نیست" class="img-fluid" src="../../assets/img/illustrations/page-misc-you-are-not-authorized.png" width="170" />
             </div>
         </div>
     </div>
     <div class="container-fluid misc-bg-wrapper">
-        <img alt="خطای متنوع صفحه" data-app-dark-img="illustrations/bg-shape-image-dark.png" data-app-light-img="illustrations/bg-shape-image-light.png" src="../../assets/img/illustrations/bg-shape-image-light.png" />
+        <img alt="صفحه-متفرقه-مجاز نیست" data-app-dark-img="illustrations/bg-shape-image-dark.png" data-app-light-img="illustrations/bg-shape-image-light.png" src="../../assets/img/illustrations/bg-shape-image-light.png" />
     </div>
-    <!-- /Error -->
+    <!-- /Not Authorized -->
     <!-- / Content -->
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
@@ -76,3 +80,5 @@
 </body>
 
 </html>
+
+

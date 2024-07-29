@@ -123,7 +123,7 @@ namespace V2boardApi.Tools
             string script = $"showToast('"+ Title + "','"+ Text + "','"+ "text-" + icon.ToString().ToLower() + "');";
             var Js = new JsonResult
             {
-                Data = new { status = "success", data = script },
+                Data = new { status = icon.ToString().ToLower(), data = script },
                 JsonRequestBehavior = JsonRequestBehavior.AllowGet
             };
 

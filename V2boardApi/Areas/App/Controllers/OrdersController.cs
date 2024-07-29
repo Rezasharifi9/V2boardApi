@@ -13,6 +13,7 @@ using V2boardApi.Tools;
 namespace V2boardApi.Areas.App.Controllers
 {
     [AuthorizeApp(Roles = "1,2")]
+    [LogActionFilter]
     public class OrdersController : Controller
     {
         private Entities _db;

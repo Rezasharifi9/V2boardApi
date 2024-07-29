@@ -443,7 +443,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                     logger.Info("ورود موفق");
 
-                    if(User.Role == 2)
+                    if (User.Role == 2)
                     {
                         var URL = Url.Action("Index", "Subscriptions");
                         return Json(new { status = "success", redirectURL = URL });
@@ -872,7 +872,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 await service.Register(item.Username);
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 logger.Error(ex, "راه اندازی ربات با خطا مواجه شد");
                             }
@@ -912,6 +912,23 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+        [AuthorizeApp(Roles = "1,2")]
+        public async Task<ActionResult> GetWallet()
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(p => p.Username == User.Identity.Name);
 
+                return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony() } },JsonRequestBehavior.AllowGet);
+
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = "error" },JsonRequestBehavior.AllowGet);
+            }
+
+
+
+        }
     }
 }

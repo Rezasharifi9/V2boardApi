@@ -322,6 +322,7 @@
     <Compile Include="Areas\App\Data\RequestModels\UserFactorResponseModel.cs" />
     <Compile Include="Areas\App\Data\RequestModels\UserLogResponseModel.cs" />
     <Compile Include="Areas\App\Data\RequestModels\UserRequestModel.cs" />
+    <Compile Include="Areas\App\Data\SubscriptionsViewModels\ActivityStatusViewModel.cs" />
     <Compile Include="Areas\App\Data\SubscriptionsViewModels\GetUserDataModel.cs" />
     <Compile Include="Areas\App\Data\TelegramUsersViewModel\TelegramUsersResponseViewModel.cs" />
     <Compile Include="Areas\App\Data\UsersViewModels\UserViewModel.cs" />
@@ -387,6 +388,7 @@
     <Content Include="assets\img\avatars\8.png" />
     <Content Include="assets\img\avatars\9.png" />
     <Content Include="assets\img\avatars\markazi.png" />
+    <Content Include="assets\img\avatars\profile.png" />
     <Content Include="assets\img\backgrounds\1.jpg" />
     <Content Include="assets\img\backgrounds\2.jpg" />
     <Content Include="assets\img\backgrounds\3.jpg" />
@@ -692,6 +694,7 @@
     <Content Include="assets\img\layouts\layout-without-menu-light.png" />
     <Content Include="assets\img\layouts\layout-without-navbar-dark.png" />
     <Content Include="assets\img\layouts\layout-without-navbar-light.png" />
+    <Content Include="assets\img\logo.png" />
     <Content Include="assets\img\pages\app-academy-tutor-1.png" />
     <Content Include="assets\img\pages\app-academy-tutor-2.png" />
     <Content Include="assets\img\pages\app-academy-tutor-3.png" />
@@ -1732,7 +1735,8 @@
     <Content Include="Areas\App\Views\Admin\Details.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\Details.cshtml" />
     <Content Include="Areas\App\Views\Subscriptions\Index.cshtml" />
-    <Content Include="Areas\App\Views\Subscriptions\_Wallet.cshtml" />
+    <Content Include="Areas\App\Views\Error\Error401.cshtml" />
+    <Content Include="Areas\App\Views\Error\Error500.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

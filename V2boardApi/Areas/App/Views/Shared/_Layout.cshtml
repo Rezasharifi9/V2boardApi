@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
-<html class="light-style layout-navbar-fixed layout-menu-fixed layout-compact" data-assets-path="../../assets/" data-template="vertical-menu-template-starter" data-theme="theme-default" dir="rtl" lang="fa">
+<html class="darkbaz-style layout-navbar-fixed layout-menu-fixed layout-compact" data-assets-path="../../assets/" data-template="vertical-menu-template-starter" data-theme="theme-default" dir="rtl" lang="fa">
 
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" name="viewport" />
-    <title>کیت استارتر - صفحه 1 | Vuexy - قالب مدیریت بوت استرپ</title>
+    <title>پنل مدیریت کاربران</title>
     <meta content="" name="description" />
     <!-- Favicon -->
-    <link href="../../assets/img/favicon/favicon.ico" rel="icon" type="image/x-icon" />
+    <link href="../../assets/img/logo.png" rel="icon" type="image/x-icon" />
     <link href="../../assets/vendor/fonts/tabler-icons.css" rel="stylesheet" />
     <!-- <link rel="stylesheet" href="../../assets/vendor/fonts/fontawesome.css" /> -->
     <!-- <link rel="stylesheet" href="../../assets/vendor/fonts/flag-icons.css" /> -->
@@ -44,16 +44,11 @@
             <!-- Menu -->
             <aside class="layout-menu menu-vertical menu bg-menu-theme" id="layout-menu">
                 <div class="app-brand demo">
-                    <a class="app-brand-link" href="index.html">
-                        <span class="app-brand-logo demo">
-                            <svg fill="none" height="22" viewBox="0 0 32 22" width="32" xmlns="http://www.w3.org/2000/svg">
-                                <path clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="#7367F0" fill-rule="evenodd" />
-                                <path clip-rule="evenodd" d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616" fill-rule="evenodd" opacity="0.06" />
-                                <path clip-rule="evenodd" d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616" fill-rule="evenodd" opacity="0.06" />
-                                <path clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="#7367F0" fill-rule="evenodd" />
-                            </svg>
+                    <a class="app-brand-link">
+                        <span class="app-brand-logo demo" style="width:45px;height:50px;">
+                            <img src="~/assets/img/logo.png" height="70" width="70" />
                         </span>
-                        <span class="app-brand-text demo menu-text fw-bold">Vuexy</span>
+                        <span class="app-brand-text demo menu-text fw-bold">Safe Net</span>
                     </a>
                     <a class="layout-menu-toggle menu-link text-large ms-auto" href="javascript:void(0);">
                         <i class="ti menu-toggle-icon d-none d-xl-block ti-sm align-middle"></i>
@@ -98,10 +93,20 @@
                         }
                     }
 
-                    <!-- ربات -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text" data-i18n="Components">ربات</span>
-                    </li>
+                    @if (Role.Value == "1")
+                    {
+                        <!-- ربات -->
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text" data-i18n="Components">ربات</span>
+                        </li>
+                    }
+                    else
+                    {
+                        <!-- ربات -->
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text" data-i18n="Components">ربات (درحال توسعه)</span>
+                        </li>
+                    }
                     <li class="menu-item" style="">
                         <a class="menu-link" href="@Url.Action("Index","BotFactors",new {area="App"})">
                             <i class="menu-icon tf-icons ti ti-cash"></i>
@@ -122,14 +127,17 @@
                     </li>
                     <!-- ربات -->
                     <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text" data-i18n="Components">پیکربندی</span>
+                        <span class="menu-header-text" data-i18n="Components">پیکربندی (درحال توسعه)</span>
                     </li>
-                    <li class="menu-item" style="">
-                        <a class="menu-link" href="javascript:void(0);">
-                            <i class="menu-icon tf-icons ti ti-server"></i>
-                            <div>سرور ها</div>
-                        </a>
-                    </li>
+                    @if (Role.Value == "1")
+                    {
+                        <li class="menu-item" style="">
+                            <a class="menu-link" href="javascript:void(0);">
+                                <i class="menu-icon tf-icons ti ti-server"></i>
+                                <div>سرور</div>
+                            </a>
+                        </li>
+                    }
                     <li class="menu-item" style="">
                         <a class="menu-link" href="javascript:void(0);">
                             <i class="menu-icon tf-icons ti ti-robot"></i>
@@ -157,7 +165,7 @@
                         <!-- /Search -->
                         <ul class="navbar-nav flex-row align-items-center ms-auto">
                             <!-- Language -->
-                            <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
+                            @*<li class="nav-item dropdown-language dropdown me-2 me-xl-0">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown"> <i class="ti ti-language rounded-circle ti-md"></i> </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
@@ -176,7 +184,7 @@
                                         <a class="dropdown-item" href="javascript:void(0);" data-language="de" data-text-direction="ltr"> <span class="align-middle">آلمانی</span> </a>
                                     </li>
                                 </ul>
-                            </li>
+                            </li>*@
                             <!--/ Language -->
                             <!-- Style Switcher -->
                             <li class="nav-item dropdown-style-switcher dropdown me-2 me-xl-0">
@@ -195,7 +203,7 @@
                             </li>
                             <!-- / Style Switcher-->
                             <!-- Quick links  -->
-                            <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-2 me-xl-0">
+                            @*<li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-2 me-xl-0">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"
                                    aria-expanded="false"> <i class="ti ti-layout-grid-add ti-md"></i> </a>
                                 <div class="dropdown-menu dropdown-menu-end py-0">
@@ -258,10 +266,10 @@
                                         </div>
                                     </div>
                                 </div>
-                            </li>
+                            </li>*@
                             <!-- Quick links -->
                             <!-- Notification -->
-                            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-1">
+                            @*<li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-1">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"
                                    aria-expanded="false"> <i class="ti ti-bell ti-md"></i> <span class="badge bg-danger rounded-pill badge-notifications">5</span> </a>
                                 <ul class="dropdown-menu dropdown-menu-end py-0">
@@ -457,24 +465,52 @@
                                         </a>
                                     </li>
                                 </ul>
-                            </li>
+                            </li>*@
                             <!--/ Notification -->
                             <!-- User -->
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                                    <div class="avatar avatar-online"> <img src="../../assets/img/avatars/1.png" alt class="h-auto rounded-circle" /> </div>
+                                    <div class="avatar avatar-online"> <img src="../../assets/img/avatars/profile.png" alt class="h-auto rounded-circle" /> </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <a class="dropdown-item" href="pages-account-settings-account.html">
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
-                                                    <div class="avatar avatar-online"> <img src="../../assets/img/avatars/1.png" alt class="h-auto rounded-circle" /> </div>
+                                                    <div class="avatar avatar-online"> <img src="../../assets/img/avatars/profile.png" class="h-auto rounded-circle" /> </div>
                                                 </div>
-                                                <div class="flex-grow-1"> <span class="fw-semibold d-block mb-1">نوید محمدزاده</span> <small class="text-muted">مدیرکل</small> </div>
+                                                @if (Role.Value == "1")
+                                                {
+                                                    <div class="flex-grow-1">
+                                                        <span class="fw-semibold d-block mb-1">@User.Identity.Name</span> <small class="text-muted">مدیر</small>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="flex-grow-1">
+                                                        <span class="fw-semibold d-block mb-1">@User.Identity.Name</span> <small class="text-muted">نماینده</small>
+                                                    </div>
+                                                }
                                             </div>
                                         </a>
                                     </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                    </li>
+                                    <li>
+                                        <span class="dropdown-item"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">موجودی : <span id="user_inventory">...</span> تومان</span> </span>
+                                    </li>
+                                    <li>
+                                        <span class="dropdown-item"> <i class="ti ti-cash me-2 ti-sm"></i> <span class="align-middle">بدهی : <span id="user_debt">...</span> تومان</span> </span>
+                                    </li>
+                                    @*<li>
+            <a class="dropdown-item" href="pages-account-settings-billing.html">
+                <span class="d-flex align-items-center align-middle">
+                    <i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
+                    <span class="flex-grow-1 align-middle">خریدها</span> <span class="flex-shrink-0 badge badge-center rounded-pill bg-label-danger w-px-20 h-px-20">2</span>
+                </span>
+            </a>
+        </li>*@
                                     <li>
                                         <div class="dropdown-divider"></div>
                                     </li>
@@ -484,23 +520,7 @@
                                     <li>
                                         <a class="dropdown-item" href="pages-account-settings-account.html"> <i class="ti ti-settings me-2 ti-sm"></i> <span class="align-middle">تنظیمات</span> </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" href="pages-account-settings-billing.html">
-                                            <span class="d-flex align-items-center align-middle">
-                                                <i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
-                                                <span class="flex-grow-1 align-middle">خریدها</span> <span class="flex-shrink-0 badge badge-center rounded-pill bg-label-danger w-px-20 h-px-20">2</span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <div class="dropdown-divider"></div>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="pages-faq.html"> <i class="ti ti-help me-2 ti-sm"></i> <span class="align-middle">سوالات متداول</span> </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="pages-pricing.html"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت گذاری</span> </a>
-                                    </li>
+
                                     <li>
                                         <div class="dropdown-divider"></div>
                                     </li>
@@ -750,6 +770,27 @@
             var results = regex.exec(location.search);
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         };
+
+
+        // Load Debt and user inventory data
+
+        $(function () {
+
+            $.ajax({
+                url: "@Url.Action("GetWallet","Admin",new {area="App"})",
+                type: "get",
+                dataType: "json",
+                async: true,
+                success: function (res) {
+                    if (res.status == "success") {
+                        $("#user_inventory").html(res.data.inventory);
+                        $("#user_debt").html(res.data.debt);
+                    }
+                }
+            });
+
+        });
+
     </script>
 
     <!-- Page JS -->

@@ -198,7 +198,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 logger.Error(ex);
                             }
                         }
-                        await mySql.CloseAsync(mySql.MySqlConnection);
+                        await mySql.CloseAysnc();
                     }
                 }
 
@@ -245,7 +245,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 reader.Close();
                             }
                         }
-                        await mySql.CloseAsync(mySql.MySqlConnection).ConfigureAwait(false);
+                        await mySql.CloseAysnc().ConfigureAwait(false);
                     }
                 }
             }
@@ -341,7 +341,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                         }
 
-                        await mySql.CloseAsync(mySql.MySqlConnection);
+                        await mySql.CloseAysnc();
                     }
                 }
             }
@@ -1116,7 +1116,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("<code>" + SubLink + "</code>");
                                             str.AppendLine("");
                                             await RealUser.SetGetedAccountTest(User.Tel_UniqUserID, db, botName);
-                                            await mySql.CloseAsync(mySql.MySqlConnection);
+                                            await mySql.CloseAysnc();
 
                                             str.AppendLine("");
                                             str.AppendLine("🆔 @" + BotSettings.Bot_ID);
@@ -1161,7 +1161,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             Counter++;
                                         }
                                         reader.Close();
-                                        await mySql.CloseAsync(mySql.MySqlConnection);
+                                        await mySql.CloseAysnc();
                                         str.AppendLine("");
                                         str.AppendLine("💬 اگر سوالی داشتید که پاسخ آن را نیافتید با پشتیبانی در ارتباط باشید.");
                                         str.AppendLine("");
@@ -1576,7 +1576,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             }
                                             reader.Close();
-                                            await mySql.CloseAsync(mySql.MySqlConnection);
+                                            await mySql.CloseAysnc();
                                             return;
                                         }
 
@@ -1734,11 +1734,11 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
                                                 await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-                                                await mySqlEntities.CloseAsync(mySqlEntities.MySqlConnection);
+                                                await mySqlEntities.CloseAysnc();
                                             }
 
 
-                                            
+
                                         }
                                     }
 
@@ -2130,7 +2130,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                     var reader = await mySql.GetDataAsync(Query);
                                                     var result = await reader.ReadAsync();
                                                     reader.Close();
-                                                    await mySql.CloseAsync(mySql.MySqlConnection);
+                                                    await mySql.CloseAysnc();
 
 
                                                     var InlineKeyboardMarkup = Keyboards.GetHomeButton();
@@ -2331,7 +2331,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 tbLinks.FK_TelegramUserID = UserAcc.Tel_UserID;
                                                 tbLinks.tbL_Warning = false;
                                                 tbLinks.tb_AutoRenew = false;
-                                                await mySql.CloseAsync(mySql.MySqlConnection);
+                                                await mySql.CloseAysnc();
 
 
                                                 var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID && p.tbUsers.Username == botName).FirstOrDefault();
@@ -2474,7 +2474,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, "🏘 به منو اصلی بازگشتید", replyMarkup: kyes, parseMode: ParseMode.Html);
                                                 var Reader = await mySql.GetDataAsync("delete from v2_user where email ='" + callback[1] + "'");
                                                 await Reader.ReadAsync();
-                                                await mySql.CloseAsync(mySql.MySqlConnection);
+                                                await mySql.CloseAysnc();
                                                 return;
 
 
@@ -2570,7 +2570,7 @@ namespace V2boardApi.Areas.api.Controllers
                 if (vol <= 0)
                 {
                     reader.Close();
-                    await mysql.CloseAsync(mysql.MySqlConnection);
+                    await mysql.CloseAysnc();
                     return true;
                 }
                 var ExpireTime = reader.GetBodyDefinition("expired_at");
@@ -2580,7 +2580,7 @@ namespace V2boardApi.Areas.api.Controllers
                     if (ex <= DateTime.Now)
                     {
                         reader.Close();
-                        await mysql.CloseAsync(mysql.MySqlConnection);
+                        await mysql.CloseAysnc();
                         return true;
                     }
 

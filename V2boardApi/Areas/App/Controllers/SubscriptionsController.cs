@@ -15,9 +15,11 @@ using System.Globalization;
 using MySql.Data.MySqlClient;
 using System.Data.Entity;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 
 namespace V2boardApi.Areas.App.Controllers
 {
+    [LogActionFilter]
     public class SubscriptionsController : Controller
     {
 
@@ -39,7 +41,7 @@ namespace V2boardApi.Areas.App.Controllers
             serverRepository = new Repository<tbServers>(db);
         }
 
-        #region لیست کاربران
+        #region لیست اشتراک ها 
 
         // GET: App/Subscriptions
         [AuthorizeApp(Roles = "1,2")]
@@ -70,24 +72,36 @@ namespace V2boardApi.Areas.App.Controllers
                     return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
                 }
 
-                string baseQuery = "SELECT v2.id, v2.email, t, u, d, v2.transfer_enable, banned, token, expired_at, pl.name FROM `v2_user` AS v2 JOIN v2_plan AS pl ON plan_id = pl.id WHERE ";
-                string searchQuery;
+                // دریافت نقش کاربر
+                var userRole = user.Role.Value; // فرض می‌کنیم نقش کاربر در user.Role ذخیره شده است
+
+                string baseQuery = "SELECT v2.id, v2.email, t, u, d, v2.transfer_enable, banned, token, expired_at, pl.name " +
+                                   "FROM `v2_user` AS v2 JOIN v2_plan AS pl ON plan_id = pl.id WHERE 1=1 ";
+                string searchQuery = "";
 
                 if (!string.IsNullOrEmpty(searchValue))
                 {
                     if (searchValue.Contains("token="))
                     {
                         var tokenValue = searchValue.Split('=')[1];
-                        searchQuery = $"token='{tokenValue}' AND email LIKE '%@{user.Username}%'";
+                        searchQuery += $" AND token='{tokenValue}'";
+                        if (userRole == 2) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                        {
+                            searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                        }
                     }
                     else
                     {
-                        searchQuery = $"email LIKE '%{searchValue}%' AND email LIKE '%@{user.Username}%'";
+                        searchQuery += $" AND email LIKE '%{searchValue}%'";
+                        if (userRole == 2) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                        {
+                            searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                        }
                     }
                 }
-                else
+                else if (userRole == 2) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                 {
-                    searchQuery = $"email LIKE '%@{user.Username}%'";
+                    searchQuery += $" AND email LIKE '%@{user.Username}%'";
                 }
 
                 string query = baseQuery + searchQuery;
@@ -113,13 +127,205 @@ namespace V2boardApi.Areas.App.Controllers
                 }
 
                 query += pageSize > 0 ? $" LIMIT {skip}, {pageSize}" : "";
-
+                List<GetUserDataModel> users = new List<GetUserDataModel>();
                 using (var mySqlEntities = new MySqlEntities2(user.tbServers.ConnectionString))
                 {
                     await mySqlEntities.OpenAsync();
                     using (var reader = await mySqlEntities.GetDataAsync(query))
                     {
-                        List<GetUserDataModel> users = new List<GetUserDataModel>();
+                        while (await reader.ReadAsync())
+                        {
+                            if (reader.HasRows)
+                            {
+                                var getuserData = new GetUserDataModel
+                                {
+                                    id = reader.GetInt32(reader.GetOrdinal("id")),
+                                    Name = reader.GetString(reader.GetOrdinal("email")).Split('@')[0],
+                                    TotalVolume = Utility.ConvertByteToGB(reader.GetInt64(reader.GetOrdinal("transfer_enable"))).ToString(),
+                                    PlanName = reader.GetString(reader.GetOrdinal("name")),
+                                    IsBanned = Convert.ToBoolean(reader.GetSByte(reader.GetOrdinal("banned"))),
+                                    IsActive = 1,
+                                    SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}"
+                                };
+
+                                var exp = reader["expired_at"].ToString();
+                                if (!string.IsNullOrEmpty(exp))
+                                {
+                                    var e = Convert.ToInt64(exp);
+                                    var ex = Utility.ConvertSecondToDatetime(e);
+                                    getuserData.DaysLeft = Utility.CalculateLeftDayes(ex);
+                                    if (getuserData.DaysLeft <= 2) getuserData.IsActive = 5;
+                                    if (ex <= DateTime.Now) getuserData.IsActive = 2;
+                                }
+                                else
+                                {
+                                    getuserData.DaysLeft = -1;
+                                }
+                                var onlineTime = reader["t"].ToString();
+                                if (onlineTime != "0")
+                                {
+                                    var onlineTimeDt = Utility.ConvertSecondToDatetime(Convert.ToInt64(onlineTime));
+
+                                    if (onlineTimeDt >= DateTime.Now.AddSeconds(-1000))
+                                    {
+                                        getuserData.IsOnline = true;
+                                    }
+                                    else
+                                    {
+                                        getuserData.LastTimeOnline = Utility.ConvertDatetimeToShamsiDate(onlineTimeDt);
+                                    }
+                                }
+                                if (getuserData.LastTimeOnline == null)
+                                {
+                                    getuserData.LastTimeOnline = "آنلاین نشده";
+                                }
+                                var u = reader.GetInt64(reader.GetOrdinal("u"));
+                                var d = reader.GetInt64(reader.GetOrdinal("d"));
+                                var usedVolume = Utility.ConvertByteToGB(u + d);
+                                getuserData.UsedVolume = $"{Math.Round(usedVolume, 2)}";
+
+                                var remainingVolume = reader.GetInt64(reader.GetOrdinal("transfer_enable")) - (u + d);
+                                var remainingVolumeGB = Utility.ConvertByteToGB(remainingVolume);
+                                if (remainingVolumeGB <= 2) getuserData.CanEdit = true;
+                                if (remainingVolume <= 0) getuserData.IsActive = 3;
+                                getuserData.RemainingVolume = $"{Math.Round(remainingVolumeGB, 2)}";
+
+                                if (Convert.ToBoolean(reader.GetInt16(reader.GetOrdinal("banned"))))
+                                {
+                                    getuserData.IsActive = 4;
+                                }
+
+                                users.Add(getuserData);
+                            }
+                        }
+
+                        // Ensure the reader is closed before proceeding
+                        reader.Close();
+                    }
+
+                    var countQuery = "SELECT COUNT(*) AS Count FROM `v2_user` WHERE 1=1";
+                    if (userRole == 2) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                    {
+                        countQuery += $" AND email LIKE '%@{user.Username}%'";
+                    }
+                    if (!string.IsNullOrEmpty(searchValue))
+                    {
+                        if (searchValue.Contains("token="))
+                        {
+                            var tokenValue = searchValue.Split('=')[1];
+                            countQuery += $" AND token='{tokenValue}'";
+                        }
+                        else
+                        {
+                            countQuery += $" AND email LIKE '%{searchValue}%'";
+                        }
+                    }
+
+                    using (var reader = await mySqlEntities.GetDataAsync(countQuery))
+                    {
+                        await reader.ReadAsync();
+                        var totalRecords = reader.GetInt32(reader.GetOrdinal("Count"));
+
+                        await mySqlEntities.CloseAysnc();
+                        return Json(new
+                        {
+                            draw,
+                            recordsTotal = totalRecords,
+                            recordsFiltered = totalRecords,
+                            data = users
+                        }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "نمایش لیست اشتراکات در پنل فروش با خطا مواجه شد");
+                return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+        #endregion
+
+        #region  لیست کاربران برای مدیرسیستم
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> GetUsers()
+        {
+            try
+            {
+                var draw = Request.Form.GetValues("draw").FirstOrDefault();
+                var start = Request.Form.GetValues("start").FirstOrDefault();
+                var length = Request.Form.GetValues("length").FirstOrDefault();
+                var searchValue = Request.Form.GetValues("search[value]").FirstOrDefault();
+                var sortColumnIndex = Request.Form.GetValues("order[0][column]").FirstOrDefault();
+                var sortColumnDir = Request.Form.GetValues("order[0][dir]").FirstOrDefault();
+
+                int pageSize = length != null ? Convert.ToInt32(length) : 0;
+                int skip = start != null ? Convert.ToInt32(start) : 0;
+
+                var user = await usersRepository.table.FirstOrDefaultAsync(p => p.Username == User.Identity.Name);
+                if (user?.tbServers == null)
+                {
+                    return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
+                }
+
+                string baseQuery = "SELECT v2.id, v2.email, t, u, d, v2.transfer_enable, banned, token, expired_at, pl.name FROM `v2_user` AS v2 JOIN v2_plan AS pl ON plan_id = pl.id ";
+                string searchQuery = "";
+
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    if (searchValue.Contains("token="))
+                    {
+                        var tokenValue = searchValue.Split('=')[1];
+                        searchQuery = $"where token='{tokenValue}'";
+                    }
+                    else
+                    {
+                        searchQuery = $"where email LIKE '%{searchValue}%'";
+                    }
+                }
+
+                string query = baseQuery + searchQuery;
+
+                // Sorting
+                switch (sortColumnIndex)
+                {
+                    case "0":
+                        query += $" ORDER BY email {sortColumnDir}";
+                        break;
+                    case "1":
+                        query += $" ORDER BY transfer_enable {sortColumnDir}";
+                        break;
+                    case "2":
+                        query += $" ORDER BY t {sortColumnDir}";
+                        break;
+                    case "5":
+                        query += $" ORDER BY expired_at {sortColumnDir}";
+                        break;
+                    default:
+                        query += " ORDER BY v2.id DESC";
+                        break;
+                }
+
+                query += pageSize > 0 ? $" LIMIT {skip}, {pageSize}" : "";
+                List<GetUserDataModel> users = new List<GetUserDataModel>();
+                using (var mySqlEntities = new MySqlEntities2(user.tbServers.ConnectionString))
+                {
+                    await mySqlEntities.OpenAsync();
+                    using (var reader = await mySqlEntities.GetDataAsync(query))
+                    {
+
                         while (await reader.ReadAsync())
                         {
                             if (reader.HasRows)
@@ -189,36 +395,33 @@ namespace V2boardApi.Areas.App.Controllers
                         // Ensure the reader is closed before proceeding
                         reader.Close();
 
-                        var countQuery = $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%@{user.Username}%'";
-                        if (!string.IsNullOrEmpty(searchValue))
-                        {
-                            countQuery = searchValue.Contains("token=")
-                                ? $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE token='{searchValue.Split('=')[1]}' AND email LIKE '%@{user.Username}%'"
-                                : $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%{searchValue}%' AND email LIKE '%@{user.Username}%'";
-                        }
 
-
-                        using (var countCommand = new MySqlCommand(countQuery, mySqlEntities.MySqlConnection))
-                        {
-                            using (var countReader = await countCommand.ExecuteReaderAsync())
-                            {
-                                await countReader.ReadAsync();
-                                var totalRecords = countReader.GetInt32(countReader.GetOrdinal("Count"));
-
-
-                                await mySqlEntities.CloseAysnc(mySqlEntities.MySqlConnection);
-                                return Json(new
-                                {
-                                    draw,
-                                    recordsTotal = totalRecords,
-                                    recordsFiltered = totalRecords,
-                                    data = users
-                                }, JsonRequestBehavior.AllowGet);
-                            }
-                        }
                     }
 
-                   
+                    var countQuery = $"SELECT COUNT(id) AS Count FROM `v2_user`";
+                    if (!string.IsNullOrEmpty(searchValue))
+                    {
+                        countQuery = searchValue.Contains("token=")
+                            ? $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE token='{searchValue.Split('=')[1]}'"
+                            : $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%{searchValue}%'";
+                    }
+
+                    using (var reader = await mySqlEntities.GetDataAsync(countQuery))
+                    {
+                        await reader.ReadAsync();
+                        var totalRecords = reader.GetInt32(reader.GetOrdinal("Count"));
+
+
+                        await mySqlEntities.CloseAysnc();
+                        return Json(new
+                        {
+                            draw,
+                            recordsTotal = totalRecords,
+                            recordsFiltered = totalRecords,
+                            data = users
+                        }, JsonRequestBehavior.AllowGet);
+                    }
+
                 }
             }
             catch (Exception ex)
@@ -664,14 +867,54 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region اطلاعات کیف پول
+        #region اطلاعات فعالیت کاربران
 
-        [AuthorizeApp(Roles ="1,2")]
-        public ActionResult _Wallet()
+        [AuthorizeApp(Roles = "1,2")]
+        public async Task<ActionResult> GetActivityUsers()
         {
-            var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            try
+            {
+                var user = await usersRepository.FirstOrDefaultAsync(p => p.Username == User.Identity.Name);
+                ActivityStatusViewModel activity = new ActivityStatusViewModel();
 
-            return PartialView(user);
+                if (user != null)
+                {
+
+                    var Query = "";
+                    if (user.Role == 2)
+                    {
+                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 1000 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60000 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW())) and email like '%@" + user.Username + "%'";
+                    }
+                    else
+                    {
+                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 1000 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60000 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW()))";
+                    }
+                    MySqlEntities2 mySql = new MySqlEntities2(user.tbServers.ConnectionString);
+                    await mySql.OpenAsync();
+                    activity.total_users = 0;
+                    activity.online_users = 0;
+                    activity.banned_users = 0;
+                    activity.inactive_users = 0;
+                    using (var reader = await mySql.GetDataAsync(Query))
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            activity.total_users = reader.GetInt32("total_users");
+                            activity.online_users = reader.GetInt32("online_users");
+                            activity.banned_users = reader.GetInt32("banned_users");
+                            activity.inactive_users = reader.GetInt32("inactive_users");
+                        }
+                    }
+
+                    
+                }
+                return Json(new { status = "success", data = activity }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "نمایش اطلاعات فعالیت کاربران با خطا مواجه شد");
+                return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
+            }
 
         }
 

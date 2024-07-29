@@ -56,22 +56,24 @@ namespace DataLayer.DomainModel
     public class MySqlEntities2 : IDisposable
     {
         private readonly string _connection;
-        public MySqlConnection SqlConnection { get; private set; }
+        private LinkedList<MySqlConnection> connectionPool = new LinkedList<MySqlConnection>();
+        public MySqlConnection MySqlConnection { get; private set; }
 
         public MySqlEntities2(string connectionString)
         {
             _connection = connectionString;
-            SqlConnection = new MySqlConnection(_connection);
+            MySqlConnection = new MySqlConnection(_connection);
         }
 
         public async Task OpenAsync()
         {
-            await SqlConnection.OpenAsync();
+            await MySqlConnection.OpenAsync();
+            connectionPool.AddLast(MySqlConnection);
         }
 
         public async Task<MySqlDataReader> GetDataAsync(string query)
         {
-            using (var sqlCommand = new MySqlCommand(query, SqlConnection))
+            using (var sqlCommand = new MySqlCommand(query, MySqlConnection))
             {
                 var reader = await sqlCommand.ExecuteReaderAsync();
                 return (MySqlDataReader)reader;
@@ -80,21 +82,30 @@ namespace DataLayer.DomainModel
 
         public void Close()
         {
-            SqlConnection.Close();
-            MySqlConnection.ClearPool(SqlConnection);
-            SqlConnection.Dispose();
+            if (MySqlConnection.State == System.Data.ConnectionState.Open)
+            {
+                MySqlConnection.Close();
+            }
+            MySqlConnection.ClearPool(MySqlConnection);
+            MySqlConnection.Dispose();
         }
 
         public async Task CloseAysnc()
         {
-            await SqlConnection.CloseAsync();
-            MySqlConnection.ClearPool(SqlConnection);
-            await SqlConnection.DisposeAsync();
+
+            if (MySqlConnection.State == System.Data.ConnectionState.Open)
+            {
+                await MySqlConnection.CloseAsync();
+                MySqlConnection.ClearPool(MySqlConnection);
+            }
+
+            connectionPool.Remove(MySqlConnection);
+
         }
 
         public void Dispose()
         {
-            SqlConnection?.Dispose();
+            MySqlConnection.Dispose();
         }
     }
 
