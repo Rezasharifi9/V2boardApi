@@ -197,13 +197,16 @@ namespace V2boardApi.Areas.App.Controllers
                                 : $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%{searchValue}%' AND email LIKE '%@{user.Username}%'";
                         }
 
-                        using (var countCommand = new MySqlCommand(countQuery, mySqlEntities.SqlConnection))
+
+                        using (var countCommand = new MySqlCommand(countQuery, mySqlEntities.MySqlConnection))
                         {
                             using (var countReader = await countCommand.ExecuteReaderAsync())
                             {
                                 await countReader.ReadAsync();
                                 var totalRecords = countReader.GetInt32(countReader.GetOrdinal("Count"));
 
+
+                                await mySqlEntities.CloseAysnc(mySqlEntities.MySqlConnection);
                                 return Json(new
                                 {
                                     draw,
@@ -214,6 +217,8 @@ namespace V2boardApi.Areas.App.Controllers
                             }
                         }
                     }
+
+                   
                 }
             }
             catch (Exception ex)
