@@ -22,7 +22,6 @@ $(function () {
     // Variable declaration for table
     var dt_user_table = $('.datatables-users'),
         select2 = $('.select2'),
-        userView = 'app-user-view-account.html',
         statusObj = {
             1: { title: 'عادی', class: 'bg-label-success' },
             2: { title: 'نزدیک به اتمام سقف مصرف', class: 'bg-label-warning' },
@@ -222,7 +221,8 @@ $(function () {
                 "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
                 sLengthMenu: '_MENU_',
                 search: '',
-                searchPlaceholder: 'جستجوی کاربران'
+                searchPlaceholder: 'جستجوی کاربران',
+                loadingRecords:"در حال بارگزاری ..."
             },
             displayLength: 7,
             lengthMenu: [7, 10, 25, 50, 75, 100],

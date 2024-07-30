@@ -16,6 +16,7 @@ using MySql.Data.MySqlClient;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using static Stimulsoft.Base.Drawing.StiFontReader;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -140,10 +141,11 @@ namespace V2boardApi.Areas.App.Controllers
                                 var getuserData = new GetUserDataModel
                                 {
                                     id = reader.GetInt32(reader.GetOrdinal("id")),
-                                    Name = reader.GetString(reader.GetOrdinal("email")).Split('@')[0],
+
                                     TotalVolume = Utility.ConvertByteToGB(reader.GetInt64(reader.GetOrdinal("transfer_enable"))).ToString(),
                                     PlanName = reader.GetString(reader.GetOrdinal("name")),
                                     IsBanned = Convert.ToBoolean(reader.GetSByte(reader.GetOrdinal("banned"))),
+                                    Name = reader.GetString(reader.GetOrdinal("email")).Split('@')[0],
                                     IsActive = 1,
                                     SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}"
                                 };
@@ -153,12 +155,14 @@ namespace V2boardApi.Areas.App.Controllers
                                 {
                                     var e = Convert.ToInt64(exp);
                                     var ex = Utility.ConvertSecondToDatetime(e);
+                                    getuserData.ExpireDate = Utility.ConvertDateTimeToShamsi2(ex);
                                     getuserData.DaysLeft = Utility.CalculateLeftDayes(ex);
                                     if (getuserData.DaysLeft <= 2) getuserData.IsActive = 5;
                                     if (ex <= DateTime.Now) getuserData.IsActive = 2;
                                 }
                                 else
                                 {
+                                    getuserData.ExpireDate = "بدون محدودیت";
                                     getuserData.DaysLeft = -1;
                                 }
                                 var onlineTime = reader["t"].ToString();
@@ -166,7 +170,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 {
                                     var onlineTimeDt = Utility.ConvertSecondToDatetime(Convert.ToInt64(onlineTime));
 
-                                    if (onlineTimeDt >= DateTime.Now.AddSeconds(-1000))
+                                    if (onlineTimeDt >= DateTime.Now.AddSeconds(-60))
                                     {
                                         getuserData.IsOnline = true;
                                     }
@@ -245,191 +249,6 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
 
-
-
-
-
-
-
-
-
-
-        #endregion
-
-        #region  لیست کاربران برای مدیرسیستم
-
-        [AuthorizeApp(Roles = "1")]
-        [System.Web.Mvc.HttpPost]
-        public async Task<ActionResult> GetUsers()
-        {
-            try
-            {
-                var draw = Request.Form.GetValues("draw").FirstOrDefault();
-                var start = Request.Form.GetValues("start").FirstOrDefault();
-                var length = Request.Form.GetValues("length").FirstOrDefault();
-                var searchValue = Request.Form.GetValues("search[value]").FirstOrDefault();
-                var sortColumnIndex = Request.Form.GetValues("order[0][column]").FirstOrDefault();
-                var sortColumnDir = Request.Form.GetValues("order[0][dir]").FirstOrDefault();
-
-                int pageSize = length != null ? Convert.ToInt32(length) : 0;
-                int skip = start != null ? Convert.ToInt32(start) : 0;
-
-                var user = await usersRepository.table.FirstOrDefaultAsync(p => p.Username == User.Identity.Name);
-                if (user?.tbServers == null)
-                {
-                    return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
-                }
-
-                string baseQuery = "SELECT v2.id, v2.email, t, u, d, v2.transfer_enable, banned, token, expired_at, pl.name FROM `v2_user` AS v2 JOIN v2_plan AS pl ON plan_id = pl.id ";
-                string searchQuery = "";
-
-                if (!string.IsNullOrEmpty(searchValue))
-                {
-                    if (searchValue.Contains("token="))
-                    {
-                        var tokenValue = searchValue.Split('=')[1];
-                        searchQuery = $"where token='{tokenValue}'";
-                    }
-                    else
-                    {
-                        searchQuery = $"where email LIKE '%{searchValue}%'";
-                    }
-                }
-
-                string query = baseQuery + searchQuery;
-
-                // Sorting
-                switch (sortColumnIndex)
-                {
-                    case "0":
-                        query += $" ORDER BY email {sortColumnDir}";
-                        break;
-                    case "1":
-                        query += $" ORDER BY transfer_enable {sortColumnDir}";
-                        break;
-                    case "2":
-                        query += $" ORDER BY t {sortColumnDir}";
-                        break;
-                    case "5":
-                        query += $" ORDER BY expired_at {sortColumnDir}";
-                        break;
-                    default:
-                        query += " ORDER BY v2.id DESC";
-                        break;
-                }
-
-                query += pageSize > 0 ? $" LIMIT {skip}, {pageSize}" : "";
-                List<GetUserDataModel> users = new List<GetUserDataModel>();
-                using (var mySqlEntities = new MySqlEntities2(user.tbServers.ConnectionString))
-                {
-                    await mySqlEntities.OpenAsync();
-                    using (var reader = await mySqlEntities.GetDataAsync(query))
-                    {
-
-                        while (await reader.ReadAsync())
-                        {
-                            if (reader.HasRows)
-                            {
-                                var getuserData = new GetUserDataModel
-                                {
-                                    id = reader.GetInt32(reader.GetOrdinal("id")),
-                                    Name = reader.GetString(reader.GetOrdinal("email")).Split('@')[0],
-                                    TotalVolume = Utility.ConvertByteToGB(reader.GetInt64(reader.GetOrdinal("transfer_enable"))).ToString(),
-                                    PlanName = reader.GetString(reader.GetOrdinal("name")),
-                                    IsBanned = Convert.ToBoolean(reader.GetSByte(reader.GetOrdinal("banned"))),
-                                    IsActive = 1,
-                                    SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}"
-                                };
-
-                                var exp = reader["expired_at"].ToString();
-                                if (!string.IsNullOrEmpty(exp))
-                                {
-                                    var e = Convert.ToInt64(exp);
-                                    var ex = Utility.ConvertSecondToDatetime(e);
-                                    getuserData.DaysLeft = Utility.CalculateLeftDayes(ex);
-                                    if (getuserData.DaysLeft <= 2) getuserData.IsActive = 5;
-                                    if (ex <= DateTime.Now) getuserData.IsActive = 2;
-                                }
-                                else
-                                {
-                                    getuserData.DaysLeft = -1;
-                                }
-                                var onlineTime = reader["t"].ToString();
-                                if (onlineTime != "0")
-                                {
-                                    var onlineTimeDt = Utility.ConvertSecondToDatetime(Convert.ToInt64(onlineTime));
-
-                                    if (onlineTimeDt >= DateTime.Now.AddMinutes(-1))
-                                    {
-                                        getuserData.IsOnline = true;
-                                    }
-                                    else
-                                    {
-                                        getuserData.LastTimeOnline = Utility.ConvertDatetimeToShamsiDate(onlineTimeDt);
-                                    }
-                                }
-                                if (getuserData.LastTimeOnline == null)
-                                {
-                                    getuserData.LastTimeOnline = "آنلاین نشده";
-                                }
-                                var u = reader.GetInt64(reader.GetOrdinal("u"));
-                                var d = reader.GetInt64(reader.GetOrdinal("d"));
-                                var usedVolume = Utility.ConvertByteToGB(u + d);
-                                getuserData.UsedVolume = $"{Math.Round(usedVolume, 2)}";
-
-                                var remainingVolume = reader.GetInt64(reader.GetOrdinal("transfer_enable")) - (u + d);
-                                var remainingVolumeGB = Utility.ConvertByteToGB(remainingVolume);
-                                if (remainingVolumeGB <= 2) getuserData.CanEdit = true;
-                                if (remainingVolume <= 0) getuserData.IsActive = 3;
-                                getuserData.RemainingVolume = $"{Math.Round(remainingVolumeGB, 2)}";
-
-                                if (Convert.ToBoolean(reader.GetInt16(reader.GetOrdinal("banned"))))
-                                {
-                                    getuserData.IsActive = 4;
-                                }
-
-                                users.Add(getuserData);
-                            }
-                        }
-
-                        // Ensure the reader is closed before proceeding
-                        reader.Close();
-
-
-                    }
-
-                    var countQuery = $"SELECT COUNT(id) AS Count FROM `v2_user`";
-                    if (!string.IsNullOrEmpty(searchValue))
-                    {
-                        countQuery = searchValue.Contains("token=")
-                            ? $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE token='{searchValue.Split('=')[1]}'"
-                            : $"SELECT COUNT(id) AS Count FROM `v2_user` WHERE email LIKE '%{searchValue}%'";
-                    }
-
-                    using (var reader = await mySqlEntities.GetDataAsync(countQuery))
-                    {
-                        await reader.ReadAsync();
-                        var totalRecords = reader.GetInt32(reader.GetOrdinal("Count"));
-
-
-                        await mySqlEntities.CloseAysnc();
-                        return Json(new
-                        {
-                            draw,
-                            recordsTotal = totalRecords,
-                            recordsFiltered = totalRecords,
-                            data = users
-                        }, JsonRequestBehavior.AllowGet);
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "نمایش لیست اشتراکات در پنل فروش با خطا مواجه شد");
-                return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
-            }
-        }
 
 
 
@@ -642,7 +461,7 @@ namespace V2boardApi.Areas.App.Controllers
                 try
                 {
                     Miladi = Convert.ToDateTime(userExpire, CultureInfo.GetCultureInfo("fa-IR"));
-                    Miladi = Miladi.AddDays(1);
+                    Miladi = Miladi.AddHours(12);
                 }
                 catch (Exception ex)
                 {
@@ -883,11 +702,11 @@ namespace V2boardApi.Areas.App.Controllers
                     var Query = "";
                     if (user.Role == 2)
                     {
-                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 1000 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60000 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW())) and email like '%@" + user.Username + "%'";
+                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 60 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW())) and email like '%@" + user.Username + "%'";
                     }
                     else
                     {
-                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 1000 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60000 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW()))";
+                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 60 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW()))";
                     }
                     MySqlEntities2 mySql = new MySqlEntities2(user.tbServers.ConnectionString);
                     await mySql.OpenAsync();
@@ -906,7 +725,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                     }
 
-                    
+
                 }
                 return Json(new { status = "success", data = activity }, JsonRequestBehavior.AllowGet);
             }

@@ -55,7 +55,8 @@ $(function () {
                     render: function (data, type, full, meta) {
                         var $name = full['FullName'],
                             $email = full['Username'],
-                            $image = full['Profile'];
+                            $image = full['Profile'],
+                            $userId = full["id"];
                         if ($image) {
                             var $output =
                                 '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
@@ -76,9 +77,7 @@ $(function () {
                             '</div>' +
                             '</div>' +
                             '<div class="d-flex flex-column">' +
-                            '<a href="' +
-                            userView +
-                            '" class="text-body text-truncate"><span class="fw-medium">' +
+                            '<a href="/App/TelegramUsers/Details?user_id=' + $userId + '" class="text-body text-truncate"><span class="fw-medium">' +
                             $name +
                             '</span></a>' +
                             '<small class="text-muted">' +
@@ -172,20 +171,22 @@ $(function () {
                 }
             ],
             language: {
-                paginate: {
-                    first: "اولین",
-                    last: "آخرین",
-                    next: "بعدی",
-                    previous: "قبلی"
+                "paginate": {
+                    "first": "اولین",
+                    "last": "آخرین",
+                    "next": "بعدی",
+                    "previous": "قبلی"
                 },
-                info: "نمایش _START_ تا _END_ از _TOTAL_ ورودی",
-                lengthMenu: "نمایش _MENU_ ورودی",
-                search: "جستجو:",
-                zeroRecords: "موردی یافت نشد",
-                infoEmpty: "هیچ موردی موجود نیست",
-                infoFiltered: "(فیلتر شده از _MAX_ ورودی)",
+                "info": "نمایش _START_ تا _END_ از _TOTAL_ ورودی",
+                "lengthMenu": "نمایش _MENU_ ورودی",
+                "search": "جستجو:",
+                "zeroRecords": "موردی یافت نشد",
+                "infoEmpty": "هیچ موردی موجود نیست",
+                "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
                 sLengthMenu: '_MENU_',
-                searchPlaceholder: 'جستجو..'
+                search: '',
+                searchPlaceholder: 'جستجوی کاربران',
+                loadingRecords: "در حال بارگزاری ..."
             },
             displayLength: 7,
             lengthMenu: [7, 10, 25, 50, 75, 100],

@@ -60,6 +60,7 @@ $(function () {
             drawCallback: function (settings) {
                 //تولتیپ کردن بعد از تغییر صفحه یا سرچ
                 $('[data-bs-toggle="popover"]').tooltip();
+                
             },
             processing: true,
             serverSide: true,
@@ -73,6 +74,7 @@ $(function () {
                 { data: 'RemainingVolume', className: "text-center" },
                 { data: 'DaysLeft', className: "text-center" },
                 { data: 'PlanName', className: "text-center" },
+                { data: 'ExpireDate', className: "text-center" },
                 { data: 'IsActive', className: "text-center" },
                 { data: '', width: '80px', className: "text-center" },
             ],
@@ -187,8 +189,18 @@ $(function () {
                     }
                 },
                 {
-                    // DaysLeft
+                    // ExpireDate
                     targets: 7,
+                    responsivePriority: 4,
+                    render: function (data, type, full, meta) {
+                        var $ExpireDate = full['ExpireDate'];
+                        var $row_output = "<span>" + $ExpireDate + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Status
+                    targets: 8,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $IsActive = full['IsActive'];
@@ -266,6 +278,24 @@ $(function () {
                 }
             ],
             order: [6, "desc"],
+            "language": {
+                "paginate": {
+                    "first": "اولین",
+                    "last": "آخرین",
+                    "next": "بعدی",
+                    "previous": "قبلی"
+                },
+                "info": "نمایش _START_ تا _END_ از _TOTAL_ ورودی",
+                "lengthMenu": "نمایش _MENU_ ورودی",
+                "search": "جستجو:",
+                "zeroRecords": "موردی یافت نشد",
+                "infoEmpty": "هیچ موردی موجود نیست",
+                "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
+                sLengthMenu: '_MENU_',
+                search: '',
+                searchPlaceholder: 'جستجوی کاربران',
+                loadingRecords: "در حال بارگزاری ..."
+            },
             displayLength: 10,
             lengthMenu: [10, 25, 50, 75, 100],
             responsive: {
@@ -576,6 +606,7 @@ $(function () {
                 document.getElementById('addNewUserForm').reset();
                 $("#modalCenter").modal("hide");
                 dt_basic.ajax.reload(null, false);
+                Plans("#userPlan");
             }
 
         });
@@ -595,7 +626,7 @@ $(function () {
 
     // تابع مربوط به نمایش اطلاعات اشتراک برای ویرایش
     function ShowEditSubForm(user_id) {
-
+        document.getElementById('EditUserForm').reset();
         $("#modalEditSub").modal("show");
 
         BodyBlockUI();
@@ -608,7 +639,7 @@ $(function () {
                 var data = res.data;
                 for (var key in data) {
                     if (data.hasOwnProperty(key)) {
-                        var input = $('input[name=' + key + ']');
+                        var input = $('#modalEditSub input[name=' + key + ']');
 
                         if (key == "userExpire") {
                             picker = document.querySelector('#expire-picker'),
@@ -700,9 +731,10 @@ $(function () {
             eval(res.data);
             if (res.status == "success") {
 
-                document.getElementById('EditUserForm').reset();
+                
                 $("#modalEditSub").modal("hide");
                 dt_basic.ajax.reload(null, false);
+                
             }
 
         });
@@ -753,6 +785,7 @@ $(function () {
                 document.getElementById('RenewUserForm').reset();
                 $("#modalRenew").modal("hide");
                 dt_basic.ajax.reload(null, false);
+                Plans("#userPlanRenew");
             }
 
         });
