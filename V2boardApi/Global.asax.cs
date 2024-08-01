@@ -33,7 +33,6 @@ namespace V2boardApi
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             ViewEngines.Engines.Add(new CustomRazorViewEngine());
-
             Repository<tbUsers> Rep = new Repository<tbUsers>();
             var Res = Rep.Where(p => p.tbBotSettings.Count > 0 && p.tbBotSettings.Where(s => s.Bot_Token != null).Any()).ToList();
             foreach (var item in Res)

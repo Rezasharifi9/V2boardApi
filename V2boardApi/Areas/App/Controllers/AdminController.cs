@@ -489,6 +489,7 @@ namespace V2boardApi.Areas.App.Controllers
         //[AuthorizeApp(Roles = "1")]
         public ActionResult Select2Plans()
         {
+            
             var Plans = RepositoryPlans.Where(s => s.Status == true).Select(p => new { id = p.Plan_ID, Name = p.Plan_Name }).ToList();
             return Json(new { result = Plans }, JsonRequestBehavior.AllowGet);
         }

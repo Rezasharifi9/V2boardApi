@@ -4,11 +4,13 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using V2boardApi.Areas.App.Data.PlanViewModels;
 using V2boardApi.Areas.App.Data.RequestModels;
 using V2boardApi.Tools;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -38,6 +40,128 @@ namespace V2boardApi.Areas.App.Controllers
             return View();
         }
 
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AuthorizeApp(Roles = "1")]
+        public async Task<ActionResult> CreateOrEdit(RequestPlanViewModel model)
+        {
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                    if (user != null)
+                    {
+                        int OrgPrice = 0;
+                        try
+                        {
+                            OrgPrice = int.Parse(model.planPrice, System.Globalization.NumberStyles.Currency);
+                        }
+                        catch
+                        {
+                            return MessageBox.Warning("هشدار", "لطفا مبلغ را صحیح وارد کنید", icon: icon.warning);
+                        }
+                        var time = "";
+                        if (model.planTime == null)
+                        {
+                            time = "NULL";
+                        }
+                        else
+                        {
+                            var Date = DateTime.Now.AddDays(model.planTime.Value); ;
+
+                            time = Utility.ConvertDatetimeToSecond(Date).ToString();
+                        }
+                        var Speed = "NULL";
+                        if (model.planSpeed != null)
+                        {
+                            Speed = model.planSpeed.Value.ToString();
+                        }
+                        var TimeNow = Utility.ConvertDatetimeToSecond(DateTime.Now);
+
+                        var Query = "INSERT INTO `v2_plan`(`group_id`, `transfer_enable`, `name`, `speed_limit`, `show`,`created_at`, `updated_at`) VALUES ('" + model.planGroup + "','" + model.planTraffic + "','" + model.planName + "'," + Speed + ",'1','" + TimeNow + "','" + TimeNow + "')";
+
+                        using (MySqlEntities2 mysql = new MySqlEntities2(user.tbServers.ConnectionString))
+                        {
+                            await mysql.OpenAsync();
+                            var Reader = await mysql.GetDataAsync(Query);
+                            tbPlans plan = new tbPlans();
+                            plan.Plan_Name = model.planName;
+                            plan.PlanVolume = model.planTraffic;
+                            if(model.planTime == null)
+                            {
+                                plan.CountDayes = 0;
+                            }
+                            else
+                            {
+                                plan.CountDayes = model.planTime;
+                            }
+                            plan.Price = OrgPrice;
+                            plan.FK_Server_ID = user.FK_Server_ID;
+                            plan.Status = true;
+                            RepositoryPlans.Insert(plan);
+
+                            await RepositoryPlans.SaveChangesAsync();
+                            await mysql.CloseAysnc();
+                            
+                        }
+                    }
+                    return Toaster.Success("موفق", "تعرفه با موفقیت ایجاد گردید");
+                }
+                else
+                {
+                    var errors = ModelState.GetError();
+                    return MessageBox.Warning("هشدار", errors, icon: icon.warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "ذخیره سازی تعرفه با خطا مواجه شد");
+                return MessageBox.Error("ناموفق", "ذخیره سازی تعرفه با خطا مواجه شد");
+            }
+
+        }
+
+        [HttpGet]
+        [AuthorizeApp(Roles = "1")]
+        public async Task<ActionResult> GetSelectGroups()
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                List<PermissionsViewModel> permissions = new List<PermissionsViewModel>();
+
+                if (user != null)
+                {
+                    using (MySqlEntities2 mysql = new MySqlEntities2(user.tbServers.ConnectionString))
+                    {
+                        await mysql.OpenAsync();
+                        var Reader = await mysql.GetDataAsync("SELECT id,name FROM `v2_server_group`");
+
+                        while (await Reader.ReadAsync())
+                        {
+                            PermissionsViewModel permissionsView = new PermissionsViewModel();
+                            permissionsView.id = Reader.GetInt32("id");
+                            permissionsView.Name = Reader.GetString("name");
+                            permissions.Add(permissionsView);
+                        }
+                        Reader.Close();
+                        await mysql.CloseAysnc();
+                    }
+
+                }
+                return Json(new { status = "success", data = permissions }, JsonRequestBehavior.AllowGet);
+            }
+            catch
+            {
+                return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
+            }
+
+        }
+
+
         [AuthorizeApp(Roles = "1")]
         public ActionResult _PartialGetAllPlans()
         {
@@ -57,7 +181,7 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     Plan.DayesCount = 0;
                 }
-                
+
                 Plan.Traffic = item.PlanVolume.Value;
                 Plan.Price = item.Price.Value;
                 Plan.Status = Convert.ToInt32(item.Status.Value);
@@ -68,135 +192,135 @@ namespace V2boardApi.Areas.App.Controllers
             return Json(new { data = Plans }, JsonRequestBehavior.AllowGet);
         }
 
-        //public ActionResult UpdatePlans()
-        //{
-        //    try
-        //    {
-        //        var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+        public ActionResult UpdatePlans()
+        {
+            try
+            {
+                var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
 
-        //        if (user != null)
-        //        {
+                if (user != null)
+                {
 
-        //            MySqlEntities mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString);
-        //            mySqlEntities.Open();
-        //            var reader = mySqlEntities.GetData("select * from v2_plan");
+                    MySqlEntities mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString);
+                    mySqlEntities.Open();
+                    var reader = mySqlEntities.GetData("select * from v2_plan");
 
-        //            while (reader.Read())
-        //            {
-        //                var show = reader.GetByte("show");
-        //                var id = reader.GetInt32("id");
+                    while (reader.Read())
+                    {
+                        var show = reader.GetByte("show");
+                        var id = reader.GetInt32("id");
 
-        //                var planD = RepositoryPlans.Where(p => p.Plan_ID_V2 == id && user.tbServers.ServerID == p.tbServers.ServerID).FirstOrDefault();
-        //                if (planD == null)
-        //                {
-        //                    tbPlans plan = new tbPlans();
-        //                    plan.Plan_ID_V2 = id;
-        //                    plan.PlanVolume = reader.GetInt32("transfer_enable");
-        //                    plan.Plan_Name = reader.GetString("name");
-        //                    var Month_Price = reader.GetBodyDefinition("month_price");
-        //                    var quarter_price = reader.GetBodyDefinition("quarter_price");
-        //                    var half_year_price = reader.GetBodyDefinition("half_year_price");
-        //                    var year_price = reader.GetBodyDefinition("year_price");
-        //                    if (Month_Price != "")
-        //                    {
-        //                        plan.Price = Convert.ToInt32(Month_Price) / 100;
-        //                        plan.CountDayes = 30;
+                        var planD = RepositoryPlans.Where(p => p.Plan_ID_V2 == id).FirstOrDefault();
+                        if (planD == null)
+                        {
+                            tbPlans plan = new tbPlans();
+                            plan.Plan_ID_V2 = id;
+                            plan.PlanVolume = reader.GetInt32("transfer_enable");
+                            plan.Plan_Name = reader.GetString("name");
+                            var Month_Price = reader.GetBodyDefinition("month_price");
+                            var quarter_price = reader.GetBodyDefinition("quarter_price");
+                            var half_year_price = reader.GetBodyDefinition("half_year_price");
+                            var year_price = reader.GetBodyDefinition("year_price");
+                            if (Month_Price != "")
+                            {
+                                plan.Price = Convert.ToInt32(Month_Price) / 100;
+                                plan.CountDayes = 30;
 
-        //                    }
-        //                    else if (quarter_price != "")
-        //                    {
-        //                        plan.Price = Convert.ToInt32(quarter_price) / 100;
-        //                        plan.CountDayes = 90;
-        //                    }
-        //                    else if (half_year_price != "")
-        //                    {
-        //                        plan.Price = Convert.ToInt32(half_year_price) / 100;
-        //                        plan.CountDayes = 180;
-        //                    }
-        //                    else if (year_price != "")
-        //                    {
-        //                        plan.Price = Convert.ToInt32(year_price) / 100;
-        //                        plan.CountDayes = 360;
-        //                    }
-        //                    if(show == 1)
-        //                    {
-        //                        plan.Status = true;
-        //                    }
-        //                    else
-        //                    {
-        //                        plan.Status = false;
-        //                    }
-        //                    if(plan.Price == null)
-        //                    {
-        //                        plan.Price = 0;
-        //                    }
-        //                    plan.FK_Server_ID = user.FK_Server_ID;
-        //                    RepositoryPlans.Insert(plan);
-        //                }
-        //                else
-        //                {
-        //                    planD.Plan_ID_V2 = id;
-        //                    planD.PlanVolume = reader.GetInt32("transfer_enable");
-        //                    planD.Plan_Name = reader.GetString("name");
-        //                    var Month_Price = reader.GetBodyDefinition("month_price");
-        //                    var quarter_price = reader.GetBodyDefinition("quarter_price");
-        //                    var half_year_price = reader.GetBodyDefinition("half_year_price");
-        //                    var year_price = reader.GetBodyDefinition("year_price");
-        //                    if (Month_Price != "")
-        //                    {
-        //                        planD.Price = Convert.ToInt32(Month_Price) / 100;
-        //                        planD.CountDayes = 30;
+                            }
+                            else if (quarter_price != "")
+                            {
+                                plan.Price = Convert.ToInt32(quarter_price) / 100;
+                                plan.CountDayes = 90;
+                            }
+                            else if (half_year_price != "")
+                            {
+                                plan.Price = Convert.ToInt32(half_year_price) / 100;
+                                plan.CountDayes = 180;
+                            }
+                            else if (year_price != "")
+                            {
+                                plan.Price = Convert.ToInt32(year_price) / 100;
+                                plan.CountDayes = 360;
+                            }
+                            if (show == 1)
+                            {
+                                plan.Status = true;
+                            }
+                            else
+                            {
+                                plan.Status = false;
+                            }
+                            if (plan.Price == null)
+                            {
+                                plan.Price = 0;
+                            }
+                            plan.FK_Server_ID = user.FK_Server_ID;
+                            RepositoryPlans.Insert(plan);
+                        }
+                        else
+                        {
+                            planD.Plan_ID_V2 = id;
+                            planD.PlanVolume = reader.GetInt32("transfer_enable");
+                            planD.Plan_Name = reader.GetString("name");
+                            var Month_Price = reader.GetBodyDefinition("month_price");
+                            var quarter_price = reader.GetBodyDefinition("quarter_price");
+                            var half_year_price = reader.GetBodyDefinition("half_year_price");
+                            var year_price = reader.GetBodyDefinition("year_price");
+                            if (Month_Price != "")
+                            {
+                                planD.Price = Convert.ToInt32(Month_Price) / 100;
+                                planD.CountDayes = 30;
 
-        //                    }
-        //                    else if (quarter_price != "")
-        //                    {
-        //                        planD.Price = Convert.ToInt32(quarter_price) / 100;
-        //                        planD.CountDayes = 90;
-        //                    }
-        //                    else if (half_year_price != "")
-        //                    {
-        //                        planD.Price = Convert.ToInt32(half_year_price) / 100;
-        //                        planD.CountDayes = 180;
-        //                    }
-        //                    else if (year_price != "")
-        //                    {
-        //                        planD.Price = Convert.ToInt32(year_price) / 100;
-        //                        planD.CountDayes = 360;
-        //                    }
-        //                    if (show == 1)
-        //                    {
-        //                        planD.Status = true;
-        //                    }
-        //                    else
-        //                    {
-        //                        planD.Status = false;
-        //                    }
-        //                    if (planD.Price == null)
-        //                    {
-        //                        planD.Price = 0;
-        //                    }
-        //                    planD.FK_Server_ID = user.FK_Server_ID;
-        //                }
-        //            }
+                            }
+                            else if (quarter_price != "")
+                            {
+                                planD.Price = Convert.ToInt32(quarter_price) / 100;
+                                planD.CountDayes = 90;
+                            }
+                            else if (half_year_price != "")
+                            {
+                                planD.Price = Convert.ToInt32(half_year_price) / 100;
+                                planD.CountDayes = 180;
+                            }
+                            else if (year_price != "")
+                            {
+                                planD.Price = Convert.ToInt32(year_price) / 100;
+                                planD.CountDayes = 360;
+                            }
+                            if (show == 1)
+                            {
+                                planD.Status = true;
+                            }
+                            else
+                            {
+                                planD.Status = false;
+                            }
+                            if (planD.Price == null)
+                            {
+                                planD.Price = 0;
+                            }
+                            planD.FK_Server_ID = user.FK_Server_ID;
+                        }
+                    }
 
 
-        //            RepositoryServer.Save();
-        //            RepositoryPlans.Save();
-        //            logger.Info("بروزرسانی تعرفه ها با موفقیت انجام شد");
-        //            return Content("1");
-        //        }
-        //        else
-        //        {
-        //            return Content("2");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        logger.Error(ex, "بروزرسانی تعرفه ها با خطا مواجه شد");
-        //        return Content("2");
-        //    }
+                    RepositoryServer.Save();
+                    RepositoryPlans.Save();
+                    logger.Info("بروزرسانی تعرفه ها با موفقیت انجام شد");
+                    return Content("1");
+                }
+                else
+                {
+                    return Content("2");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "بروزرسانی تعرفه ها با خطا مواجه شد");
+                return Content("2");
+            }
 
-        //}
+        }
 
         public ActionResult _PartialEdit(int id)
         {

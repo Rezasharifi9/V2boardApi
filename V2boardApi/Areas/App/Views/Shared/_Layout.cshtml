@@ -645,6 +645,42 @@
             let toastPlacement = new bootstrap.Toast(toastPlacementExample);
             toastPlacement.show();
         }
+
+        function blockUI(input) {
+    $(input).block({
+        message: '<div class="spinner-border text-primary" role="status"></div>',
+        css: {
+            backgroundColor: 'transparent',
+            border: '0'
+        },
+        overlayCSS: {
+            backgroundColor: 'transparent',
+            opacity: 0.8
+        }
+    });
+}
+
+function UnblockUI(input) {
+    $(input).unblock();
+}
+
+function BodyBlockUI() {
+    $('body').block({
+        message: '<div class="spinner-border text-primary" role="status"></div>',
+        css: {
+            backgroundColor: 'transparent',
+            border: '0'
+        },
+        overlayCSS: {
+            backgroundColor: 'transparent',
+            opacity: 0.8
+        }
+    });
+}
+
+function BodyUnblockUI(input) {
+    $('body').unblock();
+}
     </script>
 
     <!-- Vendors JS -->
@@ -652,45 +688,6 @@
     <script src="../../assets/js/main.js"></script>
     @RenderSection("customScripts", false)
     <script>
-
-
-
-
-        function blockUI(input) {
-            $(input).block({
-                message: '<div class="spinner-border text-primary" role="status"></div>',
-                css: {
-                    backgroundColor: 'transparent',
-                    border: '0'
-                },
-                overlayCSS: {
-                    backgroundColor: 'transparent',
-                    opacity: 0.8
-                }
-            });
-        }
-
-        function UnblockUI(input) {
-            $(input).unblock();
-        }
-
-        function BodyBlockUI() {
-            $('body').block({
-                message: '<div class="spinner-border text-primary" role="status"></div>',
-                css: {
-                    backgroundColor: 'transparent',
-                    border: '0'
-                },
-                overlayCSS: {
-                    backgroundColor: 'transparent',
-                    opacity: 0.8
-                }
-            });
-        }
-
-        function BodyUnblockUI(input) {
-            $('body').unblock();
-        }
 
         $(function () {
 

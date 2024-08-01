@@ -7,7 +7,7 @@ namespace V2boardApi.Areas.App.Data.PlanViewModels
 {
     public class PermissionsViewModel
     {
-        public int Id { get; set; }
+        public int id { get; set; }
         public string Name { get; set;}
     }
 }

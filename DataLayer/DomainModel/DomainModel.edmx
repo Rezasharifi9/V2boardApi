@@ -535,6 +535,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
