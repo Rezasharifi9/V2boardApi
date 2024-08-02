@@ -129,7 +129,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                 query += pageSize > 0 ? $" LIMIT {skip}, {pageSize}" : "";
                 List<GetUserDataModel> users = new List<GetUserDataModel>();
-                using (var mySqlEntities = new MySqlEntities2(user.tbServers.ConnectionString))
+                using (var mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString))
                 {
                     await mySqlEntities.OpenAsync();
                     using (var reader = await mySqlEntities.GetDataAsync(query))
@@ -230,7 +230,7 @@ namespace V2boardApi.Areas.App.Controllers
                         await reader.ReadAsync();
                         var totalRecords = reader.GetInt32(reader.GetOrdinal("Count"));
 
-                        await mySqlEntities.CloseAysnc();
+                        await mySqlEntities.CloseAsync();
                         return Json(new
                         {
                             draw,
@@ -265,7 +265,7 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,2")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateUser(string userSubname, int userPlan)
+        public async Task<ActionResult> CreateUser(string userSubname, int userPlan)
         {
             try
             {
@@ -305,12 +305,12 @@ namespace V2boardApi.Areas.App.Controllers
                                 var emilprx = userSubname + "@" + user.Username;
 
                                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                                mySql.Open();
+                                await mySql.OpenAsync();
 
-                                var reader = mySql.GetData("select group_id,transfer_enable from v2_plan where id =" + plan.Plan_ID_V2);
+                                var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =" + plan.Plan_ID_V2);
                                 long tran = 0;
                                 int grid = 0;
-                                while (reader.Read())
+                                while (await reader.ReadAsync())
                                 {
                                     tran = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume.Value));
                                     grid = reader.GetInt32("group_id");
@@ -321,7 +321,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                                 string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES ('" + emilprx + "'," + exp + "," + create + ",'" + Guid.NewGuid() + "',0,0,0," + tran + ",0," + grid + "," + planid + ",'" + token + "','" + Guid.NewGuid() + "'," + create + ")";
 
-                                reader = mySql.GetData(Query);
+                                reader = await mySql.GetDataAsync(Query);
                                 reader.Close();
                                 var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                                 user.Wallet += link.tbPlans.Price;
@@ -407,16 +407,16 @@ namespace V2boardApi.Areas.App.Controllers
         #region ویرایش اشتراک
 
         [AuthorizeApp(Roles = "1")]
-        public ActionResult Edit(int user_id)
+        public async Task<ActionResult> Edit(int user_id)
         {
             var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
             if (user.tbServers != null)
             {
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                mySql.Open();
+                await mySql.OpenAsync();
 
-                var read = mySql.GetData("SELECT v2_user.email,v2_user.transfer_enable,v2_user.expired_at,v2_user.speed_limit FROM `v2_user` WHERE id =" + user_id);
-                if (read.Read())
+                var read = await mySql.GetDataAsync("SELECT v2_user.email,v2_user.transfer_enable,v2_user.expired_at,v2_user.speed_limit FROM `v2_user` WHERE id =" + user_id);
+                if ( await read.ReadAsync())
                 {
                     var Traffic = Utility.ConvertByteToGB(read.GetDouble("transfer_enable"));
                     var Subname = read.GetBodyDefinition("email").Split('@')[0];
@@ -428,7 +428,7 @@ namespace V2boardApi.Areas.App.Controllers
                         ShamsiDate = Utility.ConvertMillisecondToShamsiDate(Convert.ToInt64(Date));
                     }
 
-
+                    await mySql.CloseAsync();
                     return Json(new { data = new { userSubname = Subname, userTraffic = Traffic, userSpeed = SpeedLimit, userExpire = ShamsiDate }, status = "success" }, JsonRequestBehavior.AllowGet);
 
                 }
@@ -447,7 +447,7 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int user_id, string userSubname, string userSpeed, string userExpire, double userTraffic)
+        public async Task<ActionResult> Edit(int user_id, string userSubname, string userSpeed, string userExpire, double userTraffic)
         {
 
             try
@@ -455,7 +455,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
 
                 MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString);
-                mysql.Open();
+                await mysql.OpenAsync();
 
                 var Miladi = new DateTime();
                 try
@@ -475,8 +475,8 @@ namespace V2boardApi.Areas.App.Controllers
                     Speed = userSpeed;
                 }
                 var transfe_enable = Utility.ConvertGBToByte(userTraffic);
-                var read = mysql.GetData("select v2_user.email FROM `v2_user` where id=" + user_id);
-                if (read.Read())
+                var read = await mysql.GetDataAsync("select v2_user.email FROM `v2_user` where id=" + user_id);
+                if (await read.ReadAsync())
                 {
                     userSubname += "@" + read.GetBodyDefinition("email").Split('@')[1];
                 }
@@ -487,7 +487,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                 try
                 {
-                    read = mysql.GetData(Query);
+                    read = await mysql.GetDataAsync(Query);
                 }
                 catch (Exception ex)
                 {
@@ -508,16 +508,16 @@ namespace V2boardApi.Areas.App.Controllers
         #region مسدودی کاربر
 
         [AuthorizeApp(Roles = "1,2")]
-        public ActionResult BanUser(int user_id, bool status)
+        public async Task<ActionResult> BanUser(int user_id, bool status)
         {
             try
             {
                 var user = usersRepository.table.Where(p => p.Username == User.Identity.Name && p.Status == true).FirstOrDefault();
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                mySql.Open();
+                await mySql.OpenAsync();
                 var Query = "update v2_user set banned = " + Convert.ToInt16(status) + " where email like '%" + user.Username + "%' and id =" + user_id;
-                var reader = mySql.GetData(Query);
-                var res = reader.Read();
+                var reader = await mySql.GetDataAsync(Query);
+                var res = await reader.ReadAsync();
 
                 var state = "رفع مسدود";
                 if (status)
@@ -544,7 +544,7 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Http.HttpPost]
         [AuthorizeApp(Roles = "1,2")]
         [ValidateAntiForgeryToken]
-        public ActionResult Renew(int user_id, int userPlan)
+        public async Task<ActionResult> Renew(int user_id, int userPlan)
         {
 
             var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
@@ -575,17 +575,17 @@ namespace V2boardApi.Areas.App.Controllers
                     var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=" + Plan.Plan_ID_V2 + ", transfer_enable = " + t + " , expired_at = " + exp + " where id =" + user_id;
 
                     MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                    mySql.Open();
-                    var reader = mySql.GetData(Query);
+                    await mySql.OpenAsync();
+                    var reader = await mySql.GetDataAsync(Query);
                     reader.Read();
                     reader.Close();
 
                     var Query2 = "SELECT email FROM `v2_user` WHERE id=" + user_id;
 
                     MySqlEntities mySql2 = new MySqlEntities(user.tbServers.ConnectionString);
-                    mySql2.Open();
-                    var reader2 = mySql2.GetData(Query2);
-                    if (reader2.Read())
+                    await mySql2.OpenAsync();
+                    var reader2 = await mySql2.GetDataAsync(Query2);
+                    if (await reader2.ReadAsync())
                     {
                         var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                         user.Wallet += link.tbPlans.Price;
@@ -628,7 +628,7 @@ namespace V2boardApi.Areas.App.Controllers
         #region ریست لینک اکانت
         [System.Web.Http.HttpPost]
         [AuthorizeApp(Roles = "1,2")]
-        public ActionResult Reset(int user_id)
+        public async Task<ActionResult> Reset(int user_id)
         {
             var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
 
@@ -637,10 +637,10 @@ namespace V2boardApi.Areas.App.Controllers
                 var Server = user.tbServers;
 
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                mySql.Open();
+                await mySql.OpenAsync();
                 string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
                 var query = "update v2_user set token = '" + token + "',uuid='" + Guid.NewGuid() + "' where id=" + user_id;
-                var reader = mySql.GetData(query);
+                var reader = mySql.GetDataAsync(query);
 
                 logger.Info("لینک اشتراک با موفقیت تغییر یافت");
 
@@ -657,7 +657,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region حذف لینک
 
-        public ActionResult delete(int user_id)
+        public async Task<ActionResult> delete(int user_id)
         {
             try
             {
@@ -666,12 +666,12 @@ namespace V2boardApi.Areas.App.Controllers
                 var Server = user.tbServers;
 
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                mySql.Open();
+                await mySql.OpenAsync();
 
                 var Query = "delete from v2_user where id=" + user_id;
-                var reader = mySql.GetData(Query);
+                var reader = await mySql.GetDataAsync(Query);
 
-
+                await mySql.CloseAsync();
                 logger.Info("اشتراک حذف شد");
                 return Toaster.Success("موفق", "اشتراک با موفقیت حذف شد");
 
@@ -708,7 +708,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 60 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW()))";
                     }
-                    MySqlEntities2 mySql = new MySqlEntities2(user.tbServers.ConnectionString);
+                    MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                     await mySql.OpenAsync();
                     activity.total_users = 0;
                     activity.online_users = 0;
@@ -738,5 +738,19 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+                logsRepository.Dispose();
+                usersRepository.Dispose();
+                plansRepository.Dispose();
+                linkUserAndPlansRepository.Dispose();
+                serverRepository.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

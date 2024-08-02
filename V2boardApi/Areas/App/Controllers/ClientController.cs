@@ -21,6 +21,7 @@ using System.Net;
 using System.Web.Http.Cors;
 using System.Runtime.Remoting.Messaging;
 using V2boardApi.Areas.App.Data.SubscriptionsViewModels;
+using System.Threading.Tasks;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -46,7 +47,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryUpdateLogs = new Repository<tbUpdateLogs>(db);
             RepositoryLinks = new Repository<tbLinks>(db);
         }
-        public ActionResult subscribe(string token)
+        public async Task<ActionResult> subscribe(string token)
         {
             try
             {
@@ -70,13 +71,13 @@ namespace V2boardApi.Areas.App.Controllers
                             var result = res.Result.Content.ReadAsStringAsync();
 
                             MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
-                            sqlEntities.Open();
+                            await sqlEntities.OpenAsync();
                             if (UserAgent.StartsWith("hiddify"))
                             {
 
                                 var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
-                                var reader = sqlEntities.GetData(query);
-                                while (reader.Read())
+                                var reader = await sqlEntities.GetDataAsync(query);
+                                while (await reader.ReadAsync())
                                 {
                                     var str = "upload=" + reader.GetBodyDefinition("u") + ";download=" + reader.GetBodyDefinition("d") + ";total=" + reader.GetBodyDefinition("transfer_enable") + ";expire=" + reader.GetBodyDefinition("expired_at");
                                     var name = reader.GetString("email").Split('@')[0];
@@ -92,8 +93,8 @@ namespace V2boardApi.Areas.App.Controllers
                             if (string.IsNullOrEmpty(result.Result))
                             {
                                 var query1 = "SELECT uuid,email,u,d,transfer_enable FROM v2_user where token='" + token + "'";
-                                var reader2 = sqlEntities.GetData(query1);
-                                reader2.Read();
+                                var reader2 = await sqlEntities.GetDataAsync(query1);
+                                await reader2.ReadAsync();
                                 var Admin = server.tbUsers.Where(p => p.Role == 1).FirstOrDefault();
 
                                 var ress = HttpUtility.UrlEncode("❌ کاربر گرامی زمان اشتراک شما به پایان رسیده است ❌");
@@ -127,10 +128,10 @@ namespace V2boardApi.Areas.App.Controllers
                                 var base64 = link1 + "\n" + link2 + "\n" + link3;
 
                                 reader2.Close();
-                                sqlEntities.Close();
+                                await sqlEntities.CloseAsync();
                                 return Content(base64, "text/html", Encoding.UTF8);
                             }
-                            sqlEntities.Close();
+                            await sqlEntities.CloseAsync();
                             return Content(result.Result, "text/html", Encoding.UTF8);
                         }
                     }
@@ -155,10 +156,10 @@ namespace V2boardApi.Areas.App.Controllers
                     if (server != null)
                     {
                         MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
-                        sqlEntities.Open();
+                        await sqlEntities.OpenAsync();
                         var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
-                        var reader = sqlEntities.GetData(query);
-                        while (reader.Read())
+                        var reader = await sqlEntities.GetDataAsync(query);
+                        while (await reader.ReadAsync())
                         {
                             GetUserDataModel getUserData = new GetUserDataModel();
                             getUserData.id = reader.GetInt32("id");

@@ -8,6 +8,9 @@ let fv, offCanvasEl;
 
 // datatable (jquery)
 $(function () {
+
+    $('[data-bs-toggle="popover"]').tooltip();
+
     var dt_basic_table = $('.datatables-plan');
     var dt_basic;
     var select2 = $('#planGroup');
@@ -35,9 +38,21 @@ $(function () {
                 { data: 'DayesCount' },
                 { data: 'Traffic' },
                 { data: 'Price' },
+                { data: 'SpeedLimit' },
+                { data: 'Group_Name' },
                 { data: 'Status' },
                 { data: '' }
             ],
+            initComplete: function (setting, json) {
+
+                //تولتیپ کردن بعد از لود دیتا
+                $('[data-bs-toggle="popover"]').tooltip();
+            },
+            drawCallback: function (settings) {
+                //تولتیپ کردن بعد از تغییر صفحه یا سرچ
+                $('[data-bs-toggle="popover"]').tooltip();
+
+            },
             columnDefs: [
                 {
                     // For Responsive
@@ -90,13 +105,35 @@ $(function () {
                     render: function (data, type, full, meta) {
                         var $Price = full['Price'];
                         // Creates full output for row
-                        var $row_output = "<span>" + $Price + "</span>";
+                        var $row_output = "<span>" + $Price + " ءتء " + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // SpeedLimit
+                    targets: 5,
+                    responsivePriority: 4,
+                    render: function (data, type, full, meta) {
+                        var $SpeedLimit = full['SpeedLimit'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $SpeedLimit + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Group_Name
+                    targets: 6,
+                    responsivePriority: 4,
+                    render: function (data, type, full, meta) {
+                        var $Group_Name = full['Group_Name'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $Group_Name + "</span>";
                         return $row_output;
                     }
                 },
                 {
                     // Status
-                    targets: 5,
+                    targets: 7,
                     render: function (data, type, full, meta) {
                         var $status_number = full['Status'];
                         var $status = {
@@ -118,22 +155,26 @@ $(function () {
                     orderable: false,
                     searchable: false,
                     render: function (data, type, full, meta) {
+                        var statusText = "";
+                        var statusIcon = "";
+                        var Status = full["Status"];
+                        if (Status == "1") {
+                            statusText = "غیر فعال کردن";
+                            statusIcon = "ti-lock";
+                        }
+                        else {
+                            statusText = "فعال کردن";
+                            statusIcon = "ti-lock-off";
+                        }
+
+
                         return (
-                            '<div class="d-inline-block">' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="text-primary ti ti-dots-vertical"></i></a>' +
-                            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
-                            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
-                            '<div class="dropdown-divider"></div>' +
-                            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
-                            '</ul>' +
-                            '</div>' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'
+                            '<a data-bs-toggle="popover" title="' + statusText + '" class="btn btn-sm btn-icon item-edit change-status" data-id="' + full["id"] + '"><i class="text-primary ti ' + statusIcon +'"></i></a>' +
+                            '<a data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditPlan" data-id="' + full["id"] + '" data-bs-toggle="offcanvas" data-bs-target="#Add-Or-EditPlan"><i class="text-primary ti ti-pencil"></i></a>'
                         );
                     }
                 }
             ],
-            order: [[2, 'desc']],
             "language": {
                 "paginate": {
                     "first": "اولین",
@@ -149,11 +190,11 @@ $(function () {
                 "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
                 sLengthMenu: '_MENU_',
                 search: '',
-                searchPlaceholder: 'جستجوی کاربران',
+                searchPlaceholder: 'جستجوی تعرفه',
                 loadingRecords: "در حال بارگزاری ..."
             },
-            displayLength: 7,
-            lengthMenu: [7, 10, 25, 50, 75, 100],
+            displayLength: 10,
+            lengthMenu: [10, 25, 50, 75, 100],
             responsive: {
                 details: {
                     display: $.fn.dataTable.Responsive.display.modal({
@@ -190,6 +231,70 @@ $(function () {
         $('div.head-label').html('<h5 class="card-title mb-0">تعرفه ها</h5>');
     }
 
+    // Edit Plan
+    $('body').on('click', '.EditPlan', function () {
+
+        var id = $(this).attr("data-id");
+
+        $(".dtr-bs-modal").modal("hide");
+
+        AjaxGet('/App/Plan/Edit?id=' + id).then(res => {
+
+            if (res.status == "success") {
+
+                var data = res.data;
+                for (var key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        var input = $('input[name=' + key + ']');
+
+                        if (key == "planGroup") {
+                            SelectGroup("#planGroup", data[key]);
+                        }
+                        else {
+                            input.val(data[key]);
+                        }
+
+
+                    }
+                }
+
+                showOffcanvas();
+            }
+
+        });
+    });
+
+    $('body').on('click', '.change-status', function () {
+
+        var id = $(this).attr("data-id");
+        Swal.fire({
+            title: 'هشدار',
+            text: "مطمئنی میخای وضعیت تعرفه رو تغییر بدی ؟!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+
+                $.ajax({
+                    url: "/App/Plan/ChangeStatus?id=" + id,
+                    type: "get",
+                    dataType: "json",
+                    success: function (res) {
+                        dt_basic.ajax.reload(null, false);
+                    }
+                })
+
+            }
+        });
+    });
+
 
 
     // Delete Record
@@ -203,6 +308,45 @@ $(function () {
         $('.dataTables_filter .form-control').removeClass('form-control-sm');
         $('.dataTables_length .form-select').removeClass('form-select-sm');
     }, 300);
+
+
+    $("#updatePlan").click(function () {
+
+        Swal.fire({
+            title: 'مطمئنی ؟',
+            text: "وضعیت تمامی تعرفه ها تغییر خواهد کرد !!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+                BodyBlockUI();
+                $.ajax({
+                    url: "/App/Plan/UpdatePlans",
+                    type: "get",
+                    dataType: "json",
+                    success: function (res) {
+                        BodyUnblockUI();
+
+                        eval(res.data);
+                        if (res.status == "success") {
+                            dt_basic.ajax.reload(null, false);
+                        }
+
+
+                    }
+                })
+
+            }
+
+        });
+    });
 
 
     function Groups(selectId) {
@@ -311,7 +455,7 @@ $(function () {
             UnblockUI('.section-block');
             eval(res.data);
             if (res.status == "success") {
-                
+
                 dt_basic.ajax.reload(null, false);
                 // بستن offcanvas پس از موفقیت آمیز بودن ارسال فرم
                 var offcanvasElement = document.getElementById('Add-Or-EditPlan');
@@ -323,3 +467,14 @@ $(function () {
         });
     });
 });
+
+function SelectGroup(selectId, Ids) {
+    console.log("select shod");
+    $(selectId).val(Ids).trigger('change');
+}
+
+function showOffcanvas() {
+    var offcanvasElement = document.getElementById('Add-Or-EditPlan');
+    var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+    offcanvas.show();
+}

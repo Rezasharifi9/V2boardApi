@@ -168,13 +168,15 @@
           <Property Name="Plan_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Plan_ID_V2" Type="int" />
           <Property Name="Plan_Name" Type="nvarchar" MaxLength="250" />
-          <Property Name="Plan_Des" Type="nvarchar(max)" />
+          <Property Name="Plan_Des" Type="varchar" MaxLength="200" />
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="Status" Type="bit" />
           <Property Name="CountDayes" Type="int" />
           <Property Name="PlanVolume" Type="int" />
           <Property Name="Price" Type="int" />
-          <Property Name="Price2" Type="int" />
+          <Property Name="Group_Id" Type="int" />
+          <Property Name="Group_Name" Type="varchar" MaxLength="50" />
+          <Property Name="Speed_limit" Type="smallint" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -535,7 +537,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
@@ -925,13 +926,15 @@
           <Property Name="Plan_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Plan_ID_V2" Type="Int32" />
           <Property Name="Plan_Name" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
-          <Property Name="Plan_Des" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Plan_Des" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="Status" Type="Boolean" />
           <Property Name="CountDayes" Type="Int32" />
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="Price" Type="Int32" />
-          <Property Name="Price2" Type="Int32" />
+          <Property Name="Group_Id" Type="Int32" />
+          <Property Name="Group_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Speed_limit" Type="Int16" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
@@ -1496,7 +1499,9 @@
           <EntitySetMapping Name="tbPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
               <MappingFragment StoreEntitySet="tbPlans">
-                <ScalarProperty Name="Price2" ColumnName="Price2" />
+                <ScalarProperty Name="Speed_limit" ColumnName="Speed_limit" />
+                <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
+                <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
                 <ScalarProperty Name="Price" ColumnName="Price" />
                 <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
                 <ScalarProperty Name="CountDayes" ColumnName="CountDayes" />

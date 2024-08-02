@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Telegram.Bot;
@@ -272,21 +273,21 @@ namespace V2boardApi.Areas.App.Controllers
         #region لیست اشتراک های کاربر تلگرام
 
         [AuthorizeApp(Roles = "1,2")]
-        public ActionResult Accounts(int user_id)
+        public async Task<ActionResult> Accounts(int user_id)
         {
             var Links = RepositoryLinks.Where(p => p.FK_TelegramUserID == user_id).ToList();
             var TelUser = RepositoryTelegramUsers.GetById(user_id);
             var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
 
             MySqlEntities mysql = new MySqlEntities(Use.tbServers.ConnectionString);
-            mysql.Open();
+            await mysql.OpenAsync();
 
             List<AccountsViewModel> accounts = new List<AccountsViewModel>();
             foreach (var link in Links)
             {
 
-                var Reader = mysql.GetData("select * from v2_user where email='" + link.tbL_Email + "'");
-                if (Reader.Read())
+                var Reader = await mysql.GetDataAsync("select * from v2_user where email='" + link.tbL_Email + "'");
+                if (await Reader.ReadAsync())
                 {
                     AccountsViewModel account = new AccountsViewModel();
                     account.LinkID = link.tbLink_ID;
@@ -332,7 +333,7 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 Reader.Close();
             }
-            mysql.Close();
+            await mysql.OpenAsync();
 
 
             return Json(new {data = accounts },JsonRequestBehavior.AllowGet);
@@ -364,5 +365,20 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+                RepositoryUser.Dispose();
+                RepositoryPlans.Dispose();
+                RepositoryLogs.Dispose();
+                RepositoryServers.Dispose();
+                RepositoryLinks.Dispose();
+                RepositoryOrders.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

@@ -6,6 +6,7 @@ using Stimulsoft.Base.Drawing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Windows;
@@ -43,13 +44,14 @@ namespace V2boardApi.Areas.App.Controllers
 
         [HttpPost]
         [AuthorizeApp(Roles = "1")]
-        public ActionResult ScanPort(string IPAddress, string DatabaseName, string Username, string Password)
+        public async Task<ActionResult> ScanPort(string IPAddress, string DatabaseName, string Username, string Password)
         {
             try
             {
                 var Connection = "Server=" + IPAddress + ";User ID=" + Username + ";Password=" + Password + ";Database=" + DatabaseName + "";
                 MySqlEntities mySqlEntities = new MySqlEntities(Connection);
-                mySqlEntities.Open();
+                await mySqlEntities.OpenAsync();
+                await mySqlEntities.CloseAsync();
                 return Content("success-" + "ارتباط با سرویس MYSQL برقرار شد");
             }
             catch (Exception ex)
@@ -434,6 +436,17 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+                RepositoryUser.Dispose();
+                RepositoryServer.Dispose();
+            }
+            base.Dispose(disposing);
+        }
 
     }
 }

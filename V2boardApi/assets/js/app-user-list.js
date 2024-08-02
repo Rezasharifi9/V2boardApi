@@ -490,17 +490,11 @@ $(function () {
 
         AjaxGet('/App/Admin/Edit?id=' + id).then(res => {
 
-            eval(res.data);
             if (res.status == "success") {
-
-                console.log(res.data);
                 var data = res.data;
                 for (var key in data) {
                     if (data.hasOwnProperty(key)) {
                         var input = $('input[name=' + key + ']');
-
-
-                        console.log(data[key]);
                         if (Array.isArray(data[key])) {
 
                             console.log("1111");
@@ -518,9 +512,6 @@ $(function () {
             }
 
         });
-
-
-
     });
 
     function showOffcanvas() {

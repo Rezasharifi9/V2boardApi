@@ -66,5 +66,16 @@ namespace V2boardApi.Areas.App.Controllers
 
             return View();
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+                RepositoryDepositLog.Dispose();
+
+            }
+            base.Dispose(disposing);
+        }
     }
 }

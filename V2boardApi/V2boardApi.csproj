@@ -1589,8 +1589,6 @@
     <Content Include="Areas\App\Views\Dashboard\Index.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\_EditWallet.cshtml" />
     <Content Include="Areas\App\Views\Plan\Index.cshtml" />
-    <Content Include="Areas\App\Views\Plan\_PartialGetAllPlans.cshtml" />
-    <Content Include="Areas\App\Views\Plan\_PartialEdit.cshtml" />
     <Content Include="Areas\App\Views\Error\Error404.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\Orders.cshtml" />
     <Content Include="Areas\App\Views\Orders\Index.cshtml" />

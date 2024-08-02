@@ -243,7 +243,7 @@ namespace V2boardApi.Areas.api.Controllers
         #region تاریخچه مصرف کاربر
 
         [Authorize]
-        public IHttpActionResult GetTrafficUsage(int userId)
+        public async Task<IHttpActionResult> GetTrafficUsage(int userId)
         {
             var Token = Request.Headers.Authorization;
             var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).First();
@@ -252,9 +252,9 @@ namespace V2boardApi.Areas.api.Controllers
             {
 
                 MySqlEntities mysql = new MySqlEntities(User.tbServers.ConnectionString);
-                mysql.Open();
+                await mysql.OpenAsync();
 
-                var reader = mysql.GetData("select * from v2_stat_user where user_id=" + userId);
+                var reader = await mysql.GetDataAsync("select * from v2_stat_user where user_id=" + userId);
                 List<UsagesModel> Useages = new List<UsagesModel>();
                 while (reader.Read())
                 {

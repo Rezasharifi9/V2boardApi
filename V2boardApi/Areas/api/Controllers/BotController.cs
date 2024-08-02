@@ -97,7 +97,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var Users = await tbTelegramUserRepository.WhereAsync(p => p.Tel_RobotID == RobotIDforTimer);
                         var tbOrdersRepository = new Repository<tbOrders>(db);
 
-                        MySqlEntities2 mySql = new MySqlEntities2(Server.ConnectionString);
+                        MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
                         await mySql.OpenAsync();
                         foreach (var item in Users.ToList())
                         {
@@ -129,8 +129,6 @@ namespace V2boardApi.Areas.api.Controllers
                                                                 var reader = await mySql.GetDataAsync("select u,d,transfer_enable,banned,expired_at from v2_user where email='" + link.tbL_Email + "'");
                                                                 while (await reader.ReadAsync())
                                                                 {
-
-
                                                                     var bannd = reader.GetBoolean("banned");
                                                                     if (!bannd)
                                                                     {
@@ -198,7 +196,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 logger.Error(ex);
                             }
                         }
-                        await mySql.CloseAysnc();
+                        await mySql.CloseAsync().ConfigureAwait(false);
                     }
                 }
 
@@ -226,7 +224,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                 foreach (var item in botsetting)
                 {
-                    using (MySqlEntities2 mySql = new MySqlEntities2(Server.ConnectionString))
+                    using (MySqlEntities mySql = new MySqlEntities(Server.ConnectionString))
                     {
                         await mySql.OpenAsync().ConfigureAwait(false);
 
@@ -245,7 +243,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 reader.Close();
                             }
                         }
-                        await mySql.CloseAysnc().ConfigureAwait(false);
+                        await mySql.CloseAsync().ConfigureAwait(false);
                     }
                 }
             }
@@ -270,7 +268,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
                         var tbLinksRepository = new Repository<tbLinks>(db);
                         var tbUsersRepository = new Repository<tbUsers>(db);
-                        MySqlEntities2 mySql = new MySqlEntities2(Server.ConnectionString);
+                        MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
 
                         await mySql.OpenAsync();
                         foreach (var item in Order)
@@ -341,7 +339,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                         }
 
-                        await mySql.CloseAysnc();
+                        await mySql.CloseAsync();
                     }
                 }
             }
@@ -1070,7 +1068,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         if (UserAcc.Tel_GetedTestAccount == false || UserAcc.Tel_GetedTestAccount == null)
                                         {
-                                            MySqlEntities2 mySql = new MySqlEntities2(BotSettings.tbUsers.tbServers.ConnectionString);
+                                            MySqlEntities mySql = new MySqlEntities(BotSettings.tbUsers.tbServers.ConnectionString);
                                             await mySql.OpenAsync();
                                             var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =" + Server.DefaultPlanIdInV2board);
                                             long tran = 0;
@@ -1116,7 +1114,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("<code>" + SubLink + "</code>");
                                             str.AppendLine("");
                                             await RealUser.SetGetedAccountTest(User.Tel_UniqUserID, db, botName);
-                                            await mySql.CloseAysnc();
+                                            await mySql.CloseAsync();
 
                                             str.AppendLine("");
                                             str.AppendLine("🆔 @" + BotSettings.Bot_ID);
@@ -1151,7 +1149,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("🔸 با خرید یک سرویس به چه لوکیشن های میتونم وصل بشم؟\r\n🔹 به همه لوکیشن های موجود در لیست زیر میتوانید متصل شوید");
                                         str.AppendLine("");
                                         str.AppendLine("لیست کامل سرور ها :");
-                                        MySqlEntities2 mySql = new MySqlEntities2(Server.ConnectionString);
+                                        MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
                                         await mySql.OpenAsync();
                                         var reader = await mySql.GetDataAsync("SELECT * FROM `v2_server_vmess` where `show` = 1 ORDER by sort");
                                         var Counter = 1;
@@ -1161,7 +1159,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             Counter++;
                                         }
                                         reader.Close();
-                                        await mySql.CloseAysnc();
+                                        await mySql.CloseAsync();
                                         str.AppendLine("");
                                         str.AppendLine("💬 اگر سوالی داشتید که پاسخ آن را نیافتید با پشتیبانی در ارتباط باشید.");
                                         str.AppendLine("");
@@ -1464,7 +1462,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         if (Link != null)
                                         {
 
-                                            MySqlEntities2 mySql = new MySqlEntities2(Link.tbServers.ConnectionString);
+                                            MySqlEntities mySql = new MySqlEntities(Link.tbServers.ConnectionString);
                                             await mySql.OpenAsync();
                                             var reader = await mySql.GetDataAsync("select * from v2_user where email='" + Email + "'");
                                             StringBuilder st = new StringBuilder();
@@ -1576,7 +1574,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             }
                                             reader.Close();
-                                            await mySql.CloseAysnc();
+                                            await mySql.CloseAsync();
                                             return;
                                         }
 
@@ -1598,10 +1596,10 @@ namespace V2boardApi.Areas.api.Controllers
                                             if (Link != null)
                                             {
                                                 MySqlEntities mySql = new MySqlEntities(Link.tbServers.ConnectionString);
-                                                mySql.Open();
+                                                await mySql.OpenAsync();
                                                 string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
                                                 var query = "update v2_user set token = '" + token + "',uuid='" + Guid.NewGuid() + "' where email='" + Link.tbL_Email + "'";
-                                                var reader = mySql.GetData(query);
+                                                var reader = await mySql.GetDataAsync(query);
 
                                                 StringBuilder st = new StringBuilder();
                                                 st.AppendLine("📈 <strong>لینک جدید اشتراک شما : </strong>");
@@ -1630,7 +1628,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
                                                 var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
                                                 reader.Close();
-                                                mySql.Close();
+                                                await mySql.OpenAsync();
                                                 var res = await bot.Client.SendPhotoAsync(
                                                      chatId: callbackQuery.From.Id,
                                                      photo: image,
@@ -1684,7 +1682,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             if (Link != null)
                                             {
-                                                MySqlEntities2 mySqlEntities = new MySqlEntities2(Link.tbServers.ConnectionString);
+                                                MySqlEntities mySqlEntities = new MySqlEntities(Link.tbServers.ConnectionString);
                                                 await mySqlEntities.OpenAsync();
 
                                                 var unixTtime = Utility.ConvertDatetimeToSecond(DateTime.Now.AddDays(-30));
@@ -1734,7 +1732,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
                                                 await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-                                                await mySqlEntities.CloseAysnc();
+                                                await mySqlEntities.CloseAsync();
                                             }
 
 
@@ -2073,7 +2071,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             var Link = await tbLinksRepository.FirstOrDefaultAsync(p => p.tbL_Email == AccountName);
                                             if (Link != null)
                                             {
-                                                MySqlEntities2 mySql = new MySqlEntities2(Server.ConnectionString);
+                                                MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
 
                                                 await mySql.OpenAsync();
 
@@ -2130,7 +2128,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                     var reader = await mySql.GetDataAsync(Query);
                                                     var result = await reader.ReadAsync();
                                                     reader.Close();
-                                                    await mySql.CloseAysnc();
+                                                    await mySql.CloseAsync();
 
 
                                                     var InlineKeyboardMarkup = Keyboards.GetHomeButton();
@@ -2289,7 +2287,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                 string exp = DateTime.Now.AddDays((int)(Order.Month * 30)).ConvertDatetimeToSecond().ToString();
 
-                                                MySqlEntities2 mySql = new MySqlEntities2(Server.ConnectionString);
+                                                MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
                                                 await mySql.OpenAsync();
 
                                                 var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =" + Server.DefaultPlanIdInV2board);
@@ -2331,7 +2329,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 tbLinks.FK_TelegramUserID = UserAcc.Tel_UserID;
                                                 tbLinks.tbL_Warning = false;
                                                 tbLinks.tb_AutoRenew = false;
-                                                await mySql.CloseAysnc();
+                                                await mySql.CloseAsync();
 
 
                                                 var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID && p.tbUsers.Username == botName).FirstOrDefault();
@@ -2466,7 +2464,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             {
                                                 tbLinksRepository.Delete(Link);
                                                 await tbLinksRepository.SaveChangesAsync();
-                                                MySqlEntities2 mySql = new MySqlEntities2(Server.ConnectionString);
+                                                MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
                                                 await mySql.OpenAsync();
                                                 await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "✅ اشتراک با موفقیت حذف شد", true);
                                                 await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
@@ -2474,7 +2472,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, "🏘 به منو اصلی بازگشتید", replyMarkup: kyes, parseMode: ParseMode.Html);
                                                 var Reader = await mySql.GetDataAsync("delete from v2_user where email ='" + callback[1] + "'");
                                                 await Reader.ReadAsync();
-                                                await mySql.CloseAysnc();
+                                                await mySql.CloseAsync();
                                                 return;
 
 
@@ -2561,7 +2559,7 @@ namespace V2boardApi.Areas.api.Controllers
 
         public async Task<bool> EndedVolumeOrDate(string username)
         {
-            MySqlEntities2 mysql = new MySqlEntities2(Server.ConnectionString);
+            MySqlEntities mysql = new MySqlEntities(Server.ConnectionString);
             await mysql.OpenAsync();
             var reader = await mysql.GetDataAsync("select * from v2_user where email = '" + username + "'");
             if (await reader.ReadAsync())
@@ -2570,7 +2568,7 @@ namespace V2boardApi.Areas.api.Controllers
                 if (vol <= 0)
                 {
                     reader.Close();
-                    await mysql.CloseAysnc();
+                    await mysql.CloseAsync();
                     return true;
                 }
                 var ExpireTime = reader.GetBodyDefinition("expired_at");
@@ -2580,7 +2578,7 @@ namespace V2boardApi.Areas.api.Controllers
                     if (ex <= DateTime.Now)
                     {
                         reader.Close();
-                        await mysql.CloseAysnc();
+                        await mysql.CloseAsync();
                         return true;
                     }
 
@@ -2622,7 +2620,14 @@ namespace V2boardApi.Areas.api.Controllers
             }
         }
 
-
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
 
     }
 }

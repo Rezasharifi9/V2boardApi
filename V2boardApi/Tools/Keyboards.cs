@@ -211,33 +211,33 @@ namespace V2boardBot.Models
             return keyboard;
         }
 
-        public static ReplyKeyboardMarkup GetPlansKeyboardForAdmin(string username, Repository<tbLinkUserAndPlans> Rep)
-        {
-            var Plans = Rep.Where(p => p.tbUsers.Username == username && p.tbPlans.Plan_Des != null).OrderBy(p => p.tbPlans.Price2).ToList();
+        //public static ReplyKeyboardMarkup GetPlansKeyboardForAdmin(string username, Repository<tbLinkUserAndPlans> Rep)
+        //{
+        //    var Plans = Rep.Where(p => p.tbUsers.Username == username && p.tbPlans.Plan_Des != null).OrderBy(p => p.tbPlans.Price2).ToList();
 
-            List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
-            int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
+        //    List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
+        //    int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
 
-            for (int i = 0; i < Plans.Count; i += itemsPerRow)
-            {
-                List<KeyboardButton> row = new List<KeyboardButton>();
+        //    for (int i = 0; i < Plans.Count; i += itemsPerRow)
+        //    {
+        //        List<KeyboardButton> row = new List<KeyboardButton>();
 
-                for (int j = i; j < i + itemsPerRow && j < Plans.Count; j++)
-                {
-                    row.Add(new KeyboardButton(Plans[j].tbPlans.Plan_Des));
-                }
+        //        for (int j = i; j < i + itemsPerRow && j < Plans.Count; j++)
+        //        {
+        //            row.Add(new KeyboardButton(Plans[j].tbPlans.Plan_Des));
+        //        }
 
-                inlineKeyboards.Add(row);
-            }
-            List<KeyboardButton> row1 = new List<KeyboardButton>();
-            row1.Add(new KeyboardButton("⬅️ برگشت به صفحه اصلی"));
-            inlineKeyboards.Add(row1);
-            var keyboard = new ReplyKeyboardMarkup(inlineKeyboards);
-            keyboard.IsPersistent = true;
-            keyboard.ResizeKeyboard = true;
-            keyboard.OneTimeKeyboard = false;
-            return keyboard;
-        }
+        //        inlineKeyboards.Add(row);
+        //    }
+        //    List<KeyboardButton> row1 = new List<KeyboardButton>();
+        //    row1.Add(new KeyboardButton("⬅️ برگشت به صفحه اصلی"));
+        //    inlineKeyboards.Add(row1);
+        //    var keyboard = new ReplyKeyboardMarkup(inlineKeyboards);
+        //    keyboard.IsPersistent = true;
+        //    keyboard.ResizeKeyboard = true;
+        //    keyboard.OneTimeKeyboard = false;
+        //    return keyboard;
+        //}
 
 
         public static InlineKeyboardMarkup GetPlansKeyboard(string linkId, List<tbPlans> plans)

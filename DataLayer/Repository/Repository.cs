@@ -1,26 +1,24 @@
-﻿using System;
+﻿using DataLayer.DomainModel;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.Remoting.Contexts;
-using System.Text;
 using System.Threading.Tasks;
-using DataLayer;
-using DataLayer.DomainModel;
 
 namespace DataLayer.Repository
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<T> : IRepository<T>, IDisposable where T : class
     {
         private Entities db;
         public DbSet<T> table = null;
+
         public Repository(Entities _db)
         {
             db = _db;
             table = db.Set<T>();
         }
+
         public Repository()
         {
             db = new Entities();
@@ -39,13 +37,14 @@ namespace DataLayer.Repository
 
         public async Task<List<T>> GetAllAsync()
         {
-            return await table.ToListAsync();
+            return await table.ToListAsync().ConfigureAwait(false);
         }
 
         public T GetById(object id)
         {
             return table.Find(id);
         }
+
         public void Insert(T obj)
         {
             table.Add(obj);
@@ -59,13 +58,12 @@ namespace DataLayer.Repository
 
         public bool Save()
         {
-
             return Convert.ToBoolean(db.SaveChanges());
         }
 
         public async Task<int> SaveChangesAsync()
         {
-            return await db.SaveChangesAsync();
+            return await db.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public void Delete(int id)
@@ -81,12 +79,17 @@ namespace DataLayer.Repository
 
         public async Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate)
         {
-            return await table.Where(predicate).ToListAsync();
-        }
-        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
-        {
-            return await table.Where(predicate).FirstOrDefaultAsync();
+            return await table.Where(predicate).ToListAsync().ConfigureAwait(false);
         }
 
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await table.Where(predicate).FirstOrDefaultAsync().ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            db.Dispose();
+        }
     }
 }

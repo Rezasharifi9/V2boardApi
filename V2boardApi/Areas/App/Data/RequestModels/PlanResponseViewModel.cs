@@ -11,7 +11,9 @@ namespace V2boardApi.Areas.App.Data.RequestModels
         public string PlanName { get; set; }
         public int DayesCount { get; set; }
         public int Traffic { get; set; }
-        public int Price { get; set; }
+        public string Price { get; set; }
         public int Status { get; set; }
+        public string SpeedLimit { get; set; }
+        public string Group_Name { get; set; }
     }
 }

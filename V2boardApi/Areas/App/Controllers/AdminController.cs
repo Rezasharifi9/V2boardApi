@@ -575,174 +575,6 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region حذف اکانت عمده فروش
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult DeleteAccountLog(int id)
-        {
-            try
-            {
-                var Log = RepositoryLogs.Where(p => p.log_ID == id).FirstOrDefault();
-                if (Log != null)
-                {
-                    MySqlEntities mySqlEntities = new MySqlEntities(Log.tbLinkUserAndPlans.tbUsers.tbServers.ConnectionString);
-                    mySqlEntities.Open();
-                    var Ended = false;
-                    var Reader2 = mySqlEntities.GetData("select * from v2_user where email='" + Log.FK_NameUser_ID + "@" + Log.tbLinkUserAndPlans.tbUsers.Username + "'");
-                    if (Reader2.Read())
-                    {
-                        var d = Reader2.GetDouble("d");
-                        var u = Reader2.GetDouble("u");
-                        var totalUsed = Reader2.GetDouble("transfer_enable");
-
-                        var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
-                        var exp2 = Reader2.GetBodyDefinition("expired_at");
-
-                        if (!string.IsNullOrWhiteSpace(exp2))
-                        {
-                            var expireTime = DateTime.Now;
-                            var ExpireDate = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp2));
-                            if (ExpireDate <= expireTime)
-                            {
-                                Ended = true;
-                            }
-                        }
-                        if (total <= 0)
-                        {
-                            Ended = true;
-                        }
-                    }
-                    Reader2.Close();
-
-
-                    var Reader = mySqlEntities.GetData("delete from v2_user where email='" + Log.FK_NameUser_ID + "@" + Log.tbLinkUserAndPlans.tbUsers.Username + "'");
-                    if (!Ended)
-                    {
-                        Log.tbLinkUserAndPlans.tbUsers.Wallet -= Log.tbLinkUserAndPlans.tbPlans.Price;
-                    }
-
-                    var Users = RepositoryUser.table.Where(p => p.FK_Server_ID == Log.tbLinkUserAndPlans.tbUsers.FK_Server_ID).OrderByDescending(p => p.User_ID).ToList();
-                    RepositoryLogs.Delete(Log.log_ID);
-                    RepositoryLogs.Save();
-                    logger.Info("حذف اشتراک با موفقیت انجام شد");
-                    return PartialView("_PartialGetAllUsers", Users);
-                }
-                return Content("2");
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "در حذف اشتراک با خطایی مواجه شدیم !");
-                return Content("2");
-            }
-
-        }
-        #endregion
-
-        #region مربوط به پرداخت کاربران عمده
-
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult Pay(string TOKEN)
-        {
-            if (!string.IsNullOrEmpty(TOKEN))
-            {
-                var User = RepositoryUser.Where(p => p.Token == TOKEN && p.Status == true).FirstOrDefault();
-                if (User != null)
-                {
-                    var wallet = User.Wallet * 10;
-                    if (!User.tbUserFactors.Where(p => p.tbUf_Value == wallet && p.IsPayed == false).Any() && User.Wallet != 0)
-                    {
-                        tbUserFactors userFactors = new tbUserFactors();
-                        userFactors.tbUf_Value = wallet;
-                        userFactors.tbUf_CreateTime = DateTime.Now;
-                        userFactors.IsPayed = false;
-                        User.tbUserFactors.Add(userFactors);
-                        RepositoryUser.Save();
-
-                        var Admin = RepositoryUser.Where(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
-
-                        if (Admin != null)
-                        {
-                            ViewBag.CardNumber = Admin.Card_Number;
-                            ViewBag.FullName = Admin.FirstName + " " + Admin.LastName;
-                        }
-                        ViewBag.wallet = wallet;
-                        return View(User);
-                    }
-                    else
-                    {
-                        var Admin = RepositoryUser.Where(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
-
-                        if (Admin != null)
-                        {
-                            ViewBag.CardNumber = Admin.Card_Number;
-                            ViewBag.FullName = Admin.FirstName + " " + Admin.LastName;
-                        }
-                        ViewBag.wallet = wallet;
-                        return View(User);
-                    }
-                }
-                else
-                {
-                    return RedirectToAction("Error404", "Error");
-                }
-            }
-            else
-            {
-                return RedirectToAction("Error404", "Error");
-            }
-        }
-
-        [System.Web.Mvc.HttpPost]
-        [System.Web.Mvc.Authorize]
-        public ActionResult Pay(tbUsers tbUser)
-        {
-            try
-            {
-                var User = RepositoryUser.Where(p => p.Token == tbUser.Token && p.Status == true).FirstOrDefault();
-                if (User != null)
-                {
-                    var wallet = (User.Wallet * 10);
-                    ViewBag.wallet = wallet;
-                    var Admin = RepositoryUser.Where(p => p.Role == 1 && p.FK_Server_ID == User.FK_Server_ID).FirstOrDefault();
-
-                    if (Admin != null)
-                    {
-                        ViewBag.CardNumber = Admin.Card_Number;
-                        ViewBag.FullName = Admin.FirstName + " " + Admin.LastName;
-                    }
-
-                    var Factor = User.tbUserFactors.Where(p => p.tbUf_Value == wallet && p.IsPayed == true).Any();
-                    if (Factor)
-                    {
-                        if (wallet == tbUser.Wallet)
-                        {
-                            User.Wallet = 0;
-                            RepositoryUser.Save();
-                            logger.Info("کاربر با موفقیت صورتحساب خود را پرداخت کرد");
-                            TempData["MessageSuccess"] = "صورتحساب با موفقیت پرداخت شد";
-                            return View(tbUser);
-                        }
-                    }
-                    else
-                    {
-                        TempData["MessageWarning"] = "شما هنوز واریزی انجام نداده اید";
-                        return View(tbUser);
-                    }
-
-                    TempData["MessageError"] = "صورتحساب قبلا پرداخت شده";
-                    return View(tbUser);
-                }
-                return HttpNotFound();
-            }
-            catch (Exception ex)
-            {
-
-                logger.Error(ex, "پرداخت صورتحساب کاربر با خطا مواجه شد");
-                return HttpNotFound();
-            }
-        }
-
-        #endregion
-
         #region شارژ کیف پول کاربر
         [AuthorizeApp(Roles = "1")]
 
@@ -930,6 +762,23 @@ namespace V2boardApi.Areas.App.Controllers
 
 
 
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+                RepositoryUser.Dispose();
+                RepositoryPlans.Dispose();
+                RepositoryLogs.Dispose();
+                RepositoryServer.Dispose();
+                RepositoryTelegramUser.Dispose();
+                RepositoryDepositLog.Dispose();
+                RepositoryUserFactors.Dispose();
+                RepositoryUserPlanLinks.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -10,56 +10,57 @@ using System.Threading.Tasks;
 
 namespace DataLayer.DomainModel
 {
-    public class MySqlEntities
-    {
-        private string _connection;
-        private MySqlConnection SqlConnection;
-        private MySqlDataReader SqlDataReader;
+    //public class MySqlEntities
+    //{
+    //    private string _connection;
+    //    private MySqlConnection SqlConnection;
+    //    private MySqlDataReader SqlDataReader;
 
-        public MySqlEntities(string ConnectionString)
-        {
-            try
-            {
-                _connection = ConnectionString;
-                SqlConnection = new MySqlConnection(_connection);
+    //    public MySqlEntities(string ConnectionString)
+    //    {
+    //        try
+    //        {
+    //            _connection = ConnectionString;
+    //            SqlConnection = new MySqlConnection(_connection);
 
-            }
-            catch (Exception)
-            {
+    //        }
+    //        catch (Exception)
+    //        {
 
-            }
-        }
+    //        }
+    //    }
 
-        public void Open()
-        {
-            SqlConnection.Open();
+    //    public void Open()
+    //    {
+    //        SqlConnection.Open();
 
-        }
+    //    }
 
-        public MySqlDataReader GetData(string query)
-        {
-            using (MySqlCommand sqlCommand = new MySqlCommand(query, SqlConnection))
-            {
-                SqlDataReader = sqlCommand.ExecuteReader();
-                return SqlDataReader;
-            }
-        }
+    //    public MySqlDataReader GetData(string query)
+    //    {
+    //        using (MySqlCommand sqlCommand = new MySqlCommand(query, SqlConnection))
+    //        {
+    //            SqlDataReader = sqlCommand.ExecuteReader();
+    //            return SqlDataReader;
+    //        }
+    //    }
 
-        public void Close()
-        {
-            SqlConnection.Close();
-            MySqlConnection.ClearPool(SqlConnection);
-            SqlConnection.Dispose();
-        }
-    }
+    //    public void Close()
+    //    {
+    //        SqlConnection.Close();
+    //        MySqlConnection.ClearPool(SqlConnection);
+    //        SqlConnection.Dispose();
+    //    }
+    //}
 
-    public class MySqlEntities2 : IDisposable
+    public class MySqlEntities : IDisposable
     {
         private readonly string _connection;
         private LinkedList<MySqlConnection> connectionPool = new LinkedList<MySqlConnection>();
         public MySqlConnection MySqlConnection { get; private set; }
+        private bool disposed = false; // برای پیگیری وضعیت Dispose
 
-        public MySqlEntities2(string connectionString)
+        public MySqlEntities(string connectionString)
         {
             _connection = connectionString;
             MySqlConnection = new MySqlConnection(_connection);
@@ -67,7 +68,7 @@ namespace DataLayer.DomainModel
 
         public async Task OpenAsync()
         {
-            await MySqlConnection.OpenAsync();
+            await MySqlConnection.OpenAsync().ConfigureAwait(false);
             connectionPool.AddLast(MySqlConnection);
         }
 
@@ -75,86 +76,63 @@ namespace DataLayer.DomainModel
         {
             using (var sqlCommand = new MySqlCommand(query, MySqlConnection))
             {
-                var reader = await sqlCommand.ExecuteReaderAsync();
+                var reader = await sqlCommand.ExecuteReaderAsync().ConfigureAwait(false);
                 return (MySqlDataReader)reader;
             }
         }
 
-        public void Close()
+        public async Task CloseAsync()
         {
-            if (MySqlConnection.State == System.Data.ConnectionState.Open)
+            if (MySqlConnection != null && MySqlConnection.State == System.Data.ConnectionState.Open)
             {
-                MySqlConnection.Close();
+                await MySqlConnection.CloseAsync().ConfigureAwait(false);
             }
-            MySqlConnection.ClearPool(MySqlConnection);
-            MySqlConnection.Dispose();
+
+            if (connectionPool.Count > 0)
+            {
+                connectionPool.Remove(MySqlConnection);
+                await MySqlConnection.ClearPoolAsync(MySqlConnection).ConfigureAwait(false);
+                
+            }
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        public async Task CloseAysnc()
+        protected virtual void Dispose(bool disposing)
         {
-
-            if (MySqlConnection.State == System.Data.ConnectionState.Open)
+            if (!disposed)
             {
-                await MySqlConnection.CloseAsync();
-                MySqlConnection.ClearPool(MySqlConnection);
+                if (disposing)
+                {
+                    // آزادسازی منابع مدیریتی
+                    if (MySqlConnection != null)
+                    {
+                        MySqlConnection.Dispose();
+                        MySqlConnection = null;
+                    }
+
+                    if (connectionPool != null)
+                    {
+                        foreach (var connection in connectionPool)
+                        {
+                            connection.Dispose();
+                        }
+                        connectionPool.Clear();
+                        connectionPool = null;
+                    }
+                }
+
+                // آزادسازی منابع غیرمدیریتی (در صورت وجود)
+                disposed = true;
             }
-
-            connectionPool.Remove(MySqlConnection);
-
         }
 
         public void Dispose()
         {
-            MySqlConnection.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
-
-    public sealed class MySqlDatabase
-    {
-        private static readonly Lazy<MySqlDatabase> lazy = new Lazy<MySqlDatabase>(() => new MySqlDatabase());
-        public static MySqlDatabase Instance => lazy.Value;
-
-        private string _connectionString;
-        private MySqlConnection _connection;
-
-        private MySqlDatabase()
-        {
-        }
-
-        public void Initialize(string connectionString)
-        {
-            _connectionString = connectionString;
-            _connection = new MySqlConnection(_connectionString);
-        }
-
-        public MySqlConnection Connection
-        {
-            get
-            {
-                if (_connection.State == System.Data.ConnectionState.Closed)
-                {
-                    _connection.Open();
-                }
-                return _connection;
-            }
-        }
-
-        public void CloseConnection()
-        {
-            if (_connection.State != System.Data.ConnectionState.Closed)
-            {
-                _connection.Close();
-            }
-        }
-
-        public async Task<MySqlDataReader> ExecuteQueryAsync(string query)
-        {
-            using (var sqlCommand = new MySqlCommand(query, Connection))
-            {
-                return (MySqlDataReader)await sqlCommand.ExecuteReaderAsync();
-            }
-        }
-    }
-
 
 }

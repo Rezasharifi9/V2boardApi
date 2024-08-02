@@ -56,5 +56,16 @@ namespace V2boardApi.Areas.App.Controllers
 
             return Json(new { data = orders }, JsonRequestBehavior.AllowGet);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _db.Dispose();
+                UsersRepository.Dispose();
+                OrdersRepository.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }
