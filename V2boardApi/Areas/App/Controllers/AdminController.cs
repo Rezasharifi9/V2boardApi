@@ -183,7 +183,7 @@ namespace V2boardApi.Areas.App.Controllers
             user.userFullname = us.FullName;
             user.userTelegramid = us.TelegramID;
             user.userUsername = us.Username;
-            user.userPlan = us.tbLinkUserAndPlans.Select(p => p.L_FK_P_ID.Value).ToList();
+            user.userPlan = us.tbLinkUserAndPlans.Where(s => s.tbPlans.Status == true).Select(p => p.L_FK_P_ID.Value).ToList();
             var data = user.ToDictionary();
 
 
@@ -768,24 +768,36 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                         reader.Close();
                     }
-                    string userIdsJoined = string.Join(",", Users);
-                    var Query = "SELECT SUM(v2_stat_user.u + v2_stat_user.d) as Used FROM `v2_stat_user` join v2_user on v2_user.id = v2_stat_user.user_id where v2_stat_user.user_id IN (" + userIdsJoined + ")";
-                    var reader2 = await mySql.GetDataAsync(Query);
-                    await reader2.ReadAsync();
-                    var Data = reader2.GetBodyDefinition("Used");
-                    if (Data != "")
+
+                    var reader3 = await mySql.GetDataAsync("SELECT id FROM `v2_user` WHERE email like '%@" + user.Username + "'");
+                    while (await reader3.ReadAsync().ConfigureAwait(false))
                     {
-                        used += Convert.ToInt64(Data);
+                        Users.Add(reader3.GetInt32("id"));
+                    }
+                    reader3.Close();
+
+                    if (Users.Count > 0)
+                    {
+                        string userIdsJoined = string.Join(",", Users);
+                        var Query = "SELECT SUM(v2_stat_user.u + v2_stat_user.d) as Used FROM `v2_stat_user` join v2_user on v2_user.id = v2_stat_user.user_id where v2_stat_user.user_id IN (" + userIdsJoined + ")";
+                        var reader2 = await mySql.GetDataAsync(Query);
+                        await reader2.ReadAsync();
+                        var Data = reader2.GetBodyDefinition("Used");
+                        if (Data != "")
+                        {
+                            used += Convert.ToInt64(Data);
+                        }
+                        reader2.Close();
                     }
 
-                    reader2.Close();
+
 
 
                     await mySql.CloseAsync();
 
                     var UserPerGig = Utility.ConvertByteToGB(used);
-                    
-                    if(user.Role.Value == 1)
+
+                    if (user.Role.Value == 1)
                     {
                         return Json(new { status = "success", data = new { UserPerGig = Math.Round(UserPerGig, 2).ConvertToMony() } }, JsonRequestBehavior.AllowGet);
                     }
