@@ -228,10 +228,10 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 ViewBag.IsRenew = User.IsRenew;
                             }
-
+                            await sqlEntities.CloseAsync();
                             return View(getUserData);
                         }
-
+                        await sqlEntities.CloseAsync();
                     }
 
 

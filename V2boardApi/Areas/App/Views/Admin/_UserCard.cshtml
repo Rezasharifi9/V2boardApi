@@ -22,6 +22,10 @@
                     {
                         <span class="badge bg-label-secondary mt-1">نماینده</span>
                     }
+                    else if (Model.Role == 3)
+                    {
+                        <span class="badge bg-label-secondary mt-1">نماینده کل</span>
+                    }
 
                 </div>
             </div>
@@ -74,7 +78,11 @@
                     {
                         <span>ادمین سیستم</span>
                     }
-                    else
+                    else if (Model.Role == 3)
+                    {
+                        <span>نماینده کل</span>
+                    }
+                    else if (Model.Role == 2)
                     {
                         <span>نماینده</span>
                     }

@@ -447,7 +447,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                 }
 
-
+                await mySqlEntities.CloseAsync();
                 RepositoryServer.Save();
                 RepositoryPlans.Save();
                 logger.Info("بروزرسانی تعرفه ها با موفقیت انجام شد");

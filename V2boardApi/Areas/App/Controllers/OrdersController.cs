@@ -12,7 +12,7 @@ using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [AuthorizeApp(Roles = "1,2")]
+    [AuthorizeApp(Roles = "1,2,3")]
     [LogActionFilter]
     public class OrdersController : Controller
     {

@@ -11,7 +11,7 @@ namespace V2boardApi.Areas.App.Data.PlanViewModels
         public int? id { get; set; }
 
         [Required(ErrorMessage = "نام تعرفه را وارد کنید")]
-        [StringLength(20, ErrorMessage = "نام تعرفه حداکثر می تواند 20 کاراکتر باشد")]
+        [StringLength(100, ErrorMessage = "نام تعرفه حداکثر می تواند 100 کاراکتر باشد")]
         public string planName { get; set; }
 
         [Required(ErrorMessage = "ترافیک را وارد کنید")]

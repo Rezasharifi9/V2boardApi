@@ -144,7 +144,7 @@ namespace V2boardApi.Tools
         public static double ConvertByteToGB(double Byte)
         {
             
-            var result = ((Byte / 1024) / 1024) / 1024;
+            var result = ((Byte / 1000) / 1000) / 1000;
 
             return result;
         }
@@ -152,19 +152,19 @@ namespace V2boardApi.Tools
         public static long ConvertGBToByte(long Byte)
         {
 
-            var result = ((Byte * 1024) * 1024) * 1024;
+            var result = ((Byte * 1000) * 1000) * 1000;
 
             return result;
         }
         public static double ConvertByteToMG(double Byte)
         {
-            var result = ((Byte / 1024) / 1024);
+            var result = ((Byte / 1000) / 1000);
 
             return result;
         }
         public static double ConvertGBToMG(double GB)
         {
-            var result = ((GB * 1024) * 1024);
+            var result = ((GB * 1000) * 1000);
 
             return result;
         }
@@ -270,12 +270,12 @@ namespace V2boardApi.Tools
             string dataType = "GB";
 
             // Convert Byte To GB
-            float data = (float)Math.Round((((volume / 1024) / 1024) / 1024), 2);
+            float data = (float)Math.Round((((volume / 1000) / 1000) / 1000), 2);
 
             // If Data Is MB True Convert To Mb
             if (data < 1)
             {
-                data = (float)(data * 1024);
+                data = (float)(data * 1000);
                 dataType = "MB";
             }
 
@@ -286,7 +286,7 @@ namespace V2boardApi.Tools
         public static long ConvertGBToByte(this int GigaByte)
         {
 
-            var result = ((GigaByte * 1024) * 1024) * 1024;
+            var result = ((GigaByte * 1000) * 1000) * 1000;
 
             return result;
         }
@@ -294,7 +294,7 @@ namespace V2boardApi.Tools
         public static long ConvertGBToByte(this double GigaByte)
         {
 
-            var result = ((GigaByte * 1024) * 1024) * 1024;
+            var result = ((GigaByte * 1000) * 1000) * 1000;
 
             return Convert.ToInt64(result);
         }

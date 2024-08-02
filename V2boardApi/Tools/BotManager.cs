@@ -107,12 +107,12 @@ namespace V2boardApi.Tools
             //}
 
             //var url = method + "://" + HttpContext.Current.Request.Url.Authority;
-            //var url = "https://4540-2a01-4f8-c010-93e-00-1.ngrok-free.app";
+            //var url = "https://5430-2001-19f0-6801-1969-5400-4ff-fefb-8867.ngrok-free.app";
 
 
             var url = "https://";
             var Server = HttpRuntime.Cache["Server"] as tbServers;
-            if(Server != null)
+            if (Server != null)
             {
                 url += Server.BotbaseAddress;
             }
@@ -124,7 +124,7 @@ namespace V2boardApi.Tools
 
             var botClient = bot.Client;
 
-            await botClient.DeleteWebhookAsync(true);
+            await botClient.DeleteWebhookAsync(true).ConfigureAwait(false);
 
             var webhookUrl = $"{url}/Bot/Update/?botName={name}";
             await botClient.SetWebhookAsync(webhookUrl);

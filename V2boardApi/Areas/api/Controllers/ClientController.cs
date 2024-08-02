@@ -130,10 +130,10 @@ namespace V2boardApi.Areas.api.Controllers
                                 var base64 = link1 + "\n" + link2 + "\n" + link3;
 
                                 reader2.Close();
-                                await sqlEntities.OpenAsync();
+                                await sqlEntities.CloseAsync();
                                 return Content(base64, "text/html", Encoding.UTF8);
                             }
-                            await sqlEntities.OpenAsync();
+                            await sqlEntities.CloseAsync();
                             return Content(result.Result, "text/html", Encoding.UTF8);
                         }
                     }
@@ -230,7 +230,7 @@ namespace V2boardApi.Areas.api.Controllers
                             {
                                 ViewBag.IsRenew = User.IsRenew;
                             }
-
+                            await sqlEntities.CloseAsync();
                             return View(getUserData);
                         }
 

@@ -277,7 +277,7 @@ namespace V2boardApi.Areas.api.Controllers
                 var Useage = Useages.GroupBy(p => p.Date).ToList();
                 var use = Useage.Select(p => new { Date = p.Key, Used = p.Sum(s => Math.Round(s.Used, 2)) }).ToList();
 
-
+                await mysql.CloseAsync();
                 return Ok(use);
 
             }

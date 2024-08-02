@@ -10,49 +10,6 @@ using System.Threading.Tasks;
 
 namespace DataLayer.DomainModel
 {
-    //public class MySqlEntities
-    //{
-    //    private string _connection;
-    //    private MySqlConnection SqlConnection;
-    //    private MySqlDataReader SqlDataReader;
-
-    //    public MySqlEntities(string ConnectionString)
-    //    {
-    //        try
-    //        {
-    //            _connection = ConnectionString;
-    //            SqlConnection = new MySqlConnection(_connection);
-
-    //        }
-    //        catch (Exception)
-    //        {
-
-    //        }
-    //    }
-
-    //    public void Open()
-    //    {
-    //        SqlConnection.Open();
-
-    //    }
-
-    //    public MySqlDataReader GetData(string query)
-    //    {
-    //        using (MySqlCommand sqlCommand = new MySqlCommand(query, SqlConnection))
-    //        {
-    //            SqlDataReader = sqlCommand.ExecuteReader();
-    //            return SqlDataReader;
-    //        }
-    //    }
-
-    //    public void Close()
-    //    {
-    //        SqlConnection.Close();
-    //        MySqlConnection.ClearPool(SqlConnection);
-    //        SqlConnection.Dispose();
-    //    }
-    //}
-
     public class MySqlEntities : IDisposable
     {
         private readonly string _connection;

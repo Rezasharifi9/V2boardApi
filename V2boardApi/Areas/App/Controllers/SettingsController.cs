@@ -34,7 +34,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         // GET: App/Settings
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult Index()
         {
             return View();
@@ -125,7 +125,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region تنظیمات ربات
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _BotSetting()
         {
             var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
@@ -139,7 +139,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [HttpPost]
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult SaveBotSetting(string BotId, string BotToken, long TelegramUserId, string ChannelId, int PricePerMonth_Major, int PricePerGig_Major, bool Active, bool RequiredJoinChannel, bool IsActiveCardToCard, bool IsActiveSendReceipt, double? Present_Discount = null)
         {
 
@@ -306,7 +306,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region کارت بانکی ها
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _BankNumbers()
         {
             var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
@@ -314,7 +314,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [HttpPost]
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult SaveBankNumbers(string CardNumber, string NameOfCard, string SmsNumberOfCard, string phoneNumber, int Card_ID)
         {
 
@@ -371,7 +371,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult DeleteCard(string CardNumber)
         {
             try
@@ -396,7 +396,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult DeactiveCard(int id)
         {
             try
@@ -426,7 +426,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [HttpGet]
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _EditBankNumber(int CardID)
         {
             var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();

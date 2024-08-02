@@ -33,6 +33,16 @@
           <Property Name="Logger" Type="nvarchar" MaxLength="300" />
           <Property Name="customData" Type="nvarchar(max)" />
         </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="principal_id" Type="int" Nullable="false" />
+          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="version" Type="int" />
+          <Property Name="definition" Type="varbinary(max)" />
+        </EntityType>
         <EntityType Name="tbBankCardNumbers">
           <Key>
             <PropertyRef Name="CardNumber_ID" />
@@ -284,6 +294,8 @@
           <Property Name="ExpireTimeToken" Type="datetime" />
           <Property Name="Admin_Telegram_ID" Type="int" />
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
+          <Property Name="PriceForGig" Type="int" />
+          <Property Name="Parent_ID" Type="int" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
@@ -346,7 +358,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbPlans">
-          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -406,7 +420,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLogs_tbLinkUserAndPlans">
-          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbLogs" Type="Self.tbLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbLinkUserAndPlans">
@@ -418,7 +434,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbPlans">
-          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -537,8 +555,21 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbUsers_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbUsers1" Type="Self.tbUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbUsers1">
+              <PropertyRef Name="Parent_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBotSettings" EntityType="Self.tbBotSettings" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbConnectionHelp" EntityType="Self.tbConnectionHelp" Schema="dbo" store:Type="Tables" />
@@ -640,6 +671,10 @@
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbUsers" EntitySet="tbUsers" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbUsers" Association="Self.FK_tbUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUsers1" EntitySet="tbUsers" />
+          </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -647,6 +682,7 @@
       <Schema Namespace="V2boardSiteModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="NLog" EntityType="V2boardSiteModel.NLog" />
+          <EntitySet Name="sysdiagrams" EntityType="V2boardSiteModel.sysdiagrams" />
           <EntitySet Name="tbBankCardNumbers" EntityType="V2boardSiteModel.tbBankCardNumbers" />
           <EntitySet Name="tbBotSettings" EntityType="V2boardSiteModel.tbBotSettings" />
           <EntitySet Name="tbConnectionHelp" EntityType="V2boardSiteModel.tbConnectionHelp" />
@@ -748,6 +784,10 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUserFactors" EntitySet="tbUserFactors" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbUsers" Association="V2boardSiteModel.FK_tbUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUsers1" EntitySet="tbUsers" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="NLog">
           <Key>
@@ -776,6 +816,16 @@
           <Property Name="sessionId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Logger" Type="String" MaxLength="300" FixedLength="false" Unicode="true" />
           <Property Name="customData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="principal_id" Type="Int32" Nullable="false" />
+          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="version" Type="Int32" />
+          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
         </EntityType>
         <EntityType Name="tbBankCardNumbers">
           <Key>
@@ -1061,6 +1111,8 @@
           <Property Name="ExpireTimeToken" Type="DateTime" Precision="3" />
           <Property Name="Admin_Telegram_ID" Type="Int32" />
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="PriceForGig" Type="Int32" />
+          <Property Name="Parent_ID" Type="Int32" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
@@ -1070,6 +1122,8 @@
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbTelegramUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
+          <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
+          <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
@@ -1132,7 +1186,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -1192,7 +1248,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLogs_tbLinkUserAndPlans">
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbLogs" Role="tbLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbLinkUserAndPlans">
@@ -1204,7 +1262,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -1323,6 +1383,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbUsers_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers1" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbUsers1">
+              <PropertyRef Name="Parent_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1355,6 +1427,17 @@
                 <ScalarProperty Name="Logged" ColumnName="Logged" />
                 <ScalarProperty Name="MachineName" ColumnName="MachineName" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="sysdiagrams">
+            <EntityTypeMapping TypeName="V2boardSiteModel.sysdiagrams">
+              <MappingFragment StoreEntitySet="sysdiagrams">
+                <ScalarProperty Name="definition" ColumnName="definition" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="name" ColumnName="name" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1603,6 +1686,8 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
+                <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
                 <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />

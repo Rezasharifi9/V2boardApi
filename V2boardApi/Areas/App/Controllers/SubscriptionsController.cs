@@ -45,13 +45,13 @@ namespace V2boardApi.Areas.App.Controllers
         #region لیست اشتراک ها 
 
         // GET: App/Subscriptions
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult Index()
         {
             return View();
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         [System.Web.Mvc.HttpPost]
         public async Task<ActionResult> GetAll()
         {
@@ -86,7 +86,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         var tokenValue = searchValue.Split('=')[1];
                         searchQuery += $" AND token='{tokenValue}'";
-                        if (userRole == 2) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                        if (userRole == 2 || userRole == 3) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                         {
                             searchQuery += $" AND email LIKE '%@{user.Username}%'";
                         }
@@ -94,13 +94,13 @@ namespace V2boardApi.Areas.App.Controllers
                     else
                     {
                         searchQuery += $" AND email LIKE '%{searchValue}%'";
-                        if (userRole == 2) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                        if (userRole == 2 || userRole == 3) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                         {
                             searchQuery += $" AND email LIKE '%@{user.Username}%'";
                         }
                     }
                 }
-                else if (userRole == 2) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                else if (userRole == 2 || userRole == 3) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                 {
                     searchQuery += $" AND email LIKE '%@{user.Username}%'";
                 }
@@ -208,7 +208,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
 
                     var countQuery = "SELECT COUNT(*) AS Count FROM `v2_user` WHERE 1=1";
-                    if (userRole == 2) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                    if (userRole == 2 || userRole == 3) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                     {
                         countQuery += $" AND email LIKE '%@{user.Username}%'";
                     }
@@ -262,7 +262,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region افزودن اشتراک
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateUser(string userSubname, int userPlan)
@@ -326,7 +326,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                                 user.Wallet += link.tbPlans.Price;
 
-
+                                await mySql.CloseAsync();
                                 linkUserAndPlansRepository.Save();
                                 usersRepository.Save();
                                 AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name);
@@ -507,7 +507,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region مسدودی کاربر
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public async Task<ActionResult> BanUser(int user_id, bool status)
         {
             try
@@ -527,7 +527,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                 var mess = " اشتراک با موفقیت " + state + " شد ";
                 logger.Info(mess);
-
+                await mySql.CloseAsync();
                 return Toaster.Success("موفق", mess);
 
             }
@@ -542,7 +542,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region تمدید اکانت
         [System.Web.Http.HttpPost]
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Renew(int user_id, int userPlan)
         {
@@ -582,9 +582,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                     var Query2 = "SELECT email FROM `v2_user` WHERE id=" + user_id;
 
-                    MySqlEntities mySql2 = new MySqlEntities(user.tbServers.ConnectionString);
-                    await mySql2.OpenAsync();
-                    var reader2 = await mySql2.GetDataAsync(Query2);
+                    var reader2 = await mySql.GetDataAsync(Query2);
                     if (await reader2.ReadAsync())
                     {
                         var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
@@ -593,6 +591,9 @@ namespace V2boardApi.Areas.App.Controllers
                         AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name);
                     }
                     reader2.Close();
+
+                    await mySql.CloseAsync();
+
                     linkUserAndPlansRepository.Save();
                     usersRepository.Save();
                     logger.Info("اشتراک با موفقیت تمدید شد");
@@ -627,7 +628,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ریست لینک اکانت
         [System.Web.Http.HttpPost]
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public async Task<ActionResult> Reset(int user_id)
         {
             var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
@@ -643,7 +644,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var reader = mySql.GetDataAsync(query);
 
                 logger.Info("لینک اشتراک با موفقیت تغییر یافت");
-
+                await mySql.CloseAsync();
                 return Toaster.Success("موفق", "لینک با موفقیت تغییر کرد");
             }
             else
@@ -688,7 +689,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region اطلاعات فعالیت کاربران
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public async Task<ActionResult> GetActivityUsers()
         {
             try
@@ -700,13 +701,14 @@ namespace V2boardApi.Areas.App.Controllers
                 {
 
                     var Query = "";
-                    if (user.Role == 2)
+                    if (user.Role == 1)
                     {
-                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 60 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW())) and email like '%@" + user.Username + "%'";
+                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 60 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW()))";
+                        
                     }
                     else
                     {
-                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 60 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW()))";
+                        Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 60 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW())) and email like '%@" + user.Username + "%'";
                     }
                     MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                     await mySql.OpenAsync();
@@ -725,7 +727,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                     }
 
-
+                    await mySql.CloseAsync();
                 }
                 return Json(new { status = "success", data = activity }, JsonRequestBehavior.AllowGet);
             }

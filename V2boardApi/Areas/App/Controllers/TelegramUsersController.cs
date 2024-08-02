@@ -46,13 +46,13 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region لیست کاربران
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult Index()
         {
             return View();
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _PartialGetAllUsers(string username = null)
         {
             var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
@@ -93,14 +93,14 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult Details(int user_id, string type = "accounts")
         {
             ViewBag.Type = type;
             return View(user_id);
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _UserCard(int user_id)
         {
 
@@ -108,7 +108,7 @@ namespace V2boardApi.Areas.App.Controllers
 
             return PartialView(TelegramUser);
         }
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult Orders(int user_id)
         {
             var Orders = RepositoryOrders.Where(p=> p.FK_Tel_UserID == user_id).ToList();
@@ -139,13 +139,13 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ارسال پیام همگانی
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _PartialPublicMessage()
         {
             return PartialView();
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult SendPublicMessage(string message)
         {
             try
@@ -179,7 +179,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region شارژ کیف پول کاربر
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _EditWallet(int user_id)
         {
             var us = RepositoryTelegramUsers.Where(p => p.Tel_UserID == user_id).FirstOrDefault();
@@ -195,7 +195,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult EditWallet(int user_id, string userDeposit)
         {
             var us = RepositoryTelegramUsers.Where(p => p.Tel_UserID == user_id).FirstOrDefault();
@@ -225,7 +225,7 @@ namespace V2boardApi.Areas.App.Controllers
         #region پیام به کاربر
 
         [HttpGet]
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _SendMessage(int id)
         {
             var TelegramUser = RepositoryTelegramUsers.Where(p => p.Tel_UserID == id).FirstOrDefault();
@@ -235,7 +235,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [HttpPost]
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult SendMessage(string message, int id)
         {
 
@@ -272,7 +272,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region لیست اشتراک های کاربر تلگرام
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public async Task<ActionResult> Accounts(int user_id)
         {
             var Links = RepositoryLinks.Where(p => p.FK_TelegramUserID == user_id).ToList();
@@ -333,7 +333,7 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 Reader.Close();
             }
-            await mysql.OpenAsync();
+            await mysql.CloseAsync();
 
 
             return Json(new {data = accounts },JsonRequestBehavior.AllowGet);
@@ -342,7 +342,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region انتقال اشتراک
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult _MoveAccount(int LinkID)
         {
             var TelegramUsers = RepositoryTelegramUsers.Where(p => p.tbUsers.Username == User.Identity.Name).ToList();
@@ -350,7 +350,7 @@ namespace V2boardApi.Areas.App.Controllers
             return PartialView(TelegramUsers);
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         [ValidateAntiForgeryToken]
         [HttpPost]
         public ActionResult MoveAccount(int LinkID, int TelUser)

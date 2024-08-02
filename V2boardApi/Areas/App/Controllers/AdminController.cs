@@ -106,7 +106,6 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-
         #region نمایندگان
 
         #region لیست کاربران
@@ -443,14 +442,15 @@ namespace V2boardApi.Areas.App.Controllers
 
                     logger.Info("ورود موفق");
 
-                    if (User.Role == 2)
+                    if (User.Role == 1)
                     {
-                        var URL = Url.Action("Index", "Subscriptions");
+                        var URL = Url.Action("Index", "Admin");
                         return Json(new { status = "success", redirectURL = URL });
+
                     }
                     else
                     {
-                        var URL = Url.Action("Index", "Admin");
+                        var URL = Url.Action("Index", "Subscriptions");
                         return Json(new { status = "success", redirectURL = URL });
                     }
 
@@ -484,12 +484,11 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-
         #region لیست تعرفه ها در قالب Select2
         //[AuthorizeApp(Roles = "1")]
         public ActionResult Select2Plans()
         {
-            
+
             var Plans = RepositoryPlans.Where(s => s.Status == true).Select(p => new { id = p.Plan_ID, Name = p.Plan_Name }).ToList();
             return Json(new { result = Plans }, JsonRequestBehavior.AllowGet);
         }
@@ -745,19 +744,68 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public async Task<ActionResult> GetWallet()
         {
             try
             {
                 var user = await RepositoryUser.FirstOrDefaultAsync(p => p.Username == User.Identity.Name);
 
-                return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony() } },JsonRequestBehavior.AllowGet);
+                if (user.Role == 3 || user.Role == 1)
+                {
+                    Int64 used = 0;
+
+                    MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
+
+                    List<int> Users = new List<int>();
+                    await mySql.OpenAsync();
+                    foreach (var item in user.tbUsers1)
+                    {
+                        var reader = await mySql.GetDataAsync("SELECT id FROM `v2_user` WHERE email like '%@" + item.Username + "'");
+                        while (await reader.ReadAsync().ConfigureAwait(false))
+                        {
+                            Users.Add(reader.GetInt32("id"));
+                        }
+                        reader.Close();
+                    }
+                    string userIdsJoined = string.Join(",", Users);
+                    var Query = "SELECT SUM(v2_stat_user.u + v2_stat_user.d) as Used FROM `v2_stat_user` join v2_user on v2_user.id = v2_stat_user.user_id where v2_stat_user.user_id IN (" + userIdsJoined + ")";
+                    var reader2 = await mySql.GetDataAsync(Query);
+                    await reader2.ReadAsync();
+                    var Data = reader2.GetBodyDefinition("Used");
+                    if (Data != "")
+                    {
+                        used += Convert.ToInt64(Data);
+                    }
+
+                    reader2.Close();
+
+
+                    await mySql.CloseAsync();
+
+                    var UserPerGig = Utility.ConvertByteToGB(used);
+                    
+                    if(user.Role.Value == 1)
+                    {
+                        return Json(new { status = "success", data = new { UserPerGig = Math.Round(UserPerGig, 2).ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+                    }
+                    else
+                    {
+                        var UserPerPrice = UserPerGig * user.PriceForGig;
+                        return Json(new { status = "success", data = new { UserPerGig = Math.Round(UserPerGig, 2).ConvertToMony(), UserPerPrice = Math.Round(UserPerPrice.Value, 0).ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                else
+                {
+                    return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+                }
+
+
 
             }
             catch (Exception ex)
             {
-                return Json(new { status = "error" },JsonRequestBehavior.AllowGet);
+                return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
             }
 
 

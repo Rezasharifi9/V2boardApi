@@ -40,13 +40,13 @@ namespace V2boardApi.Areas.App.Controllers
             Stimulsoft.Base.StiLicense.LoadFromFile(path);
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult Index()
         {
             return View();
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult GetReport()
         {
             try
@@ -80,7 +80,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
         }
 
-        [AuthorizeApp(Roles = "1,2")]
+        [AuthorizeApp(Roles = "1,2,3")]
         public ActionResult ViewerEvent()
         {
             return StiMvcViewer.ViewerEventResult();

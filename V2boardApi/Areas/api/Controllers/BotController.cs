@@ -1628,7 +1628,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
                                                 var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
                                                 reader.Close();
-                                                await mySql.OpenAsync();
+                                                await mySql.CloseAsync();
                                                 var res = await bot.Client.SendPhotoAsync(
                                                      chatId: callbackQuery.From.Id,
                                                      photo: image,
@@ -2128,7 +2128,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                     var reader = await mySql.GetDataAsync(Query);
                                                     var result = await reader.ReadAsync();
                                                     reader.Close();
-                                                    await mySql.CloseAsync();
+                                                   
 
 
                                                     var InlineKeyboardMarkup = Keyboards.GetHomeButton();
@@ -2225,10 +2225,9 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                     BotSettings.tbUsers.Wallet += PirceWithoutDiscount;
                                                     await BotSettingRepository.SaveChangesAsync();
-
-
-                                                    return;
                                                 }
+                                                await mySql.CloseAsync();
+                                                return;
                                             }
                                             else
                                             {

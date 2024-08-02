@@ -26,6 +26,7 @@ namespace DataLayer.DomainModel
         }
     
         public virtual DbSet<NLog> NLog { get; set; }
+        public virtual DbSet<sysdiagrams> sysdiagrams { get; set; }
         public virtual DbSet<tbBankCardNumbers> tbBankCardNumbers { get; set; }
         public virtual DbSet<tbBotSettings> tbBotSettings { get; set; }
         public virtual DbSet<tbConnectionHelp> tbConnectionHelp { get; set; }
