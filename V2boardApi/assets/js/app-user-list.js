@@ -199,7 +199,7 @@ $(function () {
                             '<a href="/App/Admin/Details?user_id=' + userId +
                             '" class="dropdown-item">نمایش</a>' +
                             '<a href="javascript:;" class="dropdown-item BanUser" data-id=' + $id + '>' + $StatusTitle + '</a>' +
-                            '<a href="javascript:;" class="dropdown-item StartBot" data-id=' + $id + '>' + $StatusBotTitle + '</a>' +
+                            '<a href="javascript:;" class="dropdown-item StartBot" data-id=' + $id + '>' + "تغییر وضعیت ربات" + '</a>' +
                             '</div>' +
                             '</div>'
                         );
@@ -484,12 +484,14 @@ $(function () {
     // Edit User
     $('body').on('click', '.EditUser', function () {
 
+        BodyBlockUI();
+
         var id = $(this).attr("data-id");
 
         $(".dtr-bs-modal").modal("hide");
 
         AjaxGet('/App/Admin/Edit?id=' + id).then(res => {
-
+            BodyUnblockUI();
             if (res.status == "success") {
                 var data = res.data;
                 for (var key in data) {
@@ -619,17 +621,19 @@ $(function () {
             return;
         }
 
+        BodyBlockUI();
         AjaxFormPost('/App/Admin/CreateOrEdit', "#addNewUserForm").then(res => {
 
             eval(res.data);
             if (res.status == "success") {
-
+                BodyUnblockUI();
+                document.getElementById('addNewUserForm').reset();
                 dt_user.ajax.reload(null, false);
                 // بستن offcanvas پس از موفقیت آمیز بودن ارسال فرم
                 var offcanvasElement = document.getElementById('offcanvasAddUser');
                 var offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
                 offcanvas.hide();
-                document.getElementById('addNewUserForm').reset();
+                
             }
 
         });

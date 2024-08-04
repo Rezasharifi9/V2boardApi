@@ -74,6 +74,7 @@
           <Property Name="Present_Discount" Type="float" />
           <Property Name="IsActiveSendReceipt" Type="bit" />
           <Property Name="IsActiveCardToCard" Type="bit" />
+          <Property Name="Enabled" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -275,6 +276,7 @@
           </Key>
           <Property Name="User_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Username" Type="varchar" MaxLength="150" />
+          <Property Name="Parent_ID" Type="int" />
           <Property Name="Password" Type="varchar" MaxLength="250" />
           <Property Name="FullName" Type="nvarchar" MaxLength="30" />
           <Property Name="FirstName" Type="nvarchar" MaxLength="250" />
@@ -295,7 +297,6 @@
           <Property Name="Admin_Telegram_ID" Type="int" />
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
           <Property Name="PriceForGig" Type="int" />
-          <Property Name="Parent_ID" Type="int" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
@@ -859,6 +860,7 @@
           <Property Name="Present_Discount" Type="Double" />
           <Property Name="IsActiveSendReceipt" Type="Boolean" />
           <Property Name="IsActiveCardToCard" Type="Boolean" />
+          <Property Name="Enabled" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
@@ -1092,6 +1094,7 @@
           </Key>
           <Property Name="User_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Username" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Parent_ID" Type="Int32" />
           <Property Name="Password" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="FullName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
           <Property Name="FirstName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
@@ -1112,7 +1115,6 @@
           <Property Name="Admin_Telegram_ID" Type="Int32" />
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="PriceForGig" Type="Int32" />
-          <Property Name="Parent_ID" Type="Int32" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
@@ -1457,6 +1459,7 @@
           <EntitySetMapping Name="tbBotSettings">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
+                <ScalarProperty Name="Enabled" ColumnName="Enabled" />
                 <ScalarProperty Name="IsActiveCardToCard" ColumnName="IsActiveCardToCard" />
                 <ScalarProperty Name="IsActiveSendReceipt" ColumnName="IsActiveSendReceipt" />
                 <ScalarProperty Name="Present_Discount" ColumnName="Present_Discount" />
@@ -1686,7 +1689,6 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
-                <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
                 <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
@@ -1707,6 +1709,7 @@
                 <ScalarProperty Name="FirstName" ColumnName="FirstName" />
                 <ScalarProperty Name="FullName" ColumnName="FullName" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="User_ID" ColumnName="User_ID" />
               </MappingFragment>

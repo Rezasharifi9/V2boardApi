@@ -15,10 +15,36 @@
     <link href="../../assets/vendor/libs/toastr/toastr.css" rel="stylesheet" />
 }
 <style>
-    .dt-row{
-        min-height:580px !important;
+    .dt-row {
+        min-height: 580px !important;
+    }
+
+    /* Custom styles for smaller modal */
+    #modal-dialog {
+        max-width: 200px; /* Adjust the max-width to make it smaller */
+        margin: 1.75rem auto;
+    }
+
+    #modal-body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    /* Ensure the QR code container is centered and responsive */
+    #qrcode {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+    /* Adjust the size of QR Code */
+    .qr-code-size {
+        width: 200px;
+        height: 200px;
     }
 </style>
+
 
 <div class="row g-4 mb-4">
     <div class="col-sm-6 col-xl-3">
@@ -121,7 +147,7 @@
 </div>
 
 
-@*افزودن اشتراک جدید*@
+<!-- افزودن اشتراک جدید -->
 <div aria-hidden="true" class="modal fade" id="modalCenter" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content section-block">
@@ -156,10 +182,7 @@
     </div>
 </div>
 
-
-
-
-@*ویرایش اشتراک*@
+<!--ویرایش اشتراک-->
 <div aria-hidden="true" class="modal fade" id="modalEditSub" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content section-block">
@@ -204,33 +227,8 @@
     </div>
 </div>
 
-<style>
-    /* Custom styles for smaller modal */
-    #modal-dialog {
-        max-width: 200px; /* Adjust the max-width to make it smaller */
-        margin: 1.75rem auto;
-    }
 
-    #modal-body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    /* Ensure the QR code container is centered and responsive */
-    #qrcode {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-    }
-    /* Adjust the size of QR Code */
-    .qr-code-size {
-        width: 200px;
-        height: 200px;
-    }
-</style>
-@*QR Code اشتراک*@
+<!--QR Code اشتراک-->
 <div aria-hidden="true" class="modal fade" id="modalQrCode" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" id="#modal-dialog" role="document">
         <div class="modal-content">
@@ -245,8 +243,7 @@
     </div>
 </div>
 
-
-@* تمدید اشتراک*@
+<!--تمدید اشتراک-->
 <div aria-hidden="true" class="modal fade" tabindex="-1" id="modalRenew">
     <div class="modal-dialog modal-dialog-centered" id="#modal-dialog" role="document">
         <div class="modal-content modal-sm section-block">
@@ -280,8 +277,38 @@
     </div>
 </div>
 
+<!--تغییر نام-->
+<div aria-hidden="true" class="modal fade" tabindex="-1" id="modalChangeName">
+    <div class="modal-dialog modal-dialog-centered" id="#modal-dialog" role="document">
+        <div class="modal-content modal-sm section-block">
+            <div class="modal-header" style="justify-content:center;">
+                <h5 class="modal-title" id="exampleModalLabel2">تغییر نام اشتراک</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <form class="add-new-user pt-0" id="ChangeNameUserForm">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+                        <input type="hidden" value="" id="user_id" name="user_id" />
+                        <input type="hidden" value="" id="OldName" name="OldName" />
+                        <div class="row">
+                            <div class="mb-3">
+                                <label class="form-label" for="SubName">نام جدید<span class="text-danger"> * </span></label>
+                                <input type="text" id="SubName" class="form-control" placeholder="" aria-label=""
+                                       name="SubName" />
+                            </div>
 
-
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-label-secondary" data-bs-dismiss="modal" type="button"> بستن</button>
+                        <button class="btn btn-primary" type="submit">ذخیره</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section vendorScripts {
 
@@ -336,9 +363,6 @@
         });
 
 
-    </script>
-
-    <script>
         function generateQRCode(link) {
 
             $(".dtr-bs-modal").modal("hide");
@@ -364,9 +388,8 @@
 
         });
 
-
-
     </script>
+
 
     <script src="~/assets/libs/qrcode/qrcode.min.js"></script>
     <script src="../../assets/js/app-subscriptions-list.js"></script>

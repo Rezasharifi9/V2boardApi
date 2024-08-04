@@ -29,6 +29,7 @@ namespace DataLayer.DomainModel
         public Nullable<double> Present_Discount { get; set; }
         public Nullable<bool> IsActiveSendReceipt { get; set; }
         public Nullable<bool> IsActiveCardToCard { get; set; }
+        public bool Enabled { get; set; }
     
         public virtual tbUsers tbUsers { get; set; }
     }

@@ -62,24 +62,28 @@ namespace V2boardApi
             {
                 int httpCode = httpException.GetHttpCode();
 
-                // اگر کد خطای HTTP برابر 404 باشد
-                if (httpCode == 404)
+                if(Response.IsClientConnected && !Response.IsRequestBeingRedirected)
                 {
-                    Server.ClearError();
-                    Response.Redirect("~/App/Error/Error404"); // انتقال به اکشن Error404
+                    // اگر کد خطای HTTP برابر 404 باشد
+                    if (httpCode == 404)
+                    {
+                        Server.ClearError();
+                        Response.Redirect("~/App/Error/Error404"); // انتقال به اکشن Error404
+                    }
+                    else if (httpCode == 401)
+                    {
+                        // برای سایر خطاها
+                        Server.ClearError();
+                        Response.Redirect("~/App/Error/Error401"); // انتقال به اکشن Error401
+                    }
+                    else if (httpCode == 500)
+                    {
+                        // برای سایر خطاها
+                        Server.ClearError();
+                        Response.Redirect("~/App/Error/Error500"); // انتقال به اکشن Error500
+                    }
                 }
-                else if(httpCode == 401)
-                {
-                    // برای سایر خطاها
-                    Server.ClearError();
-                    Response.Redirect("~/App/Error/Error401"); // انتقال به اکشن Error401
-                }
-                else if (httpCode == 500)
-                {
-                    // برای سایر خطاها
-                    Server.ClearError();
-                    Response.Redirect("~/App/Error/Error500"); // انتقال به اکشن Error500
-                }
+                
             }
             else
             {

@@ -1,11 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DataLayer.DomainModel
@@ -29,6 +24,20 @@ namespace DataLayer.DomainModel
             connectionPool.AddLast(MySqlConnection);
         }
 
+        public async Task<MySqlDataReader> GetDataAsync(string query, Dictionary<string, object> parameters)
+        {
+            using (var sqlCommand = new MySqlCommand(query, MySqlConnection))
+            {
+                // اضافه کردن پارامترها به پرس‌وجو
+                foreach (var param in parameters)
+                {
+                    sqlCommand.Parameters.AddWithValue(param.Key, param.Value);
+                }
+
+                var reader = await sqlCommand.ExecuteReaderAsync().ConfigureAwait(false);
+                return (MySqlDataReader)reader;
+            }
+        }
         public async Task<MySqlDataReader> GetDataAsync(string query)
         {
             using (var sqlCommand = new MySqlCommand(query, MySqlConnection))
@@ -49,7 +58,6 @@ namespace DataLayer.DomainModel
             {
                 connectionPool.Remove(MySqlConnection);
                 await MySqlConnection.ClearPoolAsync(MySqlConnection).ConfigureAwait(false);
-                
             }
 
             Dispose(true);
@@ -65,6 +73,10 @@ namespace DataLayer.DomainModel
                     // آزادسازی منابع مدیریتی
                     if (MySqlConnection != null)
                     {
+                        if (MySqlConnection.State == System.Data.ConnectionState.Open)
+                        {
+                            MySqlConnection.CloseAsync().ConfigureAwait(false);
+                        }
                         MySqlConnection.Dispose();
                         MySqlConnection = null;
                     }
@@ -91,5 +103,4 @@ namespace DataLayer.DomainModel
             GC.SuppressFinalize(this);
         }
     }
-
 }

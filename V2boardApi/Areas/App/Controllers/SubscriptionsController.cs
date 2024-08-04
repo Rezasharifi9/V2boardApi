@@ -145,7 +145,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     TotalVolume = Utility.ConvertByteToGB(reader.GetInt64(reader.GetOrdinal("transfer_enable"))).ToString(),
                                     PlanName = reader.GetString(reader.GetOrdinal("name")),
                                     IsBanned = Convert.ToBoolean(reader.GetSByte(reader.GetOrdinal("banned"))),
-                                    Name = reader.GetString(reader.GetOrdinal("email")).Split('@')[0],
+                                    Name = reader.GetString(reader.GetOrdinal("email")),
                                     IsActive = 1,
                                     SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}"
                                 };
@@ -319,9 +319,19 @@ namespace V2boardApi.Areas.App.Controllers
 
                                 string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
 
-                                string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES ('" + emilprx + "'," + exp + "," + create + ",'" + Guid.NewGuid() + "',0,0,0," + tran + ",0," + grid + "," + planid + ",'" + token + "','" + Guid.NewGuid() + "'," + create + ")";
+                                var Disc3 = new Dictionary<string, object>();
+                                Disc3.Add("@FullName", emilprx);
+                                Disc3.Add("@expired", exp);
+                                Disc3.Add("@create", create);
+                                Disc3.Add("@guid", Guid.NewGuid());
+                                Disc3.Add("@tran", tran);
+                                Disc3.Add("@grid", grid);
+                                Disc3.Add("@planid", planid);
+                                Disc3.Add("@token", token);
 
-                                reader = await mySql.GetDataAsync(Query);
+                                string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create)";
+
+                                reader = await mySql.GetDataAsync(Query, Disc3);
                                 reader.Close();
                                 var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                                 user.Wallet += link.tbPlans.Price;
@@ -406,7 +416,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ویرایش اشتراک
 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3")]
         public async Task<ActionResult> Edit(int user_id)
         {
             var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
@@ -416,7 +426,7 @@ namespace V2boardApi.Areas.App.Controllers
                 await mySql.OpenAsync();
 
                 var read = await mySql.GetDataAsync("SELECT v2_user.email,v2_user.transfer_enable,v2_user.expired_at,v2_user.speed_limit FROM `v2_user` WHERE id =" + user_id);
-                if ( await read.ReadAsync())
+                if (await read.ReadAsync())
                 {
                     var Traffic = Utility.ConvertByteToGB(read.GetDouble("transfer_enable"));
                     var Subname = read.GetBodyDefinition("email").Split('@')[0];
@@ -427,6 +437,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         ShamsiDate = Utility.ConvertMillisecondToShamsiDate(Convert.ToInt64(Date));
                     }
+
 
                     await mySql.CloseAsync();
                     return Json(new { data = new { userSubname = Subname, userTraffic = Traffic, userSpeed = SpeedLimit, userExpire = ShamsiDate }, status = "success" }, JsonRequestBehavior.AllowGet);
@@ -444,7 +455,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(int user_id, string userSubname, string userSpeed, string userExpire, double userTraffic)
@@ -452,49 +463,82 @@ namespace V2boardApi.Areas.App.Controllers
 
             try
             {
-                var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
-
-                MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString);
-                await mysql.OpenAsync();
-
-                var Miladi = new DateTime();
-                try
+                if (userSubname.Length <= 50 && !userSubname.Contains('@'))
                 {
-                    Miladi = Convert.ToDateTime(userExpire, CultureInfo.GetCultureInfo("fa-IR"));
-                    Miladi = Miladi.AddHours(12);
-                }
-                catch (Exception ex)
-                {
-                    return MessageBox.Warning("هشدار", "لطفا تاریخ را صحیح وارد کنید");
-                }
+                    var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
 
-                string Speed = "NULL";
-                double MiliSecoundTime = Utility.ConvertDatetimeToSecond(Miladi);
-                if (userSpeed != "")
-                {
-                    Speed = userSpeed;
-                }
-                var transfe_enable = Utility.ConvertGBToByte(userTraffic);
-                var read = await mysql.GetDataAsync("select v2_user.email FROM `v2_user` where id=" + user_id);
-                if (await read.ReadAsync())
-                {
-                    userSubname += "@" + read.GetBodyDefinition("email").Split('@')[1];
-                }
-                read.Close();
+                    MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString);
+                    await mysql.OpenAsync();
+
+                    var Miladi = new DateTime();
+                    if (userExpire != "")
+                    {
+                        try
+                        {
+                            Miladi = Convert.ToDateTime(userExpire, CultureInfo.GetCultureInfo("fa-IR"));
+                            Miladi = Miladi.AddHours(12);
+                        }
+                        catch (Exception ex)
+                        {
+                            return MessageBox.Warning("هشدار", "لطفا تاریخ را صحیح وارد کنید");
+                        }
+                    }
+
+                    string Speed = null;
+                    string MiliSecoundTime = null;
+                    if (Miladi != default(DateTime))
+                    {
+                        double MiliSecoundTime1 = Utility.ConvertDatetimeToSecond(Miladi);
+                        MiliSecoundTime = MiliSecoundTime1.ToString();
+                    }
+
+                    if (userSpeed != "")
+                    {
+                        Speed = userSpeed;
+                    }
+                    string name = "";
+                    string username = "";
+                    var transfe_enable = Utility.ConvertGBToByte(userTraffic);
+                    var read = await mysql.GetDataAsync("select v2_user.email FROM `v2_user` where id=" + user_id);
+                    if (await read.ReadAsync())
+                    {
+                        userSubname += "@" + read.GetBodyDefinition("email").Split('@')[1];
+                        name = read.GetBodyDefinition("email").Split('@')[0];
+                        username = read.GetBodyDefinition("email").Split('@')[1];
+                        read.Close();
+                    }
+                    if ((name + "@" + username) != userSubname)
+                    {
+                        var log = await logsRepository.FirstOrDefaultAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
+                        log.FK_NameUser_ID = userSubname.Split('@')[0];
+                    }
 
 
-                var Query = "update v2_user set v2_user.email='" + userSubname + "', v2_user.speed_limit=" + Speed + ", v2_user.expired_at=" + MiliSecoundTime + ", v2_user.transfer_enable=" + transfe_enable + " where v2_user.id=" + user_id;
+                    var Disc1 = new Dictionary<string, object>();
+                    Disc1.Add("@userSubname", userSubname);
+                    Disc1.Add("@Speed", Speed);
+                    Disc1.Add("@MiliSecoundTime", MiliSecoundTime);
+                    Disc1.Add("@transfe_enable", transfe_enable);
 
-                try
-                {
-                    read = await mysql.GetDataAsync(Query);
-                }
-                catch (Exception ex)
-                {
-                    return MessageBox.Warning("هشدار", "کاربری با این نام وجود دارد لطفا نام دیگری وارد کنید");
-                }
+                    var Query = "update v2_user set v2_user.email=@userSubname, v2_user.speed_limit=@Speed, v2_user.expired_at=@MiliSecoundTime, v2_user.transfer_enable=@transfe_enable where v2_user.id=" + user_id;
 
-                return Toaster.Success("موفق", "اطلاعات اشتراک با موفقیت ویرایش شد");
+                    try
+                    {
+                        read = await mysql.GetDataAsync(Query, Disc1);
+                    }
+                    catch (Exception ex)
+                    {
+                        return MessageBox.Warning("هشدار", "کاربری با این نام وجود دارد لطفا نام دیگری وارد کنید");
+                    }
+
+                    await logsRepository.SaveChangesAsync();
+
+                    return Toaster.Success("موفق", "اطلاعات اشتراک با موفقیت ویرایش شد");
+                }
+                else
+                {
+                    return MessageBox.Warning("هشدار", "نام اشتراک نمی تواند بزرگتر از 50 حرف یا شامل کاراکتر @ باشد");
+                }
             }
             catch (Exception ex)
             {
@@ -572,7 +616,12 @@ namespace V2boardApi.Areas.App.Controllers
                         exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
                     }
 
-                    var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=" + Plan.Plan_ID_V2 + ", transfer_enable = " + t + " , expired_at = " + exp + " where id =" + user_id;
+                    var Disc1 = new Dictionary<string, object>();
+                    Disc1.Add("@Plan_ID_V2", Plan.Plan_ID_V2);
+                    Disc1.Add("@transfer_enable", t);
+                    Disc1.Add("@exp", exp);
+
+                    var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2, transfer_enable =@transfer_enable , expired_at =@exp where id =" + user_id;
 
                     MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                     await mySql.OpenAsync();
@@ -657,7 +706,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region حذف لینک
-
+        [AuthorizeApp(Roles = "1,2,3")]
         public async Task<ActionResult> delete(int user_id)
         {
             try
@@ -669,10 +718,40 @@ namespace V2boardApi.Areas.App.Controllers
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                 await mySql.OpenAsync();
 
-                var Query = "delete from v2_user where id=" + user_id;
-                var reader = await mySql.GetDataAsync(Query);
 
+                var Query = "select email,u,d from v2_user where id=" + user_id;
+                var reader = await mySql.GetDataAsync(Query);
+                await reader.ReadAsync();
+                var name = reader.GetString("email").Split('@')[0];
+                var username = reader.GetString("email").Split('@')[1];
+
+                var totalUse = Utility.ConvertByteToGB(reader.GetInt64("u") + reader.GetInt64("d"));
+                var log = await logsRepository.FirstOrDefaultAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
+
+                if (log != null)
+                {
+                    if (totalUse <= 1)
+                    {
+                        var userAccount = usersRepository.table.Where(p => p.Username == username).FirstOrDefault();
+                        var price = log.SalePrice;
+
+                        userAccount.Wallet -= price;
+
+                    }
+                    log.FK_NameUser_ID = name;
+                }
+
+
+                reader.Close();
+                var Query1 = "delete from v2_user where id=" + user_id;
+                var reader1 = await mySql.GetDataAsync(Query1);
+                reader1.Close();
                 await mySql.CloseAsync();
+
+                await usersRepository.SaveChangesAsync();
+
+                await logsRepository.SaveChangesAsync();
+
                 logger.Info("اشتراک حذف شد");
                 return Toaster.Success("موفق", "اشتراک با موفقیت حذف شد");
 
@@ -684,6 +763,72 @@ namespace V2boardApi.Areas.App.Controllers
 
         }
 
+
+        #endregion
+
+        #region ویرایش نام اشتراک
+        [AuthorizeApp(Roles = "1,2,3")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> EditSubName(int user_id, string SubName, string OldName)
+        {
+            try
+            {
+                if (SubName.Length <= 50 && !SubName.Contains('@'))
+                {
+                    var user = await usersRepository.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+
+                    using (MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString))
+                    {
+                        await mysql.OpenAsync();
+                        var Username = OldName.Split('@')[1];
+                        var subName = OldName.Split('@')[0];
+
+                        SubName += "@" + Username;
+
+                        var Disc1 = new Dictionary<string, object>();
+                        Disc1.Add("@SubName", SubName);
+
+                        var reader = await mysql.GetDataAsync("select email from v2_user where email=@SubName", Disc1);
+                        if (await reader.ReadAsync())
+                        {
+                            reader.Close();
+                            return MessageBox.Warning("هشدار", "این نام اشتراک از قبل وجود دارد");
+                        }
+                        reader.Close();
+
+
+                        var reader1 = await mysql.GetDataAsync("update v2_user set email=@SubName where id=" + user_id, Disc1);
+                        await reader1.ReadAsync();
+
+                        var newName = OldName.Split('@')[0];
+                        var log = await logsRepository.FirstOrDefaultAsync(s => s.FK_NameUser_ID == newName && s.tbLinkUserAndPlans.tbUsers.Username == Username);
+                        if (log != null)
+                        {
+                            log.FK_NameUser_ID = SubName.Split('@')[0];
+
+                            await logsRepository.SaveChangesAsync();
+                        }
+
+                        reader1.Close();
+                        await mysql.CloseAsync();
+
+                        return Toaster.Success("موفق", "نام اشتراک با موفقیت تغییر کرد");
+                    }
+
+                }
+                else
+                {
+                    return MessageBox.Warning("هشدار", "نام اشتراک نمی تواند بزرگتر از 50 حرف یا شامل کاراکتر @ باشد");
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "تغییر نام اشتراک با خطا مواجه شد");
+                return Toaster.Success("موفق", "خطا در تغییر اشتراک لطفا مجدد تلاش کنید");
+            }
+        }
 
         #endregion
 
@@ -704,7 +849,7 @@ namespace V2boardApi.Areas.App.Controllers
                     if (user.Role == 1)
                     {
                         Query = "SELECT COUNT(*) AS total_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) < 60 THEN 1 ELSE 0 END) AS online_users, SUM(CASE WHEN banned = 1 THEN 1 ELSE 0 END) AS banned_users, SUM(CASE WHEN (UNIX_TIMESTAMP(NOW()) - t) >= 60 OR (d + u >= transfer_enable) OR expired_at <= UNIX_TIMESTAMP(NOW()) THEN 1 ELSE 0 END) AS inactive_users FROM v2_user WHERE (d + u < transfer_enable) AND (expired_at > UNIX_TIMESTAMP(NOW()))";
-                        
+
                     }
                     else
                     {

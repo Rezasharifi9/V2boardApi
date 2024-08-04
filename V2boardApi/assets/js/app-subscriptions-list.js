@@ -23,7 +23,7 @@ $(function () {
         Plans("#userPlan");
 
     }
-    
+
 
     var Role = "";
     if (document.cookie.split(';').length != 0) {
@@ -60,7 +60,7 @@ $(function () {
             drawCallback: function (settings) {
                 //تولتیپ کردن بعد از تغییر صفحه یا سرچ
                 $('[data-bs-toggle="popover"]').tooltip();
-                
+
             },
             processing: true,
             serverSide: true,
@@ -95,7 +95,7 @@ $(function () {
                     targets: 1,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
-                        var $name = full['Name'];
+                        var $name = full['Name'].split('@')[0];
                         var $IsOnline = full['IsOnline'];
                         var $LastTimeOnline = full['LastTimeOnline'];
                         // Creates full output for row
@@ -230,6 +230,8 @@ $(function () {
                         var $IsActive = full["IsActive"];
                         var $DayCount = full["DaysLeft"];
                         var $Volume = full["RemainingVolume"];
+                        var $UsedVolume = full["UsedVolume"];
+                        var $Name = full["Name"].split('@')[0];
                         var $state = "";
                         if (($DayCount == -1 && $Volume <= 2) || ((($DayCount > -1) && $DayCount <= 2) || $Volume <= 2)) {
                             $stateRenew = "ti-refresh";
@@ -251,10 +253,10 @@ $(function () {
 
                         }
 
-                        
+
 
                         var menu = "";
-                        if (Role == "1") {
+                        if (Role == "1" || Role == "3") {
                             menu += '<button data-id="' + user_id + '" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit" type="buttton"><i class="text-primary ti ti-pencil"></i></button>';
                         }
 
@@ -266,10 +268,11 @@ $(function () {
                             '<button  data-id="' + full["DaysLeft"] + '" data-id2="' + user_id + '" data-id3="' + $Volume + '" class="dropdown-item item-refresh">تمدید</button>' +
                             '<button  onclick="copyToClipboard(\'' + $link + '\')"  class="dropdown-item item-copy">کپی</button>' +
                             '<button  data-id="' + user_id + '" class="dropdown-item item-unlink">تغییر لینک</button>' +
+                            '<button  data-id="' + user_id + '" class="dropdown-item item-changename" data-id2="' + full["Name"] + '">تغییر نام</button>' +
                             '<button class="dropdown-item item-report">تاریخچه مصرف</button>' +
-                            '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state +'</button>' +
+                            '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state + '</button>' +
                             '<div class="dropdown-divider"></div>' +
-                            '<li><button data-id="' + user_id + '"data-user="' + full["Name"]+'"  data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
+                            '<li><button data-used="' + $UsedVolume + '" data-id="' + user_id + '"data-user="' + $Name + '"  data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
                             '</ul>' +
                             '</div>' + menu +
                             '</div>'
@@ -341,7 +344,48 @@ $(function () {
         $(".dtr-bs-modal").modal("hide");
 
         var user_id = $(this).attr("data-id");
-        ShowEditSubForm(user_id);
+        document.getElementById('EditUserForm').reset();
+        $("#modalEditSub").modal("show");
+
+        BodyBlockUI();
+
+        AjaxGet('/App/Subscriptions/Edit?user_id=' + user_id).then(res => {
+
+            if (res.status == "success") {
+
+                $("#modalEditSub input[name='user_id']").val(user_id);
+                var data = res.data;
+                for (var key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        var input = $('#modalEditSub input[name=' + key + ']');
+
+                        if (key == "userExpire") {
+                            picker = document.querySelector('#expire-picker'),
+
+                                picker.flatpickr({
+                                    disableMobile: "true",
+                                    altInput: true,
+                                    altFormat: 'j F Y',
+                                    dateFormat: 'Y/m/d',
+                                    locale: 'fa',
+                                    defaultDate: data[key]
+
+                                });
+                        }
+                        else {
+                            input.val(data[key]);
+                        }
+
+
+                    }
+                }
+
+            }
+            else {
+                eval(res.data);
+            }
+            BodyUnblockUI();
+        });
 
 
 
@@ -445,7 +489,6 @@ $(function () {
 
     });
 
-
     //حذف اشتراک
     $('body').on('click', '.item-delete', function () {
 
@@ -453,8 +496,9 @@ $(function () {
         var vol = $(this).attr("data-id-vol");
         var time = $(this).attr("data-id-time");
         var Name = $(this).attr("data-user");
+        var Used = $(this).attr("data-used");
 
-        if ((vol < 0 || time == 0) || Role == "1") {
+        if ((vol < 0 || time == 0) || Role == "1" || Role == "3" || Used <= 1) {
             Swal.fire({
                 title: 'هشدار',
                 text: "مطمئنی میخای لینک " + Name + " رو حذف کنی !؟",
@@ -494,6 +538,23 @@ $(function () {
 
     });
 
+    //مربوط به نمایش مودال نام اشتراک
+    $('body').on('click', '.item-changename', function () {
+
+
+        /*$("#modalChangeName").modal("hide");*/
+
+        var user_id = $(this).attr("data-id");
+        var OldName = $(this).attr("data-id2");
+
+        document.getElementById('ChangeNameUserForm').reset();
+        $("#modalChangeName").modal("show");
+
+        $("#modalChangeName input[name='user_id']").val(user_id);
+        $("#modalChangeName input[name='OldName']").val(OldName);
+
+
+    });
 
 
     // Filter form control to default size
@@ -622,58 +683,6 @@ $(function () {
 
     // فرم مربوط به ویرایش اشتراک
 
-
-
-    // تابع مربوط به نمایش اطلاعات اشتراک برای ویرایش
-    function ShowEditSubForm(user_id) {
-        document.getElementById('EditUserForm').reset();
-        $("#modalEditSub").modal("show");
-
-        BodyBlockUI();
-
-        AjaxGet('/App/Subscriptions/Edit?user_id=' + user_id).then(res => {
-
-            if (res.status == "success") {
-
-                $("#modalEditSub input[name='user_id']").val(user_id);
-                var data = res.data;
-                for (var key in data) {
-                    if (data.hasOwnProperty(key)) {
-                        var input = $('#modalEditSub input[name=' + key + ']');
-
-                        if (key == "userExpire") {
-                            picker = document.querySelector('#expire-picker'),
-
-                                picker.flatpickr({
-                                    disableMobile: "true",
-                                    altInput: true,
-                                    altFormat: 'j F Y',
-                                    dateFormat: 'Y/m/d',
-                                    locale: 'fa',
-                                    defaultDate: data[key]
-
-                                });
-                        }
-                        else {
-                            input.val(data[key]);
-                        }
-
-
-                    }
-                }
-
-            }
-            else {
-                eval(res.data);
-            }
-            BodyUnblockUI();
-        });
-
-
-    }
-
-    // اتمام نمایش اطلاعات
-
     const EditUserForm = document.getElementById('EditUserForm');
 
 
@@ -692,14 +701,7 @@ $(function () {
                         message: 'ترافیک را وارد کنید'
                     }
                 }
-            },
-            userExpire: {
-                validators: {
-                    notEmpty: {
-                        message: 'تاریخ انقضا را وارد کنید'
-                    }
-                }
-            },
+            }
         },
         plugins: {
             trigger: new FormValidation.plugins.Trigger(),
@@ -723,7 +725,6 @@ $(function () {
     // اگر فرم صحیح بود
     fv_edit.on('core.form.valid', function (e) {
 
-
         blockUI("#modalEditSub .section-block");
 
         AjaxFormPost('/App/Subscriptions/Edit', "#EditUserForm").then(res => {
@@ -731,10 +732,10 @@ $(function () {
             eval(res.data);
             if (res.status == "success") {
 
-                
+
                 $("#modalEditSub").modal("hide");
                 dt_basic.ajax.reload(null, false);
-                
+
             }
 
         });
@@ -792,6 +793,55 @@ $(function () {
     });
 
     // پایان فرم تمدید اشتراک
+
+
+
+    //فرم مربوط به تغییر نام اشتراک
+
+    const ChangeNameUserForm = document.getElementById('ChangeNameUserForm');
+
+
+    const fv_Change = FormValidation.formValidation(ChangeNameUserForm, {
+        fields: {
+            SubName: {
+                validators: {
+                    notEmpty: {
+                        message: 'نام اشتراک را وارد کنید'
+                    }
+                }
+            },
+        },
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                eleValidClass: '',
+                rowSelector: function (field, ele) {
+                    return '.mb-3';
+                }
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+        }
+    });
+
+    // اگر فرم صحیح بود
+    fv_Change.on('core.form.valid', function (e) {
+
+
+        blockUI("#modalChangeName .section-block");
+
+        AjaxFormPost('/App/Subscriptions/EditSubName', "#ChangeNameUserForm").then(res => {
+            UnblockUI("#modalChangeName .section-block");
+            eval(res.data);
+            if (res.status == "success") {
+
+                document.getElementById('ChangeNameUserForm').reset();
+                $("#modalChangeName").modal("hide");
+                dt_basic.ajax.reload(null, false);
+            }
+
+        });
+    });
 
 
 });

@@ -131,24 +131,34 @@ namespace V2boardApi.Areas.App.Controllers
 
                         var Query = "";
                         tbPlans plan = new tbPlans();
+
+                        var Disc1 = new Dictionary<string, object>();
+                        Disc1.Add("@planGroup", model.planGroup);
+                        Disc1.Add("@planTraffic", model.planTraffic);
+                        Disc1.Add("@planName", model.planName);
+                        Disc1.Add("@Speed", Speed);
+                        Disc1.Add("@Plan_ID_V2", plan.Plan_ID_V2);
+
+
                         if (model.id != null)
                         {
                             plan = await RepositoryPlans.FirstOrDefaultAsync(s => s.Plan_ID == model.id);
-                            Query = "update v2_plan set group_id='" + model.planGroup + "',transfer_enable='" + model.planTraffic + "',name='" + model.planName + "',speed_limit=" + Speed + " where id=" + plan.Plan_ID_V2;
+                            Query = "update v2_plan set group_id=@planGroup,transfer_enable=planTraffic,name=@planName,speed_limit=@Speed where id= @Plan_ID_V2";
                         }
                         else
                         {
-                            Query = "INSERT INTO `v2_plan`(`group_id`, `transfer_enable`, `name`, `speed_limit`, `show`,`created_at`, `updated_at`) VALUES ('" + model.planGroup + "','" + model.planTraffic + "','" + model.planName + "'," + Speed + ",'1','" + TimeNow + "','" + TimeNow + "')";
+                            Query = "INSERT INTO `v2_plan`(`group_id`, `transfer_enable`, `name`, `speed_limit`, `show`,`created_at`, `updated_at`) VALUES (@planGroup,@planTraffic,@planName,@Speed,'1','" + TimeNow + "','" + TimeNow + "')";
                         }
 
                         using (MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString))
                         {
                             await mysql.OpenAsync();
-                            var Reader = await mysql.GetDataAsync(Query);
+                            var Reader = await mysql.GetDataAsync(Query, Disc1);
                             Reader.Close();
-
-                            var GetPlanIdQuery2 = "select * from v2_server_group where id='" + model.planGroup + "'";
-                            var NewReader2 = await mysql.GetDataAsync(GetPlanIdQuery2);
+                            var Disc2 = new Dictionary<string, object>();
+                            Disc2.Add("@planGroup", model.planGroup);
+                            var GetPlanIdQuery2 = "select * from v2_server_group where id=@planGroup";
+                            var NewReader2 = await mysql.GetDataAsync(GetPlanIdQuery2, Disc2);
                             await NewReader2.ReadAsync();
                             plan.Group_Id = NewReader2.GetInt32("id");
                             plan.Group_Name = NewReader2.GetString("name");
@@ -156,8 +166,10 @@ namespace V2boardApi.Areas.App.Controllers
 
                             if (model.id == null)
                             {
-                                var GetPlanIdQuery = "select id from v2_plan where name='" + model.planName + "'";
-                                var NewReader = await mysql.GetDataAsync(GetPlanIdQuery);
+                                var Disc3 = new Dictionary<string, object>();
+                                Disc3.Add("@planName", model.planName);
+                                var GetPlanIdQuery = "select id from v2_plan where name=@planName";
+                                var NewReader = await mysql.GetDataAsync(GetPlanIdQuery, Disc3);
                                 await NewReader.ReadAsync();
                                 plan.Plan_ID_V2 = NewReader.GetInt32("id");
                                 NewReader.Close();

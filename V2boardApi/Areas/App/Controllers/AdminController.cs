@@ -52,6 +52,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbServers> RepositoryServer { get; set; }
         private Repository<tbUserFactors> RepositoryUserFactors { get; set; }
         private Repository<tbLinkUserAndPlans> RepositoryUserPlanLinks { get; set; }
+        private Repository<tbBotSettings> RepositoryBotSettings { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public AdminController()
         {
@@ -64,6 +65,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryDepositLog = new Repository<tbDepositWallet_Log>(db);
             RepositoryUserFactors = new Repository<tbUserFactors>(db);
             RepositoryUserPlanLinks = new Repository<tbLinkUserAndPlans>(db);
+            RepositoryBotSettings = new Repository<tbBotSettings>(db);
         }
 
 
@@ -651,19 +653,21 @@ namespace V2boardApi.Areas.App.Controllers
 
                     var message = "";
 
-                    if (Bot != null)
+                    var botSetting = await RepositoryBotSettings.FirstOrDefaultAsync(s => s.tbUsers.Username == User.Username);
+                    if (botSetting != null)
                     {
-                        if (Bot.Started)
+                        if(botSetting.Enabled)
                         {
-                            BotManager.StopBot(User.Username);
-                            message = "ربات " + User.Username + " با موفقیت خاموش شد";
+                            message = "ربات با موفقیت خاموش شد";
+                            botSetting.Enabled = false;
                         }
                         else
                         {
-                            BotManager.StartBot(User.Username);
-                            message = "ربات " + User.Username + " با موفقیت روشن شد";
+                            message = "ربات با موفقیت روشن شد";
+                            botSetting.Enabled = true;
                         }
                     }
+                    await RepositoryBotSettings.SaveChangesAsync();
 
 
                     logger.Info(message);
