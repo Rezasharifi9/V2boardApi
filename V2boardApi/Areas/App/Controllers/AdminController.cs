@@ -656,7 +656,7 @@ namespace V2boardApi.Areas.App.Controllers
                     var botSetting = await RepositoryBotSettings.FirstOrDefaultAsync(s => s.tbUsers.Username == User.Username);
                     if (botSetting != null)
                     {
-                        if(botSetting.Enabled)
+                        if (botSetting.Enabled)
                         {
                             message = "ربات با موفقیت خاموش شد";
                             botSetting.Enabled = false;
@@ -748,6 +748,8 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+        #region دریافت کیف پول کاربر
+
         [AuthorizeApp(Roles = "1,2,3")]
         public async Task<ActionResult> GetWallet()
         {
@@ -828,6 +830,10 @@ namespace V2boardApi.Areas.App.Controllers
 
         }
 
+        #endregion
+
+        #region تابع مخرب کنترلر
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -844,5 +850,37 @@ namespace V2boardApi.Areas.App.Controllers
             }
             base.Dispose(disposing);
         }
+        #endregion
+
+        #region تابع تعیین کننده نماینده کل
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Http.HttpPost]
+        public async Task<ActionResult> ChangeAgent(int user_id, bool status)
+        {
+            try
+            {
+                var User = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+                if (User != null)
+                {
+                    User.GeneralAgent = status;
+                    User.Role = 3;
+                    await RepositoryUser.SaveChangesAsync();
+                    logger.Info("نماینده معمولی به درجه نماینده کل ارتقا یافت");
+                    return MessageBox.Success("موفق", "وضعیت نماینده با موفقیت تغییر کرد");
+                }
+                else
+                {
+                    return MessageBox.Warning("خطا", "متاسفانه سیستم در پردازش با خطا مواجه شد");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "تغییر وضعیت نماینده کل با خطا مواجه شد");
+                return MessageBox.Error("خطا", "متاسفانه درخواست شما با خطا مواجه شد لطفا مجدد تلاش کنید");
+            }
+        }
+
+        #endregion
     }
 }

@@ -50,6 +50,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> Admin_Telegram_ID { get; set; }
         public string Profile_Filename { get; set; }
         public Nullable<int> PriceForGig { get; set; }
+        public Nullable<bool> GeneralAgent { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbBankCardNumbers> tbBankCardNumbers { get; set; }

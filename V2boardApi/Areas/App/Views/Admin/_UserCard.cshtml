@@ -107,6 +107,23 @@
                 </li>
 
             </ul>
+
+            @{
+                var Role = Request.Cookies["Role"].Value;
+            }
+
+            @if (Role == "1")
+            {
+                <label class="switch">
+                    <input class="switch-input" type="checkbox" onchange="ChangeAgent(this)">
+                    <span class="switch-toggle-slider">
+                        <span class="switch-on"></span>
+                        <span class="switch-off"></span>
+                    </span>
+                    <span class="switch-label">به عنوان نماینده کل محسوب شود ؟</span>
+                </label>
+            }
+            <hr />
             <div class="d-flex justify-content-center">
                 <a class="btn btn-success me-3" data-bs-target="#editWallet" data-bs-toggle="modal" href="javascript:">شارژ کیف پول</a>
                 <a class="btn btn-primary me-3" data-bs-target="#editSetting" data-bs-toggle="modal" href="javascript:">تنظیمات</a>

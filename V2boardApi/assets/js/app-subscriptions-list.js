@@ -306,7 +306,7 @@ $(function () {
                     display: $.fn.dataTable.Responsive.display.modal({
                         header: function (row) {
                             var data = row.data();
-                            return 'جزئیات ' + data['Name'];
+                            return data['Name'].split('@')[0];
                         }
                     }),
                     type: 'column',
@@ -542,7 +542,7 @@ $(function () {
     $('body').on('click', '.item-changename', function () {
 
 
-        /*$("#modalChangeName").modal("hide");*/
+        $(".dtr-bs-modal").modal("hide");
 
         var user_id = $(this).attr("data-id");
         var OldName = $(this).attr("data-id2");

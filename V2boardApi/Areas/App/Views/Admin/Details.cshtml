@@ -159,6 +159,7 @@
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
 }
 
 
@@ -191,6 +192,28 @@
             });
 
         });
+
+       
+        function ChangeAgent(inp) {
+            var Check = $(inp).is(':checked');
+            var user_id = '@Model';
+            BodyBlockUI();
+            $.ajax({
+                url: "@Url.Action("ChangeAgent","Admin")",
+                type: "Post",
+                dataType: "json",
+                data: { status: Check, user_id: user_id },
+                success: function (res) {
+                    BodyUnblockUI();
+                    if (res.status != "success") {
+                        $(inp).prop("checked", false);
+                    }
+
+                }
+            });
+
+
+        }
     </script>
 
 }

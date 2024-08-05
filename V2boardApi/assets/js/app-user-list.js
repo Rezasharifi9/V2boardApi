@@ -465,7 +465,6 @@ $(function () {
         });
     });
 
-
     // Active Or DeActive Robot
     $('body').on('click', '.StartBot', function () {
 

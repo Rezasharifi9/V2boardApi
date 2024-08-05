@@ -609,7 +609,7 @@ namespace V2boardApi.Areas.App.Controllers
                     string exp = "";
                     if (Plan.CountDayes == 0)
                     {
-                        exp = "NULL";
+                        exp = null;
                     }
                     else
                     {
