@@ -110,34 +110,18 @@
     </div>
     <!--/ User Content -->
 </div>
+@{
+    var Role = Request.Cookies["Role"].Value;
+}
+
 <!-- Modal -->
 <!-- Edit Setting Modal -->
-<div aria-hidden="true" class="modal fade" id="editSetting" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-simple modal-edit-user">
-        <div class="modal-content p-3 p-md-5">
-            <div class="modal-body">
-                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
-                <div class="text-center mb-4">
-                    <h3 class="mb-2">ربات</h3>
-                </div>
-                <form class="row g-3" id="editUserForm" onsubmit="return false">
-                    <div class="col-12 col-md-6">
-                        <label class="form-label" for="modalEditUserFirstName">قیمت هر گیگ</label>
-                        <input class="form-control" id="modalEditUserFirstName" name="modalEditUserFirstName" placeholder="2,000" type="text" />
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label" for="modalEditUserLastName">قیمت هرماه</label>
-                        <input class="form-control" id="modalEditUserLastName" name="modalEditUserLastName" placeholder="5,000" type="text" />
-                    </div>
-                    <div class="col-12 text-center">
-                        <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
-                        <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset"> لغو</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
+@if (Role == "1")
+{
+
+    @Html.Action("_GetSetting", "Admin", new { area = "App", user_id = Model })
+}
 <!--/ Edit Setting Modal -->
 <!-- Edit Wallet Modal -->
 @Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
@@ -171,6 +155,67 @@
 
 
     <script>
+        $(function () {
+
+            $("#group").wrap('<div class="position-relative"></div>').select2({
+                placeholder: 'انتخاب گروه مجوز',
+                dropdownParent: $("#group").parent(),
+                allowClear: false
+            });
+
+            Groups("#group");
+
+        });
+
+        function SelectGroup(selectId, Ids) {
+            console.log("select shod");
+            $(selectId).val(Ids).trigger('change');
+        }
+
+        function Groups(selectId) {
+            console.log("omad");
+            var $select = $(selectId);
+            $.ajax({
+                url: "/App/Plan/GetSelectGroups",
+                type: "get",
+                dataType: "json",
+                async: true,
+                success: function (res) {
+                    console.log(res);
+                    // پاک کردن گزینه‌های قبلی
+                    $select.empty();
+
+                    // افزودن گزینه‌های جدید
+                    $.each(res.data, function (index, item) {
+                        var newOption = new Option(item.Name, item.id, false, false);
+                        $select.append(newOption);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("An error occurred: " + status + " " + error);
+                }
+            });
+
+        }
+
+
+        $("#SaveGroup").click(function () {
+
+            $("#user_id").val(getUrlParameter("user_id"));
+
+            AjaxFormPost("/App/Admin/SetSetting", "#editGroupForm").then(res => {
+
+
+                eval(res.data);
+                if (res.status == "success") {
+                    $("#editSetting").modal("hide");
+                }
+
+            });
+
+        });
+
+
         $("#ZeroWallet").click(function () {
 
             $("#Deposit").val(0);
@@ -193,7 +238,7 @@
 
         });
 
-       
+
         function ChangeAgent(inp) {
             var Check = $(inp).is(':checked');
             var user_id = '@Model';
@@ -206,6 +251,7 @@
                 success: function (res) {
                     BodyUnblockUI();
                     if (res.status != "success") {
+                        eval(res.data);
                         $(inp).prop("checked", false);
                     }
 

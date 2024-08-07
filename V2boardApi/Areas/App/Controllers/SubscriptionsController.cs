@@ -17,6 +17,7 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using static Stimulsoft.Base.Drawing.StiFontReader;
+using System.Numerics;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -45,13 +46,13 @@ namespace V2boardApi.Areas.App.Controllers
         #region لیست اشتراک ها 
 
         // GET: App/Subscriptions
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         public ActionResult Index()
         {
             return View();
         }
 
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         [System.Web.Mvc.HttpPost]
         public async Task<ActionResult> GetAll()
         {
@@ -262,7 +263,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region افزودن اشتراک
 
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateUser(string userSubname, int userPlan)
@@ -294,12 +295,18 @@ namespace V2boardApi.Areas.App.Controllers
                                 string exp = "";
                                 if (plan.CountDayes == 0)
                                 {
-                                    exp = "NULL";
+                                    exp = null;
                                 }
                                 else
                                 {
                                     exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                 }
+
+                                if (user.tbUsers2 != null)
+                                {
+                                    user.Wallet += plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                }
+
                                 var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
                                 var planid = plan.Plan_ID_V2;
                                 var emilprx = userSubname + "@" + user.Username;
@@ -416,7 +423,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ویرایش اشتراک
 
-        [AuthorizeApp(Roles = "1,3")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public async Task<ActionResult> Edit(int user_id)
         {
             var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
@@ -455,7 +462,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
 
-        [AuthorizeApp(Roles = "1,3")]
+        [AuthorizeApp(Roles = "1,3,4")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(int user_id, string userSubname, string userSpeed, string userExpire, double userTraffic)
@@ -551,7 +558,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region مسدودی کاربر
 
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> BanUser(int user_id, bool status)
         {
             try
@@ -586,90 +593,103 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region تمدید اکانت
         [System.Web.Http.HttpPost]
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Renew(int user_id, int userPlan)
         {
 
-            var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
-            if (user != null)
+            try
             {
-                if ((user.Limit - user.Wallet) >= 0)
+                var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+                if (user != null)
                 {
-                    var Server = user.tbServers;
-
-
-                    var Plan = plansRepository.table.Where(p => p.Plan_ID == userPlan && p.FK_Server_ID == Server.ServerID && p.Status == true).FirstOrDefault();
-                    if ((Plan.Price + user.Wallet) > user.Limit)
+                    if ((user.Limit - user.Wallet) >= 0)
                     {
-                        return Toaster.Success("موفق", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
-                    }
+                        var Server = user.tbServers;
 
-                    var t = Utility.ConvertGBToByte(System.Convert.ToInt64(Plan.PlanVolume));
-                    string exp = "";
-                    if (Plan.CountDayes == 0)
-                    {
-                        exp = null;
+
+                        var Plan = plansRepository.table.Where(p => p.Plan_ID == userPlan && p.FK_Server_ID == Server.ServerID && p.Status == true).FirstOrDefault();
+                        if ((Plan.Price + user.Wallet) > user.Limit)
+                        {
+                            return Toaster.Success("موفق", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
+                        }
+
+                        var t = Utility.ConvertGBToByte(System.Convert.ToInt64(Plan.PlanVolume));
+                        string exp = "";
+                        if (Plan.CountDayes == 0)
+                        {
+                            exp = null;
+                        }
+                        else
+                        {
+                            exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                        }
+
+                        if (user.tbUsers2 != null)
+                        {
+                            user.Wallet += Plan.PlanVolume * user.tbUsers2.PriceForGig;
+                        }
+
+                        var Disc1 = new Dictionary<string, object>();
+                        Disc1.Add("@Plan_ID_V2", Plan.Plan_ID_V2);
+                        Disc1.Add("@transfer_enable", t);
+                        Disc1.Add("@exp", exp);
+
+                        var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2, transfer_enable =@transfer_enable , expired_at =@exp where id =" + user_id;
+
+                        MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
+                        await mySql.OpenAsync();
+                        var reader = await mySql.GetDataAsync(Query, Disc1);
+                        reader.Read();
+                        reader.Close();
+
+                        var Query2 = "SELECT email FROM `v2_user` WHERE id=" + user_id;
+
+                        var reader2 = await mySql.GetDataAsync(Query2);
+                        if (await reader2.ReadAsync())
+                        {
+                            var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
+                            user.Wallet += link.tbPlans.Price;
+
+                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name);
+                        }
+                        reader2.Close();
+
+                        await mySql.CloseAsync();
+
+                        linkUserAndPlansRepository.Save();
+                        usersRepository.Save();
+                        logger.Info("اشتراک با موفقیت تمدید شد");
+                        return Toaster.Success("موفق", "اشتراک با موفقیت تمدید شد");
+
+
                     }
                     else
                     {
-                        exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                        var Count = user.Limit;
+
+                        StringBuilder str = new StringBuilder();
+                        str.Append(" شما اجازه ساخت بیشتر از مبلغ ");
+                        str.Append(string.Format("{0:C0}", Count).Replace("$", ""));
+                        str.Append(" تومان");
+                        str.Append(" را ندارید");
+                        str.Append(" لطفا بدهی خود را پرداخت کنید تا محدودیت 0 شود ");
+
+                        return Toaster.Success("موفق", str.ToString());
                     }
-
-                    var Disc1 = new Dictionary<string, object>();
-                    Disc1.Add("@Plan_ID_V2", Plan.Plan_ID_V2);
-                    Disc1.Add("@transfer_enable", t);
-                    Disc1.Add("@exp", exp);
-
-                    var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2, transfer_enable =@transfer_enable , expired_at =@exp where id =" + user_id;
-
-                    MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                    await mySql.OpenAsync();
-                    var reader = await mySql.GetDataAsync(Query);
-                    reader.Read();
-                    reader.Close();
-
-                    var Query2 = "SELECT email FROM `v2_user` WHERE id=" + user_id;
-
-                    var reader2 = await mySql.GetDataAsync(Query2);
-                    if (await reader2.ReadAsync())
-                    {
-                        var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
-                        user.Wallet += link.tbPlans.Price;
-
-                        AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name);
-                    }
-                    reader2.Close();
-
-                    await mySql.CloseAsync();
-
-                    linkUserAndPlansRepository.Save();
-                    usersRepository.Save();
-                    logger.Info("اشتراک با موفقیت تمدید شد");
-                    return Toaster.Success("موفق", "اشتراک با موفقیت تمدید شد");
-
 
                 }
                 else
                 {
-                    var Count = user.Limit;
-
-                    StringBuilder str = new StringBuilder();
-                    str.Append(" شما اجازه ساخت بیشتر از مبلغ ");
-                    str.Append(string.Format("{0:C0}", Count).Replace("$", ""));
-                    str.Append(" تومان");
-                    str.Append(" را ندارید");
-                    str.Append(" لطفا بدهی خود را پرداخت کنید تا محدودیت 0 شود ");
-
-                    return Toaster.Success("موفق", str.ToString());
+                    return Toaster.Success("ناموفق", "خطا در تمدید اشتراک");
                 }
 
             }
-            else
+            catch (Exception ex)
             {
+                logger.Error(ex, "تمدید اشتراک با خطا مواجه شد");
                 return Toaster.Success("ناموفق", "خطا در تمدید اشتراک");
             }
-
 
         }
 
@@ -677,7 +697,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ریست لینک اکانت
         [System.Web.Http.HttpPost]
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> Reset(int user_id)
         {
             var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
@@ -706,7 +726,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region حذف لینک
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> delete(int user_id)
         {
             try
@@ -737,8 +757,18 @@ namespace V2boardApi.Areas.App.Controllers
 
                         userAccount.Wallet -= price;
 
+                        if(userAccount.tbUsers2!=null && userAccount.tbUsers2.Role != 1)
+                        {
+                            userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                        }
+
+
+                        logsRepository.Delete(log.log_ID);
                     }
-                    log.FK_NameUser_ID = name;
+                    else
+                    {
+                        log.FK_NameUser_ID = name;
+                    }
                 }
 
 
@@ -767,7 +797,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region ویرایش نام اشتراک
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         [System.Web.Mvc.HttpPost]
         public async Task<ActionResult> EditSubName(int user_id, string SubName, string OldName)
         {
@@ -834,7 +864,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region اطلاعات فعالیت کاربران
 
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> GetActivityUsers()
         {
             try

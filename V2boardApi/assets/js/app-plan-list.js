@@ -13,21 +13,9 @@ $(function () {
 
     var dt_basic_table = $('.datatables-plan');
     var dt_basic;
-    var select2 = $('#planGroup');
     // DataTable with buttons
     // --------------------------------------------------------------------
 
-
-    if (select2.length) {
-        var $this = select2;
-        $this.wrap('<div class="position-relative"></div>').select2({
-            placeholder: 'انتخاب گروه مجوز',
-            dropdownParent: $this.parent(),
-            allowClear: false
-        });
-
-        Groups("#planGroup");
-    }
 
     if (dt_basic_table.length) {
         dt_basic = dt_basic_table.DataTable({
@@ -39,7 +27,6 @@ $(function () {
                 { data: 'Traffic' },
                 { data: 'Price' },
                 { data: 'SpeedLimit' },
-                { data: 'Group_Name' },
                 { data: 'Status' },
                 { data: '' }
             ],
@@ -121,19 +108,8 @@ $(function () {
                     }
                 },
                 {
-                    // Group_Name
-                    targets: 6,
-                    responsivePriority: 4,
-                    render: function (data, type, full, meta) {
-                        var $Group_Name = full['Group_Name'];
-                        // Creates full output for row
-                        var $row_output = "<span>" + $Group_Name + "</span>";
-                        return $row_output;
-                    }
-                },
-                {
                     // Status
-                    targets: 7,
+                    targets: 6,
                     render: function (data, type, full, meta) {
                         var $status_number = full['Status'];
                         var $status = {
@@ -349,30 +325,6 @@ $(function () {
     });
 
 
-    function Groups(selectId) {
-        var $select = $(selectId);
-        $.ajax({
-            url: "/App/Plan/GetSelectGroups",
-            type: "get",
-            dataType: "json",
-            async: true,
-            success: function (res) {
-                console.log(res);
-                // پاک کردن گزینه‌های قبلی
-                $select.empty();
-
-                // افزودن گزینه‌های جدید
-                $.each(res.data, function (index, item) {
-                    var newOption = new Option(item.Name, item.id, false, false);
-                    $select.append(newOption);
-                });
-            },
-            error: function (xhr, status, error) {
-                console.error("An error occurred: " + status + " " + error);
-            }
-        });
-
-    }
 
     const formAddNewRecord = document.getElementById('planForm');
 
@@ -399,13 +351,6 @@ $(function () {
                         message: 'قیمت تعرفه الزامی است'
                     }
                 }
-            },
-            planGroup: {
-                validators: {
-                    notEmpty: {
-                        message: 'گروه مجوز الزامی است'
-                    }
-                }
             }
         },
         plugins: {
@@ -429,26 +374,7 @@ $(function () {
         }
     });
 
-    fv.on('core.form.invalid', function (e) {
-
-        if ($("#planGroup").val().length == 0) {
-            $("#planGroupMessage").removeClass("d-none");
-            $("#planGroup").addClass("is-invalid");
-        }
-    });
-
     fv.on('core.form.valid', function (e) {
-
-
-        if ($("#planGroup").val().length != 0) {
-            $("#planGroupMessage").addClass("d-none");
-            $("#planGroup").removeClass("is-invalid");
-        }
-        else {
-            $("#planGroupMessage").removeClass("d-none");
-            $("#planGroup").addClass("is-invalid");
-            return;
-        }
 
         blockUI('.section-block');
         AjaxFormPost('/App/Plan/CreateOrEdit', "#planForm").then(res => {

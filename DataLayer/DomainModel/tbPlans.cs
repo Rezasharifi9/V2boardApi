@@ -25,6 +25,7 @@ namespace DataLayer.DomainModel
         public int Plan_ID { get; set; }
         public Nullable<int> Plan_ID_V2 { get; set; }
         public string Plan_Name { get; set; }
+        public Nullable<int> FK_User_ID { get; set; }
         public string Plan_Des { get; set; }
         public Nullable<int> FK_Server_ID { get; set; }
         public Nullable<bool> Status { get; set; }
@@ -42,5 +43,6 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbOrders> tbOrders { get; set; }
         public virtual tbServers tbServers { get; set; }
+        public virtual tbUsers tbUsers { get; set; }
     }
 }

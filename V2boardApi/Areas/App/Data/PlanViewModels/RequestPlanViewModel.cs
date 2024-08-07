@@ -24,10 +24,9 @@ namespace V2boardApi.Areas.App.Data.PlanViewModels
         [Required(ErrorMessage ="قیمت تعرفه را وارد کنید")]
         public string planPrice { get; set; }
 
-        [Required(ErrorMessage ="لطفا گروه مجوز را انتخاب کنید")]
-        public int planGroup { get; set; }
-
         [Range(1,10000,ErrorMessage ="محدودیت سرعت نمی تواند بزرگتر 10,000 مگابیت باشد")]
         public Nullable<short> planSpeed { get; set; }
+
+        public Nullable<int> planGroup { get; set; }
     }
 }

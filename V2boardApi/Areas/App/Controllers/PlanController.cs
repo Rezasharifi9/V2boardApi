@@ -10,12 +10,12 @@ using System.Web.Mvc;
 using Telegram.Bot.Types;
 using V2boardApi.Areas.App.Data.PlanViewModels;
 using V2boardApi.Areas.App.Data.RequestModels;
+using V2boardApi.Models;
 using V2boardApi.Tools;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [AuthorizeApp(Roles = "1")]
     [LogActionFilter]
     public class PlanController : Controller
     {
@@ -38,49 +38,58 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region لیست تعرفه ها
 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult Index()
         {
             return View();
         }
 
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult _PartialGetAllPlans()
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> _PartialGetAllPlans()
         {
-            var result = RepositoryPlans.GetAll().OrderByDescending(s => s.Plan_ID).ToList();
-
-            List<PlanResponseViewModel> Plans = new List<PlanResponseViewModel>();
-
-            foreach (var item in result)
+            try
             {
-                PlanResponseViewModel Plan = new PlanResponseViewModel();
-                Plan.id = item.Plan_ID;
-                Plan.PlanName = item.Plan_Name;
-                if (item.CountDayes != null)
+                List<PlanResponseViewModel> Plans = new List<PlanResponseViewModel>();
+
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                if (user != null)
                 {
-                    Plan.DayesCount = item.CountDayes.Value;
+                    var result = user.tbPlans.ToList();
+
+
+                    foreach (var item in result)
+                    {
+                        PlanResponseViewModel Plan = new PlanResponseViewModel();
+                        Plan.id = item.Plan_ID;
+                        Plan.PlanName = item.Plan_Name;
+                        if (item.CountDayes != null)
+                        {
+                            Plan.DayesCount = item.CountDayes.Value;
+                        }
+                        else
+                        {
+                            Plan.DayesCount = 0;
+                        }
+                        if (item.Speed_limit == null)
+                        {
+                            Plan.SpeedLimit = "بدون محدودیت";
+                        }
+                        else
+                        {
+                            Plan.SpeedLimit = item.Speed_limit.Value.ToString();
+                        }
+                        Plan.Traffic = item.PlanVolume.Value;
+                        Plan.Price = item.Price.Value.ConvertToMony();
+                        Plan.Status = Convert.ToInt32(item.Status.Value);
+                        Plans.Add(Plan);
+                    }
                 }
-                else
-                {
-                    Plan.DayesCount = 0;
-                }
-                if (item.Speed_limit == null)
-                {
-                    Plan.SpeedLimit = "بدون محدودیت";
-                }
-                else
-                {
-                    Plan.SpeedLimit = item.Speed_limit.Value.ToString();
-                }
-                Plan.Group_Name = item.Group_Name;
-                Plan.Traffic = item.PlanVolume.Value;
-                Plan.Price = item.Price.Value.ConvertToMony();
-                Plan.Status = Convert.ToInt32(item.Status.Value);
-                Plans.Add(Plan);
+                return Json(new { data = Plans }, JsonRequestBehavior.AllowGet);
             }
-
-
-            return Json(new { data = Plans }, JsonRequestBehavior.AllowGet);
+            catch (Exception ex)
+            {
+                return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         #endregion
@@ -91,7 +100,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public async Task<ActionResult> CreateOrEdit(RequestPlanViewModel model)
         {
 
@@ -133,21 +142,22 @@ namespace V2boardApi.Areas.App.Controllers
                         tbPlans plan = new tbPlans();
 
                         var Disc1 = new Dictionary<string, object>();
-                        Disc1.Add("@planGroup", model.planGroup);
+                        Disc1.Add("@planGroup", user.Group_Id);
                         Disc1.Add("@planTraffic", model.planTraffic);
                         Disc1.Add("@planName", model.planName);
                         Disc1.Add("@Speed", Speed);
                         Disc1.Add("@Plan_ID_V2", plan.Plan_ID_V2);
+                        Disc1.Add("@Content", user.Username);
 
 
                         if (model.id != null)
                         {
                             plan = await RepositoryPlans.FirstOrDefaultAsync(s => s.Plan_ID == model.id);
-                            Query = "update v2_plan set group_id=@planGroup,transfer_enable=planTraffic,name=@planName,speed_limit=@Speed where id= @Plan_ID_V2";
+                            Query = "update v2_plan set group_id=@planGroup,content=@Content,transfer_enable=@planTraffic,name=@planName,speed_limit=@Speed where id= @Plan_ID_V2";
                         }
                         else
                         {
-                            Query = "INSERT INTO `v2_plan`(`group_id`, `transfer_enable`, `name`, `speed_limit`, `show`,`created_at`, `updated_at`) VALUES (@planGroup,@planTraffic,@planName,@Speed,'1','" + TimeNow + "','" + TimeNow + "')";
+                            Query = "INSERT INTO `v2_plan`(`group_id`, `transfer_enable`, `name`, `speed_limit`, `show`,`created_at`, `updated_at`,`content`) VALUES (@planGroup,@planTraffic,@planName,@Speed,'1','" + TimeNow + "','" + TimeNow + "',@Content)";
                         }
 
                         using (MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString))
@@ -156,7 +166,7 @@ namespace V2boardApi.Areas.App.Controllers
                             var Reader = await mysql.GetDataAsync(Query, Disc1);
                             Reader.Close();
                             var Disc2 = new Dictionary<string, object>();
-                            Disc2.Add("@planGroup", model.planGroup);
+                            Disc2.Add("@planGroup", user.Group_Id);
                             var GetPlanIdQuery2 = "select * from v2_server_group where id=@planGroup";
                             var NewReader2 = await mysql.GetDataAsync(GetPlanIdQuery2, Disc2);
                             await NewReader2.ReadAsync();
@@ -190,7 +200,8 @@ namespace V2boardApi.Areas.App.Controllers
                             plan.FK_Server_ID = user.FK_Server_ID;
                             plan.Status = true;
                             plan.Speed_limit = model.planSpeed;
-                            plan.Group_Id = model.planGroup;
+                            plan.FK_User_ID = user.User_ID;
+                            //plan.Group_Id = model.planGroup;
                             if (model.id == null)
                             {
                                 RepositoryPlans.Insert(plan);
@@ -203,10 +214,12 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     if (model.id != null)
                     {
+                        logger.Info("تعرفه با موفقیت ویرایش گردید");
                         return Toaster.Success("موفق", "تعرفه با موفقیت ویرایش گردید");
                     }
                     else
                     {
+                        logger.Info("تعرفه با موفقیت اضافه گردید");
                         return Toaster.Success("موفق", "تعرفه با موفقیت ایجاد گردید");
                     }
                 }
@@ -229,23 +242,23 @@ namespace V2boardApi.Areas.App.Controllers
         #region نمایش اطلاعات برای ویرایش
 
         [HttpGet]
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public async Task<ActionResult> Edit(int id)
         {
             try
             {
-                var plan = await RepositoryPlans.FirstOrDefaultAsync(s => s.Plan_ID == id);
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                var plan = await RepositoryPlans.FirstOrDefaultAsync(s => s.Plan_ID == id && s.FK_User_ID == user.User_ID);
                 RequestPlanViewModel requestPlan = new RequestPlanViewModel();
                 requestPlan.id = id;
                 requestPlan.planName = plan.Plan_Name;
                 requestPlan.planTraffic = plan.PlanVolume.Value;
-                requestPlan.planGroup = plan.Group_Id.Value;
+                requestPlan.planGroup = user.Group_Id.Value;
                 requestPlan.planPrice = plan.Price.Value.ConvertToMony();
                 requestPlan.planTime = plan.CountDayes;
                 requestPlan.planSpeed = plan.Speed_limit;
                 var data = requestPlan.ToDictionary();
                 return Json(new { status = "success", data = data }, JsonRequestBehavior.AllowGet);
-
             }
             catch (Exception ex)
             {
@@ -256,12 +269,13 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         [HttpGet]
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public async Task<ActionResult> ChangeStatus(int id)
         {
             try
             {
-                var Plan = await RepositoryPlans.FirstOrDefaultAsync(p => p.Plan_ID == id);
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                var Plan = await RepositoryPlans.FirstOrDefaultAsync(p => p.Plan_ID == id && p.FK_User_ID == user.User_ID);
                 if (Plan.Status.Value)
                 {
                     Plan.Status = false;
@@ -271,17 +285,17 @@ namespace V2boardApi.Areas.App.Controllers
                     Plan.Status = true;
                 }
                 await RepositoryPlans.SaveChangesAsync();
-                
+
                 logger.Info("وضعیت تعرفه با نام " + Plan.Plan_Name + " تغییر کرد");
                 return Toaster.Success("موفق", "وضعیت تعرفه با موفقیت تغییر کرد");
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Info(ex, "تغییر وضعیت تعرفه با خطا مواجه شد");
                 return MessageBox.Error("ناموفق", "خطا در پردازش درخواست رخ داد لطفا با پشتیبانی ارتباط بگیرید");
             }
-            
+
 
 
         }
@@ -476,24 +490,6 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        public ActionResult DisablePlan(int id)
-        {
-            var Plan = RepositoryPlans.Where(p => p.Plan_ID == id).FirstOrDefault();
-            if (Plan != null)
-            {
-                if (Plan.Status.Value)
-                {
-                    Plan.Status = false;
-                }
-                else
-                {
-                    Plan.Status = true;
-                }
-                RepositoryPlans.Save();
-                return Content("1");
-            }
-            return PartialView("2");
-        }
 
         protected override void Dispose(bool disposing)
         {

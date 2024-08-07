@@ -72,7 +72,7 @@
 
                     @if (Role != null)
                     {
-                        if (Role.Value == "1")
+                        if (Role.Value == "1" || Role.Value == "3" || Role.Value == "4")
                         {
                             <!-- نمایندگی -->
                             <li class="menu-header small text-uppercase">
@@ -491,7 +491,7 @@
                                                         <span class="fw-semibold d-block mb-1">@User.Identity.Name</span> <small class="text-muted">نماینده</small>
                                                     </div>
                                                 }
-                                                else if (Role.Value == "3")
+                                                else if (Role.Value == "4" || Role.Value == "3")
                                                 {
                                                     <div class="flex-grow-1">
                                                         <span class="fw-semibold d-block mb-1">@User.Identity.Name</span> <small class="text-muted">نماینده کل</small>
@@ -503,7 +503,7 @@
                                     <li>
                                         <div class="dropdown-divider"></div>
                                     </li>
-                                    @if (Role.Value == "3")
+                                    @if (Role.Value == "4")
                                     {
                                         <li>
                                             <span class="dropdown-item"> <i class="ti ti-access-point me-2 ti-sm"></i> <span class="align-middle">مصرف : <span id="UserPerGig">در حال محاسبه</span> گیگ</span> </span>
@@ -805,14 +805,14 @@
                 success: function (res) {
                     if (res.status == "success") {
 
-                        @if(Role.Value == "3")
+                        @if(Role.Value == "4")
             {
                             <text>
                         $("#UserPerGig").html(res.data.UserPerGig);
                         $("#UserPerPrice").html(res.data.UserPerPrice);
         </text>
             }
-else if(Role.Value == "2")
+else if(Role.Value == "2" || Role.Value == "3")
             {
                 <text>
 

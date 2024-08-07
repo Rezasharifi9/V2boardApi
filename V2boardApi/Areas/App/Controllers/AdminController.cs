@@ -34,6 +34,7 @@ using Microsoft.Extensions.Logging;
 using V2boardApi.Areas.App.Data.UsersViewModels;
 using V2boardApi.Areas.App.Data.RequestModels;
 using V2boardApi.Models;
+using Antlr.Runtime.Misc;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -112,16 +113,16 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region لیست کاربران
 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult Index()
         {
             return View();
         }
 
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult _PartialGetAllUsers()
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> _PartialGetAllUsers()
         {
-            var Users = RepositoryUser.GetAll().OrderByDescending(p => p.User_ID).ToList();
+            var Users = await RepositoryUser.WhereAsync(s => s.tbUsers2.Username == User.Identity.Name);
             List<UserViewModel> users = new List<UserViewModel>();
             foreach (var item in Users)
             {
@@ -172,7 +173,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ویرایش اطلاعات کاربر
 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult Edit(int id)
         {
             var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
@@ -185,7 +186,7 @@ namespace V2boardApi.Areas.App.Controllers
             user.userFullname = us.FullName;
             user.userTelegramid = us.TelegramID;
             user.userUsername = us.Username;
-            user.userPlan = us.tbLinkUserAndPlans.Where(s => s.tbPlans.Status == true).Select(p => p.L_FK_P_ID.Value).ToList();
+            user.userPlan = us.tbLinkUserAndPlans.Where(s => s.tbPlans.Status == true && s.L_Status == true).Select(p => p.L_FK_P_ID.Value).ToList();
             var data = user.ToDictionary();
 
 
@@ -196,16 +197,16 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ثبت ویرایش و افزودن اطلاعات کاربر
 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateOrEdit(UserRequestModel user)
+        public async Task<ActionResult> CreateOrEdit(UserRequestModel user)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-
+                    var dbUser = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
                     if (user.userId == 0)
                     {
                         if (user.userPassword == null)
@@ -224,7 +225,7 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.FullName = user.userFullname;
                             tbUser.Email = user.userEmail;
                             tbUser.Password = user.userPassword.ToSha256();
-
+                            tbUser.Parent_ID = dbUser.User_ID;
                             try
                             {
                                 var Number = int.Parse(user.userLimit, NumberStyles.Currency);
@@ -261,7 +262,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     else
                     {
-                        tbUsers tbUser = RepositoryUser.Where(p => p.User_ID == user.userId).FirstOrDefault();
+                        tbUsers tbUser = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == user.userId && p.tbUsers2.Username == User.Identity.Name);
                         tbUser.Username = user.userUsername;
                         tbUser.FullName = user.userFullname;
                         tbUser.Email = user.userEmail;
@@ -279,8 +280,8 @@ namespace V2boardApi.Areas.App.Controllers
                             return MessageBox.Warning("هشدار", "لطفا مبلغ را صحیح وارد کنید", icon: icon.warning);
                         }
                         tbUser.PhoneNumber = user.userContact;
-                        tbUser.Token = (user.userUsername + user.userPassword).ToSha256();
-
+                        tbUser.Token = (tbUser.Username + tbUser.Password).ToSha256();
+                        tbUser.Parent_ID = dbUser.User_ID;
                         foreach (var item in tbUser.tbLinkUserAndPlans.ToList())
                         {
                             item.L_Status = false;
@@ -303,7 +304,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
 
 
-                        RepositoryUser.Save();
+                        await RepositoryUser.SaveChangesAsync();
                         logger.Info("نماینده ویرایش شد");
                         return MessageBox.Success("موفق", "نماینده با موفقیت ویرایش شد");
                     }
@@ -335,7 +336,7 @@ namespace V2boardApi.Areas.App.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult Details(int user_id, string type = "history")
         {
             ViewBag.Type = type;
@@ -348,7 +349,7 @@ namespace V2boardApi.Areas.App.Controllers
         #region کارت جزئیات کاربر
 
         //نمایش پروفایل کاربر
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult _UserCard(int userid)
         {
             var User = RepositoryUser.Where(p => p.User_ID == userid).FirstOrDefault();
@@ -360,22 +361,22 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region مسدود کردن کاربر
-        //[AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult BanUser(int id)
         {
             try
             {
 
-                var User = RepositoryUser.Where(p => p.User_ID == id).FirstOrDefault();
-                if (User != null)
+                var user = RepositoryUser.Where(p => p.User_ID == id && p.tbUsers2.Username == User.Identity.Name).FirstOrDefault();
+                if (user != null)
                 {
-                    if (User.Status.Value)
+                    if (user.Status.Value)
                     {
-                        User.Status = false;
+                        user.Status = false;
                     }
                     else
                     {
-                        User.Status = true;
+                        user.Status = true;
                     }
                 }
 
@@ -416,6 +417,11 @@ namespace V2boardApi.Areas.App.Controllers
                 tbUsers User = RepositoryUser.table.Where(p => p.Username == userUsername && p.Password == Sha).FirstOrDefault();
                 if (User != null)
                 {
+                    if (!User.Status.Value)
+                    {
+                        return MessageBox.Warning("هشدار", "حساب کاربری شما غیرفعال شده است");
+                    }
+
                     if (Request.Cookies["Role"] != null)
                     {
                         Response.Cookies["Role"].Value = User.Role.Value.ToString();
@@ -460,14 +466,12 @@ namespace V2boardApi.Areas.App.Controllers
                 else
                 {
                     logger.Warn("ورود ناموفق");
-                    TempData["Error"] = "نام کاربری یا رمز عبور اشتباه است";
                     return MessageBox.Warning("اشتباه", "نام کاربری یا رمز عبور اشتباه است");
                 }
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "خطا در ورود کاربر");
-                TempData["Error"] = "خطا در برقراری ارتباط با سرور";
                 return MessageBox.Error("خطا", "خطا در برقراری ارتباط با سرور");
             }
         }
@@ -488,16 +492,18 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region لیست تعرفه ها در قالب Select2
         //[AuthorizeApp(Roles = "1")]
-        public ActionResult Select2Plans()
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> Select2Plans()
         {
-
-            var Plans = RepositoryPlans.Where(s => s.Status == true).Select(p => new { id = p.Plan_ID, Name = p.Plan_Name }).ToList();
-            return Json(new { result = Plans }, JsonRequestBehavior.AllowGet);
+            var Plans = await RepositoryPlans.WhereAsync(s => s.Status == true && s.tbUsers.Username == User.Identity.Name);
+            var planss = Plans.Select(p => new { id = p.Plan_ID, Name = p.Plan_Name }).ToList();
+            return Json(new { result = planss }, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult Select2UserPlans()
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        public async Task<ActionResult> Select2UserPlans()
         {
-            var UserLink = RepositoryUserPlanLinks.Where(p => p.tbUsers.Username == User.Identity.Name && p.tbPlans.Status == true).ToList();
+            var UserLink = await RepositoryUserPlanLinks.WhereAsync(p => p.tbUsers.Username == User.Identity.Name && p.tbPlans.Status == true && p.L_Status == true);
             var Plans = UserLink.Select(p => new { id = p.tbPlans.Plan_ID, Name = p.tbPlans.Plan_Name }).ToList();
             return Json(new { result = Plans }, JsonRequestBehavior.AllowGet);
         }
@@ -505,7 +511,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region نمایش لاگ ایجاد یا تمدید کاربر عمده 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult GetUserAccountLog(int user_id)
         {
             try
@@ -552,7 +558,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region فاکتور های پرداخت شده کاربر 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult Factors(int user_id)
         {
 
@@ -577,7 +583,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region شارژ کیف پول کاربر
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
 
         public ActionResult _EditWallet(int user_id)
         {
@@ -593,7 +599,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
 
-        [AuthorizeApp(Roles = "1")]
+        [AuthorizeApp(Roles = "1,3,4")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult EditWallet(int user_id, string userDeposit)
@@ -750,14 +756,14 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region دریافت کیف پول کاربر
 
-        [AuthorizeApp(Roles = "1,2,3")]
+        [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> GetWallet()
         {
             try
             {
                 var user = await RepositoryUser.FirstOrDefaultAsync(p => p.Username == User.Identity.Name);
 
-                if (user.Role == 3 || user.Role == 1)
+                if (user.Role == 4 || user.Role == 1)
                 {
                     Int64 used = 0;
 
@@ -863,8 +869,19 @@ namespace V2boardApi.Areas.App.Controllers
                 var User = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
                 if (User != null)
                 {
+                    if(User.Group_Id == null)
+                    {
+                        return MessageBox.Warning("هشدار", "لطفا اول وضعیت گروه مجوز را تعیین کنید");
+                    }
                     User.GeneralAgent = status;
-                    User.Role = 3;
+                    if (status)
+                    {
+                        User.Role = 3;
+                    }
+                    else
+                    {
+                        User.Role = 2;
+                    }
                     await RepositoryUser.SaveChangesAsync();
                     logger.Info("نماینده معمولی به درجه نماینده کل ارتقا یافت");
                     return MessageBox.Success("موفق", "وضعیت نماینده با موفقیت تغییر کرد");
@@ -882,5 +899,45 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #endregion
+
+        #region تنظیمات نماینده
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult _GetSetting(int user_id)
+        {
+            var us = db.tbUsers.Where(p => p.User_ID == user_id).FirstOrDefault();
+            if (us != null)
+            {
+                return PartialView(us.Group_Id != null ? us.Group_Id : 0);
+            }
+            else
+            {
+                return RedirectToAction("Login", "Admin");
+            }
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> SetSetting(int user_id, int group)
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+                user.Group_Id = group;
+
+                await RepositoryUser.SaveChangesAsync();
+
+                logger.Info("ادمین گروه مجوز را تغییر داد");
+                return MessageBox.Success("موفق", "گروه مجوز با موفقیت ثبت شد");
+
+            }
+            catch (Exception ex)
+            {
+                return MessageBox.Error("موفق", "در ثبت گروه مجوز با خطا مواجه شدیم !!");
+            }
+        }
+
+
+        #endregion
+
     }
 }

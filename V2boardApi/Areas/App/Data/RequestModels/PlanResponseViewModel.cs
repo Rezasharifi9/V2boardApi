@@ -14,6 +14,5 @@ namespace V2boardApi.Areas.App.Data.RequestModels
         public string Price { get; set; }
         public int Status { get; set; }
         public string SpeedLimit { get; set; }
-        public string Group_Name { get; set; }
     }
 }

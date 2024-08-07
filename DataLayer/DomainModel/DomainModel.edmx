@@ -179,6 +179,7 @@
           <Property Name="Plan_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Plan_ID_V2" Type="int" />
           <Property Name="Plan_Name" Type="nvarchar" MaxLength="250" />
+          <Property Name="FK_User_ID" Type="int" />
           <Property Name="Plan_Des" Type="varchar" MaxLength="200" />
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="Status" Type="bit" />
@@ -297,7 +298,10 @@
           <Property Name="Admin_Telegram_ID" Type="int" />
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
           <Property Name="PriceForGig" Type="int" />
-          <Property Name="GeneralAgent" Type="bit" />
+          <Property Name="GeneralAgent" Type="bit" Nullable="false" />
+          <Property Name="Group_Id" Type="int" />
+          <Property Name="Group_Name" Type="nvarchar" MaxLength="150" />
+          <Property Name="UserCaculateTime" Type="datetime" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
@@ -473,6 +477,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbPlans_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbPlans">
+              <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbTelegramUsers_tbTelegramUsers">
           <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
           <End Role="tbTelegramUsers1" Type="Self.tbTelegramUsers" Multiplicity="*" />
@@ -645,6 +661,10 @@
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbPlans" EntitySet="tbPlans" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbPlans_tbUsers" Association="Self.FK_tbPlans_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbPlans" EntitySet="tbPlans" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbTelegramUsers_tbTelegramUsers" Association="Self.FK_tbTelegramUsers_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbTelegramUsers1" EntitySet="tbTelegramUsers" />
@@ -756,6 +776,10 @@
           </AssociationSet>
           <AssociationSet Name="FK_tbPlans_tbServers" Association="V2boardSiteModel.FK_tbPlans_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbPlans" EntitySet="tbPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPlans_tbUsers" Association="V2boardSiteModel.FK_tbPlans_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbPlans" EntitySet="tbPlans" />
           </AssociationSet>
           <AssociationSet Name="FK_tbUpdateLogs_tbServers" Association="V2boardSiteModel.FK_tbUpdateLogs_tbServers">
@@ -979,6 +1003,7 @@
           <Property Name="Plan_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Plan_ID_V2" Type="Int32" />
           <Property Name="Plan_Name" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="FK_User_ID" Type="Int32" />
           <Property Name="Plan_Des" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="Status" Type="Boolean" />
@@ -992,6 +1017,7 @@
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbPlans" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -1116,18 +1142,22 @@
           <Property Name="Admin_Telegram_ID" Type="Int32" />
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="PriceForGig" Type="Int32" />
+          <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
+          <Property Name="Group_Id" Type="Int32" />
+          <Property Name="Group_Name" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="UserCaculateTime" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
           <NavigationProperty Name="tbExpLog" Relationship="V2boardSiteModel.FK_tbExpLog_tbUsers" FromRole="tbUsers" ToRole="tbExpLog" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbUsers" ToRole="tbPlans" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbTelegramUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
-          <Property Name="GeneralAgent" Type="Boolean" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
@@ -1300,6 +1330,18 @@
             </Principal>
             <Dependent Role="tbPlans">
               <PropertyRef Name="FK_Server_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbPlans_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbPlans">
+              <PropertyRef Name="FK_User_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1596,6 +1638,7 @@
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
                 <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
                 <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
                 <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
@@ -1691,6 +1734,9 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="UserCaculateTime" ColumnName="UserCaculateTime" />
+                <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
+                <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
                 <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
                 <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />

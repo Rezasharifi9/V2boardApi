@@ -12,13 +12,19 @@
     <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
     <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
 }
-
+@{ 
+    var Role = Request.Cookies["Role"].Value;
+}
 
 <!-- DataTable with Buttons -->
 <div class="card">
     <div class="card-datatable table-responsive pt-0">
         <button style="z-index:1; float: left; margin-top: 16px; margin-left: 17px;" class="btn btn-secondary add-new btn-primary waves-effect waves-light" tabindex="0" data-bs-toggle="offcanvas" data-bs-target="#Add-Or-EditPlan" type="button"><span><i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block" id="btnAddPlan">افزودن</span></span></button>
-        <button data-bs-toggle="popover" title="لیست تعرفه ها را از V2board می آورد" style="z-index:1; float: left; margin-top: 16px; margin-left: 17px;" class="btn add-new btn-outline-info waves-effect waves-light" tabindex="0" type="button" id="updatePlan"><span><i class="ti ti-refresh me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">بروزرسانی تعرفه</span></span></button>
+        @if (Role == "1")
+        {
+            <button data-bs-toggle="popover" title="لیست تعرفه ها را از V2board می آورد" style="z-index:1; float: left; margin-top: 16px; margin-left: 17px;" class="btn add-new btn-outline-info waves-effect waves-light" tabindex="0" type="button" id="updatePlan"><span><i class="ti ti-refresh me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">بروزرسانی تعرفه</span></span></button>
+
+        }
         <table class="datatables-plan table">
             <thead>
                 <tr>
@@ -28,7 +34,6 @@
                     <th>ترافیک (گیگابایت)</th>
                     <th>قیمت</th>
                     <th>محدودیت سرعت</th>
-                    <th>گروه مجوز</th>
                     <th>وضعیت</th>
                     <th>عملیات</th>
                 </tr>
@@ -87,16 +92,6 @@
                         <i class="ti ti-access-point"></i>
                     </span>
                     <input aria-describedby="basicSalary2" aria-label="12000" class="form-control dt-salary" id="planSpeed" name="planSpeed" placeholder="20" type="number" />
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="mb-3">
-                    <label class="form-label" for="planGroup">گروه مجوز<span class="text-danger"> * </span></label>
-                    <select id="planGroup" class="select2 form-select" autocomplete="off" name="planGroup">
-                        <option value="-1">در حال بارگزاری ...</option>
-                    </select>
-                    <div id="planGroupMessage" class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback d-none"><div data-field="planGroup1" data-validator="notEmpty">گروه مجوز الزامی است</div></div>
-
                 </div>
             </div>
             <div class="col-sm-12">

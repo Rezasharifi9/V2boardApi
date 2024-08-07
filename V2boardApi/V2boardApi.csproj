@@ -1732,6 +1732,7 @@
     <Content Include="Areas\api\Views\Client\subscribe.cshtml" />
     <Content Include="Areas\api\Views\Client\UpdateAccount.cshtml" />
     <Content Include="Areas\api\Views\web.config" />
+    <Content Include="Areas\App\Views\Admin\_GetSetting.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

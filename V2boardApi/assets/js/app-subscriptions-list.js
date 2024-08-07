@@ -256,7 +256,7 @@ $(function () {
 
 
                         var menu = "";
-                        if (Role == "1" || Role == "3") {
+                        if (Role == "1" || Role == "4") {
                             menu += '<button data-id="' + user_id + '" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit" type="buttton"><i class="text-primary ti ti-pencil"></i></button>';
                         }
 
@@ -498,7 +498,7 @@ $(function () {
         var Name = $(this).attr("data-user");
         var Used = $(this).attr("data-used");
 
-        if ((vol < 0 || time == 0) || Role == "1" || Role == "3" || Used <= 1) {
+        if ((vol < 0 || time == 0) || Role == "1" || Role == "4" || Used <= 1) {
             Swal.fire({
                 title: 'هشدار',
                 text: "مطمئنی میخای لینک " + Name + " رو حذف کنی !؟",

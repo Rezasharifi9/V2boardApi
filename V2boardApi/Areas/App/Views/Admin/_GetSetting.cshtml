@@ -1,0 +1,41 @@
+﻿@model int  
+<div aria-hidden="true" class="modal fade" id="editSetting" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+        <div class="modal-content p-3 p-md-5">
+            <div class="modal-body">
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                @*<div class="text-center mb-4">
+                        <h3 class="mb-2">ربات</h3>
+                    </div>*@
+                <form class="row g-3" id="editGroupForm">
+                    <input type="hidden" name="user_id" id="user_id" value="" />
+                    <div class="col-sm-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="planGroup">گروه مجوز<span class="text-danger"> * </span></label>
+                            <select id="group" class="select2 form-select" autocomplete="off" name="group">
+                                <option value="-1">در حال بارگزاری ...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 text-center">
+                        <button class="btn btn-primary me-sm-3 me-1" type="button" id="SaveGroup">ثبت</button>
+                        <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset"> لغو</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+
+    $(function () {
+
+        SelectGroup('#group', '@Model');
+
+    });
+
+
+</script>

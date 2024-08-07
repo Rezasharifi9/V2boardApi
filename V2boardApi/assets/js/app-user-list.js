@@ -28,7 +28,6 @@ $(function () {
             3: { title: 'اتمام سقف مصرف', class: 'bg-label-danger' },
             4: { title: 'غیرفعال', class: 'bg-label-danger' }
         };
-
     if (select2.length) {
         var $this = select2;
         $this.wrap('<div class="position-relative"></div>').select2({
@@ -520,6 +519,9 @@ $(function () {
         var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
         offcanvas.show();
     }
+
+
+    //لیست تعرفه ها
     function Plans(selectId) {
         var $select = $(selectId);
 
@@ -543,6 +545,7 @@ $(function () {
         });
     }
 
+    //جهت انتخاب تعرفه
     function SelectPlans(selectId, Ids) {
         console.log("select shod");
         $(selectId).val(Ids).trigger('change');

@@ -11,7 +11,7 @@ using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [AuthorizeApp(Roles = "1,2,3")]
+    [AuthorizeApp(Roles = "1,2,3,4")]
     [LogActionFilter]
     public class BotFactorsController : Controller
     {
