@@ -126,49 +126,57 @@ namespace V2boardApi.Areas.App.Controllers
         public async Task<ActionResult> _PartialGetAllUsers()
 
         {
-            var Users = await RepositoryUser.WhereAsync(s => s.tbUsers2.Username == User.Identity.Name);
-            Users.Add(await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name));
-            List<UserViewModel> users = new List<UserViewModel>();
-            foreach (var item in Users)
+            try
             {
-                UserViewModel user = new UserViewModel();
-                user.id = item.User_ID;
-                user.profile = item.Profile_Filename;
-                user.username = item.Username;
-                user.status = 1;
-                user.sumSellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => s.SalePrice.Value).Sum().ConvertToMony() + " تومان";
-                user.sellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => s.SalePrice.Value).Count();
-                if (item.Wallet >= item.Limit)
+                var Users = await RepositoryUser.WhereAsync(s => s.tbUsers2.Username == User.Identity.Name);
+                Users.Add(await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name));
+                List<UserViewModel> users = new List<UserViewModel>();
+                foreach (var item in Users)
                 {
-                    user.status = 3;
-                }
-                else
-                if (item.Wallet >= (item.Limit - (item.Limit * 0.2)))
-                {
-                    user.status = 2;
-                }
-                if (item.Status == false)
-                {
-                    user.status = 4;
-                }
-                user.used = item.Wallet.Value.ConvertToMony() + " تومان";
-                user.limit = item.Limit.Value.ConvertToMony() + " تومان";
-                user.RobotStatus = 0;
-
-                var bot = BotManager.GetBot(user.username);
-                if (bot != null)
-                {
-                    if (bot.Started)
+                    UserViewModel user = new UserViewModel();
+                    user.id = item.User_ID;
+                    user.profile = item.Profile_Filename;
+                    user.username = item.Username;
+                    user.status = 1;
+                    user.sumSellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => s.SalePrice.Value).Sum().ConvertToMony() + " تومان";
+                    user.sellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => s.SalePrice.Value).Count();
+                    if (item.Wallet >= item.Limit)
                     {
-                        user.RobotStatus = 1;
+                        user.status = 3;
                     }
+                    else
+                    if (item.Wallet >= (item.Limit - (item.Limit * 0.2)))
+                    {
+                        user.status = 2;
+                    }
+                    if (item.Status == false)
+                    {
+                        user.status = 4;
+                    }
+                    user.used = item.Wallet.Value.ConvertToMony() + " تومان";
+                    user.limit = item.Limit.Value.ConvertToMony() + " تومان";
+                    user.RobotStatus = 0;
+
+                    var bot = BotManager.GetBot(user.username);
+                    if (bot != null)
+                    {
+                        if (bot.Started)
+                        {
+                            user.RobotStatus = 1;
+                        }
+                    }
+
+
+                    users.Add(user);
                 }
 
-
-                users.Add(user);
+                return Json(new { data = users }, JsonRequestBehavior.AllowGet);
             }
-
-            return Json(new { data = users }, JsonRequestBehavior.AllowGet);
+            catch(Exception ex)
+            {
+                logger.Error(ex,"خطا در لود لیست نمایندگان");
+                return MessageBox.Error("خطا", "خطا در لود نمایندگان");
+            }
         }
 
         #endregion
@@ -257,7 +265,7 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.FullName = user.userFullname;
                             tbUser.Email = user.userEmail;
                             tbUser.Password = user.userPassword.ToSha256();
-                            tbUser.Parent_ID = dbUser.User_ID;
+                            
                             tbUser.TelegramID = user.userTelegramid;
                             try
                             {
@@ -277,9 +285,10 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.Wallet = 0;
                             tbUser.Role = 2;
                             tbUser.FK_Server_ID = CurrentUser.FK_Server_ID;
+                            tbUser.Parent_ID = CurrentUser.User_ID;
 
                             RepositoryUser.Insert(tbUser);
-                            RepositoryUser.Save();
+                            await RepositoryUser.SaveChangesAsync();
 
                             logger.Info("نماینده افزوده شد");
                             return Toaster.Success("موفق", "نماینده با موفقیت افزوده شد");

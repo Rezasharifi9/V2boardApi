@@ -540,13 +540,13 @@
                                         </li>
                                     }
                                     @*<li>
-            <a class="dropdown-item" href="pages-account-settings-billing.html">
-                <span class="d-flex align-items-center align-middle">
-                    <i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
-                    <span class="flex-grow-1 align-middle">خریدها</span> <span class="flex-shrink-0 badge badge-center rounded-pill bg-label-danger w-px-20 h-px-20">2</span>
-                </span>
-            </a>
-        </li>*@
+                                            <a class="dropdown-item" href="pages-account-settings-billing.html">
+                                                <span class="d-flex align-items-center align-middle">
+                                                    <i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
+                                                    <span class="flex-grow-1 align-middle">خریدها</span> <span class="flex-shrink-0 badge badge-center rounded-pill bg-label-danger w-px-20 h-px-20">2</span>
+                                                </span>
+                                            </a>
+                                        </li>*@
                                     <li>
                                         <div class="dropdown-divider"></div>
                                     </li>
@@ -718,15 +718,21 @@
             $('body').unblock();
         }
 
+
+        
+    </script>
+
+    <script>
         $(function () {
-
-            document.getElementsByClassName('offcanvas').addEventListener('hidden.bs.offcanvas', function () {
-                const forms = this.querySelectorAll('form');
-                forms.forEach(form => form.reset());
-
-                $("input[type='hidden']").val(0);
+            var offcanvasElements = document.getElementsByClassName('offcanvas');
+            Array.prototype.forEach.call(offcanvasElements, function (offcanvas) {
+                offcanvas.addEventListener('hidden.bs.offcanvas', function () {
+                    console.log('Offcanvas has been closed.');
+                    const forms = this.querySelectorAll('form.addNewUserForm');
+                    forms.forEach(form => form.reset());
+                    $(this).find("input[type='hidden']").val("0");
+                });
             });
-
         });
     </script>
 
