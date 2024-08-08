@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
     <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
 }
-@{ 
+@{
     var Role = Request.Cookies["Role"].Value;
 }
 
@@ -130,5 +130,24 @@
             document.getElementById('planForm').reset();
 
         });
+    </script>
+
+    <script>
+
+        // اضافه کردن یک event listener برای رویداد hidden.bs.offcanvas
+        var offcanvasElement = document.getElementById('offcanvasAddUser');
+        offcanvasElement.addEventListener('hidden.bs.offcanvas', function () {
+            console.log('Offcanvas has been closed.');
+            // اینجا تابع مورد نظر خود را فراخوانی کنید
+            document.getElementById('planForm').reset();
+
+            $("input[type='hidden']").val("0");
+
+
+        });
+
+
+
+
     </script>
 }
