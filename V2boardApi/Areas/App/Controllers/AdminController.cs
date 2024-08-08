@@ -35,6 +35,9 @@ using V2boardApi.Areas.App.Data.UsersViewModels;
 using V2boardApi.Areas.App.Data.RequestModels;
 using V2boardApi.Models;
 using Antlr.Runtime.Misc;
+using System.Data.Entity;
+using Mysqlx.Expr;
+using System.Numerics;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -121,8 +124,10 @@ namespace V2boardApi.Areas.App.Controllers
 
         [AuthorizeApp(Roles = "1,3,4")]
         public async Task<ActionResult> _PartialGetAllUsers()
+
         {
             var Users = await RepositoryUser.WhereAsync(s => s.tbUsers2.Username == User.Identity.Name);
+            Users.Add(await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name));
             List<UserViewModel> users = new List<UserViewModel>();
             foreach (var item in Users)
             {
@@ -166,7 +171,6 @@ namespace V2boardApi.Areas.App.Controllers
             return Json(new { data = users }, JsonRequestBehavior.AllowGet);
         }
 
-
         #endregion
 
         #region افزودن و ویرایش کاربر
@@ -176,7 +180,19 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult Edit(int id)
         {
-            var us = db.tbUsers.Where(p => p.User_ID == id).FirstOrDefault();
+
+            var us = new tbUsers();
+
+            us = RepositoryUser.Where(s => s.User_ID == id && s.Username == User.Identity.Name).FirstOrDefault();
+
+            if (us == null)
+            {
+                us = RepositoryUser.Where(s => s.User_ID == id && s.tbUsers2.Username == User.Identity.Name).FirstOrDefault();
+            }
+            if (us == null)
+            {
+                return RedirectToAction("Error404", "Error", new { area = "App" });
+            }
 
             UserRequestModel user = new UserRequestModel();
             user.userId = us.User_ID;
@@ -186,7 +202,6 @@ namespace V2boardApi.Areas.App.Controllers
             user.userFullname = us.FullName;
             user.userTelegramid = us.TelegramID;
             user.userUsername = us.Username;
-            user.userPlan = us.tbLinkUserAndPlans.Where(s => s.tbPlans.Status == true && s.L_Status == true).Select(p => p.L_FK_P_ID.Value).ToList();
             var data = user.ToDictionary();
 
 
@@ -206,7 +221,24 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var dbUser = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+
+                    var dbUser = new tbUsers();
+
+                    if (user.userId != 0)
+                    {
+                        dbUser = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user.userId && s.Username == User.Identity.Name);
+
+                        if (dbUser == null)
+                        {
+                            dbUser = await RepositoryUser.FirstOrDefaultAsync(s => s.tbUsers2.Username == User.Identity.Name);
+                        }
+
+                        if (dbUser == null)
+                        {
+                            return RedirectToAction("Error404", "Error", new { area = "App" });
+                        }
+                    }
+
                     if (user.userId == 0)
                     {
                         if (user.userPassword == null)
@@ -226,6 +258,7 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.Email = user.userEmail;
                             tbUser.Password = user.userPassword.ToSha256();
                             tbUser.Parent_ID = dbUser.User_ID;
+                            tbUser.TelegramID = user.userTelegramid;
                             try
                             {
                                 var Number = int.Parse(user.userLimit, NumberStyles.Currency);
@@ -244,69 +277,91 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.Wallet = 0;
                             tbUser.Role = 2;
                             tbUser.FK_Server_ID = CurrentUser.FK_Server_ID;
-                            tbUser.tbLinkUserAndPlans = new List<tbLinkUserAndPlans>();
-                            foreach (var item in user.userPlan)
-                            {
-                                tbLinkUserAndPlans plan = new tbLinkUserAndPlans();
-                                plan.L_FK_P_ID = Convert.ToInt32(item);
-                                plan.L_Status = true;
-                                tbUser.tbLinkUserAndPlans.Add(plan);
-                            }
 
                             RepositoryUser.Insert(tbUser);
                             RepositoryUser.Save();
 
                             logger.Info("نماینده افزوده شد");
-                            return MessageBox.Success("موفق", "نماینده با موفقیت افزوده شد");
+                            return Toaster.Success("موفق", "نماینده با موفقیت افزوده شد");
                         }
                     }
                     else
                     {
                         tbUsers tbUser = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == user.userId && p.tbUsers2.Username == User.Identity.Name);
-                        tbUser.Username = user.userUsername;
+
+                        if (tbUser == null)
+                        {
+                            tbUser = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                        }
+
+                        if (tbUser == null)
+                        {
+                            return RedirectToAction("Error404", "Error", new { area = "App" });
+                        }
+
+
                         tbUser.FullName = user.userFullname;
                         tbUser.Email = user.userEmail;
                         if (user.userPassword != null)
                         {
+                            if (User.Identity.Name == tbUser.Username)
+                            {
+                                return MessageBox.Warning("هشدار", "شما مجوز تغییر رمز عبور خود را ندارید");
+                            }
                             tbUser.Password = user.userPassword.ToSha256();
+                            tbUser.Token = (user.userUsername + user.userPassword).ToSha256();
+
                         }
                         try
                         {
                             var Number = int.Parse(user.userLimit, NumberStyles.Currency);
+                            if(tbUser.Limit != Number)
+                            {
+                                if (User.Identity.Name == tbUser.Username)
+                                {
+                                    return MessageBox.Warning("هشدار", "شما مجوز تغییر محدودیت خود را ندارید");
+                                }
+                            }
                             tbUser.Limit = Number;
+                            
+
                         }
                         catch
                         {
                             return MessageBox.Warning("هشدار", "لطفا مبلغ را صحیح وارد کنید", icon: icon.warning);
                         }
                         tbUser.PhoneNumber = user.userContact;
-                        tbUser.Token = (tbUser.Username + tbUser.Password).ToSha256();
-                        tbUser.Parent_ID = dbUser.User_ID;
-                        foreach (var item in tbUser.tbLinkUserAndPlans.ToList())
+
+                        
+
+                        if (tbUser.Username!= user.userUsername)
                         {
-                            item.L_Status = false;
-                        }
-
-                        foreach (var item in user.userPlan)
-                        {
-                            var first = tbUser.tbLinkUserAndPlans.Where(p => p.L_FK_P_ID == Convert.ToInt32(item) && p.L_Status == false).FirstOrDefault();
-                            if (first == null)
+                            var CheckExistsUser = RepositoryUser.Where(p => p.Username == user.userUsername).Any();
+                            if (CheckExistsUser)
                             {
-                                tbLinkUserAndPlans link = new tbLinkUserAndPlans();
-                                link.L_FK_P_ID = Convert.ToInt32(item);
-                                link.L_Status = true;
-                                tbUser.tbLinkUserAndPlans.Add(link);
+                                return MessageBox.Warning("هشدار", "نماینده ای با این نام کاربری وجود دارد", icon: icon.warning);
                             }
-                            else
+
+                            
+
+                            using (MySqlEntities mysql = new MySqlEntities(tbUser.tbServers.ConnectionString))
                             {
-                                first.L_Status = true;
+                                await mysql.OpenAsync();
+
+                                var Disc3 = new Dictionary<string, object>();
+                                Disc3.Add("@old_email", "@" + tbUser.Username);
+                                Disc3.Add("@new_email", "@" + user.userUsername);
+
+                                var Reader = await mysql.GetDataAsync("update v2_user set email=REPLACE(email, @old_email, @new_email)", Disc3);
+                                await Reader.ReadAsync();
                             }
+                            tbUser.Username = user.userUsername;
+
                         }
-
-
+                       
                         await RepositoryUser.SaveChangesAsync();
                         logger.Info("نماینده ویرایش شد");
-                        return MessageBox.Success("موفق", "نماینده با موفقیت ویرایش شد");
+                        return Toaster.Success("موفق", "نماینده با موفقیت ویرایش شد");
                     }
                 }
                 else
@@ -318,7 +373,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "افزودن نماینده جدید با خطا مواجه شد");
+                logger.Error(ex, "افزودن یا ویرایش نماینده با خطا مواجه شد");
                 return MessageBox.Warning("ناموفق", "ثبت نماینده با خطا مواجه شد", icon: icon.error);
             }
         }
@@ -352,8 +407,21 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult _UserCard(int userid)
         {
-            var User = RepositoryUser.Where(p => p.User_ID == userid).FirstOrDefault();
-            return PartialView(User);
+            var user = new tbUsers();
+
+            user = RepositoryUser.Where(s => s.User_ID == userid && s.Username == User.Identity.Name).FirstOrDefault();
+
+            if (user == null)
+            {
+                user = RepositoryUser.Where(s => s.User_ID == userid && s.tbUsers2.Username == User.Identity.Name).FirstOrDefault();
+            }
+
+            if (user == null)
+            {
+                return RedirectToAction("Error404", "Error", new { area = "App" });
+            }
+
+            return PartialView(user);
         }
 
         #endregion
@@ -366,8 +434,22 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
+                var user = new tbUsers();
 
-                var user = RepositoryUser.Where(p => p.User_ID == id && p.tbUsers2.Username == User.Identity.Name).FirstOrDefault();
+                user = RepositoryUser.Where(s => s.User_ID == id && s.Username == User.Identity.Name).FirstOrDefault();
+
+                if (user == null)
+                {
+                    user = RepositoryUser.Where(s => s.User_ID == id && s.tbUsers2.Username == User.Identity.Name).FirstOrDefault();
+                }
+                else
+                {
+                    return MessageBox.Warning("ناموفق", "شما امکان غیرفعال کردن حساب خود را ندارید !!");
+                }
+                if (user == null)
+                {
+                    return RedirectToAction("Error404", "Error", new { area = "App" });
+                }
                 if (user != null)
                 {
                     if (user.Status.Value)
@@ -382,14 +464,112 @@ namespace V2boardApi.Areas.App.Controllers
 
                 RepositoryUser.Save();
                 logger.Info("وضعیت کاربر تغییر یافت");
-                return Json(new { result = true }, JsonRequestBehavior.AllowGet);
+                return Toaster.Success("موفق", "وضعیت نماینده با موفقیت تغییر کرد");
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "در تغییر وضعیت کاربر خطایی رخ داد");
-                return Json(new { result = false }, JsonRequestBehavior.AllowGet);
+                return MessageBox.Error("ناموفق", "در تغییر وضعیت نماینده خطایی رخ داد");
             }
         }
+
+        #endregion
+
+        #region انتخاب تعرفه برای نماینده
+
+        #region نمایش
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> SelectPlan(int user_id)
+        {
+            try
+            {
+
+                var user = new tbUsers();
+
+                user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id && s.Username == User.Identity.Name);
+
+                if (user == null)
+                {
+                    user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id && s.tbUsers2.Username == User.Identity.Name);
+                }
+                if (user == null)
+                {
+                    return RedirectToAction("Error404", "Error", new { area = "App" });
+                }
+
+                var plans = user.tbLinkUserAndPlans.Where(p => p.L_Status == true).ToList();
+
+                return Json(new { status = "success", data = plans.Select(s => s.tbPlans.Plan_ID).ToList() }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "در نمایش تعرفه ها با خطایی مواجه شدیم ");
+                return MessageBox.Error("خطا", "نمایش تعرفه ها با خطا مواجه شد");
+            }
+
+        }
+        #endregion
+
+        #region ثبت
+
+        [AuthorizeApp(Roles = "1,3,4")]
+        [System.Web.Mvc.HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> SetPlan(int user_id, List<int> userPlan)
+        {
+            try
+            {
+                var user = new tbUsers();
+
+                user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id && s.Username == User.Identity.Name);
+
+                if (user == null)
+                {
+                    user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id && s.tbUsers2.Username == User.Identity.Name);
+                }
+                if (user == null)
+                {
+                    return RedirectToAction("Error404", "Error", new { area = "App" });
+                }
+                foreach (var plan in user.tbLinkUserAndPlans)
+                {
+                    plan.L_Status = false;
+                }
+
+                if (userPlan != null)
+                {
+                    foreach (var plan in userPlan)
+                    {
+                        var planuser = user.tbLinkUserAndPlans.Where(p => p.L_FK_P_ID == plan && p.L_Status == false).FirstOrDefault();
+                        if (planuser != null)
+                        {
+                            planuser.L_Status = true;
+                        }
+                        else
+                        {
+                            tbLinkUserAndPlans link = new tbLinkUserAndPlans();
+                            link.L_Status = true;
+                            link.L_FK_P_ID = plan;
+                            user.tbLinkUserAndPlans.Add(link);
+                        }
+                    }
+                }
+                await RepositoryUser.SaveChangesAsync();
+                return Toaster.Success("موفق", "تعرفه های نماینده با موفقیت تغییر کرد");
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "ثبت تعرفه ها با خطا مواجه شد");
+                return MessageBox.Error("خطا", "ثبت تعرفه ها با خطا مواجه شد");
+            }
+
+
+
+        }
+
+        #endregion
 
         #endregion
 
@@ -438,9 +618,33 @@ namespace V2boardApi.Areas.App.Controllers
                         Response.Cookies.Add(cookie);
                     }
 
+                    if (Request.Cookies["Token"] != null)
+                    {
+                        Response.Cookies["Token"].Value = User.Token;
+                    }
+                    else
+                    {
+                        HttpCookie Token = new HttpCookie("Token");
+                        if (User.Token == null)
+                        {
+                            Token.Value = (userUsername + userPassword).ToSha256();
+                        }
+                        else
+                        {
+                            Token.Value = User.Token;
+                        }
+                        if (userRemember)
+                        {
+                            Token.Expires = DateTime.Now.AddDays(7);
+                        }
+
+                        Response.Cookies.Add(Token);
+                    }
+
 
                     if (userRemember)
                     {
+
                         FormsAuthentication.SetAuthCookie(User.Username, true);
                     }
                     else
@@ -491,7 +695,6 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region لیست تعرفه ها در قالب Select2
-        //[AuthorizeApp(Roles = "1")]
         [AuthorizeApp(Roles = "1,3,4")]
         public async Task<ActionResult> Select2Plans()
         {
@@ -821,7 +1024,16 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 else
                 {
-                    return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+                    if(user.Role == 3)
+                    {
+                        return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(),pricePerGig = user.PriceForGig } }, JsonRequestBehavior.AllowGet);
+
+                    }
+                    else
+                    {
+                        return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+
+                    }
                 }
 
 
@@ -869,7 +1081,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var User = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
                 if (User != null)
                 {
-                    if(User.Group_Id == null)
+                    if (User.Group_Id == null)
                     {
                         return MessageBox.Warning("هشدار", "لطفا اول وضعیت گروه مجوز را تعیین کنید");
                     }

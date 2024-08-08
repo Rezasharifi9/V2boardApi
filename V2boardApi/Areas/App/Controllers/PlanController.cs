@@ -131,10 +131,14 @@ namespace V2boardApi.Areas.App.Controllers
 
                             time = Utility.ConvertDatetimeToSecond(Date).ToString();
                         }
-                        var Speed = "NULL";
+                        var Speed = "";
                         if (model.planSpeed != null)
                         {
                             Speed = model.planSpeed.Value.ToString();
+                        }
+                        else
+                        {
+                            Speed = null;
                         }
                         var TimeNow = Utility.ConvertDatetimeToSecond(DateTime.Now);
 

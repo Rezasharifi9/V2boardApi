@@ -131,14 +131,18 @@
                     <span class="switch-label">به عنوان نماینده کل محسوب شود ؟</span>
                 </label>
             }
-            <hr />
-            <div class="d-flex justify-content-center">
-                <a class="btn btn-success me-3" data-bs-target="#editWallet" data-bs-toggle="modal" href="javascript:">شارژ کیف پول</a>
-                @if (Role == "1")
-                {
-                    <a class="btn btn-primary me-3" data-bs-target="#editSetting" data-bs-toggle="modal" href="javascript:">تنظیمات</a>
-                }
-            </div>
+
+            @if (Model.Username != User.Identity.Name)
+            {
+                <hr />
+                <div class="d-flex justify-content-center">
+                    <a class="btn btn-success me-3" data-bs-target="#editWallet" data-bs-toggle="modal" href="javascript:">شارژ کیف پول</a>
+                    @if (Role == "1")
+                    {
+                        <a class="btn btn-primary me-3" data-bs-target="#editSetting" data-bs-toggle="modal" href="javascript:">تنظیمات</a>
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>

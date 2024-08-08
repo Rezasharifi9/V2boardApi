@@ -109,13 +109,23 @@ namespace V2boardApi.Tools
             {
                 return false;
             }
-
+            var Token = httpContext.Request.Cookies["Token"];
+            if (Token == null)
+            {
+                return false;
+            }
 
             using (var db = new Entities())
             {
                 var Use = db.tbUsers.Where(p => p.Username == user.Identity.Name && p.Status == true).FirstOrDefault();
                 if(Use != null)
                 {
+                    if(Token.Value != Use.Token)
+                    {
+                        httpContext.Response.Redirect("~/App/Admin/Login");
+                        return false;
+                    }
+
                     foreach(var item in _rolesSplit)
                     {
                         if (item == httpContext.Request.Cookies["Role"].Value && Use.Role.Value.ToString() == item)

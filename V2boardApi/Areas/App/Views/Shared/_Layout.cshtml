@@ -518,6 +518,18 @@
                                             <span class="dropdown-item"> <i class="ti ti-access-point me-2 ti-sm"></i> <span class="align-middle">مصرف (دو ماه) : <span id="UserPerGig">در حال محاسبه</span> گیگ</span> </span>
                                         </li>
                                     }
+                                    else if (Role.Value == "3")
+                                    {
+                                        <li>
+                                            <span class="dropdown-item"> <i class="ti ti-moneybag me-2 ti-sm"></i> <span class="align-middle">موجودی : <span id="user_inventory">...</span> تومان</span> </span>
+                                        </li>
+                                        <li>
+                                            <span class="dropdown-item"> <i class="ti ti-cash me-2 ti-sm"></i> <span class="align-middle">بدهی : <span id="user_debt">...</span> تومان</span> </span>
+                                        </li>
+                                        <li>
+                                            <span class="dropdown-item"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت واحد (گیگ) : <span id="pricePerGig">...</span> تومان</span> </span>
+                                        </li>
+                                    }
                                     else
                                     {
                                         <li>
@@ -705,6 +717,17 @@
         function BodyUnblockUI(input) {
             $('body').unblock();
         }
+
+        $(function () {
+
+            document.getElementsByClassName('offcanvas').addEventListener('hidden.bs.offcanvas', function () {
+                const forms = this.querySelectorAll('form');
+                forms.forEach(form => form.reset());
+
+                $("input[type='hidden']").val(0);
+            });
+
+        });
     </script>
 
     <!-- Vendors JS -->
@@ -812,7 +835,7 @@
                         $("#UserPerPrice").html(res.data.UserPerPrice);
         </text>
             }
-else if(Role.Value == "2" || Role.Value == "3")
+else if(Role.Value == "2")
             {
                 <text>
 
@@ -826,7 +849,14 @@ else if(Role.Value == "2" || Role.Value == "3")
                         $("#UserPerGig").html(res.data.UserPerGig);
                         </text>
             }
-                        
+               else if(Role.Value == "3")
+            {
+                <text>
+                        $("#user_inventory").html(res.data.inventory);
+                        $("#user_debt").html(res.data.debt);
+                        $("#pricePerGig").html(res.data.pricePerGig);
+                        </text>
+            }
 
                     }
                 }

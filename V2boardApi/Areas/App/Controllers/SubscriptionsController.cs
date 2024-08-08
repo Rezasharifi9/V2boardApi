@@ -302,10 +302,19 @@ namespace V2boardApi.Areas.App.Controllers
                                     exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                 }
 
-                                if (user.tbUsers2 != null)
+                                if(user.Role == 3)
                                 {
                                     user.Wallet += plan.PlanVolume * user.tbUsers2.PriceForGig;
                                 }
+
+                                if (user.Role ==2)
+                                {
+                                    if (user.tbUsers2 != null)
+                                    {
+                                        user.tbUsers2.Wallet += plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                    }
+                                }
+
 
                                 var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
                                 var planid = plan.Plan_ID_V2;
@@ -625,9 +634,17 @@ namespace V2boardApi.Areas.App.Controllers
                             exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
                         }
 
-                        if (user.tbUsers2 != null)
+                        if (user.Role == 3)
                         {
                             user.Wallet += Plan.PlanVolume * user.tbUsers2.PriceForGig;
+                        }
+
+                        if (user.Role == 2)
+                        {
+                            if (user.tbUsers2 != null)
+                            {
+                                user.tbUsers2.Wallet += Plan.PlanVolume * user.tbUsers2.PriceForGig;
+                            }
                         }
 
                         var Disc1 = new Dictionary<string, object>();
@@ -757,9 +774,17 @@ namespace V2boardApi.Areas.App.Controllers
 
                         userAccount.Wallet -= price;
 
-                        if(userAccount.tbUsers2!=null && userAccount.tbUsers2.Role != 1)
+                        if (user.Role == 3)
                         {
-                            userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                            user.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * user.tbUsers2.PriceForGig;
+                        }
+
+                        if (user.Role == 2)
+                        {
+                            if (user.tbUsers2 != null)
+                            {
+                                user.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * user.tbUsers2.PriceForGig;
+                            }
                         }
 
 

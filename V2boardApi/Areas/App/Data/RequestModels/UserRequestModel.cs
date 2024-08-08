@@ -17,8 +17,7 @@ namespace V2boardApi.Areas.App.Data.RequestModels
         [MinLength(4, ErrorMessage = "رمز عبور نمی تواند کمتر از 4 کاراکتر باشد")]
         public string userPassword { get; set; }
         public string userLimit { get; set; }
-        
-        public List<int> userPlan { get; set; }
+
         [MaxLength(30, ErrorMessage = "نام و نام خانوادگی نمی تواند بیشتر از 30 کاراکتر باشد")]
         [MinLength(4, ErrorMessage = "نام و نام خانوادگی نمی تواند کمتر از 4 کاراکتر باشد")]
         public string userFullname { get; set; }

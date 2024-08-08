@@ -19,6 +19,19 @@ $(function () {
         headingColor = config.colors.headingColor;
     }
 
+    var Role = "";
+    if (document.cookie.split(';').length != 0) {
+        var Cookies = document.cookie.split(';');
+        var RoleCookie = Cookies.find(cookie => cookie.trim().startsWith("Role="));
+        if (RoleCookie) {
+            Role = RoleCookie.split('=')[1];
+        }
+    } else {
+        Role = document.cookie;
+        Role = Role.split('=')[1];
+
+    }
+
     // Variable declaration for table
     var dt_user_table = $('.datatables-users'),
         select2 = $('.select2'),
@@ -189,6 +202,11 @@ $(function () {
                             $StatusBotTitle = "روشن کردن ربات"
                         }
 
+                        var menuRobot = "";
+
+                        if (Role == "1") {
+                            menuRobot = '<a href="javascript:;" class="dropdown-item StartBot" data-id=' + $id + '>' + "تغییر وضعیت ربات" + '</a>';
+                        }
 
                         return (
                             '<div class="d-flex align-items-center">' +
@@ -197,8 +215,9 @@ $(function () {
                             '<div class="dropdown-menu dropdown-menu-end m-0">' +
                             '<a href="/App/Admin/Details?user_id=' + userId +
                             '" class="dropdown-item">نمایش</a>' +
+                            '<a href="javascript:;" class="dropdown-item SelectPlan" data-id=' + $id + '>تعرفه ها</a>' +
                             '<a href="javascript:;" class="dropdown-item BanUser" data-id=' + $id + '>' + $StatusTitle + '</a>' +
-                            '<a href="javascript:;" class="dropdown-item StartBot" data-id=' + $id + '>' + "تغییر وضعیت ربات" + '</a>' +
+                            menuRobot +
                             '</div>' +
                             '</div>'
                         );
@@ -221,7 +240,7 @@ $(function () {
                 sLengthMenu: '_MENU_',
                 search: '',
                 searchPlaceholder: 'جستجوی کاربران',
-                loadingRecords:"در حال بارگزاری ..."
+                loadingRecords: "در حال بارگزاری ..."
             },
             displayLength: 7,
             lengthMenu: [7, 10, 25, 50, 75, 100],
@@ -456,7 +475,10 @@ $(function () {
                     type: "get",
                     dataType: "json",
                     success: function (res) {
-                        dt_user.ajax.reload(null, false);
+                        eval(res.data);
+                        if (res.status == "success") {
+                            dt_user.ajax.reload(null, false);
+                        }
                     }
                 })
 
@@ -514,6 +536,28 @@ $(function () {
         });
     });
 
+    // Select Plan
+    $('body').on('click', '.SelectPlan', function () {
+
+        BodyBlockUI();
+
+        var id = $(this).attr("data-id");
+
+        $(".dtr-bs-modal").modal("hide");
+
+        AjaxGet('/App/Admin/SelectPlan?user_id=' + id).then(res => {
+            BodyUnblockUI();
+            $("#user_id").val(id);
+            $("#addNewPlan").modal("show");
+            if (res.status == "success") {
+                var data = res.data;
+
+                SelectPlans("#userPlan", data);
+            }
+
+        });
+    });
+
     function showOffcanvas() {
         var offcanvasElement = document.getElementById('offcanvasAddUser');
         var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
@@ -547,7 +591,6 @@ $(function () {
 
     //جهت انتخاب تعرفه
     function SelectPlans(selectId, Ids) {
-        console.log("select shod");
         $(selectId).val(Ids).trigger('change');
     }
 
@@ -603,61 +646,59 @@ $(function () {
         }
     });
 
-
-    fv.on('core.form.invalid', function (e) {
-
-        if ($("#userPlan").val().length == 0) {
-            $("#userPlanMessage").removeClass("d-none");
-            $("#userPlan").addClass("is-invalid");
-        }
-    });
     fv.on('core.form.valid', function (e) {
-
-        if ($("#userPlan").val().length != 0) {
-            $("#userPlanMessage").addClass("d-none");
-            $("#userPlan").removeClass("is-invalid");
-        }
-        else {
-            $("#userPlanMessage").removeClass("d-none");
-            $("#userPlan").addClass("is-invalid");
-            return;
-        }
 
         BodyBlockUI();
         AjaxFormPost('/App/Admin/CreateOrEdit', "#addNewUserForm").then(res => {
-
+            BodyUnblockUI();
             eval(res.data);
+            
             if (res.status == "success") {
-                BodyUnblockUI();
-                document.getElementById('addNewUserForm').reset();
                 dt_user.ajax.reload(null, false);
                 // بستن offcanvas پس از موفقیت آمیز بودن ارسال فرم
                 var offcanvasElement = document.getElementById('offcanvasAddUser');
                 var offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
                 offcanvas.hide();
-                
+                $("input[name='userId']").val(0);
+                document.getElementById('addNewUserForm').reset();
             }
 
         });
     });
 
-    fv.on('core.form.notvalidated', function (event) {
-        console.log(event);
-    });
 
-    $("#userPlan").on("change", function () {
+    var addNewPlanForm = document.getElementById('addNewPlanForm');
 
-        if ($("#userPlan").val().length != 0) {
-            $("#userPlanMessage").addClass("d-none");
-            $("#userPlan").removeClass("is-invalid");
+    const fv_plan = FormValidation.formValidation(addNewPlanForm, {
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                eleValidClass: '',
+                rowSelector: function (field, ele) {
+                    return '.mb-3';
+                }
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
         }
-        else {
-            $("#userPlanMessage").removeClass("d-none");
-            $("#userPlan").addClass("is-invalid");
-        }
-
     });
+    fv_plan.on('core.form.valid', function (e) {
 
+
+        blockUI('.section-block');
+        AjaxFormPost('/App/Admin/SetPlan', "#addNewPlanForm").then(res => {
+
+            eval(res.data);
+            if (res.status == "success") {
+                UnblockUI(".section-block")
+                document.getElementById('addNewPlanForm').reset();
+                dt_user.ajax.reload(null, false);
+                $("#addNewPlan").modal("hide");
+
+            }
+
+        });
+    });
 });
 
 // Validation & Phone mask
