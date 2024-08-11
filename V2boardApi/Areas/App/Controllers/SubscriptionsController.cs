@@ -87,7 +87,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         var tokenValue = searchValue.Split('=')[1];
                         searchQuery += $" AND token='{tokenValue}'";
-                        if (userRole == 2 || userRole == 3) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                        if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                         {
                             searchQuery += $" AND email LIKE '%@{user.Username}%'";
                         }
@@ -95,13 +95,13 @@ namespace V2boardApi.Areas.App.Controllers
                     else
                     {
                         searchQuery += $" AND email LIKE '%{searchValue}%'";
-                        if (userRole == 2 || userRole == 3) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                        if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                         {
                             searchQuery += $" AND email LIKE '%@{user.Username}%'";
                         }
                     }
                 }
-                else if (userRole == 2 || userRole == 3) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                else if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                 {
                     searchQuery += $" AND email LIKE '%@{user.Username}%'";
                 }
@@ -209,7 +209,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
 
                     var countQuery = "SELECT COUNT(*) AS Count FROM `v2_user` WHERE 1=1";
-                    if (userRole == 2 || userRole == 3) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                    if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                     {
                         countQuery += $" AND email LIKE '%@{user.Username}%'";
                     }
@@ -302,19 +302,26 @@ namespace V2boardApi.Areas.App.Controllers
                                     exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                 }
 
-                                if(user.Role == 3)
+
+                                if (user.Role == 3)
                                 {
-                                    user.Wallet += plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                    if (user.tbUsers2 != null)
+                                    {
+                                        user.Wallet += plan.PlanVolume * user.PriceForGig;
+                                    }
+                                    else
+                                    {
+                                        return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+                                    }
                                 }
 
-                                if (user.Role ==2)
+                                if (user.Role == 2)
                                 {
                                     if (user.tbUsers2 != null)
                                     {
                                         user.tbUsers2.Wallet += plan.PlanVolume * user.tbUsers2.PriceForGig;
                                     }
                                 }
-
 
                                 var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
                                 var planid = plan.Plan_ID_V2;
@@ -636,7 +643,14 @@ namespace V2boardApi.Areas.App.Controllers
 
                         if (user.Role == 3)
                         {
-                            user.Wallet += Plan.PlanVolume * user.tbUsers2.PriceForGig;
+                            if (user.tbUsers2 != null)
+                            {
+                                user.Wallet += Plan.PlanVolume * user.PriceForGig;
+                            }
+                            else
+                            {
+                                return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+                            }
                         }
 
                         if (user.Role == 2)
@@ -742,7 +756,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
         #endregion
 
-        #region حذف لینک
+      #region حذف لینک
         [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> delete(int user_id)
         {
@@ -770,29 +784,49 @@ namespace V2boardApi.Areas.App.Controllers
                     if (totalUse <= 1)
                     {
                         var userAccount = usersRepository.table.Where(p => p.Username == username).FirstOrDefault();
-                        var price = log.SalePrice;
-
-                        userAccount.Wallet -= price;
-
-                        if (user.Role == 3)
+                        if (userAccount != null)
                         {
-                            user.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * user.tbUsers2.PriceForGig;
-                        }
-
-                        if (user.Role == 2)
-                        {
-                            if (user.tbUsers2 != null)
+                            if(userAccount.Role == 2)
                             {
-                                user.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * user.tbUsers2.PriceForGig;
+                                var price = log.SalePrice;
+
+                                userAccount.Wallet -= price;
+                            }
+
+                            if (userAccount.Role == 3)
+                            {
+                                if (userAccount.tbUsers2 != null)
+                                {
+                                    userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.PriceForGig;
+                                }
+                                else
+                                {
+                                    return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+                                }
+                            }
+
+                            if (userAccount.Role == 2)
+                            {
+                                if (userAccount.tbUsers2 != null)
+                                {
+                                    userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                }
                             }
                         }
+                        else
+                        {
+                            return Toaster.Error("ناموفق", "عدم صحت نام کاربری لطفا با مدیر تماس بگیرید !!");
+                        }
+                        
+
 
 
                         logsRepository.Delete(log.log_ID);
                     }
                     else
                     {
-                        log.FK_NameUser_ID = name;
+                        log.FK_NameUser_ID = "del_" + name;
+
                     }
                 }
 
