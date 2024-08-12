@@ -33,6 +33,16 @@
           <Property Name="Logger" Type="nvarchar" MaxLength="300" />
           <Property Name="customData" Type="nvarchar(max)" />
         </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="principal_id" Type="int" Nullable="false" />
+          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="version" Type="int" />
+          <Property Name="definition" Type="varbinary(max)" />
+        </EntityType>
         <EntityType Name="tbBankCardNumbers">
           <Key>
             <PropertyRef Name="CardNumber_ID" />
@@ -170,7 +180,8 @@
           <Property Name="Plan_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Plan_ID_V2" Type="int" />
           <Property Name="Plan_Name" Type="nvarchar" MaxLength="250" />
-          <Property Name="Plan_Des" Type="nvarchar(max)" />
+          <Property Name="FK_User_ID" Type="int" />
+          <Property Name="Plan_Des" Type="varchar" MaxLength="200" />
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="Status" Type="bit" />
           <Property Name="CountDayes" Type="int" />
@@ -179,7 +190,6 @@
           <Property Name="Group_Id" Type="int" />
           <Property Name="Group_Name" Type="varchar" MaxLength="50" />
           <Property Name="Speed_limit" Type="smallint" />
-          <Property Name="FK_User_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -225,7 +235,7 @@
           <Property Name="Tel_UpdateMessage" Type="datetime" />
           <Property Name="Tel_GetedTestAccount" Type="bit" />
           <Property Name="FK_User_ID" Type="int" />
-          <Property Name="Tel_Status" Type="int" />
+          <Property Name="Tel_Status" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -270,6 +280,7 @@
           <Property Name="Username" Type="varchar" MaxLength="150" />
           <Property Name="Parent_ID" Type="int" />
           <Property Name="Password" Type="varchar" MaxLength="250" />
+          <Property Name="FullName" Type="nvarchar" MaxLength="30" />
           <Property Name="FirstName" Type="nvarchar" MaxLength="250" />
           <Property Name="LastName" Type="nvarchar" MaxLength="250" />
           <Property Name="PhoneNumber" Type="varchar" MaxLength="50" />
@@ -287,7 +298,6 @@
           <Property Name="ExpireTimeToken" Type="datetime" />
           <Property Name="Admin_Telegram_ID" Type="int" />
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
-          <Property Name="FullName" Type="nvarchar" MaxLength="30" />
           <Property Name="PriceForGig" Type="int" />
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
           <Property Name="Group_Id" Type="int" />
@@ -295,7 +305,7 @@
           <Property Name="UserCaculateTime" Type="datetime" />
         </EntityType>
         <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_AllSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+warning 6002: The table/view 'SafeNetDB.dbo.vi_AllSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="vi_AllSales">
           <Key>
             <PropertyRef Name="Source" />
@@ -311,12 +321,12 @@ warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_AllSales' does not have 
           <Property Name="BotId" Type="varchar" MaxLength="50" />
         </EntityType>
         <!--Errors Found During Generation:
-warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Dayes' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+warning 6013: The table/view 'SafeNetDB.dbo.vi_Dayes' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
         <EntityType Name="vi_Dayes">
           <Property Name="DayShamsi" Type="int" />
         </EntityType>-->
         <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_FullSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+warning 6002: The table/view 'SafeNetDB.dbo.vi_FullSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="vi_FullSales">
           <Key>
             <PropertyRef Name="SaleRobot" />
@@ -331,12 +341,12 @@ warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_FullSales' does not have
           <Property Name="SalePanel" Type="int" Nullable="false" />
         </EntityType>
         <!--Errors Found During Generation:
-warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Months' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+warning 6013: The table/view 'SafeNetDB.dbo.vi_Months' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
         <EntityType Name="vi_Months">
           <Property Name="MonthShamsi" Type="int" />
         </EntityType>-->
         <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_SaleFromBot' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+warning 6002: The table/view 'SafeNetDB.dbo.vi_SaleFromBot' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="vi_SaleFromBot">
           <Key>
             <PropertyRef Name="User_ID" />
@@ -349,7 +359,7 @@ warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_SaleFromBot' does not ha
           <Property Name="Sales" Type="int" />
         </EntityType>
         <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_SaleFromMajor' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+warning 6002: The table/view 'SafeNetDB.dbo.vi_SaleFromMajor' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="vi_SaleFromMajor">
           <Key>
             <PropertyRef Name="User_ID" />
@@ -362,7 +372,7 @@ warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_SaleFromMajor' does not 
           <Property Name="PeyDay" Type="int" />
         </EntityType>
         <!--Errors Found During Generation:
-warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+warning 6013: The table/view 'SafeNetDB.dbo.vi_Years' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
         <EntityType Name="vi_Years">
           <Property Name="YearShamsi" Type="int" />
         </EntityType>-->
@@ -427,7 +437,9 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbPlans">
-          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -487,7 +499,9 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLogs_tbLinkUserAndPlans">
-          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbLogs" Type="Self.tbLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbLinkUserAndPlans">
@@ -499,7 +513,9 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbPlans">
-          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -631,18 +647,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbUsers">
-          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
-          <End Role="tbUsers1" Type="Self.tbUsers" Multiplicity="0..1" />
-          <ReferentialConstraint>
-            <Principal Role="tbUsers">
-              <PropertyRef Name="User_ID" />
-            </Principal>
-            <Dependent Role="tbUsers1">
-              <PropertyRef Name="User_ID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_tbUsers_tbUsers1">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
           <End Role="tbUsers1" Type="Self.tbUsers" Multiplicity="*" />
           <ReferentialConstraint>
@@ -662,8 +666,17 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBotSettings" EntityType="Self.tbBotSettings" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbConnectionHelp" EntityType="Self.tbConnectionHelp" Schema="dbo" store:Type="Tables" />
@@ -817,10 +830,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
-          <AssociationSet Name="FK_tbUsers_tbUsers1" Association="Self.FK_tbUsers_tbUsers1">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbUsers1" EntitySet="tbUsers" />
-          </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -828,6 +837,7 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
       <Schema Namespace="V2boardSiteModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="NLog" EntityType="V2boardSiteModel.NLog" />
+          <EntitySet Name="sysdiagrams" EntityType="V2boardSiteModel.sysdiagrams" />
           <EntitySet Name="tbBankCardNumbers" EntityType="V2boardSiteModel.tbBankCardNumbers" />
           <EntitySet Name="tbBotSettings" EntityType="V2boardSiteModel.tbBotSettings" />
           <EntitySet Name="tbConnectionHelp" EntityType="V2boardSiteModel.tbConnectionHelp" />
@@ -941,10 +951,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
-          <AssociationSet Name="FK_tbUsers_tbUsers1" Association="V2boardSiteModel.FK_tbUsers_tbUsers1">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbUsers1" EntitySet="tbUsers" />
-          </AssociationSet>
         </EntityContainer>
         <EntityType Name="NLog">
           <Key>
@@ -973,6 +979,16 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           <Property Name="sessionId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Logger" Type="String" MaxLength="300" FixedLength="false" Unicode="true" />
           <Property Name="customData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="principal_id" Type="Int32" Nullable="false" />
+          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="version" Type="Int32" />
+          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
         </EntityType>
         <EntityType Name="tbBankCardNumbers">
           <Key>
@@ -1125,7 +1141,8 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           <Property Name="Plan_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Plan_ID_V2" Type="Int32" />
           <Property Name="Plan_Name" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
-          <Property Name="Plan_Des" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="FK_User_ID" Type="Int32" />
+          <Property Name="Plan_Des" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="Status" Type="Boolean" />
           <Property Name="CountDayes" Type="Int32" />
@@ -1134,7 +1151,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           <Property Name="Group_Id" Type="Int32" />
           <Property Name="Group_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Speed_limit" Type="Int16" />
-          <Property Name="FK_User_ID" Type="Int32" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
@@ -1190,7 +1206,7 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           <Property Name="Tel_UpdateMessage" Type="DateTime" Precision="3" />
           <Property Name="Tel_GetedTestAccount" Type="Boolean" />
           <Property Name="FK_User_ID" Type="Int32" />
-          <Property Name="Tel_Status" Type="Int32" />
+          <Property Name="Tel_Status" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbOrders" />
@@ -1245,6 +1261,7 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           <Property Name="Username" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="Parent_ID" Type="Int32" />
           <Property Name="Password" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="FullName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
           <Property Name="FirstName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="LastName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="PhoneNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
@@ -1262,7 +1279,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           <Property Name="ExpireTimeToken" Type="DateTime" Precision="3" />
           <Property Name="Admin_Telegram_ID" Type="Int32" />
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
-          <Property Name="FullName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
           <Property Name="PriceForGig" Type="Int32" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
           <Property Name="Group_Id" Type="Int32" />
@@ -1280,8 +1296,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
-          <NavigationProperty Name="tbUsers11" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers1" FromRole="tbUsers" ToRole="tbUsers1" />
-          <NavigationProperty Name="tbUsers3" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers1" FromRole="tbUsers1" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="vi_AllSales">
           <Key>
@@ -1393,7 +1407,9 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -1453,7 +1469,9 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLogs_tbLinkUserAndPlans">
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbLogs" Role="tbLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbLinkUserAndPlans">
@@ -1465,7 +1483,9 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -1597,18 +1617,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers1" Multiplicity="0..1" />
-          <ReferentialConstraint>
-            <Principal Role="tbUsers">
-              <PropertyRef Name="User_ID" />
-            </Principal>
-            <Dependent Role="tbUsers1">
-              <PropertyRef Name="User_ID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_tbUsers_tbUsers1">
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers1" Multiplicity="*" />
           <ReferentialConstraint>
@@ -1652,6 +1660,17 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
                 <ScalarProperty Name="Logged" ColumnName="Logged" />
                 <ScalarProperty Name="MachineName" ColumnName="MachineName" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="sysdiagrams">
+            <EntityTypeMapping TypeName="V2boardSiteModel.sysdiagrams">
+              <MappingFragment StoreEntitySet="sysdiagrams">
+                <ScalarProperty Name="definition" ColumnName="definition" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="name" ColumnName="name" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1798,7 +1817,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
           <EntitySetMapping Name="tbPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
               <MappingFragment StoreEntitySet="tbPlans">
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="Speed_limit" ColumnName="Speed_limit" />
                 <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
                 <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
@@ -1808,6 +1826,7 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
                 <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
                 <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
                 <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
@@ -1908,7 +1927,6 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
                 <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
                 <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
                 <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
-                <ScalarProperty Name="FullName" ColumnName="FullName" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
                 <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
@@ -1926,6 +1944,7 @@ warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a p
                 <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
                 <ScalarProperty Name="LastName" ColumnName="LastName" />
                 <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="FullName" ColumnName="FullName" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
                 <ScalarProperty Name="Username" ColumnName="Username" />

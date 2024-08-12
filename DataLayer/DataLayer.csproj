@@ -131,6 +131,9 @@
     <Compile Include="DomainModel\NLog.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\sysdiagrams.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbBankCardNumbers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

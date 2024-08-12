@@ -835,14 +835,21 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 if (userAccount.tbUsers2 != null)
                                 {
-                                    if (log.PlanVolume != null)
+                                    if(userAccount.tbUsers2.Role == 3)
                                     {
-                                        userAccount.Wallet -= log.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                        if (log.PlanVolume != null)
+                                        {
+                                            userAccount.tbUsers2.Wallet -= log.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                        }
+                                        else
+                                        {
+                                            userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                        }
                                     }
-                                    else
-                                    {
-                                        userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.tbUsers2.PriceForGig;
-                                    }
+                                }
+                                else
+                                {
+                                    return Toaster.Error("ناموفق", "عدم صحت نام کاربری لطفا با مدیر تماس بگیرید !!");
                                 }
                             }
                         }
