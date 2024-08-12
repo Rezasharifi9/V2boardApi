@@ -975,7 +975,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                     List<int> Users = new List<int>();
                     await mySql.OpenAsync();
-                    foreach (var item in user.tbUsers1)
+                    foreach (var item in user.tbUsers11)
                     {
                         var reader = await mySql.GetDataAsync("SELECT id FROM `v2_user` WHERE email like '%@" + item.Username + "'");
                         while (await reader.ReadAsync().ConfigureAwait(false))
