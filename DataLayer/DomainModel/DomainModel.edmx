@@ -33,16 +33,6 @@
           <Property Name="Logger" Type="nvarchar" MaxLength="300" />
           <Property Name="customData" Type="nvarchar(max)" />
         </EntityType>
-        <EntityType Name="sysdiagrams">
-          <Key>
-            <PropertyRef Name="diagram_id" />
-          </Key>
-          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
-          <Property Name="principal_id" Type="int" Nullable="false" />
-          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="version" Type="int" />
-          <Property Name="definition" Type="varbinary(max)" />
-        </EntityType>
         <EntityType Name="tbBankCardNumbers">
           <Key>
             <PropertyRef Name="CardNumber_ID" />
@@ -152,6 +142,7 @@
           <Property Name="FK_NameUser_ID" Type="nvarchar(max)" />
           <Property Name="SalePrice" Type="int" />
           <Property Name="PlanName" Type="nvarchar" MaxLength="150" />
+          <Property Name="PlanVolume" Type="int" />
         </EntityType>
         <EntityType Name="tbOrders">
           <Key>
@@ -179,8 +170,7 @@
           <Property Name="Plan_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Plan_ID_V2" Type="int" />
           <Property Name="Plan_Name" Type="nvarchar" MaxLength="250" />
-          <Property Name="FK_User_ID" Type="int" />
-          <Property Name="Plan_Des" Type="varchar" MaxLength="200" />
+          <Property Name="Plan_Des" Type="nvarchar(max)" />
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="Status" Type="bit" />
           <Property Name="CountDayes" Type="int" />
@@ -189,6 +179,7 @@
           <Property Name="Group_Id" Type="int" />
           <Property Name="Group_Name" Type="varchar" MaxLength="50" />
           <Property Name="Speed_limit" Type="smallint" />
+          <Property Name="FK_User_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -234,7 +225,7 @@
           <Property Name="Tel_UpdateMessage" Type="datetime" />
           <Property Name="Tel_GetedTestAccount" Type="bit" />
           <Property Name="FK_User_ID" Type="int" />
-          <Property Name="Tel_Status" Type="int" Nullable="false" />
+          <Property Name="Tel_Status" Type="int" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -279,7 +270,6 @@
           <Property Name="Username" Type="varchar" MaxLength="150" />
           <Property Name="Parent_ID" Type="int" />
           <Property Name="Password" Type="varchar" MaxLength="250" />
-          <Property Name="FullName" Type="nvarchar" MaxLength="30" />
           <Property Name="FirstName" Type="nvarchar" MaxLength="250" />
           <Property Name="LastName" Type="nvarchar" MaxLength="250" />
           <Property Name="PhoneNumber" Type="varchar" MaxLength="50" />
@@ -297,12 +287,85 @@
           <Property Name="ExpireTimeToken" Type="datetime" />
           <Property Name="Admin_Telegram_ID" Type="int" />
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
+          <Property Name="FullName" Type="nvarchar" MaxLength="30" />
           <Property Name="PriceForGig" Type="int" />
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
           <Property Name="Group_Id" Type="int" />
           <Property Name="Group_Name" Type="nvarchar" MaxLength="150" />
           <Property Name="UserCaculateTime" Type="datetime" />
         </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_AllSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vi_AllSales">
+          <Key>
+            <PropertyRef Name="Source" />
+          </Key>
+          <Property Name="date" Type="nvarchar" MaxLength="4000" />
+          <Property Name="year" Type="nvarchar" MaxLength="4000" />
+          <Property Name="month" Type="nvarchar" MaxLength="4000" />
+          <Property Name="day" Type="nvarchar" MaxLength="4000" />
+          <Property Name="Order_Price" Type="int" />
+          <Property Name="FK_Tel_UserID" Type="int" />
+          <Property Name="User_Plan_ID" Type="int" />
+          <Property Name="Source" Type="varchar" MaxLength="4" Nullable="false" />
+          <Property Name="BotId" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Dayes' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+        <EntityType Name="vi_Dayes">
+          <Property Name="DayShamsi" Type="int" />
+        </EntityType>-->
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_FullSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vi_FullSales">
+          <Key>
+            <PropertyRef Name="SaleRobot" />
+            <PropertyRef Name="SalePanel" />
+          </Key>
+          <Property Name="PerYear" Type="int" />
+          <Property Name="User_ID" Type="int" />
+          <Property Name="PerMonth" Type="int" />
+          <Property Name="PerDay" Type="int" />
+          <Property Name="date" Type="date" />
+          <Property Name="SaleRobot" Type="int" Nullable="false" />
+          <Property Name="SalePanel" Type="int" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Months' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+        <EntityType Name="vi_Months">
+          <Property Name="MonthShamsi" Type="int" />
+        </EntityType>-->
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_SaleFromBot' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vi_SaleFromBot">
+          <Key>
+            <PropertyRef Name="User_ID" />
+          </Key>
+          <Property Name="User_ID" Type="int" Nullable="false" />
+          <Property Name="OrderDate" Type="date" />
+          <Property Name="PerYear" Type="int" />
+          <Property Name="PerMonth" Type="int" />
+          <Property Name="PeyDay" Type="int" />
+          <Property Name="Sales" Type="int" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'V2boardSiteSharifi.dbo.vi_SaleFromMajor' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vi_SaleFromMajor">
+          <Key>
+            <PropertyRef Name="User_ID" />
+          </Key>
+          <Property Name="Sale" Type="int" />
+          <Property Name="User_ID" Type="int" Nullable="false" />
+          <Property Name="CreateDatetime" Type="date" />
+          <Property Name="PerYear" Type="int" />
+          <Property Name="PerMonth" Type="int" />
+          <Property Name="PeyDay" Type="int" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6013: The table/view 'V2boardSiteSharifi.dbo.vi_Years' does not have a primary key defined and no valid primary key could be inferred. This table/view has been excluded. To use the entity, you will need to review your schema, add the correct keys, and uncomment it.
+        <EntityType Name="vi_Years">
+          <Property Name="YearShamsi" Type="int" />
+        </EntityType>-->
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
           <End Role="tbBankCardNumbers" Type="Self.tbBankCardNumbers" Multiplicity="*" />
@@ -364,9 +427,7 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbPlans">
-          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
-            <OnDelete Action="Cascade" />
-          </End>
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
           <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -426,9 +487,7 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLogs_tbLinkUserAndPlans">
-          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1">
-            <OnDelete Action="Cascade" />
-          </End>
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1" />
           <End Role="tbLogs" Type="Self.tbLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbLinkUserAndPlans">
@@ -440,9 +499,7 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbPlans">
-          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
-            <OnDelete Action="Cascade" />
-          </End>
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
           <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -574,6 +631,18 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbUsers1" Type="Self.tbUsers" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbUsers1">
+              <PropertyRef Name="User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbUsers_tbUsers1">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
           <End Role="tbUsers1" Type="Self.tbUsers" Multiplicity="*" />
           <ReferentialConstraint>
@@ -585,9 +654,16 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        
+        
+        
+        
+        
+        
+        
+        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBotSettings" EntityType="Self.tbBotSettings" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbConnectionHelp" EntityType="Self.tbConnectionHelp" Schema="dbo" store:Type="Tables" />
@@ -605,6 +681,50 @@
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="vi_AllSales" EntityType="Self.vi_AllSales" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vi_AllSales].[date] AS [date], 
+    [vi_AllSales].[year] AS [year], 
+    [vi_AllSales].[month] AS [month], 
+    [vi_AllSales].[day] AS [day], 
+    [vi_AllSales].[Order_Price] AS [Order_Price], 
+    [vi_AllSales].[FK_Tel_UserID] AS [FK_Tel_UserID], 
+    [vi_AllSales].[User_Plan_ID] AS [User_Plan_ID], 
+    [vi_AllSales].[Source] AS [Source], 
+    [vi_AllSales].[BotId] AS [BotId]
+    FROM [dbo].[vi_AllSales] AS [vi_AllSales]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vi_FullSales" EntityType="Self.vi_FullSales" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vi_FullSales].[PerYear] AS [PerYear], 
+    [vi_FullSales].[User_ID] AS [User_ID], 
+    [vi_FullSales].[PerMonth] AS [PerMonth], 
+    [vi_FullSales].[PerDay] AS [PerDay], 
+    [vi_FullSales].[date] AS [date], 
+    [vi_FullSales].[SaleRobot] AS [SaleRobot], 
+    [vi_FullSales].[SalePanel] AS [SalePanel]
+    FROM [dbo].[vi_FullSales] AS [vi_FullSales]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vi_SaleFromBot" EntityType="Self.vi_SaleFromBot" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vi_SaleFromBot].[User_ID] AS [User_ID], 
+    [vi_SaleFromBot].[OrderDate] AS [OrderDate], 
+    [vi_SaleFromBot].[PerYear] AS [PerYear], 
+    [vi_SaleFromBot].[PerMonth] AS [PerMonth], 
+    [vi_SaleFromBot].[PeyDay] AS [PeyDay], 
+    [vi_SaleFromBot].[Sales] AS [Sales]
+    FROM [dbo].[vi_SaleFromBot] AS [vi_SaleFromBot]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vi_SaleFromMajor" EntityType="Self.vi_SaleFromMajor" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vi_SaleFromMajor].[Sale] AS [Sale], 
+    [vi_SaleFromMajor].[User_ID] AS [User_ID], 
+    [vi_SaleFromMajor].[CreateDatetime] AS [CreateDatetime], 
+    [vi_SaleFromMajor].[PerYear] AS [PerYear], 
+    [vi_SaleFromMajor].[PerMonth] AS [PerMonth], 
+    [vi_SaleFromMajor].[PeyDay] AS [PeyDay]
+    FROM [dbo].[vi_SaleFromMajor] AS [vi_SaleFromMajor]</DefiningQuery>
+          </EntitySet>
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="Self.FK_tbBankCardNumbers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
@@ -697,6 +817,10 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbUsers1" Association="Self.FK_tbUsers_tbUsers1">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUsers1" EntitySet="tbUsers" />
+          </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -704,7 +828,6 @@
       <Schema Namespace="V2boardSiteModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="NLog" EntityType="V2boardSiteModel.NLog" />
-          <EntitySet Name="sysdiagrams" EntityType="V2boardSiteModel.sysdiagrams" />
           <EntitySet Name="tbBankCardNumbers" EntityType="V2boardSiteModel.tbBankCardNumbers" />
           <EntitySet Name="tbBotSettings" EntityType="V2boardSiteModel.tbBotSettings" />
           <EntitySet Name="tbConnectionHelp" EntityType="V2boardSiteModel.tbConnectionHelp" />
@@ -722,6 +845,10 @@
           <EntitySet Name="tbUseages" EntityType="V2boardSiteModel.tbUseages" />
           <EntitySet Name="tbUserFactors" EntityType="V2boardSiteModel.tbUserFactors" />
           <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
+          <EntitySet Name="vi_AllSales" EntityType="V2boardSiteModel.vi_AllSales" />
+          <EntitySet Name="vi_FullSales" EntityType="V2boardSiteModel.vi_FullSales" />
+          <EntitySet Name="vi_SaleFromBot" EntityType="V2boardSiteModel.vi_SaleFromBot" />
+          <EntitySet Name="vi_SaleFromMajor" EntityType="V2boardSiteModel.vi_SaleFromMajor" />
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
@@ -814,6 +941,10 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbUsers1" Association="V2boardSiteModel.FK_tbUsers_tbUsers1">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUsers1" EntitySet="tbUsers" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="NLog">
           <Key>
@@ -842,16 +973,6 @@
           <Property Name="sessionId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Logger" Type="String" MaxLength="300" FixedLength="false" Unicode="true" />
           <Property Name="customData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-        </EntityType>
-        <EntityType Name="sysdiagrams">
-          <Key>
-            <PropertyRef Name="diagram_id" />
-          </Key>
-          <Property Name="name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="principal_id" Type="Int32" Nullable="false" />
-          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="version" Type="Int32" />
-          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
         </EntityType>
         <EntityType Name="tbBankCardNumbers">
           <Key>
@@ -973,6 +1094,7 @@
           <Property Name="FK_NameUser_ID" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="SalePrice" Type="Int32" />
           <Property Name="PlanName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="PlanVolume" Type="Int32" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
         </EntityType>
         <EntityType Name="tbOrders">
@@ -1003,8 +1125,7 @@
           <Property Name="Plan_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Plan_ID_V2" Type="Int32" />
           <Property Name="Plan_Name" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
-          <Property Name="FK_User_ID" Type="Int32" />
-          <Property Name="Plan_Des" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
+          <Property Name="Plan_Des" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="Status" Type="Boolean" />
           <Property Name="CountDayes" Type="Int32" />
@@ -1013,6 +1134,7 @@
           <Property Name="Group_Id" Type="Int32" />
           <Property Name="Group_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Speed_limit" Type="Int16" />
+          <Property Name="FK_User_ID" Type="Int32" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
@@ -1068,7 +1190,7 @@
           <Property Name="Tel_UpdateMessage" Type="DateTime" Precision="3" />
           <Property Name="Tel_GetedTestAccount" Type="Boolean" />
           <Property Name="FK_User_ID" Type="Int32" />
-          <Property Name="Tel_Status" Type="Int32" Nullable="false" />
+          <Property Name="Tel_Status" Type="Int32" />
           <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbOrders" />
@@ -1123,7 +1245,6 @@
           <Property Name="Username" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="Parent_ID" Type="Int32" />
           <Property Name="Password" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
-          <Property Name="FullName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
           <Property Name="FirstName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="LastName" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="PhoneNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
@@ -1141,6 +1262,7 @@
           <Property Name="ExpireTimeToken" Type="DateTime" Precision="3" />
           <Property Name="Admin_Telegram_ID" Type="Int32" />
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="FullName" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
           <Property Name="PriceForGig" Type="Int32" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
           <Property Name="Group_Id" Type="Int32" />
@@ -1158,6 +1280,57 @@
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers11" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers1" FromRole="tbUsers" ToRole="tbUsers1" />
+          <NavigationProperty Name="tbUsers3" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers1" FromRole="tbUsers1" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="vi_AllSales">
+          <Key>
+            <PropertyRef Name="Source" />
+          </Key>
+          <Property Name="date" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="year" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="month" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="day" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="Order_Price" Type="Int32" />
+          <Property Name="FK_Tel_UserID" Type="Int32" />
+          <Property Name="User_Plan_ID" Type="Int32" />
+          <Property Name="Source" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="BotId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="vi_FullSales">
+          <Key>
+            <PropertyRef Name="SaleRobot" />
+            <PropertyRef Name="SalePanel" />
+          </Key>
+          <Property Name="PerYear" Type="Int32" />
+          <Property Name="User_ID" Type="Int32" />
+          <Property Name="PerMonth" Type="Int32" />
+          <Property Name="PerDay" Type="Int32" />
+          <Property Name="date" Type="DateTime" Precision="0" />
+          <Property Name="SaleRobot" Type="Int32" Nullable="false" />
+          <Property Name="SalePanel" Type="Int32" Nullable="false" />
+        </EntityType>
+        <EntityType Name="vi_SaleFromBot">
+          <Key>
+            <PropertyRef Name="User_ID" />
+          </Key>
+          <Property Name="User_ID" Type="Int32" Nullable="false" />
+          <Property Name="OrderDate" Type="DateTime" Precision="0" />
+          <Property Name="PerYear" Type="Int32" />
+          <Property Name="PerMonth" Type="Int32" />
+          <Property Name="PeyDay" Type="Int32" />
+          <Property Name="Sales" Type="Int32" />
+        </EntityType>
+        <EntityType Name="vi_SaleFromMajor">
+          <Key>
+            <PropertyRef Name="User_ID" />
+          </Key>
+          <Property Name="Sale" Type="Int32" />
+          <Property Name="User_ID" Type="Int32" Nullable="false" />
+          <Property Name="CreateDatetime" Type="DateTime" Precision="0" />
+          <Property Name="PerYear" Type="Int32" />
+          <Property Name="PerMonth" Type="Int32" />
+          <Property Name="PeyDay" Type="Int32" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
@@ -1220,9 +1393,7 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1">
-            <OnDelete Action="Cascade" />
-          </End>
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
           <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -1282,9 +1453,7 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLogs_tbLinkUserAndPlans">
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1">
-            <OnDelete Action="Cascade" />
-          </End>
+          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1" />
           <End Type="V2boardSiteModel.tbLogs" Role="tbLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbLinkUserAndPlans">
@@ -1296,9 +1465,7 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1">
-            <OnDelete Action="Cascade" />
-          </End>
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
           <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
@@ -1430,6 +1597,18 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers1" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbUsers1">
+              <PropertyRef Name="User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbUsers_tbUsers1">
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers1" Multiplicity="*" />
           <ReferentialConstraint>
@@ -1473,17 +1652,6 @@
                 <ScalarProperty Name="Logged" ColumnName="Logged" />
                 <ScalarProperty Name="MachineName" ColumnName="MachineName" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="sysdiagrams">
-            <EntityTypeMapping TypeName="V2boardSiteModel.sysdiagrams">
-              <MappingFragment StoreEntitySet="sysdiagrams">
-                <ScalarProperty Name="definition" ColumnName="definition" />
-                <ScalarProperty Name="version" ColumnName="version" />
-                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
-                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
-                <ScalarProperty Name="name" ColumnName="name" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1596,6 +1764,7 @@
           <EntitySetMapping Name="tbLogs">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLogs">
               <MappingFragment StoreEntitySet="tbLogs">
+                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
                 <ScalarProperty Name="PlanName" ColumnName="PlanName" />
                 <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
                 <ScalarProperty Name="FK_NameUser_ID" ColumnName="FK_NameUser_ID" />
@@ -1629,6 +1798,7 @@
           <EntitySetMapping Name="tbPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
               <MappingFragment StoreEntitySet="tbPlans">
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="Speed_limit" ColumnName="Speed_limit" />
                 <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
                 <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
@@ -1638,7 +1808,6 @@
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
                 <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
                 <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
                 <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
@@ -1739,6 +1908,7 @@
                 <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
                 <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
                 <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
+                <ScalarProperty Name="FullName" ColumnName="FullName" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
                 <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
@@ -1756,11 +1926,62 @@
                 <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
                 <ScalarProperty Name="LastName" ColumnName="LastName" />
                 <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="FullName" ColumnName="FullName" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vi_AllSales">
+            <EntityTypeMapping TypeName="V2boardSiteModel.vi_AllSales">
+              <MappingFragment StoreEntitySet="vi_AllSales">
+                <ScalarProperty Name="BotId" ColumnName="BotId" />
+                <ScalarProperty Name="Source" ColumnName="Source" />
+                <ScalarProperty Name="User_Plan_ID" ColumnName="User_Plan_ID" />
+                <ScalarProperty Name="FK_Tel_UserID" ColumnName="FK_Tel_UserID" />
+                <ScalarProperty Name="Order_Price" ColumnName="Order_Price" />
+                <ScalarProperty Name="day" ColumnName="day" />
+                <ScalarProperty Name="month" ColumnName="month" />
+                <ScalarProperty Name="year" ColumnName="year" />
+                <ScalarProperty Name="date" ColumnName="date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vi_FullSales">
+            <EntityTypeMapping TypeName="V2boardSiteModel.vi_FullSales">
+              <MappingFragment StoreEntitySet="vi_FullSales">
+                <ScalarProperty Name="SalePanel" ColumnName="SalePanel" />
+                <ScalarProperty Name="SaleRobot" ColumnName="SaleRobot" />
+                <ScalarProperty Name="date" ColumnName="date" />
+                <ScalarProperty Name="PerDay" ColumnName="PerDay" />
+                <ScalarProperty Name="PerMonth" ColumnName="PerMonth" />
+                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+                <ScalarProperty Name="PerYear" ColumnName="PerYear" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vi_SaleFromBot">
+            <EntityTypeMapping TypeName="V2boardSiteModel.vi_SaleFromBot">
+              <MappingFragment StoreEntitySet="vi_SaleFromBot">
+                <ScalarProperty Name="Sales" ColumnName="Sales" />
+                <ScalarProperty Name="PeyDay" ColumnName="PeyDay" />
+                <ScalarProperty Name="PerMonth" ColumnName="PerMonth" />
+                <ScalarProperty Name="PerYear" ColumnName="PerYear" />
+                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
+                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vi_SaleFromMajor">
+            <EntityTypeMapping TypeName="V2boardSiteModel.vi_SaleFromMajor">
+              <MappingFragment StoreEntitySet="vi_SaleFromMajor">
+                <ScalarProperty Name="PeyDay" ColumnName="PeyDay" />
+                <ScalarProperty Name="PerMonth" ColumnName="PerMonth" />
+                <ScalarProperty Name="PerYear" ColumnName="PerYear" />
+                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
+                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+                <ScalarProperty Name="Sale" ColumnName="Sale" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

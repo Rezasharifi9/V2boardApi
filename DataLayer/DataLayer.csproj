@@ -131,9 +131,6 @@
     <Compile Include="DomainModel\NLog.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="DomainModel\sysdiagrams.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
-    </Compile>
     <Compile Include="DomainModel\tbBankCardNumbers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
@@ -183,6 +180,18 @@
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbUsers.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\vi_AllSales.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\vi_FullSales.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\vi_SaleFromBot.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\vi_SaleFromMajor.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Interface\Interface.cs" />

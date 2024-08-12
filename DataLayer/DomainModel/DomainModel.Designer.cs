@@ -1,4 +1,4 @@
-﻿// T4 code generation is enabled for model 'D:\VPN\VPN Projects\V2boardApi\DataLayer\DomainModel\DomainModel.edmx'. 
+﻿// T4 code generation is enabled for model 'C:\Users\beh23\Source\Repos\V2boardApi\DataLayer\DomainModel\DomainModel.edmx'. 
 // To enable legacy code generation, change the value of the 'Code Generation Strategy' designer
 // property to 'Legacy ObjectContext'. This property is available in the Properties Window when the model
 // is open in the designer.

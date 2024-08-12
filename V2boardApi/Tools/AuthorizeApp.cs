@@ -107,11 +107,13 @@ namespace V2boardApi.Tools
             var Role = httpContext.Request.Cookies["Role"];
             if (Role == null)
             {
+                httpContext.Response.Redirect("~/App/Admin/Login");
                 return false;
             }
             var Token = httpContext.Request.Cookies["Token"];
             if (Token == null)
             {
+                httpContext.Response.Redirect("~/App/Admin/Login");
                 return false;
             }
 

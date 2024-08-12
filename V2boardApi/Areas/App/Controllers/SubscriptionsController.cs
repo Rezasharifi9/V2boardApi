@@ -287,84 +287,102 @@ namespace V2boardApi.Areas.App.Controllers
                             if ((user.Limit - user.Wallet) >= 0)
                             {
 
-                                var plan = plansRepository.table.Where(p => p.Plan_ID == userPlan && p.FK_Server_ID == user.FK_Server_ID && p.Status == true).FirstOrDefault();
-                                if ((plan.Price + user.Wallet) > user.Limit)
+                                var plan = plansRepository.table.Where(p => p.Plan_ID == userPlan && p.FK_Server_ID == user.FK_Server_ID).FirstOrDefault();
+                                if (plan != null)
                                 {
-                                    return MessageBox.Warning("هشدار", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
-                                }
-                                string exp = "";
-                                if (plan.CountDayes == 0)
-                                {
-                                    exp = null;
-                                }
-                                else
-                                {
-                                    exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
-                                }
-
-
-                                if (user.Role == 3)
-                                {
-                                    if (user.tbUsers2 != null)
+                                    if ((plan.Price + user.Wallet) > user.Limit)
                                     {
-                                        user.Wallet += plan.PlanVolume * user.PriceForGig;
+                                        return MessageBox.Warning("هشدار", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
+                                    }
+                                    string exp = "";
+                                    if (plan.CountDayes == 0)
+                                    {
+                                        exp = null;
                                     }
                                     else
                                     {
-                                        return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+                                        exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                     }
-                                }
 
-                                if (user.Role == 2)
-                                {
-                                    if (user.tbUsers2 != null)
+
+                                    if (user.Role == 3)
                                     {
-                                        user.tbUsers2.Wallet += plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                        if (user.tbUsers2 != null)
+                                        {
+                                            user.Wallet += plan.PlanVolume * user.PriceForGig;
+                                        }
+                                        else
+                                        {
+                                            return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+                                        }
                                     }
+
+                                    if (user.Role == 2)
+                                    {
+                                        if (user.tbUsers2 != null)
+                                        {
+                                            if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
+                                            {
+                                                user.tbUsers2.Wallet += plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+                                        }
+                                    }
+
+                                    var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
+                                    var planid = plan.Plan_ID_V2;
+                                    var emilprx = userSubname + "@" + user.Username;
+
+                                    MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
+                                    await mySql.OpenAsync();
+
+                                    var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =" + plan.Plan_ID_V2);
+                                    long tran = 0;
+                                    int grid = 0;
+                                    while (await reader.ReadAsync())
+                                    {
+                                        tran = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume.Value));
+                                        grid = reader.GetInt32("group_id");
+                                    }
+                                    reader.Close();
+
+                                    string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
+
+                                    var Disc3 = new Dictionary<string, object>();
+                                    Disc3.Add("@FullName", emilprx);
+                                    Disc3.Add("@expired", exp);
+                                    Disc3.Add("@create", create);
+                                    Disc3.Add("@guid", Guid.NewGuid());
+                                    Disc3.Add("@tran", tran);
+                                    Disc3.Add("@grid", grid);
+                                    Disc3.Add("@planid", planid);
+                                    Disc3.Add("@token", token);
+
+                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create)";
+
+                                    reader = await mySql.GetDataAsync(Query, Disc3);
+                                    reader.Close();
+                                    var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true).FirstOrDefault();
+                                    if (user.Role == 2)
+                                    {
+                                        user.Wallet += link.tbPlans.Price;
+                                    }
+
+                                    await mySql.CloseAsync();
+                                    linkUserAndPlansRepository.Save();
+                                    usersRepository.Save();
+                                    AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name, plan.PlanVolume.Value);
+                                    logger.Info("اشتراک جدید توسط نماینده ایجاد گردید");
+                                    return Toaster.Success("موفق", "اشتراک با موفقیت ایجاد گردید");
                                 }
-
-                                var create = DateTime.Now.ConvertDatetimeToSecond().ToString();
-                                var planid = plan.Plan_ID_V2;
-                                var emilprx = userSubname + "@" + user.Username;
-
-                                MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                                await mySql.OpenAsync();
-
-                                var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =" + plan.Plan_ID_V2);
-                                long tran = 0;
-                                int grid = 0;
-                                while (await reader.ReadAsync())
+                                else
                                 {
-                                    tran = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume.Value));
-                                    grid = reader.GetInt32("group_id");
+                                    logger.Warn("عدم پیدا کردن تعرفه " + userPlan);
+                                    return MessageBox.Warning("هشدار", "تعرفه مورد نظر یافت نشد لطفا با پشتیبانی ارتباط بگیرید !!");
                                 }
-                                reader.Close();
-
-                                string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
-
-                                var Disc3 = new Dictionary<string, object>();
-                                Disc3.Add("@FullName", emilprx);
-                                Disc3.Add("@expired", exp);
-                                Disc3.Add("@create", create);
-                                Disc3.Add("@guid", Guid.NewGuid());
-                                Disc3.Add("@tran", tran);
-                                Disc3.Add("@grid", grid);
-                                Disc3.Add("@planid", planid);
-                                Disc3.Add("@token", token);
-
-                                string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create)";
-
-                                reader = await mySql.GetDataAsync(Query, Disc3);
-                                reader.Close();
-                                var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true).FirstOrDefault();
-                                user.Wallet += link.tbPlans.Price;
-
-                                await mySql.CloseAsync();
-                                linkUserAndPlansRepository.Save();
-                                usersRepository.Save();
-                                AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name);
-                                logger.Info("اشتراک جدید توسط نماینده ایجاد گردید");
-                                return Toaster.Success("موفق", "اشتراک با موفقیت ایجاد گردید");
                             }
                             else
                             {
@@ -410,7 +428,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #region افزودن لاگ تمدید یا ساخت کاربر
-        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName)
+        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, int planVolume)
         {
             try
             {
@@ -421,6 +439,7 @@ namespace V2boardApi.Areas.App.Controllers
                 tbLogs.CreateDatetime = DateTime.Now;
                 tbLogs.SalePrice = price;
                 tbLogs.PlanName = planName;
+                tbLogs.PlanVolume = planVolume;
                 logsRepository.Insert(tbLogs);
                 logger.Info("لاگ ساخت اشتراک اضافه شد");
                 return logsRepository.Save();
@@ -682,7 +701,7 @@ namespace V2boardApi.Areas.App.Controllers
                             var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                             user.Wallet += link.tbPlans.Price;
 
-                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name);
+                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume.Value);
                         }
                         reader2.Close();
 
@@ -756,7 +775,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
         #endregion
 
-      #region حذف لینک
+        #region حذف لینک
         [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> delete(int user_id)
         {
@@ -786,18 +805,25 @@ namespace V2boardApi.Areas.App.Controllers
                         var userAccount = usersRepository.table.Where(p => p.Username == username).FirstOrDefault();
                         if (userAccount != null)
                         {
-                            if(userAccount.Role == 2)
+                            if (userAccount.Role == 2)
                             {
                                 var price = log.SalePrice;
 
                                 userAccount.Wallet -= price;
                             }
-
+                            else
                             if (userAccount.Role == 3)
                             {
                                 if (userAccount.tbUsers2 != null)
                                 {
-                                    userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.PriceForGig;
+                                    if (log.PlanVolume != null)
+                                    {
+                                        userAccount.Wallet -= log.PlanVolume * userAccount.PriceForGig;
+                                    }
+                                    else
+                                    {
+                                        userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.PriceForGig;
+                                    }
                                 }
                                 else
                                 {
@@ -809,7 +835,14 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 if (userAccount.tbUsers2 != null)
                                 {
-                                    userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                    if (log.PlanVolume != null)
+                                    {
+                                        userAccount.Wallet -= log.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                    }
+                                    else
+                                    {
+                                        userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                    }
                                 }
                             }
                         }
@@ -817,7 +850,7 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             return Toaster.Error("ناموفق", "عدم صحت نام کاربری لطفا با مدیر تماس بگیرید !!");
                         }
-                        
+
 
 
 

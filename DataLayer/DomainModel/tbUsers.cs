@@ -25,14 +25,13 @@ namespace DataLayer.DomainModel
             this.tbPlans = new HashSet<tbPlans>();
             this.tbTelegramUsers = new HashSet<tbTelegramUsers>();
             this.tbUserFactors = new HashSet<tbUserFactors>();
-            this.tbUsers1 = new HashSet<tbUsers>();
+            this.tbUsers11 = new HashSet<tbUsers>();
         }
     
         public int User_ID { get; set; }
         public string Username { get; set; }
         public Nullable<int> Parent_ID { get; set; }
         public string Password { get; set; }
-        public string FullName { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string PhoneNumber { get; set; }
@@ -50,6 +49,7 @@ namespace DataLayer.DomainModel
         public Nullable<System.DateTime> ExpireTimeToken { get; set; }
         public Nullable<int> Admin_Telegram_ID { get; set; }
         public string Profile_Filename { get; set; }
+        public string FullName { get; set; }
         public Nullable<int> PriceForGig { get; set; }
         public bool GeneralAgent { get; set; }
         public Nullable<int> Group_Id { get; set; }
@@ -74,8 +74,10 @@ namespace DataLayer.DomainModel
         public virtual tbTelegramUsers tbTelegramUsers1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUserFactors> tbUserFactors { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbUsers> tbUsers1 { get; set; }
+        public virtual tbUsers tbUsers1 { get; set; }
         public virtual tbUsers tbUsers2 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbUsers> tbUsers11 { get; set; }
+        public virtual tbUsers tbUsers3 { get; set; }
     }
 }

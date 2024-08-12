@@ -12,17 +12,13 @@ namespace DataLayer.DomainModel
     using System;
     using System.Collections.Generic;
     
-    public partial class tbLogs
+    public partial class vi_SaleFromBot
     {
-        public int log_ID { get; set; }
-        public Nullable<int> FK_Link_User_Plan_ID { get; set; }
-        public string Action { get; set; }
-        public Nullable<System.DateTime> CreateDatetime { get; set; }
-        public string FK_NameUser_ID { get; set; }
-        public Nullable<int> SalePrice { get; set; }
-        public string PlanName { get; set; }
-        public Nullable<int> PlanVolume { get; set; }
-    
-        public virtual tbLinkUserAndPlans tbLinkUserAndPlans { get; set; }
+        public int User_ID { get; set; }
+        public Nullable<System.DateTime> OrderDate { get; set; }
+        public Nullable<int> PerYear { get; set; }
+        public Nullable<int> PerMonth { get; set; }
+        public Nullable<int> PeyDay { get; set; }
+        public Nullable<int> Sales { get; set; }
     }
 }

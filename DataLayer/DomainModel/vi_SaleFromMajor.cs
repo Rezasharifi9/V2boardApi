@@ -12,12 +12,13 @@ namespace DataLayer.DomainModel
     using System;
     using System.Collections.Generic;
     
-    public partial class sysdiagrams
+    public partial class vi_SaleFromMajor
     {
-        public string name { get; set; }
-        public int principal_id { get; set; }
-        public int diagram_id { get; set; }
-        public Nullable<int> version { get; set; }
-        public byte[] definition { get; set; }
+        public Nullable<int> Sale { get; set; }
+        public int User_ID { get; set; }
+        public Nullable<System.DateTime> CreateDatetime { get; set; }
+        public Nullable<int> PerYear { get; set; }
+        public Nullable<int> PerMonth { get; set; }
+        public Nullable<int> PeyDay { get; set; }
     }
 }

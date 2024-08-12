@@ -651,15 +651,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
 
 
-                    if (userRemember)
-                    {
-
-                        FormsAuthentication.SetAuthCookie(User.Username, true);
-                    }
-                    else
-                    {
-                        FormsAuthentication.SetAuthCookie(User.Username, false);
-                    }
+                    FormsAuthentication.SetAuthCookie(User.Username, userRemember);
 
                     logger.Info("ورود موفق");
 
@@ -695,8 +687,8 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.Authorize]
         public ActionResult LogOut()
         {
-            Response.Cookies.Clear();
             FormsAuthentication.SignOut();
+            Response.Cookies.Clear();
             logger.Info("خروج موفق");
             return RedirectToAction("Login", "Admin");
         }

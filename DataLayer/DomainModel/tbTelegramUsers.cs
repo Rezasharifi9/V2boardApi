@@ -39,7 +39,7 @@ namespace DataLayer.DomainModel
         public Nullable<System.DateTime> Tel_UpdateMessage { get; set; }
         public Nullable<bool> Tel_GetedTestAccount { get; set; }
         public Nullable<int> FK_User_ID { get; set; }
-        public int Tel_Status { get; set; }
+        public Nullable<int> Tel_Status { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }

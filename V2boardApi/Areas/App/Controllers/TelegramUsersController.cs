@@ -77,7 +77,7 @@ namespace V2boardApi.Areas.App.Controllers
                 user.Wallet = item.Tel_Wallet.Value.ConvertToMony();
                 if(item.Tel_Status != null)
                 {
-                    user.Status = item.Tel_Status;
+                    user.Status = (int)item.Tel_Status;
                 }
                 else
                 {
