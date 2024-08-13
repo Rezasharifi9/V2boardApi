@@ -71,6 +71,10 @@ namespace DataLayer.Repository
             T existing = table.Find(id);
             table.Remove(existing);
         }
+        public void DeleteRange(List<T> list) 
+        {
+            table.RemoveRange(list);
+        }
 
         public void Delete(T obj)
         {

@@ -676,7 +676,14 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             if (user.tbUsers2 != null)
                             {
-                                user.tbUsers2.Wallet += Plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
+                                {
+                                    user.tbUsers2.Wallet += Plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                }
+                            }
+                            else
+                            {
+                                return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
                             }
                         }
 
@@ -699,7 +706,11 @@ namespace V2boardApi.Areas.App.Controllers
                         if (await reader2.ReadAsync())
                         {
                             var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
-                            user.Wallet += link.tbPlans.Price;
+
+                            if (user.Role == 2)
+                            {
+                                user.Wallet += link.tbPlans.Price;
+                            }
 
                             AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume.Value);
                         }
@@ -796,10 +807,11 @@ namespace V2boardApi.Areas.App.Controllers
                 var username = reader.GetString("email").Split('@')[1];
 
                 var totalUse = Utility.ConvertByteToGB(reader.GetInt64("u") + reader.GetInt64("d"));
-                var log = await logsRepository.FirstOrDefaultAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
-
+                var logs = await logsRepository.WhereAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
+                var log = logs.OrderByDescending(s => s.CreateDatetime).FirstOrDefault();
                 if (log != null)
                 {
+                    
                     if (totalUse <= 1)
                     {
                         var userAccount = usersRepository.table.Where(p => p.Username == username).FirstOrDefault();
@@ -861,12 +873,16 @@ namespace V2boardApi.Areas.App.Controllers
 
 
 
-                        logsRepository.Delete(log.log_ID);
+                        logsRepository.DeleteRange(logs);
+
+                        
                     }
                     else
                     {
-                        log.FK_NameUser_ID = "del_" + name;
-
+                        foreach(var item in logs)
+                        {
+                            item.FK_NameUser_ID = "del_" + name;
+                        }
                     }
                 }
 
@@ -887,6 +903,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex,"حذف اشتراک با خطا مواجه شد");
                 return Toaster.Error("ناموفق", "حذف اشتراک با خطا مواجه شد");
             }
 
