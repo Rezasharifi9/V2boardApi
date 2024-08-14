@@ -1,6 +1,48 @@
 ﻿
-// datatable (jquery)
+// Color constant
+const chartColors = {
+    column: {
+        series1: '#826af9',
+        series2: '#d2b0ff',
+        bg: '#f8d3ff'
+    },
+    donut: {
+        series1: '#fee802',
+        series2: '#3fd0bd',
+        series3: '#826bf8',
+        series4: '#2b9bf4'
+    },
+    area: {
+        series1: '#29dac7',
+        series2: '#60f2ca',
+        series3: '#a5f8cd'
+    }
+};
+
+
+
+
 $(function () {
+
+    let cardColor, headingColor, labelColor, borderColor, legendColor;
+
+    if (isDarkStyle) {
+        cardColor = config.colors_dark.cardColor;
+        headingColor = config.colors_dark.headingColor;
+        labelColor = config.colors_dark.textMuted;
+        legendColor = config.colors_dark.bodyColor;
+        borderColor = config.colors_dark.borderColor;
+    } else {
+        cardColor = config.colors.cardColor;
+        headingColor = config.colors.headingColor;
+        labelColor = config.colors.textMuted;
+        legendColor = config.colors.bodyColor;
+        borderColor = config.colors.borderColor;
+    }
+
+
+    const lineChartEl = document.querySelector('#lineChart');
+
     var dt_basic_table = $('.datatables-plan'),
         select2 = $('#userPlan'),
         dt_basic;
@@ -269,7 +311,7 @@ $(function () {
                             '<button  onclick="copyToClipboard(\'' + $link + '\')"  class="dropdown-item item-copy">کپی</button>' +
                             '<button  data-id="' + user_id + '" class="dropdown-item item-unlink">تغییر لینک</button>' +
                             '<button  data-id="' + user_id + '" class="dropdown-item item-changename" data-id2="' + full["Name"] + '">تغییر نام</button>' +
-                            '<button class="dropdown-item item-report">تاریخچه مصرف</button>' +
+                            '<button class="dropdown-item item-history" data-id="' + user_id + '">تاریخچه مصرف</button>' +
                             '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state + '</button>' +
                             '<div class="dropdown-divider"></div>' +
                             '<li><button data-used="' + $UsedVolume + '" data-id="' + user_id + '"data-user="' + $Name + '"  data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
@@ -555,6 +597,150 @@ $(function () {
 
 
     });
+
+    //تاریخچه مصرف کاربران
+    $('body').on('click', '.item-history', function () {
+
+        BodyBlockUI();
+        var user_id = $(this).attr("data-id");
+
+        $(".dtr-bs-modal").modal("hide");
+
+        $.ajax({
+            url: "/App/Subscriptions/GetSubUseage?user_id=" + user_id,
+            type: "get",
+            dataType: "json",
+            success: function (res) {
+                $("#modalHistoryUse").modal("show");
+                BodyUnblockUI();
+                if (res.status == "success") {
+
+                    // رند کردن مقادیر به دو رقم اعشار
+                    res.data.Used = res.data.Used.map(function (value) {
+                        return Math.round(value * 100) / 100;
+                    });
+
+                    var lineChartConfig = {
+                        chart: {
+                            height: 500,
+                            type: 'line',
+                            parentHeightOffset: 0,
+                            zoom: {
+                                enabled: true,
+                                type: 'x', // زوم فقط روی محور x
+                                autoScaleYaxis: true
+                            },
+                            toolbar: {
+                                show: true
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x', // فقط روی محور x
+                                threshold: 10 // حساسیت بالا برای دستگاه‌های لمسی
+                            }
+                        },
+                        series: [
+                            {
+                                data: res.data.Used,
+                            }
+                        ],
+                        markers: {
+                            strokeWidth: 7,
+                            strokeOpacity: 1,
+                            strokeColors: [cardColor],
+                            colors: [config.colors.warning]
+                        },
+                        dataLabels: {
+                            enabled: true
+                        },
+                        stroke: {
+                            curve: 'straight'
+                        },
+                        colors: [config.colors.warning],
+                        grid: {
+                            borderColor: borderColor,
+                            xaxis: {
+                                lines: {
+                                    show: true
+                                }
+                            },
+                            padding: {
+                                top: -20
+                            }
+                        },
+                        tooltip: {
+                            custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+                                return '<div class="px-3 py-2">' + '<span>' + series[seriesIndex][dataPointIndex] + ' GB</span>' + '</div>';
+                            }
+                        },
+                        xaxis: {
+                            categories: res.data.Date,
+                            axisBorder: {
+                                show: false
+                            },
+                            axisTicks: {
+                                show: false
+                            },
+                            labels: {
+                                style: {
+                                    colors: labelColor,
+                                    fontSize: '13px'
+                                }
+                            },
+                            min: 1,
+                            max: 14
+                        },
+                        yaxis: {
+                            labels: {
+                                style: {
+                                    colors: labelColor,
+                                    fontSize: '13px'
+                                }
+                            }
+                        },
+                        responsive: [
+                            {
+                                breakpoint: 480, // در اندازه‌های صفحه نمایش کمتر از 480 پیکسل
+                                options: {
+                                    chart: {
+                                        height: 300 // تنظیم ارتفاع کمتر برای صفحات کوچکتر
+                                    },
+                                    dataLabels: {
+                                        enabled: false // غیرفعال کردن لیبل‌ها برای صفحه‌های کوچک
+                                    },
+                                    xaxis: {
+                                        labels: {
+                                            show: true,
+                                            style: {
+                                                fontSize: '10px' // کوچک‌تر کردن فونت در دستگاه‌های موبایل
+                                            }
+                                        }
+                                    },
+                                    yaxis: {
+                                        labels: {
+                                            style: {
+                                                fontSize: '10px' // کوچک‌تر کردن فونت در دستگاه‌های موبایل
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    };
+
+
+
+                    if (typeof lineChartEl !== undefined && lineChartEl !== null) {
+                        const lineChart = new ApexCharts(lineChartEl, lineChartConfig);
+                        lineChart.render();
+                    }
+
+                }
+            }
+        });
+
+    });
+
 
 
     // Filter form control to default size

@@ -13,6 +13,7 @@
     <link href="../../assets/libs/jalali-datepicker/jalalidatepicker.css" rel="stylesheet" />
     <link href="../../assets/libs/flatpickr/flatpickr.css" rel="stylesheet" />
     <link href="../../assets/vendor/libs/toastr/toastr.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/apex-charts/apex-charts.css" rel="stylesheet" />
 }
 <style>
     .dt-row {
@@ -227,7 +228,6 @@
     </div>
 </div>
 
-
 <!--QR Code اشتراک-->
 <div aria-hidden="true" class="modal fade" id="modalQrCode" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" id="#modal-dialog" role="document">
@@ -310,12 +310,39 @@
     </div>
 </div>
 
+<!-- تاریخچه مصرف کاربر -->
+<div aria-hidden="true" class="modal fade" id="modalHistoryUse" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content section-block">
+            <div class="modal-header">
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card-header d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">تاریخچه مصرف</h5>
+                        <small class="text-muted">ارزیابی و تحلیل مصرف کاربران</small>
+                    </div>
+                </div>
+                <br />
+                <div class="card-body">
+                    <div id="lineChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 @section vendorScripts {
 
     <script src="../../assets/vendor/libs/select2/select2.js"></script>
     <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
     <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
     <script src="../../assets/vendor/libs/popper/popper.js"></script>
+    <script src="../../assets/vendor/libs/apex-charts/apexcharts.js"></script>
+
     <!-- Form Validation -->
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
@@ -330,11 +357,13 @@
     <script src="../../assets/libs/flatpickr/flatpickr-jalali.js"></script>
     <script src="../../assets/libs/flatpickr/l10n/fa.js"></script>
     <script src="../../assets/vendor/libs/toastr/toastr.js"></script>
+
+
 }
 
 @section customScripts {
 
-
+    <script src="../../assets/js/charts-apex.js"></script>
     <script>
 
         // نمایش اطلاعات کلی کاربران

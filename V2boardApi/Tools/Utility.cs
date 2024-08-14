@@ -78,6 +78,10 @@ namespace V2boardApi.Tools
         {
             return dt.ToString("yyyy MMMM dd", CultureInfo.GetCultureInfo("fa-IR")); ;
         }
+        public static string ConvertDateTimeToMonthAndDay(this DateTime dt)
+        {
+            return dt.ToString("MM/dd", CultureInfo.GetCultureInfo("fa-IR")); ;
+        }
         public static string ConvertDateTimeToShamsi2(this DateTime dt)
         {
             return dt.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.GetCultureInfo("fa-IR")); ;

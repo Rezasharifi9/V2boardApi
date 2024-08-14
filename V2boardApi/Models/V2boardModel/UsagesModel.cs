@@ -8,7 +8,7 @@ namespace V2boardApi.Models.V2boardModel
 {
     public class UsagesModel
     {
-        public double Used { get; set; }
-        public string Date { get; set; }
+        public List<float> Used { get; set; }
+        public List<string> Date { get; set; }
     }
 }

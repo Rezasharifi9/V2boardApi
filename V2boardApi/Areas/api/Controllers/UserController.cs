@@ -240,56 +240,56 @@ namespace V2boardApi.Areas.api.Controllers
 
         #endregion
 
-        #region تاریخچه مصرف کاربر
+        //#region تاریخچه مصرف کاربر
 
-        [Authorize]
-        public async Task<IHttpActionResult> GetTrafficUsage(int userId)
-        {
-            var Token = Request.Headers.Authorization;
-            var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).First();
+        //[Authorize]
+        //public async Task<IHttpActionResult> GetTrafficUsage(int userId)
+        //{
+        //    var Token = Request.Headers.Authorization;
+        //    var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).First();
 
-            try
-            {
+        //    try
+        //    {
 
-                MySqlEntities mysql = new MySqlEntities(User.tbServers.ConnectionString);
-                await mysql.OpenAsync();
+        //        MySqlEntities mysql = new MySqlEntities(User.tbServers.ConnectionString);
+        //        await mysql.OpenAsync();
 
-                var reader = await mysql.GetDataAsync("select * from v2_stat_user where user_id=" + userId);
-                List<UsagesModel> Useages = new List<UsagesModel>();
-                while (reader.Read())
-                {
-                    UsagesModel model = new UsagesModel();
-                    var d = reader.GetInt64("d");
-                    var u = reader.GetInt64("u");
+        //        var reader = await mysql.GetDataAsync("select * from v2_stat_user where user_id=" + userId);
+        //        List<UsagesModel> Useages = new List<UsagesModel>();
+        //        while (reader.Read())
+        //        {
+        //            UsagesModel model = new UsagesModel();
+        //            var d = reader.GetInt64("d");
+        //            var u = reader.GetInt64("u");
 
-                    var total = d + u;
+        //            var total = d + u;
 
-                    var UnixDate = reader.GetInt64("updated_at");
+        //            var UnixDate = reader.GetInt64("updated_at");
 
-                    var Date = Utility.ConvertSecondToDatetime(UnixDate);
+        //            var Date = Utility.ConvertSecondToDatetime(UnixDate);
 
-                    model.Date = Utility.ConvertDateTimeToShamsi(Date);
-                    model.Used = Utility.ConvertByteToMG(total);
+        //            model.Date = Utility.ConvertDateTimeToShamsi(Date);
+        //            model.Used = Utility.ConvertByteToMG(total);
 
-                    Useages.Add(model);
-                }
+        //            Useages.Add(model);
+        //        }
 
-                var Useage = Useages.GroupBy(p => p.Date).ToList();
-                var use = Useage.Select(p => new { Date = p.Key, Used = p.Sum(s => Math.Round(s.Used, 2)) }).ToList();
+        //        var Useage = Useages.GroupBy(p => p.Date).ToList();
+        //        var use = Useage.Select(p => new { Date = p.Key, Used = p.Sum(s => Math.Round(s.Used, 2)) }).ToList();
 
-                await mysql.CloseAsync();
-                return Ok(use);
+        //        await mysql.CloseAsync();
+        //        return Ok(use);
 
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "دریافت تاریخچه مصرف اشتراک با خطا مواجه شد");
-                return Content(System.Net.HttpStatusCode.InternalServerError, "دریافت اطلاعات با خطا مواجه شد");
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.Error(ex, "دریافت تاریخچه مصرف اشتراک با خطا مواجه شد");
+        //        return Content(System.Net.HttpStatusCode.InternalServerError, "دریافت اطلاعات با خطا مواجه شد");
+        //    }
 
-        }
+        //}
 
-        #endregion
+        //#endregion
 
         #region دریافت فاکتور ها برای اپلیکیشن
 

@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using static Stimulsoft.Base.Drawing.StiFontReader;
 using System.Numerics;
+using V2boardApi.Models.V2boardModel;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -272,6 +273,7 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 if (!string.IsNullOrEmpty(userSubname))
                 {
+                   
                     userSubname = userSubname.ToLower();
                     if (userPlan != 0)
                     {
@@ -286,7 +288,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                             if ((user.Limit - user.Wallet) >= 0)
                             {
-
+                                
                                 var plan = plansRepository.table.Where(p => p.Plan_ID == userPlan && p.FK_Server_ID == user.FK_Server_ID).FirstOrDefault();
                                 if (plan != null)
                                 {
@@ -304,6 +306,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                     }
 
+                                   
 
                                     if (user.Role == 3)
                                     {
@@ -370,6 +373,8 @@ namespace V2boardApi.Areas.App.Controllers
                                     {
                                         user.Wallet += link.tbPlans.Price;
                                     }
+
+                                  
 
                                     await mySql.CloseAsync();
                                     linkUserAndPlansRepository.Save();
@@ -1028,6 +1033,70 @@ namespace V2boardApi.Areas.App.Controllers
                 return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
             }
 
+        }
+
+        #endregion
+
+        #region دریافت تاریخچه اشتراک
+
+        [System.Web.Http.HttpGet]
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        public async Task<ActionResult> GetSubUseage(int user_id)
+        {
+            var user = await usersRepository.FirstOrDefaultAsync(s=> s.Username == User.Identity.Name);
+
+            try
+            {
+
+                MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString);
+                await mysql.OpenAsync();
+
+                var reader = await mysql.GetDataAsync("select * from v2_stat_user where user_id=" + user_id);
+                UsagesModel Useage = new UsagesModel();
+                Useage.Date = new List<string>();
+                Useage.Used = new List<float>();
+
+                var OldDate = "";
+                var Counter = -1;
+                while (reader.Read())
+                {
+                    UsagesModel model = new UsagesModel();
+                    var d = reader.GetInt64("d");
+                    var u = reader.GetInt64("u");
+
+                    var total = d + u;
+
+                    var UnixDate = reader.GetInt64("updated_at");
+
+                    var Datetime = Utility.ConvertSecondToDatetime(UnixDate);
+
+                    var Date = Utility.ConvertDateTimeToMonthAndDay(Datetime);
+                    var Used = Utility.ConvertByteToGB(total);
+                    if (Date != OldDate)
+                    {
+                        Useage.Date.Add(Date);
+                        var use = (float)Math.Round(Used, 2, MidpointRounding.AwayFromZero);
+                        Useage.Used.Add(use);
+                        Counter++;
+                        OldDate = Date;
+                    }
+                    else
+                    {
+                        var use = (float)Math.Round(Used, 2, MidpointRounding.AwayFromZero);
+                        Useage.Used[Counter] += use;
+                    }
+                    
+                }
+                await mysql.CloseAsync();
+
+                return Json(new { status = "success", data = Useage },JsonRequestBehavior.AllowGet);
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "دریافت تاریخچه مصرف اشتراک با خطا مواجه شد");
+                return MessageBox.Success("خطا","نمایش نمودار با خطا مواجه شد");
+            }
         }
 
         #endregion
