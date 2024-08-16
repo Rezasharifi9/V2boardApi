@@ -201,7 +201,7 @@
 
         $("#SaveGroup").click(function () {
 
-            $("#user_id").val(getUrlParameter("user_id"));
+            $("#editGroupForm").find("#user_id").val(getUrlParameter("user_id"));
 
             AjaxFormPost("/App/Admin/SetSetting", "#editGroupForm").then(res => {
 
@@ -223,8 +223,8 @@
         });
 
         $("#SaveDeposit").click(function () {
-
-            $("#user_id").val(getUrlParameter("user_id"));
+            
+            $("#editWalletForm").find("#user_id").val(getUrlParameter("user_id"));
 
             AjaxFormPost("/App/Admin/EditWallet", "#editWalletForm").then(res => {
 
