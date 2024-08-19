@@ -4,13 +4,24 @@
         <div class="modal-content p-3 p-md-5">
             <div class="modal-body">
                 <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
-                @*<div class="text-center mb-4">
-                        <h3 class="mb-2">ربات</h3>
-                    </div>*@
+                <div class="text-center mb-4">
+                    <h3 class="mb-2">تنظیمات</h3>
+                    <p class="text-muted">نمایندگی</p>
+                </div>
                 <form class="row g-3" id="editGroupForm">
                     <input type="hidden" name="user_id" id="user_id" value="" />
-                    <div class="col-sm-12">
-                        <div class="mb-3">
+                    <div class="row">
+                        <div class="col-6 col-md-6">
+                            <label class="form-label" for="userPrice">قیمت هرگیگ</label>
+                            <input class="form-control" id="userPrice" name="userPrice" placeholder="" type="number" />
+                        </div>
+                        <div class="col-6 col-md-6" >
+                            <label class="form-label" for="userMonth">قیمت هرماه</label>
+                            <input class="form-control" id="userMonth" name="userMonth" placeholder="" type="number" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3" data-bs-toggle="popover" title="تعیین کننده نود های قابل دسترسی">
                             <label class="form-label" for="planGroup">گروه مجوز<span class="text-danger"> * </span></label>
                             <select id="group" class="select2 form-select" autocomplete="off" name="group">
                                 <option value="-1">در حال بارگزاری ...</option>
@@ -34,7 +45,7 @@
     $(function () {
 
         SelectGroup('#group', '@Model');
-
+       
     });
 
 

@@ -351,6 +351,24 @@ $(function () {
                         message: 'قیمت تعرفه الزامی است'
                     }
                 }
+            },
+            planSpeed: {
+                validators: {
+                    between: {
+                        min: 1,
+                        max: 500,
+                        message: 'محدودیت سرعت باید بین 1 تا 1000 مگابیت باشد'
+                    }
+                }
+            },
+            planDevicelimit: {
+                validators: {
+                    between: {
+                        min: 1,
+                        max: 20,
+                        message: 'تعداد دستگاه ها باید بین 1 تا 20 باشد'
+                    }
+                }
             }
         },
         plugins: {

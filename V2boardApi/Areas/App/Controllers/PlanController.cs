@@ -140,11 +140,22 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             Speed = null;
                         }
+
+                        var deviceLimit = "";
+                        if (model.planDevicelimit != null)
+                        {
+                            deviceLimit = model.planDevicelimit.Value.ToString();
+                        }
+                        else
+                        {
+                            deviceLimit = null;
+                        }
                         var TimeNow = Utility.ConvertDatetimeToSecond(DateTime.Now);
 
                         var Query = "";
-                        tbPlans plan = new tbPlans();
 
+
+                        tbPlans plan = new tbPlans();
                         var Disc1 = new Dictionary<string, object>();
                         Disc1.Add("@planGroup", user.Group_Id);
                         Disc1.Add("@planTraffic", model.planTraffic);
@@ -152,6 +163,7 @@ namespace V2boardApi.Areas.App.Controllers
                         Disc1.Add("@Speed", Speed);
                         Disc1.Add("@Plan_ID_V2", plan.Plan_ID_V2);
                         Disc1.Add("@Content", user.Username);
+                        
 
 
                         if (model.id != null)
@@ -204,6 +216,7 @@ namespace V2boardApi.Areas.App.Controllers
                             plan.FK_Server_ID = user.FK_Server_ID;
                             plan.Status = true;
                             plan.Speed_limit = model.planSpeed;
+                            plan.device_limit = model.planDevicelimit;
                             plan.FK_User_ID = user.User_ID;
                             //plan.Group_Id = model.planGroup;
                             if (model.id == null)

@@ -289,11 +289,11 @@ namespace V2boardApi.Tools
 
         public static long ConvertGBToByte(this int GigaByte)
         {
-
-            var result = ((GigaByte * 1024) * 1024) * 1024;
+            long result = ((long)GigaByte * 1024 * 1024 * 1024);
 
             return result;
         }
+
 
         public static long ConvertGBToByte(this double GigaByte)
         {

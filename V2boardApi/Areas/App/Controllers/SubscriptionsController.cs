@@ -326,7 +326,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         {
                                             if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                             {
-                                                user.tbUsers2.Wallet += plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                                user.tbUsers2.Wallet += plan.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
                                             }
                                         }
                                         else
@@ -342,16 +342,6 @@ namespace V2boardApi.Areas.App.Controllers
                                     MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                                     await mySql.OpenAsync();
 
-                                    var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =" + plan.Plan_ID_V2);
-                                    long tran = 0;
-                                    int grid = 0;
-                                    while (await reader.ReadAsync())
-                                    {
-                                        tran = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume.Value));
-                                        grid = reader.GetInt32("group_id");
-                                    }
-                                    reader.Close();
-
                                     string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
 
                                     var Disc3 = new Dictionary<string, object>();
@@ -359,21 +349,23 @@ namespace V2boardApi.Areas.App.Controllers
                                     Disc3.Add("@expired", exp);
                                     Disc3.Add("@create", create);
                                     Disc3.Add("@guid", Guid.NewGuid());
-                                    Disc3.Add("@tran", tran);
-                                    Disc3.Add("@grid", grid);
+                                    var vol = Utility.ConvertGBToByte(plan.PlanVolume.Value);
+                                    Disc3.Add("@tran", vol);
+                                    Disc3.Add("@grid", plan.Group_Id);
                                     Disc3.Add("@planid", planid);
                                     Disc3.Add("@token", token);
+                                    Disc3.Add("@device_limit", plan.device_limit);
 
-                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create)";
+                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at,device_limit) VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create,@device_limit)";
 
-                                    reader = await mySql.GetDataAsync(Query, Disc3);
+                                    var reader = await mySql.GetDataAsync(Query, Disc3);
                                     reader.Close();
                                     var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true).FirstOrDefault();
                                     if (user.Role == 2)
                                     {
                                         user.Wallet += link.tbPlans.Price;
                                     }
-
+                                    
                                   
 
                                     await mySql.CloseAsync();
@@ -664,26 +656,26 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
                         }
-
+                        //چک می کنیم اگر نماینده بود از بر اساس محاسبات نماینده کل از کیف پولش کسر میکنیم
                         if (user.Role == 3)
                         {
                             if (user.tbUsers2 != null)
                             {
-                                user.Wallet += Plan.PlanVolume * user.PriceForGig;
+                                user.Wallet += Plan.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
                             }
                             else
                             {
                                 return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
                             }
                         }
-
+                        //چک می کنیم اگر نماینده معمولی بود هزینه رو بر اساس محاسبات نماینده کل از کیف پول نماینده کل کسر میکنیم
                         if (user.Role == 2)
                         {
                             if (user.tbUsers2 != null)
                             {
                                 if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                 {
-                                    user.tbUsers2.Wallet += Plan.PlanVolume * user.tbUsers2.PriceForGig;
+                                    user.tbUsers2.Wallet += Plan.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
                                 }
                             }
                             else
@@ -696,8 +688,9 @@ namespace V2boardApi.Areas.App.Controllers
                         Disc1.Add("@Plan_ID_V2", Plan.Plan_ID_V2);
                         Disc1.Add("@transfer_enable", t);
                         Disc1.Add("@exp", exp);
+                        Disc1.Add("@device_limit", Plan.device_limit);
 
-                        var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2, transfer_enable =@transfer_enable , expired_at =@exp where id =" + user_id;
+                        var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2, transfer_enable =@transfer_enable , expired_at =@exp,device_limit=@device_limit where id =" + user_id;
 
                         MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                         await mySql.OpenAsync();
@@ -822,6 +815,7 @@ namespace V2boardApi.Areas.App.Controllers
                         var userAccount = usersRepository.table.Where(p => p.Username == username).FirstOrDefault();
                         if (userAccount != null)
                         {
+                            //چک می کنیم اگر نماینده مبلغ تعرفه رو به کیف پولش برمیگردونیم
                             if (userAccount.Role == 2)
                             {
                                 var price = log.SalePrice;
@@ -829,17 +823,18 @@ namespace V2boardApi.Areas.App.Controllers
                                 userAccount.Wallet -= price;
                             }
                             else
+                            // گار نماینده کل بود محاسبات بر اساس قیمت مصوبه صورت میگرد
                             if (userAccount.Role == 3)
                             {
                                 if (userAccount.tbUsers2 != null)
                                 {
                                     if (log.PlanVolume != null)
                                     {
-                                        userAccount.Wallet -= log.PlanVolume * userAccount.PriceForGig;
+                                        userAccount.Wallet -= log.PlanVolume * (user.PriceForGig + user.PriceForMonth);
                                     }
                                     else
                                     {
-                                        userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.PriceForGig;
+                                        userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * (user.PriceForGig + user.PriceForMonth);
                                     }
                                 }
                                 else
@@ -847,7 +842,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
                                 }
                             }
-
+                            //اگر نماینده معمولی بود این قسمت به حساب نماینده کل بر اساس قیمت تصویب شده اضافه میگردد
                             if (userAccount.Role == 2)
                             {
                                 if (userAccount.tbUsers2 != null)
@@ -856,11 +851,11 @@ namespace V2boardApi.Areas.App.Controllers
                                     {
                                         if (log.PlanVolume != null)
                                         {
-                                            userAccount.tbUsers2.Wallet -= log.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                            userAccount.tbUsers2.Wallet -= log.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
                                         }
                                         else
                                         {
-                                            userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * userAccount.tbUsers2.PriceForGig;
+                                            userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
                                         }
                                     }
                                 }

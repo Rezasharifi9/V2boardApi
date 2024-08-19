@@ -68,14 +68,27 @@
                     </a>
                 }
             </li>
-        </ul>
-
-        <!--/ User Pills -->
-        <!-- Invoice table -->
-        <div class="card mb-4">
-            <div class="table-responsive mb-3">
-                @if (ViewBag.Type == "history")
+            <li class="nav-item">
+                @if (ViewBag.Type == "Settings")
                 {
+                    <a class="nav-link active" href="@Url.Action("Details","Admin",new {area="App",type="Settings",user_id=Model})">
+                        <i class="ti ti-settings ti-xs me-1"></i>
+                        تنظیمات
+                    </a>
+                }
+                else
+                {
+                    <a class="nav-link" href="@Url.Action("Details","Admin",new {area="App",type="Settings",user_id=Model})">
+                        <i class="ti ti-settings ti-xs me-1"></i>
+                        تنظیمات
+                    </a>
+                }
+            </li>
+        </ul>
+        @if (ViewBag.Type == "history")
+        {
+            <div class="card mb-4">
+                <div class="table-responsive mb-3">
                     <table class="table datatable-sub border-top">
                         <thead>
                             <tr>
@@ -89,9 +102,13 @@
                             </tr>
                         </thead>
                     </table>
-                }
-                else if (ViewBag.Type == "Factors")
-                {
+                </div>
+            </div>
+        }
+        else if (ViewBag.Type == "Factors")
+        {
+            <div class="card mb-4">
+                <div class="table-responsive mb-3">
                     <table class="table datatable-invoice border-top">
                         <thead>
                             <tr>
@@ -102,164 +119,318 @@
                             </tr>
                         </thead>
                     </table>
-                }
+                </div>
             </div>
-        </div>
-        <!-- /Invoice table -->
-        <!-- Activity Timeline -->
-    </div>
-    <!--/ User Content -->
-</div>
-@{
-    var Role = Request.Cookies["Role"].Value;
-}
+        }
+        else if (ViewBag.Type == "Settings")
+        {
+            <div class="card mb-3">
+                <div class="card-header pt-2">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item">
+                            <button aria-selected="true" class="nav-link active" data-bs-target="#form-tabs-personal" data-bs-toggle="tab" role="tab">
+                                کلی
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-account" data-bs-toggle="tab" role="tab" onclick="AgentTab()">نمایندگی</button>
+                        </li>
+                        <li class="nav-item">
+                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-social" data-bs-toggle="tab" role="tab">ربات</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane fade active show" id="form-tabs-personal" role="tabpanel">
+                        <form id="groupForm">
+                            <input type="hidden" id="user_id" name="user_id" value="" />
+                            <div class="col-12 col-md-6">
+                                <div class="mb-3" data-bs-toggle="popover" title="تعیین کننده نود های قابل دسترسی">
+                                    <label class="form-label" for="planGroup">گروه مجوز<span class="text-danger"> * </span></label>
+                                    <select id="group" class="select2 form-select" autocomplete="off" name="group">
+                                        <option value="-1">در حال بارگزاری ...</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 text-center">
+                                    <button class="btn btn-primary me-sm-3 me-1" type="button" id="SaveGroup">ثبت</button>
+                                    <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset"> لغو</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="form-tabs-account" role="tabpanel">
+                        <form class="row g-3" id="editPriceForm">
+                            <input type="hidden" name="user_id" id="user_id" value="@Model" />
+                            <div class="row">
+                                <div class="col-6 col-md-6">
+                                    <label class="form-label" for="userPrice">قیمت هرگیگ</label>
+                                    <input class="form-control" id="userPrice" name="userPrice" placeholder="" type="number" min="0" max="1000000000"  />
+                                </div>
+                                <div class="col-6 col-md-6">
+                                    <label class="form-label" for="userMonth">قیمت هرماه</label>
+                                    <input class="form-control" id="userMonth" name="userMonth" placeholder="" type="number" min="0" max="1000000000" />
+                                </div>
+                            </div>
+                            <div class="col-12 text-center">
+                                <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
+                                <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset"> لغو</button>
+                            </div>
+                        </form>
 
-<!-- Modal -->
-<!-- Edit Setting Modal -->
+                    </div>
+                    <div class="tab-pane fade" id="form-tabs-social" role="tabpanel">
+                        <form>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="formtabs-twitter">توییتر</label>
+                                    <input class="form-control ltr" id="formtabs-twitter" placeholder="https://twitter.com/abc" type="text" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="formtabs-facebook">فیس بوک</label>
+                                    <input class="form-control ltr" id="formtabs-facebook" placeholder="https://facebook.com/abc" type="text" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="formtabs-google">گوگل+</label>
+                                    <input class="form-control ltr" id="formtabs-google" placeholder="https://plus.google.com/abc" type="text" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="formtabs-linkedin">لینکدین</label>
+                                    <input class="form-control ltr" id="formtabs-linkedin" placeholder="https://linkedin.com/abc" type="text" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="formtabs-instagram">اینستاگرام</label>
+                                    <input class="form-control ltr" id="formtabs-instagram" placeholder="https://instagram.com/abc" type="text" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="formtabs-quora">Quora</label>
+                                    <input class="form-control ltr" id="formtabs-quora" placeholder="https://quora.com/abc" type="text" />
+                                </div>
+                            </div>
+                            <div class="pt-4">
+                                <button class="btn btn-primary me-sm-3 me-1" type="submit">ارسال</button>
+                                <button class="btn btn-label-secondary" type="reset">لغو</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
-@if (Role == "1")
-{
-
-    @Html.Action("_GetSetting", "Admin", new { area = "App", user_id = Model })
-}
-<!--/ Edit Setting Modal -->
-<!-- Edit Wallet Modal -->
-@Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
-
-<!--/ Edit Wallet Modal -->
-
-
-@section vendorScripts {
-
-    <script src="../../assets/vendor/libs/moment/moment.js"></script>
-    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
-    <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
-    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
-    <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
-    <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
-    <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
-    <script src="../../assets/vendor/libs/select2/select2.js"></script>
-    <script src="../../assets/vendor/libs/select2/i18n/fa.js"></script>
-    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
-    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
-    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
-    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
-}
-
-
-@section customScripts {
-
-    <script src="../../assets/js/modal-edit-wallet.js"></script>
-    <script src="../../assets/js/app-user-view.js"></script>
-    <script src="../../assets/js/app-user-view-account.js"></script>
-
-
-    <script>
-        $(function () {
-
-            $("#group").wrap('<div class="position-relative"></div>').select2({
-                placeholder: 'انتخاب گروه مجوز',
-                dropdownParent: $("#group").parent(),
-                allowClear: false
-            });
-
-            Groups("#group");
-
-        });
-
-        function SelectGroup(selectId, Ids) {
-            console.log("select shod");
-            $(selectId).val(Ids).trigger('change');
+        }
+        @{
+            var Role = Request.Cookies["Role"].Value;
         }
 
-        function Groups(selectId) {
-            console.log("omad");
-            var $select = $(selectId);
-            $.ajax({
-                url: "/App/Plan/GetSelectGroups",
-                type: "get",
-                dataType: "json",
-                async: true,
-                success: function (res) {
-                    console.log(res);
-                    // پاک کردن گزینه‌های قبلی
-                    $select.empty();
+        <!-- Modal -->
+        <!-- Edit Setting Modal -->
+        @*@if (Role == "1")
+            {
 
-                    // افزودن گزینه‌های جدید
-                    $.each(res.data, function (index, item) {
-                        var newOption = new Option(item.Name, item.id, false, false);
-                        $select.append(newOption);
+                @Html.Action("_GetSetting", "Admin", new { area = "App", user_id = Model })
+            }*@
+        <!--/ Edit Setting Modal -->
+        <!-- Edit Wallet Modal -->
+        @Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
+
+        <!--/ Edit Wallet Modal -->
+
+
+        @section vendorScripts {
+
+            <script src="../../assets/vendor/libs/moment/moment.js"></script>
+            <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+            <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
+            <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+            <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
+            <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
+            <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
+            <script src="../../assets/vendor/libs/select2/select2.js"></script>
+            <script src="../../assets/vendor/libs/select2/i18n/fa.js"></script>
+            <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+            <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+            <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+            <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+        }
+
+
+        @section customScripts {
+
+            <script src="../../assets/js/modal-edit-wallet.js"></script>
+            <script src="../../assets/js/app-user-view.js"></script>
+            <script src="../../assets/js/app-user-view-account.js"></script>
+
+           
+
+            <script>
+
+                $(function () {
+
+                    $("#group").wrap('<div class="position-relative"></div>').select2({
+                        placeholder: 'انتخاب گروه مجوز',
+                        dropdownParent: $("#group").parent(),
+                        allowClear: false
                     });
-                },
-                error: function (xhr, status, error) {
-                    console.error("An error occurred: " + status + " " + error);
-                }
-            });
 
-        }
+                    Groups("#group");
+                    $('[data-bs-toggle="popover"]').tooltip();
+
+                });
 
 
-        $("#SaveGroup").click(function () {
-
-            $("#editGroupForm").find("#user_id").val(getUrlParameter("user_id"));
-
-            AjaxFormPost("/App/Admin/SetSetting", "#editGroupForm").then(res => {
 
 
-                eval(res.data);
-                if (res.status == "success") {
-                    $("#editSetting").modal("hide");
+                function SelectGroup(selectId, Ids) {
+                    $(selectId).val(Ids).trigger('change');
                 }
 
-            });
+                function Groups(selectId) {
+                    var $select = $(selectId);
+                    $.ajax({
+                        url: "/App/Plan/GetSelectGroups",
+                        type: "get",
+                        dataType: "json",
+                        async: true,
+                        success: function (res) {
+                            console.log(res);
+                            // پاک کردن گزینه‌های قبلی
+                            $select.empty();
 
-        });
+                            // افزودن گزینه‌های جدید
+                            $.each(res.data, function (index, item) {
+                                var newOption = new Option(item.Name, item.id, false, false);
+                                $select.append(newOption);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("An error occurred: " + status + " " + error);
+                        }
+                    });
 
-
-        $("#ZeroWallet").click(function () {
-
-            $("#Deposit").val(0);
-
-        });
-
-        $("#SaveDeposit").click(function () {
-            
-            $("#editWalletForm").find("#user_id").val(getUrlParameter("user_id"));
-
-            AjaxFormPost("/App/Admin/EditWallet", "#editWalletForm").then(res => {
-
-
-                eval(res.data);
-                if (res.status == "success") {
-                    $("#editWallet").modal("hide");
                 }
 
-            });
 
-        });
+                
 
 
-        function ChangeAgent(inp) {
-            var Check = $(inp).is(':checked');
-            var user_id = '@Model';
-            BodyBlockUI();
-            $.ajax({
-                url: "@Url.Action("ChangeAgent","Admin")",
-                type: "Post",
-                dataType: "json",
-                data: { status: Check, user_id: user_id },
-                success: function (res) {
-                    BodyUnblockUI();
-                    if (res.status != "success") {
+                $("#ZeroWallet").click(function () {
+
+                    $("#Deposit").val(0);
+
+                });
+
+                $("#SaveDeposit").click(function () {
+
+                    $("#editWalletForm").find("#user_id").val(getUrlParameter("user_id"));
+
+                    AjaxFormPost("/App/Admin/EditWallet", "#editWalletForm").then(res => {
+
+
                         eval(res.data);
-                        $(inp).prop("checked", false);
-                    }
+                        if (res.status == "success") {
+                            $("#editWallet").modal("hide");
+                        }
+
+                    });
+
+                });
+
+
+                function ChangeAgent(inp) {
+                    var Check = $(inp).is(':checked');
+                    var user_id = '@Model';
+                    BodyBlockUI();
+                    $.ajax({
+                        url: "@Url.Action("ChangeAgent","Admin")",
+                        type: "Post",
+                        dataType: "json",
+                        data: { status: Check, user_id: user_id },
+                        success: function (res) {
+                            BodyUnblockUI();
+                            if (res.status != "success") {
+                                eval(res.data);
+                                $(inp).prop("checked", false);
+                            }
+
+                        }
+                    });
+
 
                 }
-            });
 
+
+                // ثبت تنظیمات نمایندگی
+                function AgentTab() {
+                    
+                    const editPriceForm = document.getElementById('editPriceForm');
+
+                    // Form validation for Add new record
+                    const fv = FormValidation.formValidation(editPriceForm, {
+                        fields: {
+                            userPrice: {
+                                validators: {
+                                    between: {
+                                        min: 0,
+                                        max: 1000000000,
+                                        message: 'قیمت هر گیگ حداکثر می تواند 1000,000,000 تومان باشد'
+                                    }
+                                }
+                            },
+                            userMonth: {
+                                validators: {
+                                    between: {
+                                        min: 0,
+                                        max: 1000000000,
+                                        message: 'قیمت هر ماه حداکثر می تواند 1000,000,000 تومان باشد'
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            trigger: new FormValidation.plugins.Trigger(),
+                            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                                // Use this for enabling/changing valid/invalid class
+                                // eleInvalidClass: '',
+                                eleValidClass: '',
+                                rowSelector: '.col-md-6'
+                            }),
+                            submitButton: new FormValidation.plugins.SubmitButton(),
+                            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+                            autoFocus: new FormValidation.plugins.AutoFocus(),
+
+
+                        },
+                        init: instance => {
+                            instance.on('plugins.message.placed', function (e) {
+                                if (e.element.parentElement.classList.contains('input-group')) {
+                                    e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                                }
+                            });
+                        }
+                    });
+
+                    fv.on('core.form.valid', function (e) {
+                        console.log("form is valid");
+                        BodyBlockUI();
+                        AjaxFormPost('/App/Admin/SetPriceSetting', "#editPriceForm").then(res => {
+                            BodyUnblockUI();
+                            eval(res.data);
+
+                        });
+                    });
+                }
+
+
+                //ثبت تنظیمات کلی
+
+                $("#SaveGroup").click(function () {
+
+                    $("#groupForm").find("#user_id").val(getUrlParameter("user_id"));
+
+                    AjaxFormPost("/App/Admin/SetGeneralSetting", "#groupForm").then(res => {
+
+                        eval(res.data);
+
+                    });
+                });
+            </script>
 
         }
-    </script>
-
-}

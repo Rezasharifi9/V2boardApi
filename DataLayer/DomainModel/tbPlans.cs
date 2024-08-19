@@ -35,6 +35,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> Group_Id { get; set; }
         public string Group_Name { get; set; }
         public Nullable<short> Speed_limit { get; set; }
+        public Nullable<short> device_limit { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinks> tbLinks { get; set; }

@@ -1086,6 +1086,14 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         return MessageBox.Warning("هشدار", "لطفا اول وضعیت گروه مجوز را تعیین کنید");
                     }
+                    if(User.PriceForGig !=null || User.PriceForMonth != null)
+                    {
+
+                    }
+                    else
+                    {
+                        return MessageBox.Warning("هشدار", "لطفا قیمت مصوبه نماینده کل را تعریف کنید");
+                    }
                     User.GeneralAgent = status;
                     if (status)
                     {
@@ -1115,42 +1123,53 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region تنظیمات نماینده
         [AuthorizeApp(Roles = "1")]
-        public ActionResult _GetSetting(int user_id)
+        public ActionResult Settings(int user_id)
         {
-            var us = db.tbUsers.Where(p => p.User_ID == user_id).FirstOrDefault();
-            if (us != null)
-            {
-                return PartialView(us.Group_Id != null ? us.Group_Id : 0);
-            }
-            else
-            {
-                return RedirectToAction("Login", "Admin");
-            }
+            return View();
         }
 
         [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
-        public async Task<ActionResult> SetSetting(int user_id, int group)
+        public async Task<ActionResult> SetPriceSetting(int user_id, int userPrice=0,int userMonth=0)
         {
             try
             {
                 var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
-                user.Group_Id = group;
+
+                user.PriceForGig = userPrice;
+                user.PriceForMonth = userMonth;
 
                 await RepositoryUser.SaveChangesAsync();
 
-                logger.Info("ادمین گروه مجوز را تغییر داد");
-                return MessageBox.Success("موفق", "گروه مجوز با موفقیت ثبت شد");
+                logger.Info("ادمین اطلاعات قیمت نماینده کل را تغییر داد");
+                return Toaster.Success("موفق", "اطلاعات با موفقیت ثبت شد");
 
             }
             catch (Exception ex)
             {
-                return MessageBox.Error("موفق", "در ثبت گروه مجوز با خطا مواجه شدیم !!");
+                return MessageBox.Error("موفق", "ثبت اطلاعات با خطا مواجه شد لطفا بعد تلاش کنید");
             }
         }
 
 
         #endregion
 
+        #region تنظیمات کلی 
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> SetGeneralSetting(int user_id,int group)
+        {
+            var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+
+            user.Group_Id = group;
+
+            await RepositoryUser.SaveChangesAsync();
+
+            logger.Info("ادمین گروه مجوز را تغییر داد");
+            return Toaster.Success("موفق", "گروه مجوز با موفقیت ثبت شد");
+
+        } 
+
+        #endregion
     }
 }

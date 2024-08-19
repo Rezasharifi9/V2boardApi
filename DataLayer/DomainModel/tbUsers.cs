@@ -51,6 +51,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> Admin_Telegram_ID { get; set; }
         public string Profile_Filename { get; set; }
         public Nullable<int> PriceForGig { get; set; }
+        public Nullable<int> PriceForMonth { get; set; }
         public bool GeneralAgent { get; set; }
         public Nullable<int> Group_Id { get; set; }
         public string Group_Name { get; set; }
