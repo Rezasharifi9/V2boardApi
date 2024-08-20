@@ -627,6 +627,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
@@ -1228,7 +1229,7 @@
           <Property Name="PriceForGig" Type="Int32" />
           <Property Name="PriceForMonth" Type="Int32" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
-          <Property Name="Group_Id" Type="String" />
+          <Property Name="Group_Id" Type="Int32" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
