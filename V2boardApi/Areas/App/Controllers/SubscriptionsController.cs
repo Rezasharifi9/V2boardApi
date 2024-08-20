@@ -273,7 +273,7 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 if (!string.IsNullOrEmpty(userSubname))
                 {
-                   
+
                     userSubname = userSubname.ToLower();
                     if (userPlan != 0)
                     {
@@ -288,7 +288,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                             if ((user.Limit - user.Wallet) >= 0)
                             {
-                                
+
                                 var plan = plansRepository.table.Where(p => p.Plan_ID == userPlan && p.FK_Server_ID == user.FK_Server_ID).FirstOrDefault();
                                 if (plan != null)
                                 {
@@ -306,13 +306,13 @@ namespace V2boardApi.Areas.App.Controllers
                                         exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                     }
 
-                                   
+
 
                                     if (user.Role == 3)
                                     {
                                         if (user.tbUsers2 != null)
                                         {
-                                            user.Wallet += plan.PlanVolume * user.PriceForGig;
+                                            user.Wallet += plan.PlanVolume * (user.PriceForGig + user.PriceForMonth);
                                         }
                                         else
                                         {
@@ -354,9 +354,21 @@ namespace V2boardApi.Areas.App.Controllers
                                     Disc3.Add("@grid", plan.Group_Id);
                                     Disc3.Add("@planid", planid);
                                     Disc3.Add("@token", token);
-                                    Disc3.Add("@device_limit", plan.device_limit);
+                                    var DeviceLimit = "";
+                                    var DeviceLimitCol = "";
 
-                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at,device_limit) VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create,@device_limit)";
+                                    if (plan.device_limit == null || plan.device_limit.Value == 0)
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        Disc3.Add("@device_limit", plan.device_limit);
+                                        DeviceLimit = ",@device_limit";
+                                        DeviceLimitCol = ",device_limit";
+                                    }
+
+                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at"+DeviceLimitCol +") VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create "+DeviceLimit+" )";
 
                                     var reader = await mySql.GetDataAsync(Query, Disc3);
                                     reader.Close();
@@ -365,8 +377,8 @@ namespace V2boardApi.Areas.App.Controllers
                                     {
                                         user.Wallet += link.tbPlans.Price;
                                     }
-                                    
-                                  
+
+
 
                                     await mySql.CloseAsync();
                                     linkUserAndPlansRepository.Save();
@@ -661,7 +673,7 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             if (user.tbUsers2 != null)
                             {
-                                user.Wallet += Plan.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
+                                user.Wallet += Plan.PlanVolume * (user.PriceForGig + user.PriceForMonth);
                             }
                             else
                             {
@@ -688,9 +700,23 @@ namespace V2boardApi.Areas.App.Controllers
                         Disc1.Add("@Plan_ID_V2", Plan.Plan_ID_V2);
                         Disc1.Add("@transfer_enable", t);
                         Disc1.Add("@exp", exp);
-                        Disc1.Add("@device_limit", Plan.device_limit);
+                        
 
-                        var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2, transfer_enable =@transfer_enable , expired_at =@exp,device_limit=@device_limit where id =" + user_id;
+                        var DeviceLimit = "";
+
+                        if (Plan.device_limit == null || Plan.device_limit.Value == 0)
+                        {
+                           
+                        }
+                        else
+                        {
+                            Disc1.Add("@device_limit", Plan.device_limit);
+                            DeviceLimit = ",device_limit=@device_limit ";
+                        }
+
+
+
+                        var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2, transfer_enable =@transfer_enable , expired_at =@exp " + DeviceLimit + " where id =" + user_id;
 
                         MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                         await mySql.OpenAsync();
@@ -809,7 +835,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var log = logs.OrderByDescending(s => s.CreateDatetime).FirstOrDefault();
                 if (log != null)
                 {
-                    
+
                     if (totalUse <= 1)
                     {
                         var userAccount = usersRepository.table.Where(p => p.Username == username).FirstOrDefault();
@@ -847,7 +873,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 if (userAccount.tbUsers2 != null)
                                 {
-                                    if(userAccount.tbUsers2.Role == 3)
+                                    if (userAccount.tbUsers2.Role == 3)
                                     {
                                         if (log.PlanVolume != null)
                                         {
@@ -875,11 +901,11 @@ namespace V2boardApi.Areas.App.Controllers
 
                         logsRepository.DeleteRange(logs);
 
-                        
+
                     }
                     else
                     {
-                        foreach(var item in logs)
+                        foreach (var item in logs)
                         {
                             item.FK_NameUser_ID = "del_" + name;
                         }
@@ -903,7 +929,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"حذف اشتراک با خطا مواجه شد");
+                logger.Error(ex, "حذف اشتراک با خطا مواجه شد");
                 return Toaster.Error("ناموفق", "حذف اشتراک با خطا مواجه شد");
             }
 
@@ -1038,7 +1064,7 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> GetSubUseage(int user_id)
         {
-            var user = await usersRepository.FirstOrDefaultAsync(s=> s.Username == User.Identity.Name);
+            var user = await usersRepository.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
 
             try
             {
@@ -1080,17 +1106,17 @@ namespace V2boardApi.Areas.App.Controllers
                         var use = (float)Math.Round(Used, 2, MidpointRounding.AwayFromZero);
                         Useage.Used[Counter] += use;
                     }
-                    
+
                 }
                 await mysql.CloseAsync();
 
-                return Json(new { status = "success", data = Useage },JsonRequestBehavior.AllowGet);
+                return Json(new { status = "success", data = Useage }, JsonRequestBehavior.AllowGet);
 
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "دریافت تاریخچه مصرف اشتراک با خطا مواجه شد");
-                return MessageBox.Success("خطا","نمایش نمودار با خطا مواجه شد");
+                return MessageBox.Success("خطا", "نمایش نمودار با خطا مواجه شد");
             }
         }
 

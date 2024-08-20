@@ -21,6 +21,7 @@ namespace DataLayer.DomainModel
             this.tbBotSettings = new HashSet<tbBotSettings>();
             this.tbConnectionHelp = new HashSet<tbConnectionHelp>();
             this.tbExpLog = new HashSet<tbExpLog>();
+            this.tbLinkServerGroupWithUsers = new HashSet<tbLinkServerGroupWithUsers>();
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
             this.tbPlans = new HashSet<tbPlans>();
             this.tbTelegramUsers = new HashSet<tbTelegramUsers>();
@@ -53,9 +54,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> PriceForGig { get; set; }
         public Nullable<int> PriceForMonth { get; set; }
         public bool GeneralAgent { get; set; }
-        public Nullable<int> Group_Id { get; set; }
-        public string Group_Name { get; set; }
-        public Nullable<System.DateTime> UserCaculateTime { get; set; }
+        public string Group_Id { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbBankCardNumbers> tbBankCardNumbers { get; set; }
@@ -65,6 +64,8 @@ namespace DataLayer.DomainModel
         public virtual ICollection<tbConnectionHelp> tbConnectionHelp { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbExpLog> tbExpLog { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbLinkServerGroupWithUsers> tbLinkServerGroupWithUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

@@ -57,6 +57,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbUserFactors> RepositoryUserFactors { get; set; }
         private Repository<tbLinkUserAndPlans> RepositoryUserPlanLinks { get; set; }
         private Repository<tbBotSettings> RepositoryBotSettings { get; set; }
+        private Repository<tbServerGroups> serverGroup_Repo { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public AdminController()
         {
@@ -70,6 +71,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryUserFactors = new Repository<tbUserFactors>(db);
             RepositoryUserPlanLinks = new Repository<tbLinkUserAndPlans>(db);
             RepositoryBotSettings = new Repository<tbBotSettings>(db);
+            serverGroup_Repo = new Repository<tbServerGroups>(db);
         }
 
 
@@ -1157,18 +1159,31 @@ namespace V2boardApi.Areas.App.Controllers
         #region تنظیمات کلی 
         [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
-        public async Task<ActionResult> SetGeneralSetting(int user_id,int group)
+        public async Task<ActionResult> SetGeneralSetting(int user_id, List<int> planGroup)
         {
             var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
 
-            user.Group_Id = group;
+            var groups = await serverGroup_Repo.GetAllAsync();
 
+            foreach(var item in user.tbLinkServerGroupWithUsers)
+            {
+                user.tbLinkServerGroupWithUsers.Remove(item);
+            }
+
+            foreach (var group in planGroup) {
+
+                tbLinkServerGroupWithUsers tbLinkServer = new tbLinkServerGroupWithUsers();
+                tbLinkServer.FK_Group_Id = group;
+                user.tbLinkServerGroupWithUsers.Add(tbLinkServer);
+            }
+
+ 
             await RepositoryUser.SaveChangesAsync();
 
             logger.Info("ادمین گروه مجوز را تغییر داد");
             return Toaster.Success("موفق", "گروه مجوز با موفقیت ثبت شد");
 
-        } 
+        }
 
         #endregion
     }

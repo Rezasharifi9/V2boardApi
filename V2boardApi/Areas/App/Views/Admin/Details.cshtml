@@ -147,7 +147,7 @@
                             <div class="col-12 col-md-6">
                                 <div class="mb-3" data-bs-toggle="popover" title="تعیین کننده نود های قابل دسترسی">
                                     <label class="form-label" for="planGroup">گروه مجوز<span class="text-danger"> * </span></label>
-                                    <select id="group" class="select2 form-select" autocomplete="off" name="group">
+                                    <select id="planGroup" class="select2 form-select" autocomplete="off" name="planGroup" multiple>
                                         <option value="-1">در حال بارگزاری ...</option>
                                     </select>
                                 </div>
@@ -164,7 +164,7 @@
                             <div class="row">
                                 <div class="col-6 col-md-6">
                                     <label class="form-label" for="userPrice">قیمت هرگیگ</label>
-                                    <input class="form-control" id="userPrice" name="userPrice" placeholder="" type="number" min="0" max="1000000000"  />
+                                    <input class="form-control" id="userPrice" name="userPrice" placeholder="" type="number" min="0" max="1000000000" />
                                 </div>
                                 <div class="col-6 col-md-6">
                                     <label class="form-label" for="userMonth">قیمت هرماه</label>
@@ -219,58 +219,58 @@
         @{
             var Role = Request.Cookies["Role"].Value;
         }
+    </div>
+    <!-- Modal -->
+    <!-- Edit Setting Modal -->
+    @*@if (Role == "1")
+        {
 
-        <!-- Modal -->
-        <!-- Edit Setting Modal -->
-        @*@if (Role == "1")
-            {
+            @Html.Action("_GetSetting", "Admin", new { area = "App", user_id = Model })
+        }*@
+    <!--/ Edit Setting Modal -->
+    <!-- Edit Wallet Modal -->
+    @Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
 
-                @Html.Action("_GetSetting", "Admin", new { area = "App", user_id = Model })
-            }*@
-        <!--/ Edit Setting Modal -->
-        <!-- Edit Wallet Modal -->
-        @Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
-
-        <!--/ Edit Wallet Modal -->
-
-
-        @section vendorScripts {
-
-            <script src="../../assets/vendor/libs/moment/moment.js"></script>
-            <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
-            <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
-            <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
-            <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
-            <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
-            <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
-            <script src="../../assets/vendor/libs/select2/select2.js"></script>
-            <script src="../../assets/vendor/libs/select2/i18n/fa.js"></script>
-            <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
-            <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
-            <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
-            <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
-        }
+    <!--/ Edit Wallet Modal -->
 
 
-        @section customScripts {
+    @section vendorScripts {
 
-            <script src="../../assets/js/modal-edit-wallet.js"></script>
-            <script src="../../assets/js/app-user-view.js"></script>
-            <script src="../../assets/js/app-user-view-account.js"></script>
+        <script src="../../assets/vendor/libs/moment/moment.js"></script>
+        <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+        <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
+        <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+        <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
+        <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
+        <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
+        <script src="../../assets/vendor/libs/select2/select2.js"></script>
+        <script src="../../assets/vendor/libs/select2/i18n/fa.js"></script>
+        <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+        <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+        <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+        <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+    }
 
-           
 
-            <script>
+    @section customScripts {
+
+        <script src="../../assets/js/modal-edit-wallet.js"></script>
+        <script src="../../assets/js/app-user-view.js"></script>
+        <script src="../../assets/js/app-user-view-account.js"></script>
+
+
+
+        <script>
 
                 $(function () {
 
-                    $("#group").wrap('<div class="position-relative"></div>').select2({
+                    $("#planGroup").wrap('<div class="position-relative"></div>').select2({
                         placeholder: 'انتخاب گروه مجوز',
-                        dropdownParent: $("#group").parent(),
+                        dropdownParent: $("#planGroup").parent(),
                         allowClear: false
                     });
 
-                    Groups("#group");
+                    Groups("#planGroup");
                     $('[data-bs-toggle="popover"]').tooltip();
 
                 });
@@ -285,7 +285,7 @@
                 function Groups(selectId) {
                     var $select = $(selectId);
                     $.ajax({
-                        url: "/App/Plan/GetSelectGroups",
+                        url: "/App/ServerGroups/_SelectGroups",
                         type: "get",
                         dataType: "json",
                         async: true,
@@ -296,7 +296,7 @@
 
                             // افزودن گزینه‌های جدید
                             $.each(res.data, function (index, item) {
-                                var newOption = new Option(item.Name, item.id, false, false);
+                                var newOption = new Option(item.GroupName, item.ID, false, false);
                                 $select.append(newOption);
                             });
                         },
@@ -308,7 +308,7 @@
                 }
 
 
-                
+
 
 
                 $("#ZeroWallet").click(function () {
@@ -359,7 +359,7 @@
 
                 // ثبت تنظیمات نمایندگی
                 function AgentTab() {
-                    
+
                     const editPriceForm = document.getElementById('editPriceForm');
 
                     // Form validation for Add new record
@@ -431,6 +431,6 @@
 
                     });
                 });
-            </script>
+        </script>
 
-        }
+    }

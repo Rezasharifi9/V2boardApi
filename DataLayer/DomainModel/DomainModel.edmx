@@ -132,6 +132,14 @@
           <Property Name="tb_ChargePlan_ID" Type="int" />
           <Property Name="tb_status" Type="bit" />
         </EntityType>
+        <EntityType Name="tbLinkServerGroupWithUsers">
+          <Key>
+            <PropertyRef Name="GroupUserLink_ID" />
+          </Key>
+          <Property Name="GroupUserLink_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_Group_Id" Type="int" />
+          <Property Name="FK_User_Id" Type="int" />
+        </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
             <PropertyRef Name="Link_PU_ID" />
@@ -191,6 +199,15 @@
           <Property Name="Group_Name" Type="varchar" MaxLength="50" />
           <Property Name="Speed_limit" Type="smallint" />
           <Property Name="device_limit" Type="smallint" />
+        </EntityType>
+        <EntityType Name="tbServerGroups">
+          <Key>
+            <PropertyRef Name="Group_Id" />
+          </Key>
+          <Property Name="Group_Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="V2_Group_Id" Type="int" />
+          <Property Name="Group_Name" Type="nvarchar" MaxLength="250" />
+          <Property Name="Status" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -302,9 +319,7 @@
           <Property Name="PriceForGig" Type="int" />
           <Property Name="PriceForMonth" Type="int" />
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
-          <Property Name="Group_Id" Type="int" />
-          <Property Name="Group_Name" Type="nvarchar" MaxLength="150" />
-          <Property Name="UserCaculateTime" Type="datetime" />
+          <Property Name="Group_Id" Type="varchar" MaxLength="50" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
@@ -401,6 +416,30 @@
             </Principal>
             <Dependent Role="tbLinks">
               <PropertyRef Name="FK_TelegramUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinkServerGroupWithUsers_tbServerGroups">
+          <End Role="tbServerGroups" Type="Self.tbServerGroups" Multiplicity="0..1" />
+          <End Role="tbLinkServerGroupWithUsers" Type="Self.tbLinkServerGroupWithUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServerGroups">
+              <PropertyRef Name="Group_Id" />
+            </Principal>
+            <Dependent Role="tbLinkServerGroupWithUsers">
+              <PropertyRef Name="FK_Group_Id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinkServerGroupWithUsers_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbLinkServerGroupWithUsers" Type="Self.tbLinkServerGroupWithUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbLinkServerGroupWithUsers">
+              <PropertyRef Name="FK_User_Id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -599,10 +638,12 @@
           <EntitySet Name="tbExpLog" EntityType="Self.tbExpLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbFailureServers" EntityType="Self.tbFailureServers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinks" EntityType="Self.tbLinks" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="Self.tbLinkServerGroupWithUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLogs" EntityType="Self.tbLogs" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbServerGroups" EntityType="Self.tbServerGroups" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbTelegramUsers" EntityType="Self.tbTelegramUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUpdateLogs" EntityType="Self.tbUpdateLogs" Schema="dbo" store:Type="Tables" />
@@ -640,6 +681,14 @@
           <AssociationSet Name="FK_tbLinks_tbTelegramUsers" Association="Self.FK_tbLinks_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbServerGroups" Association="Self.FK_tbLinkServerGroupWithUsers_tbServerGroups">
+            <End Role="tbServerGroups" EntitySet="tbServerGroups" />
+            <End Role="tbLinkServerGroupWithUsers" EntitySet="tbLinkServerGroupWithUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbUsers" Association="Self.FK_tbLinkServerGroupWithUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbLinkServerGroupWithUsers" EntitySet="tbLinkServerGroupWithUsers" />
           </AssociationSet>
           <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="Self.FK_tbLinkUserAndPlans_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
@@ -716,10 +765,12 @@
           <EntitySet Name="tbExpLog" EntityType="V2boardSiteModel.tbExpLog" />
           <EntitySet Name="tbFailureServers" EntityType="V2boardSiteModel.tbFailureServers" />
           <EntitySet Name="tbLinks" EntityType="V2boardSiteModel.tbLinks" />
+          <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="V2boardSiteModel.tbLinkServerGroupWithUsers" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="V2boardSiteModel.tbLinkUserAndPlans" />
           <EntitySet Name="tbLogs" EntityType="V2boardSiteModel.tbLogs" />
           <EntitySet Name="tbOrders" EntityType="V2boardSiteModel.tbOrders" />
           <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
+          <EntitySet Name="tbServerGroups" EntityType="V2boardSiteModel.tbServerGroups" />
           <EntitySet Name="tbServers" EntityType="V2boardSiteModel.tbServers" />
           <EntitySet Name="tbTelegramUsers" EntityType="V2boardSiteModel.tbTelegramUsers" />
           <EntitySet Name="tbUpdateLogs" EntityType="V2boardSiteModel.tbUpdateLogs" />
@@ -757,6 +808,14 @@
           <AssociationSet Name="FK_tbLinks_tbTelegramUsers" Association="V2boardSiteModel.FK_tbLinks_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbServerGroups" Association="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups">
+            <End Role="tbServerGroups" EntitySet="tbServerGroups" />
+            <End Role="tbLinkServerGroupWithUsers" EntitySet="tbLinkServerGroupWithUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbUsers" Association="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbLinkServerGroupWithUsers" EntitySet="tbLinkServerGroupWithUsers" />
           </AssociationSet>
           <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
@@ -954,6 +1013,16 @@
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
         </EntityType>
+        <EntityType Name="tbLinkServerGroupWithUsers">
+          <Key>
+            <PropertyRef Name="GroupUserLink_ID" />
+          </Key>
+          <Property Name="GroupUserLink_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_Group_Id" Type="Int32" />
+          <Property Name="FK_User_Id" Type="Int32" />
+          <NavigationProperty Name="tbServerGroups" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbLinkServerGroupWithUsers" ToRole="tbServerGroups" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbLinkServerGroupWithUsers" ToRole="tbUsers" />
+        </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
             <PropertyRef Name="Link_PU_ID" />
@@ -1024,6 +1093,16 @@
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbPlans" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="tbServerGroups">
+          <Key>
+            <PropertyRef Name="Group_Id" />
+          </Key>
+          <Property Name="Group_Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="V2_Group_Id" Type="Int32" />
+          <Property Name="Group_Name" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Status" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbServerGroups" ToRole="tbLinkServerGroupWithUsers" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -1150,13 +1229,12 @@
           <Property Name="PriceForGig" Type="Int32" />
           <Property Name="PriceForMonth" Type="Int32" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
-          <Property Name="Group_Id" Type="Int32" />
-          <Property Name="Group_Name" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
-          <Property Name="UserCaculateTime" Type="DateTime" Precision="3" />
+          <Property Name="Group_Id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
           <NavigationProperty Name="tbExpLog" Relationship="V2boardSiteModel.FK_tbExpLog_tbUsers" FromRole="tbUsers" ToRole="tbExpLog" />
+          <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbUsers" ToRole="tbLinkServerGroupWithUsers" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbUsers" ToRole="tbPlans" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
@@ -1261,6 +1339,30 @@
             </Principal>
             <Dependent Role="tbLinks">
               <PropertyRef Name="FK_TelegramUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinkServerGroupWithUsers_tbServerGroups">
+          <End Type="V2boardSiteModel.tbServerGroups" Role="tbServerGroups" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbLinkServerGroupWithUsers" Role="tbLinkServerGroupWithUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbServerGroups">
+              <PropertyRef Name="Group_Id" />
+            </Principal>
+            <Dependent Role="tbLinkServerGroupWithUsers">
+              <PropertyRef Name="FK_Group_Id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinkServerGroupWithUsers_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbLinkServerGroupWithUsers" Role="tbLinkServerGroupWithUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbLinkServerGroupWithUsers">
+              <PropertyRef Name="FK_User_Id" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1590,6 +1692,15 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="tbLinkServerGroupWithUsers">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkServerGroupWithUsers">
+              <MappingFragment StoreEntitySet="tbLinkServerGroupWithUsers">
+                <ScalarProperty Name="FK_User_Id" ColumnName="FK_User_Id" />
+                <ScalarProperty Name="FK_Group_Id" ColumnName="FK_Group_Id" />
+                <ScalarProperty Name="GroupUserLink_ID" ColumnName="GroupUserLink_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tbLinkUserAndPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkUserAndPlans">
               <MappingFragment StoreEntitySet="tbLinkUserAndPlans">
@@ -1651,6 +1762,16 @@
                 <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
                 <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
                 <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbServerGroups">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbServerGroups">
+              <MappingFragment StoreEntitySet="tbServerGroups">
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
+                <ScalarProperty Name="V2_Group_Id" ColumnName="V2_Group_Id" />
+                <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1743,8 +1864,6 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
-                <ScalarProperty Name="UserCaculateTime" ColumnName="UserCaculateTime" />
-                <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
                 <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
                 <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
                 <ScalarProperty Name="PriceForMonth" ColumnName="PriceForMonth" />

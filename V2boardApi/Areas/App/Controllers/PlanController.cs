@@ -270,10 +270,11 @@ namespace V2boardApi.Areas.App.Controllers
                 requestPlan.id = id;
                 requestPlan.planName = plan.Plan_Name;
                 requestPlan.planTraffic = plan.PlanVolume.Value;
-                requestPlan.planGroup = user.Group_Id.Value;
+                //requestPlan.planGroup = user.Group_Id;
                 requestPlan.planPrice = plan.Price.Value.ConvertToMony();
                 requestPlan.planTime = plan.CountDayes;
                 requestPlan.planSpeed = plan.Speed_limit;
+                requestPlan.planDevicelimit = plan.device_limit;
                 var data = requestPlan.ToDictionary();
                 return Json(new { status = "success", data = data }, JsonRequestBehavior.AllowGet);
             }
@@ -319,46 +320,46 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region دریافت گروه مجوز 
+        //#region دریافت گروه مجوز 
 
-        [HttpGet]
-        [AuthorizeApp(Roles = "1")]
-        public async Task<ActionResult> GetSelectGroups()
-        {
-            try
-            {
-                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
-                List<PermissionsViewModel> permissions = new List<PermissionsViewModel>();
+        //[HttpGet]
+        //[AuthorizeApp(Roles = "1")]
+        //public async Task<ActionResult> GetSelectGroups()
+        //{
+        //    try
+        //    {
+        //        var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+        //        List<PermissionsViewModel> permissions = new List<PermissionsViewModel>();
 
-                if (user != null)
-                {
-                    using (MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString))
-                    {
-                        await mysql.OpenAsync();
-                        var Reader = await mysql.GetDataAsync("SELECT id,name FROM `v2_server_group`");
+        //        if (user != null)
+        //        {
+        //            using (MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString))
+        //            {
+        //                await mysql.OpenAsync();
+        //                var Reader = await mysql.GetDataAsync("SELECT id,name FROM `v2_server_group`");
 
-                        while (await Reader.ReadAsync())
-                        {
-                            PermissionsViewModel permissionsView = new PermissionsViewModel();
-                            permissionsView.id = Reader.GetInt32("id");
-                            permissionsView.Name = Reader.GetString("name");
-                            permissions.Add(permissionsView);
-                        }
-                        Reader.Close();
-                        await mysql.CloseAsync();
-                    }
+        //                while (await Reader.ReadAsync())
+        //                {
+        //                    PermissionsViewModel permissionsView = new PermissionsViewModel();
+        //                    permissionsView.id = Reader.GetInt32("id");
+        //                    permissionsView.Name = Reader.GetString("name");
+        //                    permissions.Add(permissionsView);
+        //                }
+        //                Reader.Close();
+        //                await mysql.CloseAsync();
+        //            }
 
-                }
-                return Json(new { status = "success", data = permissions }, JsonRequestBehavior.AllowGet);
-            }
-            catch
-            {
-                return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
-            }
+        //        }
+        //        return Json(new { status = "success", data = permissions }, JsonRequestBehavior.AllowGet);
+        //    }
+        //    catch
+        //    {
+        //        return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
+        //    }
 
-        }
+        //}
 
-        #endregion
+        //#endregion
 
         #region بروزرسانی تعرفه ها
 

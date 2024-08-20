@@ -155,6 +155,9 @@
     <Compile Include="DomainModel\tbLinks.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbLinkServerGroupWithUsers.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbLinkUserAndPlans.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
@@ -165,6 +168,9 @@
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbPlans.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbServerGroups.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbServers.cs">

@@ -310,6 +310,7 @@
     <Compile Include="Areas\App\Controllers\LearnsController.cs" />
     <Compile Include="Areas\App\Controllers\OrdersController.cs" />
     <Compile Include="Areas\App\Controllers\PlanController.cs" />
+    <Compile Include="Areas\App\Controllers\ServerGroupsController.cs" />
     <Compile Include="Areas\App\Controllers\SettingsController.cs" />
     <Compile Include="Areas\App\Controllers\SubscriptionsController.cs" />
     <Compile Include="Areas\App\Controllers\TelegramUsersController.cs" />
@@ -338,6 +339,7 @@
     <Compile Include="Models\BanUserModel.cs" />
     <Compile Include="Models\CreateUserModel.cs" />
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
+    <Compile Include="Models\ServerGroups\List_Model.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
     <Compile Include="Tools\BotManager.cs" />
     <Compile Include="Tools\ObjectExtensions.cs" />
@@ -749,6 +751,7 @@
     <Content Include="assets\js\app-logistics-fleet-mapbox.js" />
     <Content Include="assets\js\app-logistics-fleet.js" />
     <Content Include="assets\js\app-orders-list.js" />
+    <Content Include="assets\js\app-server-groups.js" />
     <Content Include="assets\js\app-plan-list.js" />
     <Content Include="assets\js\app-subscriptions-list.js" />
     <Content Include="assets\js\app-telegramuser-view-account.js" />
@@ -1733,6 +1736,7 @@
     <Content Include="Areas\api\Views\Client\UpdateAccount.cshtml" />
     <Content Include="Areas\api\Views\web.config" />
     <Content Include="Areas\App\Views\Admin\_GetSetting.cshtml" />
+    <Content Include="Areas\App\Views\ServerGroups\Index.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

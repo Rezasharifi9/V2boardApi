@@ -86,8 +86,17 @@
                             </li>
                             <li class="menu-item" style="">
                                 <a class="menu-link" href="@Url.Action("Index","Plan",new {area="App"})">
-                                    <i class="menu-icon tf-icons ti ti-color-swatch"></i>
+                                    <i class="menu-icon tf-icons ti ti-3d-rotate"></i>
                                     <div>تعرفه ها</div>
+                                </a>
+                            </li>
+                        }
+                        if (Role.Value == "1")
+                        {
+                            <li class="menu-item" style="">
+                                <a class="menu-link" href="@Url.Action("Index","ServerGroups",new {area="App"})">
+                                    <i class="menu-icon tf-icons ti ti-lock-access-off"></i>
+                                    <div>مجوز ها</div>
                                 </a>
                             </li>
                         }
