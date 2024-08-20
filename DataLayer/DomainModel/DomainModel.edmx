@@ -319,7 +319,7 @@
           <Property Name="PriceForGig" Type="int" />
           <Property Name="PriceForMonth" Type="int" />
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
-          <Property Name="Group_Id" Type="varchar" MaxLength="50" />
+          <Property Name="Group_Id" Type="int" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
@@ -627,7 +627,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
@@ -1229,7 +1228,7 @@
           <Property Name="PriceForGig" Type="Int32" />
           <Property Name="PriceForMonth" Type="Int32" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
-          <Property Name="Group_Id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Group_Id" Type="String" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
