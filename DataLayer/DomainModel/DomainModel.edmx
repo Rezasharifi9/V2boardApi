@@ -319,7 +319,6 @@
           <Property Name="PriceForGig" Type="int" />
           <Property Name="PriceForMonth" Type="int" />
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
-          <Property Name="Group_Id" Type="int" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
@@ -1229,7 +1228,6 @@
           <Property Name="PriceForGig" Type="Int32" />
           <Property Name="PriceForMonth" Type="Int32" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
-          <Property Name="Group_Id" Type="Int32" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
@@ -1864,7 +1862,6 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
-                <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
                 <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
                 <ScalarProperty Name="PriceForMonth" ColumnName="PriceForMonth" />
                 <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />

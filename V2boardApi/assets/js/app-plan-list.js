@@ -369,6 +369,13 @@ $(function () {
                         message: 'تعداد دستگاه ها باید بین 1 تا 20 باشد'
                     }
                 }
+            },
+            planGroup: {
+                validators: {
+                    notEmpty: {
+                        message: 'قیمت تعرفه الزامی است'
+                    }
+                }
             }
         },
         plugins: {

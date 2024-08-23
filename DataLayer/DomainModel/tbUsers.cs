@@ -54,7 +54,6 @@ namespace DataLayer.DomainModel
         public Nullable<int> PriceForGig { get; set; }
         public Nullable<int> PriceForMonth { get; set; }
         public bool GeneralAgent { get; set; }
-        public Nullable<int> Group_Id { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbBankCardNumbers> tbBankCardNumbers { get; set; }

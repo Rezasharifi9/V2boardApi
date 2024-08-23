@@ -19,26 +19,73 @@
 <!-- DataTable with Buttons -->
 <div class="card">
     <div class="card-datatable table-responsive pt-0">
-        <button style="z-index:1; float: left; margin-top: 16px; margin-left: 17px;" class="btn btn-secondary add-new btn-primary waves-effect waves-light" tabindex="0" data-bs-toggle="offcanvas" data-bs-target="#Add-Or-EditPlan" type="button"><span><i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block" id="btnAddPlan">افزودن</span></span></button>
-        @if (Role == "1")
-        {
-            <button data-bs-toggle="popover" title="لیست مجوز ها را از V2board می آورد" style="z-index:1; float: left; margin-top: 16px; margin-left: 17px;" class="btn add-new btn-outline-info waves-effect waves-light" tabindex="0" type="button" id="updatePlan"><span><i class="ti ti-refresh me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">بروزرسانی مجوز ها</span></span></button>
-
-        }
+        <button style="z-index:1; float: left; margin-top: 16px; margin-left: 17px;" class="btn btn-secondary add-new btn-primary waves-effect waves-light" tabindex="0" data-bs-target="#modalgroup" data-bs-toggle="modal" type="button"><span><i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block" id="btnAddPlan">افزودن</span></span></button>
+        <button data-bs-toggle="popover" title="لیست دسته بندی ها را از V2board می آورد" style="z-index:1; float: left; margin-top: 16px; margin-left: 17px;" class="btn add-new btn-outline-info waves-effect waves-light" tabindex="0" type="button" id="updategroup"><span><i class="ti ti-refresh me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">بروزرسانی دسته بندی ها</span></span></button>
         <table class="datatables-plan table">
             <thead>
                 <tr>
+                    <th></th>
                     <th>آیدی</th>
-                    <th>گروه مجوز</th>
+                    <th>دسته بندی</th>
                     <th>وضعیت</th>
-                    @*<th>سرور های گروه</th>*@
                     <th>عملیات</th>
                 </tr>
             </thead>
         </table>
     </div>
 </div>
+<!-- Modal -->
+<div aria-hidden="true" class="modal fade" id="modalgroup" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content section-block">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalgroupTitle">افزودن دسته بندی جدید</h5>
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <form id="groupForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label" for="groupName">عنوان دسته بندی</label>
+                            <input class="form-control" id="groupName" name="groupName" placeholder="عنوان دسته بندی وارد کنید" type="text" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-label-secondary" data-bs-dismiss="modal" type="button"> بستن</button>
+                    <button class="btn btn-primary" type="submit">ذخیره</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
+<!-- Modal -->
+<div aria-hidden="true" class="modal fade" id="modalgroupEdit" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content section-block">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalgroupEditTitle">ویرایش دسته بندی</h5>
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <form id="groupEditForm">
+                <input type="hidden" id="ID" name="ID" />
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label" for="groupName">عنوان دسته بندی</label>
+                            <input class="form-control" id="groupName" name="groupName" placeholder="عنوان دسته بندی وارد کنید" type="text" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-label-secondary" data-bs-dismiss="modal" type="button"> بستن</button>
+                    <button class="btn btn-primary" type="submit">ذخیره</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section vendorScripts {
 
@@ -60,30 +107,32 @@
 
     <script src="../../assets/js/app-server-groups.js"></script>
     @*<script>
-        $("#btnAddPlan").click(function () {
+            $("#btnAddPlan").click(function () {
 
-            console.log("clicked");
-            document.getElementById('planForm').reset();
+                console.log("clicked");
+                document.getElementById('planForm').reset();
 
-        });
-    </script>
+            });
+        </script>
 
-    <script>
+        <script>
 
-        // اضافه کردن یک event listener برای رویداد hidden.bs.offcanvas
-        var offcanvasElement = document.getElementById('offcanvasAddUser');
-        offcanvasElement.addEventListener('hidden.bs.offcanvas', function () {
-            console.log('Offcanvas has been closed.');
-            // اینجا تابع مورد نظر خود را فراخوانی کنید
-            document.getElementById('planForm').reset();
+            // اضافه کردن یک event listener برای رویداد hidden.bs.offcanvas
+            var offcanvasElement = document.getElementById('offcanvasAddUser');
+            offcanvasElement.addEventListener('hidden.bs.offcanvas', function () {
+                console.log('Offcanvas has been closed.');
+                // اینجا تابع مورد نظر خود را فراخوانی کنید
+                document.getElementById('planForm').reset();
 
-            $("input[type='hidden']").val("0");
-
-
-        });
+                $("input[type='hidden']").val("0");
 
 
+            });
 
 
-    </script>*@
+
+
+        </script>*@
+
+
 }

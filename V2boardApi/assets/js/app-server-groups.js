@@ -4,7 +4,7 @@
 
 'use strict';
 
-let fv, offCanvasEl;
+let fv,fv1, offCanvasEl;
 
 // datatable (jquery)
 $(function () {
@@ -21,6 +21,7 @@ $(function () {
         dt_basic = dt_basic_table.DataTable({
             ajax: '/App/ServerGroups/_PartialGetAll',
             columns: [
+                { data: '' },
                 { data: 'ID' },
                 { data: 'GroupName' },
                 { data: 'Status' },
@@ -51,7 +52,7 @@ $(function () {
                 {
                     // Group ID
                     targets: 1,
-                    responsivePriority: 4,
+                    responsivePriority: 1,
                     render: function (data, type, full, meta) {
                         var $name = full['ID'];
                         // Creates full output for row
@@ -62,7 +63,7 @@ $(function () {
                 {
                     // Group Name
                     targets: 2,
-                    responsivePriority: 4,
+                    responsivePriority: 2,
                     render: function (data, type, full, meta) {
                         var $name = full['GroupName'];
                         // Creates full output for row
@@ -109,7 +110,7 @@ $(function () {
 
                         return (
                             '<a data-bs-toggle="popover" title="' + statusText + '" class="btn btn-sm btn-icon item-edit change-status" data-id="' + full["id"] + '"><i class="text-primary ti ' + statusIcon +'"></i></a>' +
-                            '<a data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditPlan" data-id="' + full["id"] + '" data-bs-toggle="offcanvas" data-bs-target="#Add-Or-EditPlan"><i class="text-primary ti ti-pencil"></i></a>'
+                            '<button type="button" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditGroup" data-id="' + full["ID"] + '" data-bs-target="#modalgroupEdit" data-bs-toggle="modal"><i class="text-primary ti ti-pencil"></i></button>'
                         );
                     }
                 }
@@ -170,38 +171,34 @@ $(function () {
         $('div.head-label').html('<h5 class="card-title mb-0">تعرفه ها</h5>');
     }
 
-    //// Edit Plan
-    //$('body').on('click', '.EditPlan', function () {
+    //// Edit Group
+    $('body').on('click', '.EditGroup', function () {
+        blockUI('#modalgroupEdit .section-block');
+        var id = $(this).attr("data-id");
+        $("#modalgroupEdit").modal('show');
+        AjaxGet('/App/ServerGroups/EditGroup?id=' + id).then(res => {
+            console.log(res);
+            if (res.status == "success") {
+                UnblockUI('#modalgroupEdit .section-block');
+                var data = res.data;
+                for (var key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        var input = $('input[name=' + key + ']');
 
-    //    var id = $(this).attr("data-id");
-
-    //    $(".dtr-bs-modal").modal("hide");
-
-    //    AjaxGet('/App/Plan/Edit?id=' + id).then(res => {
-
-    //        if (res.status == "success") {
-
-    //            var data = res.data;
-    //            for (var key in data) {
-    //                if (data.hasOwnProperty(key)) {
-    //                    var input = $('input[name=' + key + ']');
-
-    //                    if (key == "planGroup") {
-    //                        SelectGroup("#planGroup", data[key]);
-    //                    }
-    //                    else {
-    //                        input.val(data[key]);
-    //                    }
+                        if (key == "planGroup") {
+                            SelectGroup("#planGroup", data[key]);
+                        }
+                        else {
+                            input.val(data[key]);
+                        }
 
 
-    //                }
-    //            }
+                    }
+                }
+            }
 
-    //            showOffcanvas();
-    //        }
-
-    //    });
-    //});
+        });
+    });
 
     //$('body').on('click', '.change-status', function () {
 
@@ -288,91 +285,146 @@ $(function () {
     //});
 
 
+    const formAddNewRecord = document.getElementById('groupForm');
 
-    //const formAddNewRecord = document.getElementById('planForm');
+    // Form validation for Add new record
+    fv = FormValidation.formValidation(formAddNewRecord, {
+        fields: {
+            groupName: {
+                validators: {
+                    notEmpty: {
+                        message: 'عنوان دسته بندی را وارد کنید'
+                    }
+                }
+            }
+        },
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                // Use this for enabling/changing valid/invalid class
+                // eleInvalidClass: '',
+                eleValidClass: '',
+                rowSelector: '.mb-3'
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+        },
+        init: instance => {
+            instance.on('plugins.message.placed', function (e) {
+                if (e.element.parentElement.classList.contains('input-group')) {
+                    e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                }
+            });
+        }
+    });
 
-    //// Form validation for Add new record
-    //fv = FormValidation.formValidation(formAddNewRecord, {
-    //    fields: {
-    //        planName: {
-    //            validators: {
-    //                notEmpty: {
-    //                    message: 'نامه تعرفه الزامی است'
-    //                }
-    //            }
-    //        },
-    //        planTraffic: {
-    //            validators: {
-    //                notEmpty: {
-    //                    message: 'ترافیک تعرفه الزامی است'
-    //                }
-    //            }
-    //        },
-    //        planPrice: {
-    //            validators: {
-    //                notEmpty: {
-    //                    message: 'قیمت تعرفه الزامی است'
-    //                }
-    //            }
-    //        },
-    //        planSpeed: {
-    //            validators: {
-    //                between: {
-    //                    min: 1,
-    //                    max: 500,
-    //                    message: 'محدودیت سرعت باید بین 1 تا 1000 مگابیت باشد'
-    //                }
-    //            }
-    //        },
-    //        planDevicelimit: {
-    //            validators: {
-    //                between: {
-    //                    min: 1,
-    //                    max: 20,
-    //                    message: 'تعداد دستگاه ها باید بین 1 تا 20 باشد'
-    //                }
-    //            }
-    //        }
-    //    },
-    //    plugins: {
-    //        trigger: new FormValidation.plugins.Trigger(),
-    //        bootstrap5: new FormValidation.plugins.Bootstrap5({
-    //            // Use this for enabling/changing valid/invalid class
-    //            // eleInvalidClass: '',
-    //            eleValidClass: '',
-    //            rowSelector: '.col-sm-12'
-    //        }),
-    //        submitButton: new FormValidation.plugins.SubmitButton(),
-    //        // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-    //        autoFocus: new FormValidation.plugins.AutoFocus()
-    //    },
-    //    init: instance => {
-    //        instance.on('plugins.message.placed', function (e) {
-    //            if (e.element.parentElement.classList.contains('input-group')) {
-    //                e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
-    //            }
-    //        });
-    //    }
-    //});
+    fv.on('core.form.valid', function (e) {
+        blockUI('.section-block');
+        AjaxFormPost('/App/ServerGroups/CreateOrEdit', "#groupForm").then(res => {
+            UnblockUI('.section-block');
+            eval(res.data);
+            if (res.status == "success") {
 
-    //fv.on('core.form.valid', function (e) {
+                dt_basic.ajax.reload(null, false);
+                document.getElementById('groupForm').reset();
+                $("#modalgroup").modal("hide");
+            }
 
-    //    blockUI('.section-block');
-    //    AjaxFormPost('/App/Plan/CreateOrEdit', "#planForm").then(res => {
-    //        UnblockUI('.section-block');
-    //        eval(res.data);
-    //        if (res.status == "success") {
+        });
+    });
 
-    //            dt_basic.ajax.reload(null, false);
-    //            // بستن offcanvas پس از موفقیت آمیز بودن ارسال فرم
-    //            var offcanvasElement = document.getElementById('Add-Or-EditPlan');
-    //            var offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
-    //            offcanvas.hide();
-    //            document.getElementById('planForm').reset();
-    //        }
 
-    //    });
-    //});
+
+
+    $("#updategroup").click(function () {
+
+        Swal.fire({
+            title: 'مطمئنی ؟',
+            text: "وضعیت تمامی دسته بندی ها تغییر خواهد کرد !!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+                BodyBlockUI();
+                $.ajax({
+                    url: "/App/ServerGroups/UpdateGroups",
+                    type: "get",
+                    dataType: "json",
+                    success: function (res) {
+                        BodyUnblockUI();
+
+                        eval(res.data);
+                        if (res.status == "success") {
+                            dt_basic.ajax.reload(null, false);
+                        }
+
+
+                    }
+                })
+
+            }
+
+        });
+    });
+
+
+
+    const formEditRecord = document.getElementById('groupEditForm');
+
+    // Form validation for Add new record
+    fv1 = FormValidation.formValidation(formEditRecord, {
+        fields: {
+            groupName: {
+                validators: {
+                    notEmpty: {
+                        message: 'عنوان دسته بندی را وارد کنید'
+                    }
+                }
+            }
+        },
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                // Use this for enabling/changing valid/invalid class
+                // eleInvalidClass: '',
+                eleValidClass: '',
+                rowSelector: '.mb-3'
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+        },
+        init: instance => {
+            instance.on('plugins.message.placed', function (e) {
+                if (e.element.parentElement.classList.contains('input-group')) {
+                    e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                }
+            });
+        }
+    });
+
+    fv1.on('core.form.valid', function (e) {
+        blockUI('.section-block');
+        AjaxFormPost('/App/ServerGroups/CreateOrEdit', "#groupEditForm").then(res => {
+            UnblockUI('.section-block');
+            eval(res.data);
+            if (res.status == "success") {
+
+                dt_basic.ajax.reload(null, false);
+                document.getElementById('groupEditForm').reset();
+                $("#modalgroupEdit").modal("hide");
+            }
+
+        });
+    });
 });
 
 //function SelectGroup(selectId, Ids) {

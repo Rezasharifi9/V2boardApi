@@ -7,25 +7,25 @@
       <Diagram DiagramId="d1df1a994c6648c3b2d3bffd866328e7" Name="Diagram1" ZoomLevel="72">
         <EntityTypeShape EntityType="V2boardSiteModel.NLog" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="V2boardSiteModel.sysdiagrams" Width="1.5" PointX="2.75" PointY="0.75" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbBankCardNumbers" Width="1.5" PointX="11.25" PointY="28.125" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbBotSettings" Width="1.5" PointX="11.25" PointY="17.25" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbConnectionHelp" Width="1.5" PointX="11.25" PointY="31.5" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbDepositWallet_Log" Width="1.5" PointX="13.5" PointY="35.875" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbExpLog" Width="1.5" PointX="11.25" PointY="25" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbBankCardNumbers" Width="1.5" PointX="11.25" PointY="31.375" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbBotSettings" Width="1.5" PointX="11.25" PointY="26.375" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbConnectionHelp" Width="1.5" PointX="11.25" PointY="37.625" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbDepositWallet_Log" Width="1.5" PointX="13.5" PointY="15.875" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbExpLog" Width="1.5" PointX="11.25" PointY="20.5" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbFailureServers" Width="1.5" PointX="2.75" PointY="3.75" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbLinks" Width="1.5" PointX="3" PointY="23.75" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="14.25" PointY="21.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="14.25" PointY="27.75" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbLinkUserAndPlans" Width="1.5" PointX="14.25" PointY="24.5" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbLogs" Width="1.5" PointX="16.5" PointY="24.375" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbOrders" Width="1.5" PointX="13.5" PointY="29.625" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbOrders" Width="1.5" PointX="13.5" PointY="19.125" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbPlans" Width="1.5" PointX="6" PointY="23.375" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbServerGroups" Width="1.5" PointX="12" PointY="10.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbServerGroups" Width="1.5" PointX="12" PointY="40.75" />
         <EntityTypeShape EntityType="V2boardSiteModel.tbServers" Width="1.5" PointX="0.75" PointY="22.875" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbTelegramUsers" Width="1.5" PointX="11.25" PointY="34.375" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="56.25" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUseages" Width="1.5" PointX="3" PointY="59.75" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUserFactors" Width="1.5" PointX="11.25" PointY="14.375" />
-        <EntityTypeShape EntityType="V2boardSiteModel.tbUsers" Width="1.5" PointX="9" PointY="21.5" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbTelegramUsers" Width="1.5" PointX="11.25" PointY="14.375" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="59.625" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUseages" Width="1.5" PointX="3" PointY="56.25" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUserFactors" Width="1.5" PointX="11.25" PointY="34.75" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbUsers" Width="1.5" PointX="9" PointY="21.625" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbBotSettings_tbUsers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" />

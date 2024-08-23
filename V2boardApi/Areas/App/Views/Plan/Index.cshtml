@@ -104,6 +104,12 @@
                 </div>
             </div>
             <div class="col-sm-12">
+                <label class="form-label" for="basicSalary">دسته بندی</label>
+                <select id="planGroup" class="select2 form-select" autocomplete="off" name="planGroup">
+                    <option value="-1">در حال بارگزاری ...</option>
+                </select>
+            </div>
+            <div class="col-sm-12">
                 <button class="btn btn-primary data-submit me-sm-3 me-1" type="submit">ثبت</button>
                 <button class="btn btn-outline-secondary" data-bs-dismiss="offcanvas" type="reset">لغو</button>
             </div>
@@ -144,19 +150,54 @@
     <script>
 
         // اضافه کردن یک event listener برای رویداد hidden.bs.offcanvas
-        var offcanvasElement = document.getElementById('offcanvasAddUser');
-        offcanvasElement.addEventListener('hidden.bs.offcanvas', function () {
-            console.log('Offcanvas has been closed.');
-            // اینجا تابع مورد نظر خود را فراخوانی کنید
-            document.getElementById('planForm').reset();
+        //var offcanvasElement = document.getElementById('offcanvasAddUser');
+        //offcanvasElement.addEventListener('hidden.bs.offcanvas', function () {
+        //    console.log('Offcanvas has been closed.');
+        //    // اینجا تابع مورد نظر خود را فراخوانی کنید
+        //    document.getElementById('planForm').reset();
 
-            $("input[type='hidden']").val("0");
+        //    $("input[type='hidden']").val("0");
 
+
+        //});
+
+
+        $(function () {
+
+            $("#planGroup").wrap('<div class="position-relative"></div>').select2({
+                placeholder: 'انتخاب دسته بندی',
+                dropdownParent: $("#planGroup").parent(),
+                allowClear: false
+            });
+
+            Groups("#planGroup");
 
         });
 
+        function Groups(selectId) {
+            var $select = $(selectId);
+            $.ajax({
+                url: "/App/ServerGroups/GetUserGroups",
+                type: "get",
+                dataType: "json",
+                async: true,
+                success: function (res) {
+                    console.log(res);
+                    // پاک کردن گزینه‌های قبلی
+                    $select.empty();
 
+                    // افزودن گزینه‌های جدید
+                    $.each(res.data, function (index, item) {
+                        var newOption = new Option(item.GroupName, item.ID, false, false);
+                        $select.append(newOption);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("An error occurred: " + status + " " + error);
+                }
+            });
 
+        }
 
     </script>
 }

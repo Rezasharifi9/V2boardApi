@@ -26,6 +26,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbServers> RepositoryServer { get; set; }
         private System.Timers.Timer Timer { get; set; }
+        private Repository<tbServerGroups> serverGroup_Repo { get; set; }
         public PlanController()
         {
             db = new Entities();
@@ -33,6 +34,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryPlans = new Repository<tbPlans>(db);
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryServer = new Repository<tbServers>(db);
+            serverGroup_Repo = new Repository<tbServerGroups>(db);
         }
 
 
@@ -154,10 +156,10 @@ namespace V2boardApi.Areas.App.Controllers
 
                         var Query = "";
 
-
+                        var group = user.tbLinkServerGroupWithUsers.Where(s => s.FK_Group_Id == model.planGroup).First();
                         tbPlans plan = new tbPlans();
                         var Disc1 = new Dictionary<string, object>();
-                        Disc1.Add("@planGroup", user.Group_Id);
+                        Disc1.Add("@planGroup", group.tbServerGroups.V2_Group_Id);
                         Disc1.Add("@planTraffic", model.planTraffic);
                         Disc1.Add("@planName", model.planName);
                         Disc1.Add("@Speed", Speed);
@@ -181,14 +183,7 @@ namespace V2boardApi.Areas.App.Controllers
                             await mysql.OpenAsync();
                             var Reader = await mysql.GetDataAsync(Query, Disc1);
                             Reader.Close();
-                            var Disc2 = new Dictionary<string, object>();
-                            Disc2.Add("@planGroup", user.Group_Id);
-                            var GetPlanIdQuery2 = "select * from v2_server_group where id=@planGroup";
-                            var NewReader2 = await mysql.GetDataAsync(GetPlanIdQuery2, Disc2);
-                            await NewReader2.ReadAsync();
-                            plan.Group_Id = NewReader2.GetInt32("id");
-                            plan.Group_Name = NewReader2.GetString("name");
-                            NewReader2.Close();
+                            plan.Group_Id = group.FK_Group_Id;
 
                             if (model.id == null)
                             {
@@ -218,7 +213,6 @@ namespace V2boardApi.Areas.App.Controllers
                             plan.Speed_limit = model.planSpeed;
                             plan.device_limit = model.planDevicelimit;
                             plan.FK_User_ID = user.User_ID;
-                            //plan.Group_Id = model.planGroup;
                             if (model.id == null)
                             {
                                 RepositoryPlans.Insert(plan);
@@ -270,7 +264,7 @@ namespace V2boardApi.Areas.App.Controllers
                 requestPlan.id = id;
                 requestPlan.planName = plan.Plan_Name;
                 requestPlan.planTraffic = plan.PlanVolume.Value;
-                //requestPlan.planGroup = user.Group_Id;
+                requestPlan.planGroup = plan.Group_Id;
                 requestPlan.planPrice = plan.Price.Value.ConvertToMony();
                 requestPlan.planTime = plan.CountDayes;
                 requestPlan.planSpeed = plan.Speed_limit;
@@ -319,47 +313,6 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #endregion
-
-        //#region دریافت گروه مجوز 
-
-        //[HttpGet]
-        //[AuthorizeApp(Roles = "1")]
-        //public async Task<ActionResult> GetSelectGroups()
-        //{
-        //    try
-        //    {
-        //        var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
-        //        List<PermissionsViewModel> permissions = new List<PermissionsViewModel>();
-
-        //        if (user != null)
-        //        {
-        //            using (MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString))
-        //            {
-        //                await mysql.OpenAsync();
-        //                var Reader = await mysql.GetDataAsync("SELECT id,name FROM `v2_server_group`");
-
-        //                while (await Reader.ReadAsync())
-        //                {
-        //                    PermissionsViewModel permissionsView = new PermissionsViewModel();
-        //                    permissionsView.id = Reader.GetInt32("id");
-        //                    permissionsView.Name = Reader.GetString("name");
-        //                    permissions.Add(permissionsView);
-        //                }
-        //                Reader.Close();
-        //                await mysql.CloseAsync();
-        //            }
-
-        //        }
-        //        return Json(new { status = "success", data = permissions }, JsonRequestBehavior.AllowGet);
-        //    }
-        //    catch
-        //    {
-        //        return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
-        //    }
-
-        //}
-
-        //#endregion
 
         #region بروزرسانی تعرفه ها
 
@@ -508,6 +461,8 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+
+       
 
         protected override void Dispose(bool disposing)
         {

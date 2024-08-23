@@ -27,6 +27,7 @@ namespace V2boardApi.Areas.App.Data.PlanViewModels
         [Range(1,10000,ErrorMessage ="محدودیت سرعت نمی تواند بزرگتر 1,000 مگابیت باشد")]
         public Nullable<short> planSpeed { get; set; }
         public Nullable<short> planDevicelimit { get; set; }
+        [Required(ErrorMessage = "لطفا دسته بندی را انتخاب کنید")]
         public Nullable<int> planGroup { get; set; }
     }
 }

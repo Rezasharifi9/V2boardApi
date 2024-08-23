@@ -1084,7 +1084,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var User = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
                 if (User != null)
                 {
-                    if (User.Group_Id == null)
+                    if (User.tbLinkServerGroupWithUsers.Count() == 0)
                     {
                         return MessageBox.Warning("هشدار", "لطفا اول وضعیت گروه مجوز را تعیین کنید");
                     }
