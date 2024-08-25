@@ -51,8 +51,6 @@ namespace DataLayer.DomainModel
         public Nullable<System.DateTime> ExpireTimeToken { get; set; }
         public Nullable<int> Admin_Telegram_ID { get; set; }
         public string Profile_Filename { get; set; }
-        public Nullable<int> PriceForGig { get; set; }
-        public Nullable<int> PriceForMonth { get; set; }
         public bool GeneralAgent { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

@@ -48,33 +48,34 @@
             <PropertyRef Name="CardNumber_ID" />
           </Key>
           <Property Name="CardNumber_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="CardNumber" Type="varchar" MaxLength="30" />
+          <Property Name="CardNumber" Type="varchar" MaxLength="30" Nullable="false" />
           <Property Name="BankSmsNumber" Type="varchar" MaxLength="500" />
-          <Property Name="Active" Type="bit" />
-          <Property Name="InTheNameOf" Type="nvarchar" MaxLength="150" />
+          <Property Name="Active" Type="bit" Nullable="false" />
+          <Property Name="InTheNameOf" Type="nvarchar" MaxLength="150" Nullable="false" />
           <Property Name="phoneNumber" Type="varchar" MaxLength="15" />
-          <Property Name="FK_User_ID" Type="int" />
+          <Property Name="FK_User_ID" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="tbBotSettings">
           <Key>
             <PropertyRef Name="botSettingID" />
           </Key>
           <Property Name="botSettingID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="Bot_Token" Type="varchar(max)" />
-          <Property Name="Bot_ID" Type="varchar" MaxLength="50" />
-          <Property Name="AdminBot_ID" Type="bigint" />
-          <Property Name="Active" Type="bit" />
-          <Property Name="RequiredJoinChannel" Type="bit" />
+          <Property Name="Bot_Token" Type="varchar(max)" Nullable="false" />
+          <Property Name="Bot_ID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="AdminBot_ID" Type="bigint" Nullable="false" />
+          <Property Name="Active" Type="bit" Nullable="false" />
+          <Property Name="RequiredJoinChannel" Type="bit" Nullable="false" />
           <Property Name="ChannelID" Type="varchar" MaxLength="50" />
-          <Property Name="PricePerGig_Admin" Type="int" />
-          <Property Name="PricePerMonth_Admin" Type="int" />
-          <Property Name="PricePerGig_Major" Type="int" />
-          <Property Name="PricePerMonth_Major" Type="int" />
+          <Property Name="PricePerGig_Admin" Type="int" Nullable="false" />
+          <Property Name="PricePerMonth_Admin" Type="int" Nullable="false" />
+          <Property Name="PricePerGig_Major" Type="int" Nullable="false" />
+          <Property Name="PricePerMonth_Major" Type="int" Nullable="false" />
           <Property Name="FK_User_ID" Type="int" Nullable="false" />
           <Property Name="Present_Discount" Type="float" />
-          <Property Name="IsActiveSendReceipt" Type="bit" />
-          <Property Name="IsActiveCardToCard" Type="bit" />
+          <Property Name="IsActiveSendReceipt" Type="bit" Nullable="false" />
+          <Property Name="IsActiveCardToCard" Type="bit" Nullable="false" />
           <Property Name="Enabled" Type="bit" Nullable="false" />
+          <Property Name="FK_Plan_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -139,6 +140,8 @@
           <Property Name="GroupUserLink_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="FK_Group_Id" Type="int" />
           <Property Name="FK_User_Id" Type="int" />
+          <Property Name="PriceForGig" Type="int" Nullable="false" />
+          <Property Name="PriceForMonth" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
@@ -231,7 +234,6 @@
           <Property Name="FreeCredit" Type="float" />
           <Property Name="PricePerGig" Type="int" />
           <Property Name="PricePerMonth" Type="int" />
-          <Property Name="DefaultPlanIdInV2board" Type="int" />
           <Property Name="BotbaseAddress" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
@@ -316,12 +318,10 @@
           <Property Name="ExpireTimeToken" Type="datetime" />
           <Property Name="Admin_Telegram_ID" Type="int" />
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
-          <Property Name="PriceForGig" Type="int" />
-          <Property Name="PriceForMonth" Type="int" />
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
-          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
           <End Role="tbBankCardNumbers" Type="Self.tbBankCardNumbers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
@@ -329,6 +329,18 @@
             </Principal>
             <Dependent Role="tbBankCardNumbers">
               <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbBotSettings_tbPlans">
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbBotSettings" Type="Self.tbBotSettings" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPlans">
+              <PropertyRef Name="Plan_ID" />
+            </Principal>
+            <Dependent Role="tbBotSettings">
+              <PropertyRef Name="FK_Plan_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -653,6 +665,10 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbBotSettings_tbPlans" Association="Self.FK_tbBotSettings_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbBotSettings" EntitySet="tbBotSettings" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbBotSettings_tbUsers" Association="Self.FK_tbBotSettings_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBotSettings" EntitySet="tbBotSettings" />
@@ -779,6 +795,10 @@
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbBotSettings_tbPlans" Association="V2boardSiteModel.FK_tbBotSettings_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbBotSettings" EntitySet="tbBotSettings" />
           </AssociationSet>
           <AssociationSet Name="FK_tbBotSettings_tbUsers" Association="V2boardSiteModel.FK_tbBotSettings_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
@@ -920,12 +940,12 @@
             <PropertyRef Name="CardNumber_ID" />
           </Key>
           <Property Name="CardNumber_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="CardNumber" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="CardNumber" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
           <Property Name="BankSmsNumber" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
-          <Property Name="Active" Type="Boolean" />
-          <Property Name="InTheNameOf" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="Active" Type="Boolean" Nullable="false" />
+          <Property Name="InTheNameOf" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="phoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
-          <Property Name="FK_User_ID" Type="Int32" />
+          <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbBankCardNumbers" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbBotSettings">
@@ -933,21 +953,23 @@
             <PropertyRef Name="botSettingID" />
           </Key>
           <Property Name="botSettingID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Bot_Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
-          <Property Name="Bot_ID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="AdminBot_ID" Type="Int64" />
-          <Property Name="Active" Type="Boolean" />
-          <Property Name="RequiredJoinChannel" Type="Boolean" />
+          <Property Name="Bot_Token" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="Bot_ID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="AdminBot_ID" Type="Int64" Nullable="false" />
+          <Property Name="Active" Type="Boolean" Nullable="false" />
+          <Property Name="RequiredJoinChannel" Type="Boolean" Nullable="false" />
           <Property Name="ChannelID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="PricePerGig_Admin" Type="Int32" />
-          <Property Name="PricePerMonth_Admin" Type="Int32" />
-          <Property Name="PricePerGig_Major" Type="Int32" />
-          <Property Name="PricePerMonth_Major" Type="Int32" />
+          <Property Name="PricePerGig_Admin" Type="Int32" Nullable="false" />
+          <Property Name="PricePerMonth_Admin" Type="Int32" Nullable="false" />
+          <Property Name="PricePerGig_Major" Type="Int32" Nullable="false" />
+          <Property Name="PricePerMonth_Major" Type="Int32" Nullable="false" />
           <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
           <Property Name="Present_Discount" Type="Double" />
-          <Property Name="IsActiveSendReceipt" Type="Boolean" />
-          <Property Name="IsActiveCardToCard" Type="Boolean" />
+          <Property Name="IsActiveSendReceipt" Type="Boolean" Nullable="false" />
+          <Property Name="IsActiveCardToCard" Type="Boolean" Nullable="false" />
           <Property Name="Enabled" Type="Boolean" Nullable="false" />
+          <Property Name="FK_Plan_ID" Type="Int32" />
+          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
@@ -1019,6 +1041,8 @@
           <Property Name="GroupUserLink_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="FK_Group_Id" Type="Int32" />
           <Property Name="FK_User_Id" Type="Int32" />
+          <Property Name="PriceForGig" Type="Int32" Nullable="false" />
+          <Property Name="PriceForMonth" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbServerGroups" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbLinkServerGroupWithUsers" ToRole="tbServerGroups" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbLinkServerGroupWithUsers" ToRole="tbUsers" />
         </EntityType>
@@ -1087,6 +1111,7 @@
           <Property Name="Group_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Speed_limit" Type="Int16" />
           <Property Name="device_limit" Type="Int16" />
+          <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbPlans" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
@@ -1125,7 +1150,6 @@
           <Property Name="FreeCredit" Type="Double" />
           <Property Name="PricePerGig" Type="Int32" />
           <Property Name="PricePerMonth" Type="Int32" />
-          <Property Name="DefaultPlanIdInV2board" Type="Int32" />
           <Property Name="BotbaseAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbServers" ToRole="tbLinks" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
@@ -1225,8 +1249,6 @@
           <Property Name="ExpireTimeToken" Type="DateTime" Precision="3" />
           <Property Name="Admin_Telegram_ID" Type="Int32" />
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
-          <Property Name="PriceForGig" Type="Int32" />
-          <Property Name="PriceForMonth" Type="Int32" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
@@ -1243,7 +1265,7 @@
           <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
           <End Type="V2boardSiteModel.tbBankCardNumbers" Role="tbBankCardNumbers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
@@ -1251,6 +1273,18 @@
             </Principal>
             <Dependent Role="tbBankCardNumbers">
               <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbBotSettings_tbPlans">
+          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbBotSettings" Role="tbBotSettings" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPlans">
+              <PropertyRef Name="Plan_ID" />
+            </Principal>
+            <Dependent Role="tbBotSettings">
+              <PropertyRef Name="FK_Plan_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1610,6 +1644,7 @@
           <EntitySetMapping Name="tbBotSettings">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
+                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
                 <ScalarProperty Name="Enabled" ColumnName="Enabled" />
                 <ScalarProperty Name="IsActiveCardToCard" ColumnName="IsActiveCardToCard" />
                 <ScalarProperty Name="IsActiveSendReceipt" ColumnName="IsActiveSendReceipt" />
@@ -1693,6 +1728,8 @@
           <EntitySetMapping Name="tbLinkServerGroupWithUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkServerGroupWithUsers">
               <MappingFragment StoreEntitySet="tbLinkServerGroupWithUsers">
+                <ScalarProperty Name="PriceForMonth" ColumnName="PriceForMonth" />
+                <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
                 <ScalarProperty Name="FK_User_Id" ColumnName="FK_User_Id" />
                 <ScalarProperty Name="FK_Group_Id" ColumnName="FK_Group_Id" />
                 <ScalarProperty Name="GroupUserLink_ID" ColumnName="GroupUserLink_ID" />
@@ -1777,7 +1814,6 @@
             <EntityTypeMapping TypeName="V2boardSiteModel.tbServers">
               <MappingFragment StoreEntitySet="tbServers">
                 <ScalarProperty Name="BotbaseAddress" ColumnName="BotbaseAddress" />
-                <ScalarProperty Name="DefaultPlanIdInV2board" ColumnName="DefaultPlanIdInV2board" />
                 <ScalarProperty Name="PricePerMonth" ColumnName="PricePerMonth" />
                 <ScalarProperty Name="PricePerGig" ColumnName="PricePerGig" />
                 <ScalarProperty Name="FreeCredit" ColumnName="FreeCredit" />
@@ -1863,8 +1899,6 @@
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
                 <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
-                <ScalarProperty Name="PriceForMonth" ColumnName="PriceForMonth" />
-                <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
                 <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />

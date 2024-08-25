@@ -333,6 +333,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AdminModel\AccountsViewModel.cs" />
+    <Compile Include="Models\AdminModel\BankNumberViewModel.cs" />
     <Compile Include="Models\AdminModel\LoginModel.cs" />
     <Compile Include="Models\AdminModel\UserLogViewModel.cs" />
     <Compile Include="Models\AdminModel\UsersModel.cs" />
@@ -340,6 +341,7 @@
     <Compile Include="Models\CreateUserModel.cs" />
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
     <Compile Include="Models\ServerGroups\List_Model.cs" />
+    <Compile Include="Models\ServerGroups\UserGroupsViewModel.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
     <Compile Include="Tools\BotManager.cs" />
     <Compile Include="Tools\ObjectExtensions.cs" />
@@ -1737,6 +1739,8 @@
     <Content Include="Areas\api\Views\web.config" />
     <Content Include="Areas\App\Views\Admin\_GetSetting.cshtml" />
     <Content Include="Areas\App\Views\ServerGroups\Index.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_GetBotSetting.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_GetBankNumbers.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

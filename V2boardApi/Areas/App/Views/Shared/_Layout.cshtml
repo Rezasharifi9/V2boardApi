@@ -538,6 +538,9 @@
                                         <li>
                                             <span class="dropdown-item"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت واحد (گیگ) : <span id="pricePerGig">...</span> تومان</span> </span>
                                         </li>
+                                        <li>
+                                            <span class="dropdown-item"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت واحد (ماه) : <span id="pricePerMonth">...</span> تومان</span> </span>
+                                        </li>
                                     }
                                     else
                                     {
@@ -728,7 +731,7 @@
         }
 
 
-        
+
     </script>
 
     <script>
@@ -870,6 +873,7 @@ else if(Role.Value == "2")
                         $("#user_inventory").html(res.data.inventory);
                         $("#user_debt").html(res.data.debt);
                         $("#pricePerGig").html(res.data.pricePerGig);
+                        $("#pricePerMonth").html(res.data.pricePerMonth);
                         </text>
             }
 

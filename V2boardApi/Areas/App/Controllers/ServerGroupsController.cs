@@ -18,6 +18,7 @@ namespace V2boardApi.Areas.App.Controllers
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private Repository<tbServerGroups> serverGroup_Repo { get; set; }
+        private Repository<tbLinkServerGroupWithUsers> LinkGroupWithUser_Repo { get; set; }
         private Repository<tbUsers> User_Repo { get; set; }
         private Entities db;
 
@@ -26,6 +27,7 @@ namespace V2boardApi.Areas.App.Controllers
             db = new Entities();
             serverGroup_Repo = new Repository<tbServerGroups>(db);
             User_Repo = new Repository<tbUsers>(db);
+            LinkGroupWithUser_Repo = new Repository<tbLinkServerGroupWithUsers>(db);
         }
         [AuthorizeApp(Roles = "1")]
         public ActionResult Index()
@@ -80,7 +82,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region دریافت گروه های مجوز کاربر
         [AuthorizeApp(Roles = "1,3,4")]
-        public async Task<ActionResult> GetUserGroups()
+        public async Task<ActionResult> GetSelectUserGroups()
         {
             try
             {
@@ -95,6 +97,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "دریافت سلکت دسته بندی ها با خطا مواجه شد");
                 return Json(new { status = "error" });
             }
         }
@@ -166,7 +169,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Info("ویرایش دسته بندی با خطا مواجه شد");
+                logger.Error(ex,"ویرایش دسته بندی با خطا مواجه شد");
                 return Toaster.Success("موفق", "ویرایش دسته بندی با خطا مواجه شد لطفا مجدد تلاش کنید");
             }
         }
@@ -183,7 +186,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error("نمایش دسته بندی با خطا مواجه شد");
+                logger.Error(ex,"نمایش دسته بندی با خطا مواجه شد");
                 return Json(new { status = "error" }, JsonRequestBehavior.AllowGet);
             }
 
@@ -193,41 +196,148 @@ namespace V2boardApi.Areas.App.Controllers
 
         public async Task<ActionResult> UpdateGroups()
         {
-            var user = await User_Repo.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
-
-            using (MySqlEntities entities = new MySqlEntities(user.tbServers.ConnectionString))
+            try
             {
-                var Query = "SELECT * FROM `v2_server_group`";
-                await entities.OpenAsync();
-                var reader = await entities.GetDataAsync(Query);
+                var user = await User_Repo.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
 
-                while (await reader.ReadAsync())
+                using (MySqlEntities entities = new MySqlEntities(user.tbServers.ConnectionString))
+                {
+                    var Query = "SELECT * FROM `v2_server_group`";
+                    await entities.OpenAsync();
+                    var reader = await entities.GetDataAsync(Query);
+
+                    while (await reader.ReadAsync())
+                    {
+
+                        var name = reader.GetBodyDefinition("name");
+                        var id = reader.GetInt32("id");
+                        var group = await serverGroup_Repo.FirstOrDefaultAsync(s => s.V2_Group_Id == id);
+                        if (group != null)
+                        {
+                            group.Group_Name = name;
+                        }
+                        else
+                        {
+                            tbServerGroups tbServerGroups = new tbServerGroups();
+                            tbServerGroups.Group_Name = name;
+                            tbServerGroups.V2_Group_Id = id;
+                            tbServerGroups.Status = true;
+                            serverGroup_Repo.Insert(tbServerGroups);
+                        }
+                        await serverGroup_Repo.SaveChangesAsync();
+                    }
+                    reader.Close();
+
+                    await entities.CloseAsync();
+                }
+
+
+                return MessageBox.Success("موفق", "دسته بندی ها با موفقیت بروزرسانی شدند");
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex, "بروزرسانی دسته بندی ها با خطا مواجه شد");
+                return MessageBox.Error("ناموفق", "بروزرسانی دسته بندی ها با خطا مواجه شد");
+            }
+        }
+
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpGet]
+        public async Task<ActionResult> GetUserGroups(int user_id)
+        {
+            var user = await User_Repo.FirstOrDefaultAsync(s => s.User_ID == user_id);
+
+            List<UserGroupsViewModel> groups = new List<UserGroupsViewModel>();
+            foreach (var item in user.tbLinkServerGroupWithUsers)
+            {
+                UserGroupsViewModel mgroups = new UserGroupsViewModel();
+                mgroups.Id = item.GroupUserLink_ID;
+                mgroups.groupId = item.FK_Group_Id.Value;
+                mgroups.GroupName = item.tbServerGroups.Group_Name;
+                mgroups.PriceForMonth = item.PriceForMonth;
+                mgroups.PriceForGig = item.PriceForGig;
+                groups.Add(mgroups);
+            }
+
+            return Json(new { status = "success", data = groups }, JsonRequestBehavior.AllowGet);
+
+        }
+
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> SetGroupForUser(int user_id, int planGroup, int userPriceForGig, int userPriceForMonth, int id = 0)
+        {
+            try
+            {
+                var user = await User_Repo.FirstOrDefaultAsync(s => s.User_ID == user_id);
+
+                if (id != 0)
+                {
+                    var LinkGroup = await LinkGroupWithUser_Repo.FirstOrDefaultAsync(s => s.GroupUserLink_ID == id);
+                    LinkGroup.PriceForMonth = userPriceForMonth;
+                    LinkGroup.PriceForGig = userPriceForGig;
+                    LinkGroup.FK_Group_Id = planGroup;
+                    await User_Repo.SaveChangesAsync();
+                    logger.Info("دسته بندی برای کاربر ویرایش شد");
+                    return Toaster.Success("موفق", "دسته بندی کاربر ویرایش شد");
+                }
+                else
                 {
 
-                    var name = reader.GetBodyDefinition("name");
-                    var id = reader.GetInt32("id");
-                    var group = await serverGroup_Repo.FirstOrDefaultAsync(s => s.V2_Group_Id == id);
-                    if (group != null)
-                    {
-                        group.Group_Name = name;
-                    }
-                    else
-                    {
-                        tbServerGroups tbServerGroups = new tbServerGroups();
-                        tbServerGroups.Group_Name = name;
-                        tbServerGroups.V2_Group_Id = id;
-                        tbServerGroups.Status = true;
-                        serverGroup_Repo.Insert(tbServerGroups);
-                    }
-                    await serverGroup_Repo.SaveChangesAsync();
-                }
-                reader.Close();
 
-                await entities.CloseAsync();
+                    tbLinkServerGroupWithUsers userGroup = new tbLinkServerGroupWithUsers();
+                    userGroup.PriceForMonth = userPriceForMonth;
+                    userGroup.PriceForGig = userPriceForGig;
+                    userGroup.FK_Group_Id = planGroup;
+
+                    user.tbLinkServerGroupWithUsers.Add(userGroup);
+                    await User_Repo.SaveChangesAsync();
+                    logger.Info("دسته بندی برای کاربر ثبت شد");
+                    return Toaster.Success("موفق", "دسته بندی برای کاربر مورد نظر ثبت شد");
+
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex,"ثبت دسته بندی برای کاربر با خطا مواجه شد");
+                return MessageBox.Success("ناموفق", "ثبت دسته بندی با خطا مواجه شد");
             }
 
 
-            return MessageBox.Success("موفق", "دسته بندی ها با موفقیت بروزرسانی شدند");
+
+        }
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1")]
+        public async Task<ActionResult> DeleteUserGroup(int id, int user_id)
+        {
+            try
+            {
+                var user = await User_Repo.FirstOrDefaultAsync(s => s.User_ID == user_id);
+
+                var LinkGroup = await LinkGroupWithUser_Repo.FirstOrDefaultAsync(s => s.GroupUserLink_ID == id);
+
+                foreach(var item in user.tbPlans.Where(s=> s.Group_Id == LinkGroup.FK_Group_Id).ToList())
+                {
+                    item.Group_Id = null;
+                }
+
+                user.tbLinkServerGroupWithUsers.Remove(LinkGroup);
+
+                await User_Repo.SaveChangesAsync();
+
+                logger.Info("دسته بندی با موفقیت حذف شد");
+                return Toaster.Success("موفق", "دسته بندی با موفقیت حذف شد");
+
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex, "حذف دسته بندی با خطا مواجه شد");
+                return MessageBox.Error("ناموفق", "حذف دسته بندی با خطا مواجه شد");
+            }
         }
     }
 }

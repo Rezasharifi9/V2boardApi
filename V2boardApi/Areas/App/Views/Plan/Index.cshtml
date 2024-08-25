@@ -49,7 +49,6 @@
     </div>
     <div class="offcanvas-body flex-grow-1">
         <form class="add-new-record pt-0 row g-2" id="planForm">
-            @Html.AntiForgeryToken()
             <input type="hidden" name="id" value="" id="planId" />
             <div class="col-sm-12">
                 <label class="form-label" for="basicFullname">نام تعرفه</label>
@@ -177,7 +176,7 @@
         function Groups(selectId) {
             var $select = $(selectId);
             $.ajax({
-                url: "/App/ServerGroups/GetUserGroups",
+                url: "/App/ServerGroups/GetSelectUserGroups",
                 type: "get",
                 dataType: "json",
                 async: true,

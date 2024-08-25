@@ -570,7 +570,7 @@ $(function () {
         var $select = $(selectId);
 
         $.ajax({
-            url: "/App/Admin/Select2Plans",
+            url: "/App/Plan/Select2Plans",
             type: "get",
             dataType: "json",
             success: function (res) {

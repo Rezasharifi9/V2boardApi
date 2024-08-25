@@ -71,10 +71,12 @@ namespace DataLayer.Repository
             T existing = table.Find(id);
             table.Remove(existing);
         }
-        public void DeleteRange(List<T> list) 
+        public Task DeleteRangeAsync(List<T> list)
         {
             table.RemoveRange(list);
+            return Task.CompletedTask;
         }
+
 
         public void Delete(T obj)
         {

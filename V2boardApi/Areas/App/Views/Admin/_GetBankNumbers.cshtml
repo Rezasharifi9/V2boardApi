@@ -1,0 +1,43 @@
+﻿<form class="row g-3" id="bankNumbersForm">
+    <input type="hidden" name="user_id" id="user_id" value="" />
+    <input type="hidden" name="Card_ID" id="id" value="" />
+    <div class="row">
+        <div class="col-12 col-md-3">
+            <label class="form-label" for="CardNumber"> شماره کارت <span class="text-danger"> * </span></label>
+            <input class="form-control" id="CardNumber" dir="ltr" name="CardNumber" placeholder="5041589012544457" type="text" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label class="form-label" for="NameOfCard"> نام دارنده کارت <span class="text-danger"> * </span></label>
+            <input class="form-control" id="NameOfCard" name="NameOfCard" placeholder="علی حسینی" type="text" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label class="form-label" for="SmsNumberOfCard"> شماره SMS بانک <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="در صورت وجود بیش از 2 شماره SMS شماره ها را با (,) از هم جدا کنید"></i></label>
+            <input class="form-control" id="SmsNumberOfCard" dir="ltr" name="SmsNumberOfCard" placeholder="99998589" type="text" />
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label" for="phoneNumber"> شماره همراه دارنده کارت <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="شماره همراهی که پیامک های بانک را دریافت می کند"></i></label>
+            <input class="form-control" id="phoneNumber" dir="ltr" name="phoneNumber" placeholder="+989334526257" />
+        </div>
+    </div>
+    <div class="col-12" style="text-align:left;">
+        <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
+
+    </div>
+</form>
+<br />
+<div class="card-datatable table-responsive">
+    <table class="datatables-banks table">
+        <thead class="border-top">
+            <tr>
+                <th></th>
+                <th>شماره کارت</th>
+                <th>شماره SMS بانک</th>
+                <th>نام دارنده کارت</th>
+                <th>شماره همراه دارنده کارت</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+    </table>
+</div>

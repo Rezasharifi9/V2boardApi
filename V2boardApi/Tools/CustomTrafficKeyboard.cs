@@ -87,7 +87,7 @@ namespace V2boardBotApp.Models
             }
             else
             {
-                PriceRow.Add(InlineKeyboardButton.WithCallbackData(Price.Value.ConvertToMony() + " تومان", "40,000 تومان"));
+                PriceRow.Add(InlineKeyboardButton.WithCallbackData(Price.ConvertToMony() + " تومان", "40,000 تومان"));
             }
             
             PriceRow.Add(InlineKeyboardButton.WithCallbackData("💸 قیمت نهایی :", "💸 قیمت نهایی :"));

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -271,6 +272,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
                         var tbLinksRepository = new Repository<tbLinks>(db);
                         var tbUsersRepository = new Repository<tbUsers>(db);
+                        var tbPlanRepository = new Repository<tbPlans>(db);
                         MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
 
                         await mySql.OpenAsync();
@@ -318,12 +320,25 @@ namespace V2boardApi.Areas.api.Controllers
                                             string exp = DateTime.Now.AddDays((int)item.Month * 30).ConvertDatetimeToSecond().ToString();
                                             Link.tbL_Warning = false;
 
-                                            var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";
+                                            
                                             var Disc1 = new Dictionary<string, object>();
                                             Disc1.Add("@plan_id", item.V2_Plan_ID);
                                             Disc1.Add("@transfer_enable", t);
                                             Disc1.Add("@expired_at", exp);
                                             Disc1.Add("@email", item.AccountName);
+
+                                            var DeviceLimit_Structur = "";
+                                            var DeviceLimit_data = "";
+                                            var planId = item.tbTelegramUsers.tbUsers.tbBotSettings.First().FK_Plan_ID;
+                                            var Plan = tbPlanRepository.Where(s=> s.Plan_ID == planId).FirstOrDefault();    
+                                            if (Plan.device_limit != null)
+                                            {
+                                                DeviceLimit_Structur = ",@device_limit="+ Plan.device_limit;
+                                                Disc1.Add("@device_limit", Plan.device_limit);
+                                            }
+
+                                            var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email"+ DeviceLimit_Structur;
+
                                             var reader = await mySql.GetDataAsync(Query, Disc1);
                                             var result = reader.ReadAsync();
                                             reader.Close();
@@ -401,11 +416,12 @@ namespace V2boardApi.Areas.api.Controllers
                         var tbOrdersRepository = new Repository<tbOrders>(db);
                         var RepositoryLinkUserAndPlan = new Repository<tbLinkUserAndPlans>(db);
                         var tbDepositLogRepo = new Repository<tbDepositWallet_Log>(db);
-
+                        var V2boardPlanId = BotSettings.tbPlans.Plan_ID_V2;
                         long chatid = 0;
                         tbTelegramUsers UserAcc = new tbTelegramUsers();
                         if (update.Message is Telegram.Bot.Types.Message message)
                         {
+                           
                             chatid = update.Message.From.Id;
                             var mess = message.Text;
 
@@ -953,8 +969,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     StringBuilder str = new StringBuilder();
                                     str.AppendLine("");
-                                    str.AppendLine("💸 هر گیگ : " + BotSettings.PricePerGig_Major.Value.ConvertToMony() + " تومان");
-                                    str.AppendLine("⏳ هر ماه : " + BotSettings.PricePerMonth_Major.Value.ConvertToMony() + " تومان");
+                                    str.AppendLine("💸 هر گیگ : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
+                                    str.AppendLine("⏳ هر ماه : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
                                     str.AppendLine("");
                                     str.AppendLine("📱 اشتراک ها بدون محدودیت کاربر می باشد");
                                     str.AppendLine("");
@@ -1077,10 +1093,11 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     if (UserAcc.Tel_GetedTestAccount == false || UserAcc.Tel_GetedTestAccount == null)
                                     {
+                                        
                                         MySqlEntities mySql = new MySqlEntities(BotSettings.tbUsers.tbServers.ConnectionString);
                                         await mySql.OpenAsync();
                                         var Disc1 = new Dictionary<string, object>();
-                                        Disc1.Add("@v2board_id", Server.DefaultPlanIdInV2board);
+                                        Disc1.Add("@v2board_id", V2boardPlanId);
                                         var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =@v2board_id", Disc1);
                                         long tran = 0;
                                         int grid = 0;
@@ -1108,7 +1125,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                             reader2.Close();
                                         }
-
+                                        
                                         var Disc3 = new Dictionary<string, object>();
                                         Disc3.Add("@FullName", FullName);
                                         Disc3.Add("@expired", exp);
@@ -1116,11 +1133,22 @@ namespace V2boardApi.Areas.api.Controllers
                                         Disc3.Add("@guid", Guid.NewGuid());
                                         Disc3.Add("@tran", tran);
                                         Disc3.Add("@grid", grid);
-                                        Disc3.Add("@V2boardId", Server.DefaultPlanIdInV2board);
+                                        Disc3.Add("@V2boardId", V2boardPlanId);
                                         Disc3.Add("@token", token);
                                         Disc3.Add("@passwrd", Guid.NewGuid());
 
-                                        string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES (@FullName, @expired, @create, @guid, 0, 0, 0, @tran, 0, @grid, @V2boardId, @token,@passwrd,@create)";
+
+                                        var DeviceLimit_Structur = "";
+                                        var DeviceLimit_data = "";
+
+                                        if (BotSettings.tbPlans.device_limit != null)
+                                        {
+                                            DeviceLimit_Structur = ",device_limit";
+                                            Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
+                                            DeviceLimit_data = ",@device_limit";
+                                        }
+
+                                        string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at"+ DeviceLimit_Structur + ") VALUES (@FullName, @expired, @create, @guid, 0, 0, 0, @tran, 0, @grid, @V2boardId, @token,@passwrd,@create"+ DeviceLimit_data + ")";
 
 
                                         reader = await mySql.GetDataAsync(Query, Disc3);
@@ -1631,7 +1659,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             Disc1.Add("@token", token);
                                             Disc1.Add("@Guid", Guid.NewGuid());
                                             Disc1.Add("@email", Link.tbL_Email);
-                                            var query = "update v2_user set token = @token',uuid= @Guid where email= @email";
+                                            var query = "update v2_user set token=@token,uuid=@Guid where email=@email";
                                             var reader = await mySql.GetDataAsync(query, Disc1);
 
                                             StringBuilder st = new StringBuilder();
@@ -2071,9 +2099,9 @@ namespace V2boardApi.Areas.api.Controllers
                                     StringBuilder str = new StringBuilder();
                                     str.AppendLine("🔐 سرویست رو خودت بساز");
                                     str.AppendLine("");
-                                    str.AppendLine("💸 هر گیگ : " + BotSettings.PricePerGig_Major.Value.ConvertToMony() + " تومان");
+                                    str.AppendLine("💸 هر گیگ : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
                                     str.AppendLine("");
-                                    str.AppendLine("⏳ هر ماه : " + BotSettings.PricePerMonth_Major.Value.ConvertToMony() + " تومان");
+                                    str.AppendLine("⏳ هر ماه : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
 
                                     var editedMessage = await bot.Client.EditMessageTextAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId, str.ToString(), replyMarkup: key);
 
@@ -2154,7 +2182,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 order.Traffic = User.Tel_Traffic;
                                                 order.Month = User.Tel_Monthes;
                                                 order.PriceWithOutDiscount = PirceWithoutDiscount;
-                                                order.V2_Plan_ID = Server.DefaultPlanIdInV2board;
+                                                order.V2_Plan_ID = V2boardPlanId;
                                                 order.FK_Tel_UserID = UserAcc.Tel_UserID;
                                                 var UserAc = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAcc.Tel_UserID && p.tbUsers.Username == botName).FirstOrDefault();
                                                 UserAc.Tel_Wallet -= Price;
@@ -2164,12 +2192,18 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                 Link.tbL_Warning = false;
                                                 var Disc3 = new Dictionary<string, object>();
-                                                Disc3.Add("@DefaultPlanIdInV2board", Server.DefaultPlanIdInV2board);
+                                                Disc3.Add("@DefaultPlanIdInV2board", V2boardPlanId);
                                                 Disc3.Add("@transfer_enable", t);
                                                 Disc3.Add("@exp", exp);
                                                 Disc3.Add("@email", Link.tbL_Email);
+                                                var DeviceLimit_Structur = "";
+                                                if (BotSettings.tbPlans.device_limit != null)
+                                                {
+                                                    DeviceLimit_Structur = ",@device_limit=" + BotSettings.tbPlans.device_limit;
+                                                    Disc1.Add("@device_limit", BotSettings.tbPlans.device_limit);
+                                                }
 
-                                                var Query = "update v2_user set u=0,d=0,t=0,plan_id=@DefaultPlanIdInV2board,transfer_enable=@transfer_enable,expired_at=@exp where email=@email";
+                                                var Query = "update v2_user set u=0,d=0,t=0,plan_id=@DefaultPlanIdInV2board,transfer_enable=@transfer_enable,expired_at=@exp where email=@email"+ DeviceLimit_Structur;
                                                 var reader = await mySql.GetDataAsync(Query, Disc3);
                                                 var result = await reader.ReadAsync();
                                                 reader.Close();
@@ -2227,7 +2261,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 order.Traffic = User.Tel_Traffic;
                                                 order.Month = User.Tel_Monthes;
                                                 order.PriceWithOutDiscount = PirceWithoutDiscount;
-                                                order.V2_Plan_ID = Server.DefaultPlanIdInV2board;
+                                                order.V2_Plan_ID = V2boardPlanId;
                                                 order.FK_Tel_UserID = UserAcc.Tel_UserID;
 
                                                 var UserAc = await tbTelegramUserRepository.FirstOrDefaultAsync(p => p.Tel_UserID == UserAcc.Tel_UserID && p.tbUsers.Username == botName);
@@ -2318,7 +2352,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             Order.OrderStatus = "FINISH";
                                             Order.Traffic = User.Tel_Traffic;
                                             Order.Month = User.Tel_Monthes;
-                                            Order.V2_Plan_ID = Server.DefaultPlanIdInV2board;
+                                            Order.V2_Plan_ID = V2boardPlanId;
                                             Order.FK_Tel_UserID = UserAcc.Tel_UserID;
                                             Order.Order_Price = Price;
                                             Order.PriceWithOutDiscount = PirceWithoutDiscount;
@@ -2334,7 +2368,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
                                             await mySql.OpenAsync();
                                             var Disc1 = new Dictionary<string, object>();
-                                            Disc1.Add("@V2board", Server.DefaultPlanIdInV2board);
+                                            Disc1.Add("@V2board", V2boardPlanId);
                                             var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =@V2board", Disc1);
                                             long tran = 0;
                                             int grid = 0;
@@ -2352,11 +2386,23 @@ namespace V2boardApi.Areas.api.Controllers
                                             Disc3.Add("@guid", Guid.NewGuid());
                                             Disc3.Add("@tran", tran);
                                             Disc3.Add("@grid", grid);
-                                            Disc3.Add("@V2boardId", Server.DefaultPlanIdInV2board);
+                                            Disc3.Add("@V2boardId", V2boardPlanId);
                                             Disc3.Add("@token", token);
                                             Disc3.Add("@passwrd", Guid.NewGuid());
 
-                                            string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at) VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@V2boardId,@token,@passwrd,@create)";
+                                            var DeviceLimit_Structur = "";
+                                            var DeviceLimit_data = "";
+
+                                            if(BotSettings.tbPlans.device_limit != null)
+                                            {
+                                                DeviceLimit_Structur = ",device_limit";
+                                                Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
+                                                DeviceLimit_data = ",@device_limit";
+                                            }
+
+                                            
+
+                                            string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at"+ DeviceLimit_Structur + ") VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@V2boardId,@token,@passwrd,@create"+ DeviceLimit_data + ")";
                                             reader.Close();
 
                                             reader = await mySql.GetDataAsync(Query, Disc3);
@@ -2659,9 +2705,9 @@ namespace V2boardApi.Areas.api.Controllers
             StringBuilder str = new StringBuilder();
             str.AppendLine("🔐 سرویست رو خودت بساز");
             str.AppendLine("");
-            str.AppendLine("💸 به ازای هر گیگ  : " + BotSetting.PricePerGig_Major.Value.ConvertToMony() + " تومان");
+            str.AppendLine("💸 به ازای هر گیگ  : " + BotSetting.PricePerGig_Major.ConvertToMony() + " تومان");
             str.AppendLine("");
-            str.AppendLine("⏳ هر ماه : " + BotSetting.PricePerMonth_Major.Value.ConvertToMony() + " تومان");
+            str.AppendLine("⏳ هر ماه : " + BotSetting.PricePerMonth_Major.ConvertToMony() + " تومان");
 
             if (Data != null)
             {

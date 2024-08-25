@@ -300,3 +300,831 @@ $(function () {
         $('.dataTables_length .form-select').removeClass('form-select-sm');
     }, 300);
 });
+
+
+
+
+/**
+* DataTables Basic
+*/
+
+'use strict';
+
+let fv, fv1, offCanvasEl;
+
+// datatable (jquery)
+$(function () {
+
+    $('[data-bs-toggle="popover"]').tooltip();
+
+    var dt_group_table = $('.datatables-groups');
+    var dt_group;
+    // DataTable with buttons
+    // --------------------------------------------------------------------
+
+
+    if (dt_group_table.length) {
+        dt_group = dt_group_table.DataTable({
+            ajax: '/App/ServerGroups/GetUserGroups?user_id=' + getUrlParameter("user_id"),
+            columns: [
+                { data: '' },
+                { data: 'GroupName' },
+                { data: 'PriceForGig' },
+                { data: 'PriceForMonth' },
+                { data: '' }
+            ],
+            initComplete: function (setting, json) {
+
+                //تولتیپ کردن بعد از لود دیتا
+                $('[data-bs-toggle="popover"]').tooltip();
+            },
+            drawCallback: function (settings) {
+                //تولتیپ کردن بعد از تغییر صفحه یا سرچ
+                $('[data-bs-toggle="popover"]').tooltip();
+
+            },
+            columnDefs: [
+                {
+                    // For Responsive
+                    className: 'control',
+                    orderable: false,
+                    searchable: false,
+                    responsivePriority: 2,
+                    targets: 0,
+                    render: function (data, type, full, meta) {
+                        return '';
+                    }
+                },
+                {
+                    // Group Name
+                    targets: 1,
+                    responsivePriority: 1,
+                    render: function (data, type, full, meta) {
+                        var $name = full['GroupName'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Price For Gig
+                    targets: 2,
+                    responsivePriority: 2,
+                    render: function (data, type, full, meta) {
+                        var $name = full['PriceForGig'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Price For Month
+                    targets: 3,
+                    responsivePriority: 3,
+                    render: function (data, type, full, meta) {
+                        var $name = full['PriceForMonth'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Actions
+                    targets: -1,
+                    title: 'عملیات',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, full, meta) {
+                        return (
+                            '<button type="button" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditUserGroup" data-id="' + full["Id"] + '" data-gig="' + full["PriceForGig"] + '" data-month="' + full["PriceForMonth"] + '" data-group="' + full["groupId"] + '"><i class="text-primary ti ti-pencil"></i></button>' +
+                            '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteUserGroup" data-id="' + full["Id"] + '"><i class="text-primary ti ti-trash"></i></a>'
+                        );
+                    }
+                }
+            ],
+            "language": {
+                "paginate": {
+                    "first": "اولین",
+                    "last": "آخرین",
+                    "next": "بعدی",
+                    "previous": "قبلی"
+                },
+                "info": "نمایش _START_ تا _END_ از _TOTAL_ ورودی",
+                "lengthMenu": "نمایش _MENU_ ورودی",
+                "search": "جستجو:",
+                "zeroRecords": "موردی یافت نشد",
+                "infoEmpty": "هیچ موردی موجود نیست",
+                "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
+                sLengthMenu: '_MENU_',
+                search: '',
+                searchPlaceholder: 'جستجوی دسته بندی',
+                loadingRecords: "در حال بارگزاری ..."
+            },
+            lengthChange: false,
+            displayLength: 10,
+            lengthMenu: [10, 25, 50, 75, 100],
+            responsive: {
+                details: {
+                    display: $.fn.dataTable.Responsive.display.modal({
+                        header: function (row) {
+                            var data = row.data();
+                            return 'جزئیات ' + data['PlanName'];
+                        }
+                    }),
+                    type: 'column',
+                    renderer: function (api, rowIdx, columns) {
+                        var data = $.map(columns, function (col, i) {
+                            return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                ? '<tr data-dt-row="' +
+                                col.rowIndex +
+                                '" data-dt-column="' +
+                                col.columnIndex +
+                                '">' +
+                                '<td>' +
+                                col.title +
+                                ':' +
+                                '</td> ' +
+                                '<td>' +
+                                col.data +
+                                '</td>' +
+                                '</tr>'
+                                : '';
+                        }).join('');
+
+                        return data ? $('<table class="table"/><tbody />').append(data) : false;
+                    }
+                }
+            }
+        });
+        $('div.head-label').html('<h5 class="card-title mb-0">تعرفه ها</h5>');
+    }
+
+    setTimeout(() => {
+        $('.dataTables_filter .form-control').removeClass('form-control-sm');
+        $('.dataTables_length .form-select').removeClass('form-select-sm');
+    }, 300);
+
+    //// Edit User Group
+    $('body').on('click', '.EditUserGroup', function () {
+
+        var id = $(this).attr("data-id");
+        var priceForGig = $(this).attr("data-gig");
+        var priceForMonth = $(this).attr("data-month");
+        var GroupId = $(this).attr("data-group");
+
+        $("#planGroup").val(GroupId).trigger('change');
+        $("#userPriceForGig").val(priceForGig);
+        $("#userPriceForMonth").val(priceForMonth);
+        $("#editPriceForm").find("#id").val(id);
+
+    });
+
+    //// Delete User Group
+    $('body').on('click', '.DeleteUserGroup', function () {
+
+        var id = $(this).attr("data-id");
+
+        Swal.fire({
+            title: 'هشدار',
+            text: "آیا مطمئن هستی ؟ این دسته بندی از روی تعرفه های نماینده ها حذف می شود !!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+
+                blockUI(".section-block");
+
+                AjaxGet("/App/ServerGroups/DeleteUserGroup?id=" + id + "&user_id=" + getUrlParameter("user_id")).then(res => {
+
+                    UnblockUI(".section-block");
+                    eval(res.data);
+                    if (res.status == "success") {
+
+                        dt_group.ajax.reload(null, false);
+                    }
+
+
+                });
+
+            }
+        });
+
+    });
+
+
+    const formAddNewRecord = document.getElementById('editPriceForm');
+
+    // Form validation for Add new record
+    fv = FormValidation.formValidation(formAddNewRecord, {
+        fields: {
+            planGroup: {
+                validators: {
+                    notEmpty: {
+                        message: 'عنوان دسته بندی را وارد کنید'
+                    }
+                }
+            },
+            userPriceForGig: {
+                validators: {
+                    notEmpty: {
+                        message: 'قیمت هر گیگ را وارد کنید'
+                    }
+                }
+            },
+            userPriceForMonth: {
+                validators: {
+                    notEmpty: {
+                        message: 'قیمت هر ماه را وارد کنید'
+                    }
+                }
+            }
+        },
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                // Use this for enabling/changing valid/invalid class
+                // eleInvalidClass: '',
+                eleValidClass: '',
+                rowSelector: '.mb-3'
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+        },
+        init: instance => {
+            instance.on('plugins.message.placed', function (e) {
+                if (e.element.parentElement.classList.contains('input-group')) {
+                    e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                }
+            });
+        }
+    });
+
+    fv.on('core.form.valid', function (e) {
+
+        blockUI(".section-block");
+        AjaxFormPost('/App/ServerGroups/SetGroupForUser', "#editPriceForm").then(res => {
+            UnblockUI(".section-block");
+            eval(res.data);
+            if (res.status == "success") {
+
+                dt_group.ajax.reload(null, false);
+                document.getElementById('editPriceForm').reset();
+                $("#editPriceForm").find("#id").val(0);
+                $("#planGroup").val(0).trigger('change');
+            }
+
+        });
+    });
+
+
+
+    const formAddBotRecord = document.getElementById('botSettingForm');
+
+    // Form validation for Add new record
+    fv1 = FormValidation.formValidation(formAddBotRecord, {
+        fields: {
+            BotToken: {
+                validators: {
+                    notEmpty: {
+                        message: 'توکن ربات را وارد کنید'
+                    }
+                }
+            },
+            BotId: {
+                validators: {
+                    notEmpty: {
+                        message: 'آیدی ربات را وارد کنید'
+                    }
+                }
+            },
+            PricePerGig_Admin: {
+                validators: {
+                    notEmpty: {
+                        message: 'قیمت هر گیگ ادمین را وارد کنید'
+                    }
+                }
+            },
+            PricePerMonth_Admin: {
+                validators: {
+                    notEmpty: {
+                        message: 'قیمت هر ماه ادمین را وارد کنید'
+                    }
+                }
+            },
+            PricePerGig_Major: {
+                validators: {
+                    notEmpty: {
+                        message: 'قیمت هر گیگ نماینده را وارد کنید'
+                    }
+                }
+            },
+            PricePerMonth_Major: {
+                validators: {
+                    notEmpty: {
+                        message: 'قیمت هر گیگ نماینده را وارد کنید'
+                    }
+                }
+            },
+            TelegramUserId: {
+                validators: {
+                    notEmpty: {
+                        message: 'آیدی عددی ادمین را وارد کنید'
+                    }
+                }
+            },
+            Present_Discount: {
+                validators: {
+                    between: {
+                        min: 1,
+                        max: 100,
+                        message: 'درصد تخفیف باید بین 1 تا 100 درصد باشد'
+                    }
+                }
+            },
+        },
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                // Use this for enabling/changing valid/invalid class
+                // eleInvalidClass: '',
+                eleValidClass: '',
+                rowSelector: '.mb-3'
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+        },
+        init: instance => {
+            instance.on('plugins.message.placed', function (e) {
+                if (e.element.parentElement.classList.contains('input-group')) {
+                    e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                }
+            });
+        }
+    });
+
+    fv1.on('core.form.valid', function (e) {
+
+
+        if ($("input[name='Active']").is(':checked')) {
+            $("input[name='Active']").val("True");
+        }
+        else {
+            $("input[name='Active']").val("false");
+        }
+
+        if ($("input[name='RequiredJoinChannel']").is(':checked')) {
+            $("input[name='RequiredJoinChannel']").val("True");
+        }
+        else {
+            $("input[name='RequiredJoinChannel']").val("False");
+        }
+
+        if ($("input[name='IsActiveSendReceipt']").is(':checked')) {
+            $("input[name='IsActiveSendReceipt']").val("True");
+        }
+        else {
+            $("input[name='IsActiveSendReceipt']").val("false");
+        }
+
+
+        if ($("input[name='IsActiveCardToCard']").is(':checked')) {
+            $("input[name='IsActiveCardToCard']").val("True");
+        }
+        else {
+            $("input[name='IsActiveCardToCard']").val("false");
+        }
+
+        $("#botSettingForm").find("#user_id").val(getUrlParameter("user_id"));
+
+        blockUI(".section-block");
+
+        AjaxFormPost('/App/Admin/SaveBotSetting', "#botSettingForm").then(res => {
+            UnblockUI(".section-block");
+            eval(res.data);
+            if (res.status == "success") {
+
+                dt_group.ajax.reload(null, false);
+            }
+
+        });
+    });
+
+
+    var $this = $("#userPlan").select2();
+    $this.wrap('<div class="position-relative"></div>').select2({
+        placeholder: 'انتخاب تعرفه',
+        dropdownParent: $this.parent(),
+        allowClear: false
+    });
+
+    Plans("#userPlan");
+});
+
+
+//لیست تعرفه ها
+function Plans(selectId) {
+    var $select = $(selectId);
+
+    $.ajax({
+        url: "/App/Plan/Select2Plans",
+        type: "get",
+        dataType: "json",
+        success: function (res) {
+            // پاک کردن گزینه‌های قبلی
+            $select.empty();
+
+            // افزودن گزینه‌های جدید
+            $.each(res.result, function (index, item) {
+                var newOption = new Option(item.Name, item.id, false, false);
+                $select.append(newOption);
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error("An error occurred: " + status + " " + error);
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let bankFv;
+
+// datatable (jquery)
+$(function () {
+
+    $('[data-bs-toggle="popover"]').tooltip();
+
+    var dt_banks_table = $('.datatables-banks');
+    var dt_banks;
+    // DataTable with buttons
+    // --------------------------------------------------------------------
+
+
+    if (dt_banks_table.length) {
+        dt_banks = dt_banks_table.DataTable({
+            ajax: '/App/Admin/GetUserBankNumbers?user_id=' + getUrlParameter("user_id"),
+            columns: [
+                { data: '' },
+                { data: 'CardNumber' },
+                { data: 'SmsNumberOfCard' },
+                { data: 'NameOfCard' },
+                { data: 'phoneNumber' },
+                { data: 'Status' },
+                { data: '' },
+            ],
+            initComplete: function (setting, json) {
+
+                //تولتیپ کردن بعد از لود دیتا
+                $('[data-bs-toggle="popover"]').tooltip();
+            },
+            drawCallback: function (settings) {
+                //تولتیپ کردن بعد از تغییر صفحه یا سرچ
+                $('[data-bs-toggle="popover"]').tooltip();
+
+            },
+            columnDefs: [
+                {
+                    // For Responsive
+                    className: 'control',
+                    orderable: false,
+                    searchable: false,
+                    responsivePriority: 2,
+                    targets: 0,
+                    render: function (data, type, full, meta) {
+                        return '';
+                    }
+                },
+                {
+                    // CardNumber
+                    targets: 1,
+                    responsivePriority: 1,
+                    render: function (data, type, full, meta) {
+                        var $name = full['CardNumber'];
+                        // Creates full output for row
+                        var $row_output = "<span dir='ltr'>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // SmsNumberOfCard
+                    targets: 2,
+                    responsivePriority: 2,
+                    render: function (data, type, full, meta) {
+                        var $name = full['SmsNumberOfCard'];
+                        // Creates full output for row
+                        var $row_output = "<span dir='ltr'>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // NameOfCard
+                    targets: 3,
+                    responsivePriority: 3,
+                    render: function (data, type, full, meta) {
+                        var $name = full['NameOfCard'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // phoneNumber
+                    targets: 4,
+                    responsivePriority: 3,
+                    render: function (data, type, full, meta) {
+                        var $name = full['phoneNumber'];
+                        // Creates full output for row
+                        var $row_output = "<span dir='ltr'>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Status
+                    targets: 5,
+                    render: function (data, type, full, meta) {
+                        var $status_number = full['Status'];
+                        var $status = {
+                            0: { title: 'غیرفعال', class: 'bg-label-danger' },
+                            1: { title: 'فعال', class: 'bg-label-success' },
+                        };
+                        if (typeof $status[$status_number] === 'undefined') {
+                            return data;
+                        }
+                        return (
+                            '<span class="badge ' + $status[$status_number].class + '">' + $status[$status_number].title + '</span>'
+                        );
+                    }
+                },
+                {
+                    // Actions
+                    targets: -1,
+                    title: 'عملیات',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, full, meta) {
+
+                        return (
+                            '<button type="button" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditCard" data-id="' + full["Card_ID"] + '" data-phoneNumber="' + full["phoneNumber"] + '" data-CardNumber="' + full["CardNumber"] + '" data-SmsNumberOfCard="' + full["SmsNumberOfCard"] + '" data-NameOfCard="' + full["NameOfCard"] + '"><i class="text-primary ti ti-pencil"></i></button>' +
+                            '<a data-bs-toggle="popover" title="فعال کردن" class="btn btn-sm btn-icon item-edit ActiveCard" data-id="' + full["Card_ID"] + '"><i class="text-primary ti ti-lock-access"></i></a>'+
+                            '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteCard" data-id="' + full["Card_ID"] + '"><i class="text-primary ti ti-trash"></i></a>'
+                        );
+                    }
+                }
+            ],
+            "language": {
+                "paginate": {
+                    "first": "اولین",
+                    "last": "آخرین",
+                    "next": "بعدی",
+                    "previous": "قبلی"
+                },
+                "info": "نمایش _START_ تا _END_ از _TOTAL_ ورودی",
+                "lengthMenu": "نمایش _MENU_ ورودی",
+                "search": "جستجو:",
+                "zeroRecords": "موردی یافت نشد",
+                "infoEmpty": "هیچ موردی موجود نیست",
+                "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
+                sLengthMenu: '_MENU_',
+                search: '',
+                searchPlaceholder: 'جستجوی کارت',
+                loadingRecords: "در حال بارگزاری ..."
+            },
+            lengthChange: false,
+            displayLength: 10,
+            lengthMenu: [10, 25, 50, 75, 100],
+            responsive: {
+                details: {
+                    display: $.fn.dataTable.Responsive.display.modal({
+                        header: function (row) {
+                            var data = row.data();
+                            return 'جزئیات ' + data['PlanName'];
+                        }
+                    }),
+                    type: 'column',
+                    renderer: function (api, rowIdx, columns) {
+                        var data = $.map(columns, function (col, i) {
+                            return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                ? '<tr data-dt-row="' +
+                                col.rowIndex +
+                                '" data-dt-column="' +
+                                col.columnIndex +
+                                '">' +
+                                '<td>' +
+                                col.title +
+                                ':' +
+                                '</td> ' +
+                                '<td>' +
+                                col.data +
+                                '</td>' +
+                                '</tr>'
+                                : '';
+                        }).join('');
+
+                        return data ? $('<table class="table"/><tbody />').append(data) : false;
+                    }
+                }
+            }
+        });
+        $('div.head-label').html('<h5 class="card-title mb-0">تعرفه ها</h5>');
+    }
+
+    setTimeout(() => {
+        $('.dataTables_filter .form-control').removeClass('form-control-sm');
+        $('.dataTables_length .form-select').removeClass('form-select-sm');
+    }, 300);
+
+    //// EditCard
+    $('body').on('click', '.EditCard', function () {
+
+        var id = $(this).attr("data-id");
+        var CardNumber = $(this).attr("data-CardNumber");
+        var NameOfCard = $(this).attr("data-NameOfCard");
+        var SmsNumberOfCard = $(this).attr("data-SmsNumberOfCard");
+        var phoneNumber = $(this).attr("data-phoneNumber");
+
+        $("#CardNumber").val(CardNumber);
+        $("#NameOfCard").val(NameOfCard);
+        $("#SmsNumberOfCard").val(SmsNumberOfCard);
+        $("#phoneNumber").val(phoneNumber);
+
+        $("#bankNumbersForm").find("#id").val(id);
+
+    });
+
+    //// Active DeActive Card
+    $('body').on('click', '.ActiveCard', function () {
+
+        var id = $(this).attr("data-id");
+
+        Swal.fire({
+            title: 'هشدار',
+            text: "آیا مطمئن هستی ؟ این شماره کارت در دسترس عموم قرار میگرد !!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+
+                blockUI(".section-block");
+
+                AjaxGet("/App/Admin/DeActiveCard?Card_ID=" + id + "&user_id=" + getUrlParameter("user_id")).then(res => {
+
+                    UnblockUI(".section-block");
+                    eval(res.data);
+                    if (res.status == "success") {
+
+                        dt_banks.ajax.reload(null, false);
+                    }
+
+
+                });
+
+            }
+        });
+
+    });
+
+
+    //// Remove Card
+    $('body').on('click', '.DeleteCard', function () {
+
+        var id = $(this).attr("data-id");
+
+        Swal.fire({
+            title: 'هشدار',
+            text: "آیا مطمئن هستی ؟",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+
+                blockUI(".section-block");
+
+                AjaxGet("/App/Admin/DeleteCard?Card_ID=" + id + "&user_id=" + getUrlParameter("user_id")).then(res => {
+
+                    UnblockUI(".section-block");
+                    eval(res.data);
+                    if (res.status == "success") {
+
+                        dt_banks.ajax.reload(null, false);
+                    }
+
+
+                });
+
+            }
+        });
+
+    });
+
+
+
+
+    const bankNumbersForm = document.getElementById('bankNumbersForm');
+
+    // Form validation for Add new record
+    bankFv = FormValidation.formValidation(bankNumbersForm, {
+        fields: {
+            CardNumber: {
+                validators: {
+                    notEmpty: {
+                        message: 'شماره کارت را وارد کنید'
+                    },
+                    stringLength: {
+                        min: 16,   // حداقل طول
+                        max: 16,   // حداکثر طول
+                        message: 'شماره کارت باید 16 رقم باشد !!'
+                    }
+                }
+            },
+            NameOfCard: {
+                validators: {
+                    notEmpty: {
+                        message: 'نام و نام خانوادگی دارنده کارت را وارد کنید'
+                    }
+                }
+            },
+            phoneNumber: {
+                validators: {
+                    regexp: {
+                        regexp: /^\+989\d{9}$/,
+                        message: 'شماره همراه را به فرمت 98+ وارد کنید'
+                    }
+                }
+            }
+        },
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                // Use this for enabling/changing valid/invalid class
+                // eleInvalidClass: '',
+                eleValidClass: '',
+                rowSelector: '.mb-3'
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+        },
+        init: instance => {
+            instance.on('plugins.message.placed', function (e) {
+                if (e.element.parentElement.classList.contains('input-group')) {
+                    e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                }
+            });
+        }
+    });
+
+    bankFv.on('core.form.valid', function (e) {
+
+
+        $("#bankNumbersForm").find("#user_id").val(getUrlParameter("user_id"));
+
+        blockUI(".section-block");
+
+        AjaxFormPost('/App/Admin/SaveBankCard', "#bankNumbersForm").then(res => {
+            UnblockUI(".section-block");
+            eval(res.data);
+            if (res.status == "success") {
+
+                dt_banks.ajax.reload(null, false);
+            }
+
+        });
+    });
+
+
+});

@@ -28,12 +28,13 @@ namespace V2boardApi.Areas.App.Controllers
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private Repository<tbLogs> logsRepository;
-        private Repository<tbUsers> usersRepository;
-        private Repository<tbPlans> plansRepository;
-        private Repository<tbLinkUserAndPlans> linkUserAndPlansRepository;
-        private Repository<tbServers> serverRepository;
-        private Entities db;
+        private Repository<tbLogs> logsRepository { get; set; }
+        private Repository<tbUsers> usersRepository { get; set; }
+        private Repository<tbPlans> plansRepository { get; set; }
+        private Repository<tbLinkUserAndPlans> linkUserAndPlansRepository { get; set; }
+        private Repository<tbServers> serverRepository { get; set; }
+        private Repository<tbLinkServerGroupWithUsers> linkUserGroupRepository { get; set; }
+        private Entities db { get; set; }
         public SubscriptionsController()
         {
             db = new Entities();
@@ -42,6 +43,7 @@ namespace V2boardApi.Areas.App.Controllers
             plansRepository = new Repository<tbPlans>(db);
             linkUserAndPlansRepository = new Repository<tbLinkUserAndPlans>(db);
             serverRepository = new Repository<tbServers>(db);
+            linkUserGroupRepository = new Repository<tbLinkServerGroupWithUsers>(db);
         }
 
         #region لیست اشتراک ها 
@@ -306,13 +308,14 @@ namespace V2boardApi.Areas.App.Controllers
                                         exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
                                     }
 
-
+                                    
 
                                     if (user.Role == 3)
                                     {
                                         if (user.tbUsers2 != null)
                                         {
-                                            user.Wallet += plan.PlanVolume * (user.PriceForGig + user.PriceForMonth);
+                                            var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.User_ID);
+                                            user.Wallet += plan.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
                                         }
                                         else
                                         {
@@ -326,7 +329,9 @@ namespace V2boardApi.Areas.App.Controllers
                                         {
                                             if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                             {
-                                                user.tbUsers2.Wallet += plan.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
+                                                var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
+
+                                                user.tbUsers2.Wallet += plan.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
                                             }
                                         }
                                         else
@@ -673,7 +678,9 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             if (user.tbUsers2 != null)
                             {
-                                user.Wallet += Plan.PlanVolume * (user.PriceForGig + user.PriceForMonth);
+                                var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.User_ID);
+
+                                user.Wallet += Plan.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
                             }
                             else
                             {
@@ -687,7 +694,8 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                 {
-                                    user.tbUsers2.Wallet += Plan.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
+                                    var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
+                                    user.tbUsers2.Wallet += Plan.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
                                 }
                             }
                             else
@@ -816,7 +824,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
-                var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+                var user = await usersRepository.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
 
                 var Server = user.tbServers;
 
@@ -831,14 +839,13 @@ namespace V2boardApi.Areas.App.Controllers
                 var username = reader.GetString("email").Split('@')[1];
 
                 var totalUse = Utility.ConvertByteToGB(reader.GetInt64("u") + reader.GetInt64("d"));
-                var logs = await logsRepository.WhereAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
-                var log = logs.OrderByDescending(s => s.CreateDatetime).FirstOrDefault();
+                var log = await logsRepository.FirstOrDefaultAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
                 if (log != null)
                 {
 
                     if (totalUse <= 1)
                     {
-                        var userAccount = usersRepository.table.Where(p => p.Username == username).FirstOrDefault();
+                        var userAccount = await usersRepository.FirstOrDefaultAsync(s => s.Username == username);
                         if (userAccount != null)
                         {
                             //چک می کنیم اگر نماینده مبلغ تعرفه رو به کیف پولش برمیگردونیم
@@ -854,13 +861,16 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 if (userAccount.tbUsers2 != null)
                                 {
+                                    var groupId = log.tbLinkUserAndPlans.tbPlans.Group_Id;
+                                    var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.User_ID);
                                     if (log.PlanVolume != null)
                                     {
-                                        userAccount.Wallet -= log.PlanVolume * (user.PriceForGig + user.PriceForMonth);
+
+                                        userAccount.Wallet -= log.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
                                     }
                                     else
                                     {
-                                        userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * (user.PriceForGig + user.PriceForMonth);
+                                        userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
                                     }
                                 }
                                 else
@@ -875,13 +885,15 @@ namespace V2boardApi.Areas.App.Controllers
                                 {
                                     if (userAccount.tbUsers2.Role == 3)
                                     {
+                                        var groupId = log.tbLinkUserAndPlans.tbPlans.Group_Id;
+                                        var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.tbUsers2.User_ID);
                                         if (log.PlanVolume != null)
                                         {
-                                            userAccount.tbUsers2.Wallet -= log.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
+                                            userAccount.tbUsers2.Wallet -= log.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
                                         }
                                         else
                                         {
-                                            userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * (user.tbUsers2.PriceForGig + user.tbUsers2.PriceForMonth);
+                                            userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
                                         }
                                     }
                                 }
@@ -898,13 +910,14 @@ namespace V2boardApi.Areas.App.Controllers
 
 
 
-
-                        logsRepository.DeleteRange(logs);
+                        var logs = await logsRepository.WhereAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
+                        await logsRepository.DeleteRangeAsync(logs);
 
 
                     }
                     else
                     {
+                        var logs = await logsRepository.WhereAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
                         foreach (var item in logs)
                         {
                             item.FK_NameUser_ID = "del_" + name;
@@ -1126,12 +1139,13 @@ namespace V2boardApi.Areas.App.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
                 logsRepository.Dispose();
                 usersRepository.Dispose();
                 plansRepository.Dispose();
                 linkUserAndPlansRepository.Dispose();
                 serverRepository.Dispose();
+                linkUserGroupRepository.Dispose();
+                db.Dispose();
             }
             base.Dispose(disposing);
         }

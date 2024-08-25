@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -27,6 +28,8 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbServers> RepositoryServer { get; set; }
         private System.Timers.Timer Timer { get; set; }
         private Repository<tbServerGroups> serverGroup_Repo { get; set; }
+
+        private Repository<tbLinkUserAndPlans> RepositoryUserPlanLinks { get; set; }
         public PlanController()
         {
             db = new Entities();
@@ -35,6 +38,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryServer = new Repository<tbServers>(db);
             serverGroup_Repo = new Repository<tbServerGroups>(db);
+            RepositoryUserPlanLinks = new Repository<tbLinkUserAndPlans>(db);
         }
 
 
@@ -101,7 +105,6 @@ namespace V2boardApi.Areas.App.Controllers
         #region ثبت افزودن و ویرایش
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         [AuthorizeApp(Roles = "1,3,4")]
         public async Task<ActionResult> CreateOrEdit(RequestPlanViewModel model)
         {
@@ -165,7 +168,7 @@ namespace V2boardApi.Areas.App.Controllers
                         Disc1.Add("@Speed", Speed);
                         Disc1.Add("@Plan_ID_V2", plan.Plan_ID_V2);
                         Disc1.Add("@Content", user.Username);
-                        
+
 
 
                         if (model.id != null)
@@ -388,6 +391,7 @@ namespace V2boardApi.Areas.App.Controllers
                             plan.Price = 0;
                         }
                         plan.FK_Server_ID = user.FK_Server_ID;
+                        plan.FK_User_ID = user.User_ID;
                         RepositoryPlans.Insert(plan);
                     }
                     else
@@ -439,7 +443,6 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             planD.Speed_limit = Convert.ToInt16(speedLimit);
                         }
-
                         planD.FK_Server_ID = user.FK_Server_ID;
                     }
                 }
@@ -461,8 +464,25 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+        #region لیست تعرفه ها در قالب Select2
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> Select2Plans()
+        {
+            var Plans = await RepositoryPlans.WhereAsync(s => s.Status == true && s.tbUsers.Username == User.Identity.Name && s.Group_Id != null);
+            var planss = Plans.Select(p => new { id = p.Plan_ID, Name = p.Plan_Name }).ToList();
+            return Json(new { result = planss }, JsonRequestBehavior.AllowGet);
+        }
 
-       
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        public async Task<ActionResult> Select2UserPlans()
+        {
+            var UserLink = await RepositoryUserPlanLinks.WhereAsync(p => p.tbUsers.Username == User.Identity.Name && p.tbPlans.Status == true && p.L_Status == true);
+            var Plans = UserLink.Where(s => s.tbPlans.Group_Id != null).Select(p => new { id = p.tbPlans.Plan_ID, Name = p.tbPlans.Plan_Name }).ToList();
+            return Json(new { result = Plans }, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
 
         protected override void Dispose(bool disposing)
         {

@@ -38,6 +38,8 @@ using Antlr.Runtime.Misc;
 using System.Data.Entity;
 using Mysqlx.Expr;
 using System.Numerics;
+using System.IO.Packaging;
+using Stimulsoft.Data.Expressions.Antlr.Runtime.Misc;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -58,6 +60,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbLinkUserAndPlans> RepositoryUserPlanLinks { get; set; }
         private Repository<tbBotSettings> RepositoryBotSettings { get; set; }
         private Repository<tbServerGroups> serverGroup_Repo { get; set; }
+        private Repository<tbBankCardNumbers> repositoryCard { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public AdminController()
         {
@@ -72,6 +75,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryUserPlanLinks = new Repository<tbLinkUserAndPlans>(db);
             RepositoryBotSettings = new Repository<tbBotSettings>(db);
             serverGroup_Repo = new Repository<tbServerGroups>(db);
+            repositoryCard = new Repository<tbBankCardNumbers>(db);
         }
 
 
@@ -174,9 +178,9 @@ namespace V2boardApi.Areas.App.Controllers
 
                 return Json(new { data = users }, JsonRequestBehavior.AllowGet);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                logger.Error(ex,"خطا در لود لیست نمایندگان");
+                logger.Error(ex, "خطا در لود لیست نمایندگان");
                 return MessageBox.Error("خطا", "خطا در لود نمایندگان");
             }
         }
@@ -267,7 +271,7 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.FullName = user.userFullname;
                             tbUser.Email = user.userEmail;
                             tbUser.Password = user.userPassword.ToSha256();
-                            
+
                             tbUser.TelegramID = user.userTelegramid;
                             try
                             {
@@ -326,7 +330,7 @@ namespace V2boardApi.Areas.App.Controllers
                         try
                         {
                             var Number = int.Parse(user.userLimit, NumberStyles.Currency);
-                            if(tbUser.Limit != Number)
+                            if (tbUser.Limit != Number)
                             {
                                 if (User.Identity.Name == tbUser.Username)
                                 {
@@ -334,7 +338,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 }
                             }
                             tbUser.Limit = Number;
-                            
+
 
                         }
                         catch
@@ -343,9 +347,9 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                         tbUser.PhoneNumber = user.userContact;
 
-                        
 
-                        if (tbUser.Username!= user.userUsername)
+
+                        if (tbUser.Username != user.userUsername)
                         {
                             var CheckExistsUser = RepositoryUser.Where(p => p.Username == user.userUsername).Any();
                             if (CheckExistsUser)
@@ -353,7 +357,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 return MessageBox.Warning("هشدار", "نماینده ای با این نام کاربری وجود دارد", icon: icon.warning);
                             }
 
-                            
+
 
                             using (MySqlEntities mysql = new MySqlEntities(tbUser.tbServers.ConnectionString))
                             {
@@ -369,7 +373,7 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.Username = user.userUsername;
 
                         }
-                       
+
                         await RepositoryUser.SaveChangesAsync();
                         logger.Info("نماینده ویرایش شد");
                         return Toaster.Success("موفق", "نماینده با موفقیت ویرایش شد");
@@ -697,25 +701,6 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region لیست تعرفه ها در قالب Select2
-        [AuthorizeApp(Roles = "1,3,4")]
-        public async Task<ActionResult> Select2Plans()
-        {
-            var Plans = await RepositoryPlans.WhereAsync(s => s.Status == true && s.tbUsers.Username == User.Identity.Name);
-            var planss = Plans.Select(p => new { id = p.Plan_ID, Name = p.Plan_Name }).ToList();
-            return Json(new { result = planss }, JsonRequestBehavior.AllowGet);
-        }
-
-        [AuthorizeApp(Roles = "1,2,3,4")]
-        public async Task<ActionResult> Select2UserPlans()
-        {
-            var UserLink = await RepositoryUserPlanLinks.WhereAsync(p => p.tbUsers.Username == User.Identity.Name && p.tbPlans.Status == true && p.L_Status == true);
-            var Plans = UserLink.Select(p => new { id = p.tbPlans.Plan_ID, Name = p.tbPlans.Plan_Name }).ToList();
-            return Json(new { result = Plans }, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
         #region نمایش لاگ ایجاد یا تمدید کاربر عمده 
         [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult GetUserAccountLog(int user_id)
@@ -1021,15 +1006,26 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     else
                     {
-                        var UserPerPrice = UserPerGig * user.PriceForGig;
-                        return Json(new { status = "success", data = new { UserPerGig = Math.Round(UserPerGig, 2).ConvertToMony(), UserPerPrice = Math.Round(UserPerPrice.Value, 0).ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+                        var Linkgrop = user.tbLinkServerGroupWithUsers.First();
+
+                        var UserPerPrice = UserPerGig * Linkgrop.PriceForGig;
+                        return Json(new { status = "success", data = new { UserPerGig = Math.Round(UserPerGig, 2).ConvertToMony(), UserPerPrice = Math.Round(UserPerPrice, 0).ConvertToMony() } }, JsonRequestBehavior.AllowGet);
                     }
                 }
                 else
                 {
-                    if(user.Role == 3)
+                    if (user.Role == 3)
                     {
-                        return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(),pricePerGig = user.PriceForGig } }, JsonRequestBehavior.AllowGet);
+                        var userPerMonth = 0;
+                        var userPerGig = 0;
+
+                        foreach (var item in user.tbLinkServerGroupWithUsers)
+                        {
+                            userPerMonth += item.PriceForMonth;
+                            userPerGig += item.PriceForGig;
+                        }
+
+                        return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth } }, JsonRequestBehavior.AllowGet);
 
                     }
                     else
@@ -1086,15 +1082,7 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     if (User.tbLinkServerGroupWithUsers.Count() == 0)
                     {
-                        return MessageBox.Warning("هشدار", "لطفا اول وضعیت گروه مجوز را تعیین کنید");
-                    }
-                    if(User.PriceForGig !=null || User.PriceForMonth != null)
-                    {
-
-                    }
-                    else
-                    {
-                        return MessageBox.Warning("هشدار", "لطفا قیمت مصوبه نماینده کل را تعریف کنید");
+                        return MessageBox.Warning("هشدار", "لطفا اول وضعیت دسته بندی های کاربر را تعیین کنید");
                     }
                     User.GeneralAgent = status;
                     if (status)
@@ -1129,31 +1117,6 @@ namespace V2boardApi.Areas.App.Controllers
         {
             return View();
         }
-
-        [AuthorizeApp(Roles = "1")]
-        [System.Web.Mvc.HttpPost]
-        public async Task<ActionResult> SetPriceSetting(int user_id, int userPrice=0,int userMonth=0)
-        {
-            try
-            {
-                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
-
-                user.PriceForGig = userPrice;
-                user.PriceForMonth = userMonth;
-
-                await RepositoryUser.SaveChangesAsync();
-
-                logger.Info("ادمین اطلاعات قیمت نماینده کل را تغییر داد");
-                return Toaster.Success("موفق", "اطلاعات با موفقیت ثبت شد");
-
-            }
-            catch (Exception ex)
-            {
-                return MessageBox.Error("موفق", "ثبت اطلاعات با خطا مواجه شد لطفا بعد تلاش کنید");
-            }
-        }
-
-
         #endregion
 
         #region تنظیمات کلی 
@@ -1165,23 +1128,448 @@ namespace V2boardApi.Areas.App.Controllers
 
             var groups = await serverGroup_Repo.GetAllAsync();
 
-            foreach(var item in user.tbLinkServerGroupWithUsers)
+            foreach (var item in user.tbLinkServerGroupWithUsers)
             {
                 user.tbLinkServerGroupWithUsers.Remove(item);
             }
 
-            foreach (var group in planGroup) {
+            foreach (var group in planGroup)
+            {
 
                 tbLinkServerGroupWithUsers tbLinkServer = new tbLinkServerGroupWithUsers();
                 tbLinkServer.FK_Group_Id = group;
                 user.tbLinkServerGroupWithUsers.Add(tbLinkServer);
             }
 
- 
+
             await RepositoryUser.SaveChangesAsync();
 
             logger.Info("ادمین گروه مجوز را تغییر داد");
             return Toaster.Success("موفق", "گروه مجوز با موفقیت ثبت شد");
+
+        }
+
+        #endregion
+
+        #region تنظیمات ربات
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpGet]
+        public ActionResult _GetBotSetting(int user_id)
+        {
+            var user = RepositoryUser.Where(s => s.User_ID == user_id).FirstOrDefault();
+            var botSetting = user.tbBotSettings.FirstOrDefault();
+            if (botSetting != null)
+            {
+                return PartialView(botSetting);
+            }
+            else
+            {
+                return PartialView(new tbBotSettings());
+            }
+        }
+
+
+        [System.Web.Mvc.HttpPost]
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, int PricePerMonth_Major, int PricePerGig_Major, int PricePerMonth_Admin, int PricePerGig_Admin, bool? Active, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt,int userPlan, double? Present_Discount = null)
+        {
+
+            try
+            {
+                var Use = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == user_id);
+
+                if (RequiredJoinChannel == true)
+                {
+                    try
+                    {
+
+                        if (string.IsNullOrEmpty(ChannelId))
+                        {
+                            return MessageBox.Warning("ناموفق", "جهت فعال سازی عضویت اجباری آیدی کانال را وارد کنید");
+                        }
+
+                        TelegramBotClient bot = new TelegramBotClient(BotToken);
+                        try
+                        {
+                            var joined = bot.GetChatMemberAsync("@" + ChannelId, TelegramUserId);
+                            var s = joined.Result.Status;
+
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex.InnerException != null)
+                            {
+                                if (ex.InnerException.Message.Contains("not found"))
+                                {
+                                    return MessageBox.Warning("ناموفق", "جهت فعال سازی عضویت اجباری آیدی کانال را درست وارد کنید");
+
+                                    //return MessageBox.Warning("ناموفق","");
+                                }
+                                if (ex.InnerException.Message.Contains("inaccessible"))
+                                {
+                                    return MessageBox.Warning("ناموفق", "جهت فعال سازی عضویت اجباری باید ربات را داخل کانال خود ادمین کنید");
+                                }
+                            }
+                            return MessageBox.Warning("ناموفق", "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return MessageBox.Warning("ناموفق", "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
+                    }
+
+                }
+                else
+                {
+                    TelegramBotClient bot = new TelegramBotClient(BotToken);
+                    try
+                    {
+                        var res = bot.SendTextMessageAsync(TelegramUserId, "پیغام جهت صحت سنجی اطلاعات ثبت شده در تنظیمات می باشد");
+                        var s = res.Result;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex.InnerException != null)
+                        {
+                            if (ex.InnerException.Message.Contains("not found"))
+                            {
+                                return MessageBox.Warning("ناموفق", "شناسه تلگرام ادمین اشتباه است لطفا شناسه را از داخل getmyid_bot چک کنید");
+                            }
+                        }
+                        return MessageBox.Warning("ناموفق", "اعتبار سنجی توکن ناموفق لطفا توکن را چک کنید");
+
+
+                    }
+
+                }
+
+                if (id != 0)
+                {
+                    var botSettings = Use.tbBotSettings.FirstOrDefault(s => s.botSettingID == id);
+                    if (!string.IsNullOrEmpty(ChannelId))
+                    {
+                        botSettings.ChannelID = ChannelId;
+                    }
+                    if (Present_Discount != null && Present_Discount != 0)
+                    {
+                        botSettings.Present_Discount = Present_Discount / 100;
+                    }
+
+                    var ress = BotManager.GetBot(Use.Username);
+                    if (ress == null)
+                    {
+                        BotManager.AddBot(Use.Username, BotToken);
+                    }
+                    else
+                    {
+
+                        if (BotManager.GetBot(Use.Username).Token != BotToken)
+                        {
+                            BotManager.StopBot(Use.Username);
+                        }
+                    }
+
+                    if (RequiredJoinChannel == null)
+                    {
+                        botSettings.RequiredJoinChannel = false;
+                    }
+                    else
+                    {
+                        botSettings.RequiredJoinChannel = true;
+                    }
+
+
+                    if (Active == null)
+                    {
+                        botSettings.Active = false;
+                    }
+                    else
+                    {
+                        botSettings.Active = true;
+                    }
+
+
+                    if (IsActiveCardToCard == null)
+                    {
+                        botSettings.IsActiveCardToCard = false;
+                    }
+                    else
+                    {
+                        botSettings.IsActiveCardToCard = true;
+                    }
+
+                    if (IsActiveSendReceipt == null)
+                    {
+                        botSettings.IsActiveSendReceipt = false;
+                    }
+                    else
+                    {
+                        botSettings.IsActiveSendReceipt = true;
+                    }
+
+                    botSettings.Bot_Token = BotToken;
+                    botSettings.Bot_ID = BotId;
+                    botSettings.AdminBot_ID = TelegramUserId;
+                    botSettings.PricePerMonth_Major = PricePerMonth_Major;
+                    botSettings.PricePerGig_Major = PricePerGig_Major;
+                    botSettings.PricePerMonth_Admin = PricePerMonth_Admin;
+                    botSettings.PricePerGig_Admin = PricePerGig_Admin;
+                    botSettings.FK_Plan_ID = userPlan;
+
+                    await RepositoryUser.SaveChangesAsync();
+
+                    logger.Info("تنظیمات ربات ویرایش شد");
+                }
+                else
+                {
+                    var botSettings = new tbBotSettings();
+                    if (!string.IsNullOrEmpty(ChannelId))
+                    {
+                        botSettings.ChannelID = ChannelId;
+                    }
+                    if (Present_Discount != null && Present_Discount != 0)
+                    {
+                        botSettings.Present_Discount = Present_Discount / 100;
+                    }
+
+                    var ress = BotManager.GetBot(Use.Username);
+                    if (ress == null)
+                    {
+                        BotManager.AddBot(Use.Username, BotToken);
+                    }
+                    else
+                    {
+
+                        if (BotManager.GetBot(Use.Username).Token != BotToken)
+                        {
+                            BotManager.StopBot(Use.Username);
+                        }
+                    }
+
+                    if (RequiredJoinChannel == null)
+                    {
+                        botSettings.RequiredJoinChannel = false;
+                    }
+                    else
+                    {
+                        botSettings.RequiredJoinChannel = true;
+                    }
+
+
+                    if (Active == null)
+                    {
+                        botSettings.Active = false;
+                    }
+                    else
+                    {
+                        botSettings.Active = true;
+                    }
+
+
+                    if (IsActiveCardToCard == null)
+                    {
+                        botSettings.IsActiveCardToCard = false;
+                    }
+                    else
+                    {
+                        botSettings.IsActiveCardToCard = true;
+                    }
+
+                    if (IsActiveSendReceipt == null)
+                    {
+                        botSettings.IsActiveSendReceipt = false;
+                    }
+                    else
+                    {
+                        botSettings.IsActiveSendReceipt = true;
+                    }
+
+                    botSettings.Bot_Token = BotToken;
+                    botSettings.Bot_ID = BotId;
+                    botSettings.AdminBot_ID = TelegramUserId;
+                    botSettings.PricePerMonth_Major = PricePerMonth_Major;
+                    botSettings.PricePerGig_Major = PricePerGig_Major;
+                    botSettings.PricePerMonth_Admin = PricePerMonth_Admin;
+                    botSettings.PricePerGig_Admin = PricePerGig_Admin;
+                    botSettings.FK_Plan_ID = userPlan;
+                    Use.tbBotSettings.Add(botSettings);
+
+                    await RepositoryUser.SaveChangesAsync();
+
+                    logger.Info("تنظیمات ربات افزوده شد");
+                }
+
+
+                return MessageBox.Success("موفق", "اطلاعات ربات با موفقیت ذخیره شد");
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "ذخیره سازی تنظیمات ربات با خطا مواجه شد");
+
+                return MessageBox.Error("موفق", "ذخیره سازی اطلاعات با خطا مواجه شد");
+            }
+
+
+        }
+
+
+        #endregion
+
+        #region تنظیمات کارت ها
+
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult _GetBankNumbers()
+        {
+            return PartialView();
+        }
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1")]
+        public async Task<ActionResult> GetUserBankNumbers(int user_id)
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == user_id);
+
+                List<BankNumberViewModel> listBank = new List<BankNumberViewModel>();
+                foreach (var item in user.tbBankCardNumbers)
+                {
+                    BankNumberViewModel bankNum = new BankNumberViewModel();
+                    bankNum.Card_ID = item.CardNumber_ID;
+                    bankNum.phoneNumber = item.phoneNumber;
+                    bankNum.CardNumber = item.CardNumber;
+                    bankNum.SmsNumberOfCard = item.BankSmsNumber;
+                    bankNum.NameOfCard = item.InTheNameOf;
+                    bankNum.Status = Convert.ToInt16(item.Active);
+                    listBank.Add(bankNum);
+                }
+
+
+                return Json(new { status = "success", data = listBank }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return MessageBox.Error("ناموفق", "خطا در لود لیست کارت ها");
+            }
+        }
+
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> SaveBankCard(int user_id, string CardNumber, string NameOfCard, string SmsNumberOfCard, string phoneNumber, int Card_ID = 0)
+        {
+            var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+            if (Card_ID != 0)
+            {
+                var Card = user.tbBankCardNumbers.Where(s => s.CardNumber_ID == Card_ID).FirstOrDefault();
+                if (Card != null)
+                {
+                    Card.phoneNumber = phoneNumber;
+                    Card.CardNumber = CardNumber;
+                    Card.BankSmsNumber = SmsNumberOfCard;
+                    Card.InTheNameOf = NameOfCard;
+
+                }
+                await RepositoryUser.SaveChangesAsync();
+                return Toaster.Success("موفق", "اطلاعات کارت ویرایش شد");
+            }
+            else
+            {
+                tbBankCardNumbers card = new tbBankCardNumbers();
+                card.phoneNumber = phoneNumber;
+                card.CardNumber = CardNumber;
+                card.BankSmsNumber = SmsNumberOfCard;
+                card.InTheNameOf = NameOfCard;
+                if(user.tbBankCardNumbers.Count == 0)
+                {
+                    card.Active = true;
+                }
+                user.tbBankCardNumbers.Add(card);
+                await RepositoryUser.SaveChangesAsync();
+                return Toaster.Success("موفق", "اطلاعات کارت اضافه شد");
+            }
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpGet]
+        public async Task<ActionResult> DeActiveCard(int Card_ID, int user_id)
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+
+                var Card = user.tbBankCardNumbers.Where(s => s.CardNumber_ID == Card_ID).FirstOrDefault();
+                if (Card != null)
+                {
+                    if (Card.Active)
+                    {
+                        return MessageBox.Warning("هشدار", "لطفا کارتی که غیرفعال است را برای فعال سازی انتخاب کنید");
+                    }
+                    else
+                    {
+                        foreach (var item in user.tbBankCardNumbers)
+                        {
+                            item.Active = false;
+                        }
+                        Card.Active = true;
+                        await RepositoryUser.SaveChangesAsync();
+                        logger.Info("وضعیت کارت با موفقیت تغییر کرد");
+                        return Toaster.Success("موفق", "کارت مورد نظر فعال گردید !!");
+                    }
+                }
+                else
+                {
+                    return MessageBox.Warning("هشدار", "کارت مورد نظر یافت نشد");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex,"خطا در تنظیمات کارت های نمایندگان");
+                return MessageBox.Error("ناموفق", "خطا در تنظیمات کارت");
+            }
+        }
+
+
+        [System.Web.Mvc.HttpGet]
+        public async Task<ActionResult> DeleteCard(int Card_ID, int user_id)
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+
+
+                var Card = user.tbBankCardNumbers.Where(s => s.CardNumber_ID == Card_ID).FirstOrDefault();
+                if (Card != null)
+                {
+                    if(Card.Active == false)
+                    {
+
+                        repositoryCard.Delete(Card_ID);
+
+                        await repositoryCard.SaveChangesAsync();
+                        logger.Info("شماره کارت نماینده حذف شد");
+                        return Toaster.Success("موفق", "کارت حذف گردید !!");
+
+                    }
+                    else
+                    {
+                        return MessageBox.Warning("هشدار", "برای حذف این کارت لطفا کارت دیگری را فعال کنید و سپس این کارت را حذف کنید");
+                    }
+                }
+                else
+                {
+                    return MessageBox.Warning("هشدار", "کارت مورد نظر یافت نشد");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex,"خطا در حذف کارت");
+                return MessageBox.Error("خطا", "خطا در حذف کارت");
+            }
 
         }
 

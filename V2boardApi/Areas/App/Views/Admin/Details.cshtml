@@ -18,7 +18,9 @@
     <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
     <link href="../../assets/vendor/css/pages/page-user-view.css" rel="stylesheet" />
 }
-
+@{
+    var Role = Request.Cookies["Role"];
+}
 <h4 class="py-3 mb-4">
     <span class="text-muted fw-light">مشاهده کاربر/</span>
     حساب کاربری
@@ -68,22 +70,25 @@
                     </a>
                 }
             </li>
-            <li class="nav-item">
-                @if (ViewBag.Type == "Settings")
-                {
-                    <a class="nav-link active" href="@Url.Action("Details","Admin",new {area="App",type="Settings",user_id=Model})">
-                        <i class="ti ti-settings ti-xs me-1"></i>
-                        تنظیمات
-                    </a>
-                }
-                else
-                {
-                    <a class="nav-link" href="@Url.Action("Details","Admin",new {area="App",type="Settings",user_id=Model})">
-                        <i class="ti ti-settings ti-xs me-1"></i>
-                        تنظیمات
-                    </a>
-                }
-            </li>
+            @if (Role.Value == "1")
+            {
+                <li class="nav-item">
+                    @if (ViewBag.Type == "Settings")
+                    {
+                        <a class="nav-link active" href="@Url.Action("Details","Admin",new {area="App",type="Settings",user_id=Model})">
+                            <i class="ti ti-settings ti-xs me-1"></i>
+                            تنظیمات
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="nav-link" href="@Url.Action("Details","Admin",new {area="App",type="Settings",user_id=Model})">
+                            <i class="ti ti-settings ti-xs me-1"></i>
+                            تنظیمات
+                        </a>
+                    }
+                </li>
+            }
         </ul>
         @if (ViewBag.Type == "history")
         {
@@ -128,144 +133,116 @@
                 <div class="card-header pt-2">
                     <ul class="nav nav-tabs card-header-tabs" role="tablist">
                         <li class="nav-item">
-                            <button aria-selected="true" class="nav-link active" data-bs-target="#form-tabs-personal" data-bs-toggle="tab" role="tab">
-                                کلی
-                            </button>
+                            <button aria-selected="false" class="nav-link active" data-bs-target="#form-tabs-account" data-bs-toggle="tab" role="tab" onclick="AgentTab()">نمایندگی</button>
                         </li>
                         <li class="nav-item">
-                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-account" data-bs-toggle="tab" role="tab" onclick="AgentTab()">نمایندگی</button>
+                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-social" data-bs-toggle="tab" role="tab" id="botSettingTab">ربات</button>
                         </li>
                         <li class="nav-item">
-                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-social" data-bs-toggle="tab" role="tab">ربات</button>
+                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-cards" data-bs-toggle="tab" role="tab">کارت ها</button>
                         </li>
                     </ul>
                 </div>
-                <div class="tab-content">
-                    <div class="tab-pane fade active show" id="form-tabs-personal" role="tabpanel">
-                        <form id="groupForm">
-                            <input type="hidden" id="user_id" name="user_id" value="" />
-                            <div class="col-12 col-md-6">
-                                <div class="mb-3" data-bs-toggle="popover" title="تعیین کننده نود های قابل دسترسی">
-                                    <label class="form-label" for="planGroup">گروه مجوز<span class="text-danger"> * </span></label>
-                                    <select id="planGroup" class="select2 form-select" autocomplete="off" name="planGroup" multiple>
+                <div class="tab-content section-block">
+                    <div class="tab-pane active show" id="form-tabs-account" role="tabpanel">
+                        <form class="row g-3" id="editPriceForm">
+                            <input type="hidden" name="user_id" id="user_id" value="@Model" />
+                            <input type="hidden" name="id" id="id" value="" />
+                            <div class="row">
+                                <div class="col-12 col-md-4" data-bs-toggle="popover" title="تعیین کننده نود های قابل دسترسی">
+                                    <label class="form-label" for="planGroup">دسته بندی<span class="text-danger"> * </span></label>
+                                    <select id="planGroup" class="select2 form-select" autocomplete="off" name="planGroup">
                                         <option value="-1">در حال بارگزاری ...</option>
                                     </select>
                                 </div>
-                                <div class="col-12 text-center">
-                                    <button class="btn btn-primary me-sm-3 me-1" type="button" id="SaveGroup">ثبت</button>
-                                    <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset"> لغو</button>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label" for="userPriceForGig"> قیمت هرگیگ <span class="text-danger"> * </span></label>
+                                    <input class="form-control" id="userPriceForGig" name="userPriceForGig" placeholder="" type="number" min="0" max="1000000000" />
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label" for="userPriceForMonth"> قیمت هرماه <span class="text-danger"> * </span></label>
+                                    <input class="form-control" id="userPriceForMonth" name="userPriceForMonth" placeholder="" type="number" min="0" max="1000000000" />
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                    <div class="tab-pane fade" id="form-tabs-account" role="tabpanel">
-                        <form class="row g-3" id="editPriceForm">
-                            <input type="hidden" name="user_id" id="user_id" value="@Model" />
-                            <div class="row">
-                                <div class="col-6 col-md-6">
-                                    <label class="form-label" for="userPrice">قیمت هرگیگ</label>
-                                    <input class="form-control" id="userPrice" name="userPrice" placeholder="" type="number" min="0" max="1000000000" />
-                                </div>
-                                <div class="col-6 col-md-6">
-                                    <label class="form-label" for="userMonth">قیمت هرماه</label>
-                                    <input class="form-control" id="userMonth" name="userMonth" placeholder="" type="number" min="0" max="1000000000" />
-                                </div>
-                            </div>
-                            <div class="col-12 text-center">
+                            <div class="col-12" style="text-align:left;">
                                 <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
-                                <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset"> لغو</button>
+
                             </div>
                         </form>
-
+                        <br />
+                        <div class="card-datatable table-responsive">
+                            <table class="datatables-groups table">
+                                <thead class="border-top">
+                                    <tr>
+                                        <th></th>
+                                        <th>دسته بندی</th>
+                                        <th>قیمت هر گیگ</th>
+                                        <th>قیمت هر ماه</th>
+                                        <th>عملیات</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
                     <div class="tab-pane fade" id="form-tabs-social" role="tabpanel">
-                        <form>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label" for="formtabs-twitter">توییتر</label>
-                                    <input class="form-control ltr" id="formtabs-twitter" placeholder="https://twitter.com/abc" type="text" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="formtabs-facebook">فیس بوک</label>
-                                    <input class="form-control ltr" id="formtabs-facebook" placeholder="https://facebook.com/abc" type="text" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="formtabs-google">گوگل+</label>
-                                    <input class="form-control ltr" id="formtabs-google" placeholder="https://plus.google.com/abc" type="text" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="formtabs-linkedin">لینکدین</label>
-                                    <input class="form-control ltr" id="formtabs-linkedin" placeholder="https://linkedin.com/abc" type="text" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="formtabs-instagram">اینستاگرام</label>
-                                    <input class="form-control ltr" id="formtabs-instagram" placeholder="https://instagram.com/abc" type="text" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="formtabs-quora">Quora</label>
-                                    <input class="form-control ltr" id="formtabs-quora" placeholder="https://quora.com/abc" type="text" />
-                                </div>
-                            </div>
-                            <div class="pt-4">
-                                <button class="btn btn-primary me-sm-3 me-1" type="submit">ارسال</button>
-                                <button class="btn btn-label-secondary" type="reset">لغو</button>
-                            </div>
-                        </form>
+                        @Html.Action("_GetBotSetting", "Admin", new { area = "App", user_id = Model })
                     </div>
+                    <div class="tab-pane fade" id="form-tabs-cards" role="tabpanel">
+                        @Html.Action("_GetBankNumbers", "Admin", new { area = "App", user_id = Model })
+                    </div>
+
                 </div>
             </div>
 
         }
-        @{
-            var Role = Request.Cookies["Role"].Value;
-        }
     </div>
-    <!-- Modal -->
-    <!-- Edit Setting Modal -->
-    @*@if (Role == "1")
-        {
+</div>
+<!-- Modal -->
+<!-- Edit Setting Modal -->
+@*@if (Role == "1")
+    {
 
-            @Html.Action("_GetSetting", "Admin", new { area = "App", user_id = Model })
-        }*@
-    <!--/ Edit Setting Modal -->
-    <!-- Edit Wallet Modal -->
-    @Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
+        @Html.Action("_GetSetting", "Admin", new { area = "App", user_id = Model })
+    }*@
+<!--/ Edit Setting Modal -->
+<!-- Edit Wallet Modal -->
+@Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
 
-    <!--/ Edit Wallet Modal -->
-
-
-    @section vendorScripts {
-
-        <script src="../../assets/vendor/libs/moment/moment.js"></script>
-        <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
-        <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
-        <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
-        <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
-        <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
-        <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
-        <script src="../../assets/vendor/libs/select2/select2.js"></script>
-        <script src="../../assets/vendor/libs/select2/i18n/fa.js"></script>
-        <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
-        <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
-        <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
-        <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
-    }
+<!--/ Edit Wallet Modal -->
 
 
-    @section customScripts {
+@section vendorScripts {
 
-        <script src="../../assets/js/modal-edit-wallet.js"></script>
-        <script src="../../assets/js/app-user-view.js"></script>
-        <script src="../../assets/js/app-user-view-account.js"></script>
+    <script src="../../assets/vendor/libs/moment/moment.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
+    <script src="../../assets/vendor/libs/cleavejs/cleave.js"></script>
+    <script src="../../assets/vendor/libs/cleavejs/cleave-phone.js"></script>
+    <script src="../../assets/vendor/libs/select2/select2.js"></script>
+    <script src="../../assets/vendor/libs/select2/i18n/fa.js"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+}
+
+
+@section customScripts {
+
+    <script src="../../assets/js/modal-edit-wallet.js"></script>
+    <script src="../../assets/js/app-user-view.js"></script>
+    <script src="../../assets/js/app-user-view-account.js"></script>
 
 
 
-        <script>
+    <script>
 
                 $(function () {
 
                     $("#planGroup").wrap('<div class="position-relative"></div>').select2({
-                        placeholder: 'انتخاب گروه مجوز',
+                        placeholder: 'انتخاب دسته بندی',
                         dropdownParent: $("#planGroup").parent(),
                         allowClear: false
                     });
@@ -273,9 +250,16 @@
                     Groups("#planGroup");
                     $('[data-bs-toggle="popover"]').tooltip();
 
+                    debugger
+
+
                 });
 
+        $("#botSettingTab").on('click', function () {
+            var plan_id = $("#plan_id").val();
 
+            $("#userPlan").val(plan_id).trigger('change');
+        });
 
 
                 function SelectGroup(selectId, Ids) {
@@ -431,6 +415,6 @@
 
                     });
                 });
-        </script>
+    </script>
 
-    }
+}

@@ -42,7 +42,6 @@ namespace DataLayer.DomainModel
         public Nullable<double> FreeCredit { get; set; }
         public Nullable<int> PricePerGig { get; set; }
         public Nullable<int> PricePerMonth { get; set; }
-        public Nullable<int> DefaultPlanIdInV2board { get; set; }
         public string BotbaseAddress { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

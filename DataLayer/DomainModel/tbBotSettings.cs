@@ -17,20 +17,22 @@ namespace DataLayer.DomainModel
         public int botSettingID { get; set; }
         public string Bot_Token { get; set; }
         public string Bot_ID { get; set; }
-        public Nullable<long> AdminBot_ID { get; set; }
-        public Nullable<bool> Active { get; set; }
-        public Nullable<bool> RequiredJoinChannel { get; set; }
+        public long AdminBot_ID { get; set; }
+        public bool Active { get; set; }
+        public bool RequiredJoinChannel { get; set; }
         public string ChannelID { get; set; }
-        public Nullable<int> PricePerGig_Admin { get; set; }
-        public Nullable<int> PricePerMonth_Admin { get; set; }
-        public Nullable<int> PricePerGig_Major { get; set; }
-        public Nullable<int> PricePerMonth_Major { get; set; }
+        public int PricePerGig_Admin { get; set; }
+        public int PricePerMonth_Admin { get; set; }
+        public int PricePerGig_Major { get; set; }
+        public int PricePerMonth_Major { get; set; }
         public int FK_User_ID { get; set; }
         public Nullable<double> Present_Discount { get; set; }
-        public Nullable<bool> IsActiveSendReceipt { get; set; }
-        public Nullable<bool> IsActiveCardToCard { get; set; }
+        public bool IsActiveSendReceipt { get; set; }
+        public bool IsActiveCardToCard { get; set; }
         public bool Enabled { get; set; }
+        public Nullable<int> FK_Plan_ID { get; set; }
     
+        public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }
     }
 }

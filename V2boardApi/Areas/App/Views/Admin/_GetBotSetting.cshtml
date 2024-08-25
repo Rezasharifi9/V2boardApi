@@ -1,0 +1,147 @@
+﻿@model DataLayer.DomainModel.tbBotSettings
+<form id="botSettingForm">
+    <input type="hidden" value="" name="user_id" id="user_id" />
+    <input type="hidden" value="@Model.botSettingID" name="id" id="id" />
+    <input type="hidden" value="@Model.FK_Plan_ID" name="plan_id" id="plan_id" />
+    <div class="row">
+        <div class="col-md-4">
+            <label class="form-label" for="formtabs-twitter">توکن ربات</label>
+            <input class="form-control ltr" id="formtabs-twitter" type="text" value="@Model.Bot_Token" name="BotToken" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="formtabs-facebook">آیدی ربات</label>
+            <input class="form-control ltr" id="formtabs-facebook" type="text" value="@Model.Bot_ID" name="BotId" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="formtabs-google">آیدی کانال</label>
+            <input class="form-control ltr" id="formtabs-google" type="text" value="@Model.ChannelID" name="ChannelId" />
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-3">
+            <label class="form-label" for="formtabs-linkedin">قیمت هر گیگ (ادمین) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="قیمت بر حسب گیگ تعیین شده توسط ادمین"></i></label>
+            <input class="form-control ltr" id="formtabs-linkedin" type="text" value="@Model.PricePerGig_Admin" name="PricePerGig_Admin" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="formtabs-instagram">قیمت هر ماه (ادمین) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="قیمت بر حسب ماه تعیین شده توسط ادمین"></i></label>
+            <input class="form-control ltr" id="formtabs-instagram" type="text" value="@Model.PricePerMonth_Admin" name="PricePerMonth_Admin" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="formtabs-linkedin">قیمت هر گیگ (نماینده) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="قیمت بر حسب گیگ تعیین شده توسط نماینده"></i> </label>
+            <input class="form-control ltr" id="formtabs-linkedin" type="text" value="@Model.PricePerGig_Major" name="PricePerGig_Major" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="formtabs-instagram">قیمت هر ماه (نماینده) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="قیمت بر حسب ماه تعیین شده توسط نماینده"></i></label>
+            <input class="form-control ltr" id="formtabs-instagram" type="text" value="@Model.PricePerMonth_Major" name="PricePerMonth_Major" />
+        </div>
+
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-3">
+            <label class="form-label" for="formtabs-linkedin">درصد تخفیف (%) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="مقدار درصدی که نماینده می خواهد تخفیف اعمال کند"></i></label>
+            @{
+                if (Model.Present_Discount != null)
+                {
+                    Model.Present_Discount = Model.Present_Discount * 100;
+                }
+            }
+            <input class="form-control ltr" id="formtabs-linkedin" type="text" value="@Model.Present_Discount" name="Present_Discount" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="formtabs-instagram"> آیدی ادمین <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="آیدی عددی تلگرام ادمین دریافت شده توسط ربات getmyid_bot"></i></label>
+            <input class="form-control ltr" id="formtabs-instagram" type="text" value="@Model.AdminBot_ID" name="TelegramUserId" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="formtabs-instagram">تعرفه ربات<i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="برای حفظ ساختار باید اشتراک های ربات همراه با تعرفه خاصی ذخیره شود اگر تعرفه ای ندارید از بخش تعرفه ها تعریف کنید و در این بخش تخصیص دهید"></i></label>
+            <select id="userPlan" class="select2 form-select" autocomplete="off" name="userPlan">
+                <option value="-1">در حال بارگزاری ...</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 p-4">
+            <label class="switch switch-square">
+                @if (Model.Active)
+                {
+                    <input class="switch-input" type="checkbox" checked name="Active" value="true" />
+                }
+                else
+                {
+                    <input class="switch-input" type="checkbox" name="Active" value="false" />
+                }
+                <span class="switch-toggle-slider">
+                    <span class="switch-on">
+                        <i class="ti ti-check"></i>
+                    </span>
+                    <span class="switch-off">
+                        <i class="ti ti-x"></i>
+                    </span>
+                </span>
+                <span class="switch-label">وضعیت <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="وضعیت فعالیت ربات"></i></span>
+            </label>
+            <label class="switch switch-square">
+                @if (Model.RequiredJoinChannel)
+                {
+                    <input class="switch-input" type="checkbox" checked name="RequiredJoinChannel" value="true" />
+                }
+                else
+                {
+                    <input class="switch-input" type="checkbox" name="RequiredJoinChannel" value="false" />
+                }
+                <span class="switch-toggle-slider">
+                    <span class="switch-on">
+                        <i class="ti ti-check"></i>
+                    </span>
+                    <span class="switch-off">
+                        <i class="ti ti-x"></i>
+                    </span>
+                </span>
+                <span class="switch-label">کانال اجباری <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="در صورت فعال بودن این گزینه مشترک باید در کانال عضو باشد تا از امکانات ربات استفاده کند"></i></span>
+            </label>
+            <label class="switch switch-square">
+                @if (Model.IsActiveSendReceipt)
+                {
+                    <input class="switch-input" type="checkbox" checked name="IsActiveSendReceipt" value="true" />
+                }
+                else
+                {
+                    <input class="switch-input" type="checkbox" name="IsActiveSendReceipt" value="false" />
+                }
+                <span class="switch-toggle-slider">
+                    <span class="switch-on">
+                        <i class="ti ti-check"></i>
+                    </span>
+                    <span class="switch-off">
+                        <i class="ti ti-x"></i>
+                    </span>
+                </span>
+                <span class="switch-label"> تایید رسید <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="تائید تراکنش به صورت دستی داخل ربات توسط ادمین"></i></span>
+            </label>
+            <label class="switch switch-square">
+                @if (Model.IsActiveCardToCard)
+                {
+                    <input class="switch-input" type="checkbox" checked name="IsActiveCardToCard" value="true" />
+                }
+                else
+                {
+                    <input class="switch-input" type="checkbox" name="IsActiveCardToCard" value="false" />
+                }
+                <span class="switch-toggle-slider">
+                    <span class="switch-on">
+                        <i class="ti ti-check"></i>
+                    </span>
+                    <span class="switch-off">
+                        <i class="ti ti-x"></i>
+                    </span>
+                </span>
+                <span class="switch-label">تایید خودکار <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="درصورت فعال بودن این گزینه تراکنش به صورت خودکار توسط اپلیکیشن تایید می شود"></i></span>
+            </label>
+
+        </div>
+    </div>
+    <div class="pt-4" style="text-align:left;">
+        <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
+    </div>
+</form>

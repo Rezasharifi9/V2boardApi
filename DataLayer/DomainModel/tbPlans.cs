@@ -17,6 +17,7 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public tbPlans()
         {
+            this.tbBotSettings = new HashSet<tbBotSettings>();
             this.tbLinks = new HashSet<tbLinks>();
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
             this.tbOrders = new HashSet<tbOrders>();
@@ -37,6 +38,8 @@ namespace DataLayer.DomainModel
         public Nullable<short> Speed_limit { get; set; }
         public Nullable<short> device_limit { get; set; }
     
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbBotSettings> tbBotSettings { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinks> tbLinks { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
