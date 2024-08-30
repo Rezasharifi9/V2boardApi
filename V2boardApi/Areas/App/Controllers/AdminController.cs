@@ -292,7 +292,7 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.Role = 2;
                             tbUser.FK_Server_ID = CurrentUser.FK_Server_ID;
                             tbUser.Parent_ID = CurrentUser.User_ID;
-
+                            tbUser.Register_Date = DateTime.Now;
                             RepositoryUser.Insert(tbUser);
                             await RepositoryUser.SaveChangesAsync();
 
@@ -616,7 +616,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         return MessageBox.Warning("هشدار", "حساب کاربری شما غیرفعال شده است");
                     }
-
+                    User.Token = (userUsername + userPassword).ToSha256();
                     if (Request.Cookies["Role"] != null)
                     {
                         Response.Cookies["Role"].Value = User.Role.Value.ToString();
@@ -640,14 +640,8 @@ namespace V2boardApi.Areas.App.Controllers
                     else
                     {
                         HttpCookie Token = new HttpCookie("Token");
-                        if (User.Token == null)
-                        {
-                            Token.Value = (userUsername + userPassword).ToSha256();
-                        }
-                        else
-                        {
-                            Token.Value = User.Token;
-                        }
+
+                        Token.Value = User.Token;
                         if (userRemember)
                         {
                             Token.Expires = DateTime.Now.AddDays(7);
@@ -660,7 +654,7 @@ namespace V2boardApi.Areas.App.Controllers
                     FormsAuthentication.SetAuthCookie(User.Username, userRemember);
 
                     logger.Info("ورود موفق");
-
+                    RepositoryUser.Save();
                     if (User.Role == 1)
                     {
                         var URL = Url.Action("Index", "Admin");
@@ -801,6 +795,18 @@ namespace V2boardApi.Areas.App.Controllers
                 var intWallet = 0;
                 intWallet = int.Parse(userDeposit, NumberStyles.Currency);
 
+
+                if(us.Role == 4)
+                {
+                    tbUserFactors factor = new tbUserFactors();
+                    factor.tbUf_Value = us.Wallet - intWallet;
+                    factor.tbUf_CreateTime = DateTime.Now;
+                    factor.FK_User_ID = user_id;
+                    factor.IsPayed = true;
+                    us.Wallet = intWallet;
+                    us.tbUserFactors.Add(factor);
+                }
+                else
                 if (us.Wallet != intWallet)
                 {
                     tbUserFactors factor = new tbUserFactors();
@@ -979,10 +985,26 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     reader3.Close();
 
+                    var Deb = user.tbUserFactors.Where(s => s.IsPayed == true).OrderByDescending(s => s.tbUf_CreateTime).FirstOrDefault();
+
                     if (Users.Count > 0)
                     {
+                        double Unixtime = 0;
+                        if (Deb != null)
+                        {
+                            Unixtime = Utility.ConvertDatetimeToSecond(Deb.tbUf_CreateTime.Value);
+                        }
+                        else
+                        {
+                            Unixtime = Utility.ConvertDatetimeToSecond(user.Register_Date.Value);
+                        }
                         string userIdsJoined = string.Join(",", Users);
-                        var Query = "SELECT SUM(v2_stat_user.u + v2_stat_user.d) as Used FROM `v2_stat_user` join v2_user on v2_user.id = v2_stat_user.user_id where v2_stat_user.user_id IN (" + userIdsJoined + ")";
+                        var Query = "SELECT SUM(v2_stat_user.u + v2_stat_user.d) as Used FROM `v2_stat_user` join v2_user on v2_user.id = v2_stat_user.user_id where v2_stat_user.created_at >=" + Unixtime + " and v2_stat_user.user_id IN (" + userIdsJoined + ")";
+                        if (user.Role == 1)
+                        {
+                            Query = "SELECT SUM(v2_stat_user.u + v2_stat_user.d) as Used FROM `v2_stat_user` join v2_user on v2_user.id = v2_stat_user.user_id where v2_stat_user.user_id IN (" + userIdsJoined + ")";
+                        }
+
                         var reader2 = await mySql.GetDataAsync(Query);
                         await reader2.ReadAsync();
                         var Data = reader2.GetBodyDefinition("Used");
@@ -998,18 +1020,24 @@ namespace V2boardApi.Areas.App.Controllers
 
                     await mySql.CloseAsync();
 
-                    var UserPerGig = Utility.ConvertByteToGB(used);
+                    var Useage = Utility.ConvertByteToGB(used);
 
                     if (user.Role.Value == 1)
                     {
-                        return Json(new { status = "success", data = new { UserPerGig = Math.Round(UserPerGig, 2).ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+
+                        return Json(new { status = "success", data = new { Useage = Math.Round(Useage, 2).ConvertToMony() } }, JsonRequestBehavior.AllowGet);
                     }
                     else
                     {
-                        var Linkgrop = user.tbLinkServerGroupWithUsers.First();
+                        var userPerMonth = 0;
+                        var userPerGig = 0;
 
-                        var UserPerPrice = UserPerGig * Linkgrop.PriceForGig;
-                        return Json(new { status = "success", data = new { UserPerGig = Math.Round(UserPerGig, 2).ConvertToMony(), UserPerPrice = Math.Round(UserPerPrice, 0).ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+                        foreach (var item in user.tbLinkServerGroupWithUsers)
+                        {
+                            userPerMonth += item.PriceForMonth;
+                            userPerGig += item.PriceForGig;
+                        }
+                        return Json(new { status = "success", data = new { UserPerPrice = Utility.ConvertToMony(Math.Round((Useage * (userPerGig + userPerMonth)))), Useage = Math.Round(Useage, 2).ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth } }, JsonRequestBehavior.AllowGet);
                     }
                 }
                 else
@@ -1172,7 +1200,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [System.Web.Mvc.HttpPost]
         [AuthorizeApp(Roles = "1,2,3,4")]
-        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, int PricePerMonth_Major, int PricePerGig_Major, int PricePerMonth_Admin, int PricePerGig_Admin, bool? Active, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt,int userPlan, double? Present_Discount = null)
+        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, int PricePerMonth_Major, int PricePerGig_Major, int PricePerMonth_Admin, int PricePerGig_Admin, bool? Active, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null)
         {
 
             try
@@ -1484,7 +1512,7 @@ namespace V2boardApi.Areas.App.Controllers
                 card.CardNumber = CardNumber;
                 card.BankSmsNumber = SmsNumberOfCard;
                 card.InTheNameOf = NameOfCard;
-                if(user.tbBankCardNumbers.Count == 0)
+                if (user.tbBankCardNumbers.Count == 0)
                 {
                     card.Active = true;
                 }
@@ -1528,7 +1556,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"خطا در تنظیمات کارت های نمایندگان");
+                logger.Error(ex, "خطا در تنظیمات کارت های نمایندگان");
                 return MessageBox.Error("ناموفق", "خطا در تنظیمات کارت");
             }
         }
@@ -1545,7 +1573,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var Card = user.tbBankCardNumbers.Where(s => s.CardNumber_ID == Card_ID).FirstOrDefault();
                 if (Card != null)
                 {
-                    if(Card.Active == false)
+                    if (Card.Active == false)
                     {
 
                         repositoryCard.Delete(Card_ID);
@@ -1567,7 +1595,7 @@ namespace V2boardApi.Areas.App.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"خطا در حذف کارت");
+                logger.Error(ex, "خطا در حذف کارت");
                 return MessageBox.Error("خطا", "خطا در حذف کارت");
             }
 

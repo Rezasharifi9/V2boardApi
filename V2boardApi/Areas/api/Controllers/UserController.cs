@@ -108,7 +108,7 @@ namespace V2boardApi.Areas.api.Controllers
                     var Server = User.tbServers;
 
                     var ActiveBank = User.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
-                    var Token = (User.Username + User.Password).ToSha256();
+                    var Token = (req.username + req.password).ToSha256();
                     logger.Info("ورود موفق با اپلیکیشن");
                     return Ok(new { Token = Token, phoneNumber = User.PhoneNumber, BankSmsNumbers = ActiveBank?.BankSmsNumber?.Split(',').ToList() });
 

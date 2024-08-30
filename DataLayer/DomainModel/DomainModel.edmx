@@ -319,6 +319,19 @@
           <Property Name="Admin_Telegram_ID" Type="int" />
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
+          <Property Name="Register_Date" Type="datetime" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="vi_MajorSales">
+          <Key>
+            <PropertyRef Name="log_ID" />
+          </Key>
+          <Property Name="Id" Type="bigint" />
+          <Property Name="log_ID" Type="int" Nullable="false" />
+          <Property Name="Username" Type="varchar" MaxLength="150" />
+          <Property Name="SalePrice" Type="int" />
+          <Property Name="CreateDatetime" Type="datetime" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
@@ -638,7 +651,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
@@ -661,6 +673,15 @@
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="vi_MajorSales" EntityType="Self.vi_MajorSales" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vi_MajorSales].[Id] AS [Id], 
+    [vi_MajorSales].[log_ID] AS [log_ID], 
+    [vi_MajorSales].[Username] AS [Username], 
+    [vi_MajorSales].[SalePrice] AS [SalePrice], 
+    [vi_MajorSales].[CreateDatetime] AS [CreateDatetime]
+    FROM [dbo].[vi_MajorSales] AS [vi_MajorSales]</DefiningQuery>
+          </EntitySet>
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="Self.FK_tbBankCardNumbers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
@@ -792,6 +813,7 @@
           <EntitySet Name="tbUseages" EntityType="V2boardSiteModel.tbUseages" />
           <EntitySet Name="tbUserFactors" EntityType="V2boardSiteModel.tbUserFactors" />
           <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
+          <EntitySet Name="vi_MajorSales" EntityType="V2boardSiteModel.vi_MajorSales" />
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
@@ -1250,6 +1272,7 @@
           <Property Name="Admin_Telegram_ID" Type="Int32" />
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
+          <Property Name="Register_Date" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
@@ -1263,6 +1286,16 @@
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="vi_MajorSales">
+          <Key>
+            <PropertyRef Name="log_ID" />
+          </Key>
+          <Property Name="Id" Type="Int64" />
+          <Property Name="log_ID" Type="Int32" Nullable="false" />
+          <Property Name="Username" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="SalePrice" Type="Int32" />
+          <Property Name="CreateDatetime" Type="DateTime" Precision="3" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
@@ -1898,6 +1931,7 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="Register_Date" ColumnName="Register_Date" />
                 <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
                 <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
@@ -1921,6 +1955,17 @@
                 <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vi_MajorSales">
+            <EntityTypeMapping TypeName="V2boardSiteModel.vi_MajorSales">
+              <MappingFragment StoreEntitySet="vi_MajorSales">
+                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
+                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="log_ID" ColumnName="log_ID" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

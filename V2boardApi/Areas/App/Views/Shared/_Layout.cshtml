@@ -515,16 +515,22 @@
                                     @if (Role.Value == "4")
                                     {
                                         <li>
-                                            <span class="dropdown-item"> <i class="ti ti-access-point me-2 ti-sm"></i> <span class="align-middle">مصرف : <span id="UserPerGig">در حال محاسبه</span> گیگ</span> </span>
+                                            <span class="dropdown-item"> <i class="ti ti-access-point me-2 ti-sm"></i> <span class="align-middle">مصرف : <span id="Useage">در حال محاسبه</span> گیگ</span> </span>
                                         </li>
                                         <li>
                                             <span class="dropdown-item"> <i class="ti ti-cash me-2 ti-sm"></i> <span class="align-middle">بدهی : <span id="UserPerPrice">در حال محاسبه</span> تومان </span></span>
+                                        </li>
+                                        <li>
+                                            <span class="dropdown-item"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت واحد (گیگ) : <span id="pricePerGig">...</span> تومان</span> </span>
+                                        </li>
+                                        <li>
+                                            <span class="dropdown-item"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت واحد (ماه) : <span id="pricePerMonth">...</span> تومان</span> </span>
                                         </li>
                                     }
                                     else if (Role.Value == "1")
                                     {
                                         <li>
-                                            <span class="dropdown-item"> <i class="ti ti-access-point me-2 ti-sm"></i> <span class="align-middle">مصرف (دو ماه) : <span id="UserPerGig">در حال محاسبه</span> گیگ</span> </span>
+                                            <span class="dropdown-item"> <i class="ti ti-access-point me-2 ti-sm"></i> <span class="align-middle">مصرف (دو ماه) : <span id="Useage">در حال محاسبه</span> گیگ</span> </span>
                                         </li>
                                     }
                                     else if (Role.Value == "3")
@@ -552,13 +558,13 @@
                                         </li>
                                     }
                                     @*<li>
-                                            <a class="dropdown-item" href="pages-account-settings-billing.html">
-                                                <span class="d-flex align-items-center align-middle">
-                                                    <i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
-                                                    <span class="flex-grow-1 align-middle">خریدها</span> <span class="flex-shrink-0 badge badge-center rounded-pill bg-label-danger w-px-20 h-px-20">2</span>
-                                                </span>
-                                            </a>
-                                        </li>*@
+            <a class="dropdown-item" href="pages-account-settings-billing.html">
+                <span class="d-flex align-items-center align-middle">
+                    <i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
+                    <span class="flex-grow-1 align-middle">خریدها</span> <span class="flex-shrink-0 badge badge-center rounded-pill bg-label-danger w-px-20 h-px-20">2</span>
+                </span>
+            </a>
+        </li>*@
                                     <li>
                                         <div class="dropdown-divider"></div>
                                     </li>
@@ -849,8 +855,11 @@
                         @if(Role.Value == "4")
             {
                             <text>
-                        $("#UserPerGig").html(res.data.UserPerGig);
+
                         $("#UserPerPrice").html(res.data.UserPerPrice);
+                        $("#Useage").html(res.data.Useage);
+                        $("#pricePerGig").html(res.data.pricePerGig);
+                        $("#pricePerMonth").html(res.data.pricePerMonth);
         </text>
             }
 else if(Role.Value == "2")
@@ -864,7 +873,7 @@ else if(Role.Value == "2")
             } else if(Role.Value == "1")
             {
                 <text>
-                        $("#UserPerGig").html(res.data.UserPerGig);
+                        $("#Useage").html(res.data.Useage);
                         </text>
             }
                else if(Role.Value == "3")

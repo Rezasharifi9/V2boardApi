@@ -191,6 +191,9 @@
     <Compile Include="DomainModel\tbUsers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\vi_MajorSales.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Interface\Interface.cs" />
     <Compile Include="Models\MetaData\tbServersMetaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

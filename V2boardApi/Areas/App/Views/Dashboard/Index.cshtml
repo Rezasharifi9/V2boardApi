@@ -1,16 +1,269 @@
-﻿@Html.Action("_Dashboard","Dashboard")
+﻿
+
+<div class="row" id="WeeklyDataReport">
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="card card-border-shadow-primary">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2 pb-1">
+                    <div class="avatar me-2">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            <i class="ti ti-truck ti-md"></i>
+                        </span>
+                    </div>
+                    <h4 class="ms-1 mb-0">58,000,000</h4>
+                </div>
+                <p class="mb-1">فروش</p>
+                <p class="mb-0">
+                    <span class="fw-medium me-1">
+                        <bdi>+18.2</bdi>
+                        درصد
+                    </span>
+                    <small class="text-muted">نسبت به هفته گذشته</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="card card-border-shadow-warning">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2 pb-1">
+                    <div class="avatar me-2">
+                        <span class="avatar-initial rounded bg-label-warning">
+                            <i class="ti ti-alert-triangle ti-md"></i>
+                        </span>
+                    </div>
+                    <h4 class="ms-1 mb-0">1520</h4>
+                </div>
+                <p class="mb-1">اشتراک ها</p>
+                <p class="mb-0">
+                    <span class="fw-medium me-1">
+                        <bdi>-8.7</bdi>
+                        درصد
+                    </span>
+                    <small class="text-muted">نسبت به هفته گذشته</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="card card-border-shadow-danger">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2 pb-1">
+                    <div class="avatar me-2">
+                        <span class="avatar-initial rounded bg-label-danger">
+                            <i class="ti ti-git-fork ti-md"></i>
+                        </span>
+                    </div>
+                    <h4 class="ms-1 mb-0">27</h4>
+                </div>
+                <p class="mb-1">ریزش اشتراک</p>
+                <p class="mb-0">
+                    <span class="fw-medium me-1">
+                        <bdi>+4.3</bdi>
+                        درصد
+                    </span>
+                    <small class="text-muted">نسبت به هفته گذشته</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-4">
+        <div class="card card-border-shadow-info">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2 pb-1">
+                    <div class="avatar me-2">
+                        <span class="avatar-initial rounded bg-label-info">
+                            <i class="ti ti-clock ti-md"></i>
+                        </span>
+                    </div>
+                    <h4 class="ms-1 mb-0">13</h4>
+                </div>
+                <p class="mb-1">حفظ اشتراک</p>
+                <p class="mb-0">
+                    <span class="fw-medium me-1">
+                        <bdi>-2.5</bdi>
+                        درصد
+                    </span>
+                    <small class="text-muted">نسبت به هفته گذشته</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 
 
-@section scripts {
-    
-    <script>
+<div class="row">
+    <!-- Earning Reports Tabs-->
+    <div class="col-12 col-xl-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <div class="card-title mb-0">
+                    <h5 class="mb-0">گزارشات سود</h5>
+                    <small class="text-muted">بررسی مختصر درآمد سالانه</small>
+                </div>
+                <div class="dropdown">
+                    <button aria-expanded="false" aria-haspopup="true" class="btn p-0" data-bs-toggle="dropdown" id="earningReportsTabsId" type="button">
+                        <i class="ti ti-dots-vertical ti-sm text-muted"></i>
+                    </button>
+                    <div aria-labelledby="earningReportsTabsId" class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="javascript:void(0);">موارد بیشتر</a>
+                        <a class="dropdown-item" href="javascript:void(0);">حذف</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs widget-nav-tabs pb-3 gap-4 mx-1 d-flex flex-nowrap" role="tablist">
+                    <li class="nav-item">
+                        <a aria-controls="navs-orders-id" aria-selected="true" class="nav-link btn active d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-orders-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
+                            <div class="badge bg-label-secondary rounded p-2">
+                                <i class="ti ti-shopping-cart ti-sm"></i>
+                            </div>
+                            <h6 class="tab-widget-title mb-0 mt-2">سفارشات</h6>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a aria-controls="navs-sales-id" aria-selected="false" class="nav-link btn d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-sales-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
+                            <div class="badge bg-label-secondary rounded p-2">
+                                <i class="ti ti-chart-bar ti-sm"></i>
+                            </div>
+                            <h6 class="tab-widget-title mb-0 mt-2">فروش</h6>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a aria-controls="navs-profit-id" aria-selected="false" class="nav-link btn d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-profit-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
+                            <div class="badge bg-label-secondary rounded p-2">
+                                <i class="ti ti-currency-dollar ti-sm"></i>
+                            </div>
+                            <h6 class="tab-widget-title mb-0 mt-2">سود</h6>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a aria-controls="navs-income-id" aria-selected="false" class="nav-link btn d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-income-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
+                            <div class="badge bg-label-secondary rounded p-2">
+                                <i class="ti ti-chart-pie-2 ti-sm"></i>
+                            </div>
+                            <h6 class="tab-widget-title mb-0 mt-2">درآمد</h6>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a aria-selected="false" class="nav-link btn d-flex align-items-center justify-content-center disabled" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
+                            <div class="badge bg-label-secondary rounded p-2">
+                                <i class="ti ti-plus ti-sm"></i>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content p-0 ms-0 ms-sm-2">
+                    <div class="tab-pane fade show active" id="navs-orders-id" role="tabpanel">
+                        <div id="earningReportsTabsOrders"></div>
+                    </div>
+                    <div class="tab-pane fade" id="navs-sales-id" role="tabpanel">
+                        <div id="earningReportsTabsSales"></div>
+                    </div>
+                    <div class="tab-pane fade" id="navs-profit-id" role="tabpanel">
+                        <div id="earningReportsTabsProfit"></div>
+                    </div>
+                    <div class="tab-pane fade" id="navs-income-id" role="tabpanel">
+                        <div id="earningReportsTabsIncome"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sales last 6 months -->
+    <div class="col-md-6 col-xl-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between">
+                <div class="card-title mb-0">
+                    <h5 class="mb-0">فروش</h5>
+                    <small class="text-muted">6 ماه گذشته</small>
+                </div>
+                <div class="dropdown">
+                    <button aria-expanded="false" aria-haspopup="true" class="btn p-0" data-bs-toggle="dropdown" id="salesLastMonthMenu" type="button">
+                        <i class="ti ti-dots-vertical ti-sm text-muted"></i>
+                    </button>
+                    <div aria-labelledby="salesLastMonthMenu" class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="javascript:void(0);">موارد بیشتر</a>
+                        <a class="dropdown-item" href="javascript:void(0);">حذف</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="salesLastMonth"></div>
+            </div>
+        </div>
+    </div>
 
-        $(function () {
-            $("#sidebar").css("z-index", "100000000000000000000");
-            $("#navsidebar").css("z-index", "100000000000000000000");
-            $("#mobilenav").css("z-index", "100000000000000000000");
-        });
+    <div class="col-xl-12 col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-title mb-0">
+                    <h5 class="m-0 me-2">آمار حمل و نقل</h5>
+                    <small class="text-muted">تعداد کل تحویل 23.8 </small>
+                </div>
+                <div class="dropdown">
+                    <button aria-expanded="false" class="btn btn-label-primary dropdown-toggle" data-bs-toggle="dropdown" type="button"> فروردین</button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">فروردین</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">اردیبهشت</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">خرداد</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">تیر</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">مرداد</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">شهریور</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">مهر</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">آبان</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">آذر</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">دی</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">بهمن</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);">اسفند</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="my-1" id="shipmentStatisticsChart"></div>
+            </div>
+        </div>
+    </div>
 
-    </script>
-    
+</div>
+
+@section vendorScripts {
+
+    <!-- Vendors JS -->
+    <script src="../../assets/vendor/libs/apex-charts/apexcharts.js"></script>
+
 }
+
+@section customScripts {
+
+
+    <!-- Page JS -->
+    <script src="../../assets/js/app-logistics-dashboard.js"></script>
+    <!-- Page JS -->
+    <script src="~/assets/js/dashboards-crm.js"></script>
+
+} 

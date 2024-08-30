@@ -11,6 +11,9 @@ using System.Web.Mvc;
 using V2boardApi.Areas.App.Data;
 using V2boardApi.Tools;
 using NLog;
+using Antlr.Runtime.Misc;
+using System.Threading.Tasks;
+using V2boardApi.Models.DashbordModel;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -40,56 +43,98 @@ namespace V2boardApi.Areas.App.Controllers
             Stimulsoft.Base.StiLicense.LoadFromFile(path);
         }
 
-        [AuthorizeApp(Roles = "1,2,3,4")]
+        [AuthorizeApp(Roles = "1")]
         public ActionResult Index()
         {
             return View();
         }
 
-        [AuthorizeApp(Roles = "1,2,3,4")]
-        public ActionResult GetReport()
+        [HttpGet]
+        public async Task<ActionResult> _WeeklyDataReport()
         {
-            try
+            var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+            // ایجاد یک نمونه از PersianCalendar
+            PersianCalendar persianCalendar = new PersianCalendar();
+
+            // تاریخ امروز میلادی
+            DateTime today = DateTime.Now.Date;
+
+            // استخراج روز جاری هفته (0 برای شنبه)
+            DayOfWeek dayOfWeek = persianCalendar.GetDayOfWeek(today);
+
+            // محاسبه شروع هفته جاری (شنبه این هفته)
+            int daysToSubtract = (int)dayOfWeek+1; // تعداد روزهایی که باید از امروز کم کنیم
+            DateTime startOfThisWeek = today.AddDays(-daysToSubtract);
+
+            // محاسبه شروع هفته گذشته
+            DateTime startOfLastWeek = startOfThisWeek.AddDays(-7); // 7 روز قبل از شروع این هفته
+
+            // محاسبه پایان هفته گذشته (جمعه هفته گذشته)
+            DateTime endOfLastWeek = startOfLastWeek.AddDays(6); // 6 روز بعد از شروع هفته گذشته
+
+            // تبدیل تاریخ شروع هفته گذشته به شمسی
+            int startOfLastWeekYear = persianCalendar.GetYear(startOfLastWeek);
+            int startOfLastWeekMonth = persianCalendar.GetMonth(startOfLastWeek);
+            int startOfLastWeekDay = persianCalendar.GetDayOfMonth(startOfLastWeek);
+
+            // تبدیل تاریخ پایان هفته گذشته به شمسی
+            int endOfLastWeekYear = persianCalendar.GetYear(endOfLastWeek);
+            int endOfLastWeekMonth = persianCalendar.GetMonth(endOfLastWeek);
+            int endOfLastWeekDay = persianCalendar.GetDayOfMonth(endOfLastWeek);
+
+            WeeklyDataReportViewModel wkData = new WeeklyDataReportViewModel();
+
+            var ThisWeekSale = db.vi_MajorSales.Where(s => s.CreateDatetime >= startOfThisWeek).Sum(s => s.SalePrice.Value);
+            var OldWeekSale = db.vi_MajorSales.Where(s => s.CreateDatetime >= startOfLastWeek && s.CreateDatetime <= endOfLastWeek).Sum(s => s.SalePrice.Value);
+            wkData.Sale = ThisWeekSale;
+            wkData.ProfitSale = ((double)(ThisWeekSale - OldWeekSale) / OldWeekSale) * 100;
+
+            using (MySqlEntities mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString))
             {
-                var report = StiReport.CreateNewDashboard();
 
-                var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+                await mySqlEntities.OpenAsync();
 
-                if (user.Role != 1)
-                {
-                    var path = Server.MapPath("~/Reports/Report.mrt");
-                    report = StiTools.Load(path);
+                var ThisWeekUnix = Utility.ConvertDatetimeToSecond(startOfThisWeek);
+                var OldWeekUnix = Utility.ConvertDatetimeToSecond(startOfLastWeek);
+                var OldEndWeekUnix = Utility.ConvertDatetimeToSecond(endOfLastWeek);
 
-                    report.Dictionary.DataSources[0].Parameters["User_ID"].Value = user.User_ID.ToString();
-                    report.Dictionary.DataSources[1].Parameters["tbUserID"].Value = user.User_ID.ToString();
-                }
-                else
-                {
 
-                    var path = Server.MapPath("~/Reports/ReportAdmin.mrt");
-                    report = StiTools.Load(path);
 
-                }
+                var QueryThisWeek = "SELECT COUNT(id) as CountUser from v2_user where v2_user.created_at >= " + ThisWeekUnix;
 
-                return StiMvcViewer.GetReportResult(report);
+                var QueryOldWeek = "SELECT COUNT(id) as CountUser from v2_user where v2_user.created_at >=  " + OldWeekUnix + " and v2_user.created_at <=" + OldEndWeekUnix;
+
+
+                var thisReader = await mySqlEntities.GetDataAsync(QueryThisWeek);
+                await thisReader.ReadAsync();
+                var ThisWeekCountSub = thisReader.GetInt32("CountUser");
+                thisReader.Close();
+                var OldReader = await mySqlEntities.GetDataAsync(QueryOldWeek);
+                await OldReader.ReadAsync();
+                var OldWeekCountSub = OldReader.GetInt32("CountUser");
+                OldReader.Close();
+                wkData.ProfitSub = ((double)(ThisWeekCountSub - OldWeekCountSub) / OldWeekCountSub) * 100;
+                wkData.Subscriptions = ThisWeekCountSub;
+
+
+                var QueryLeftSubThisWeek = "SELECT * FROM `v2_stat_user` WHERE v2_stat_user.created_at >=" + ThisWeekUnix;
+
+                var QueryLeftSubOldWeek = "SELECT * FROM `v2_stat_user` WHERE v2_stat_user.created_at <=" + OldWeekUnix + " and v2_stat_user.created_at >=" + OldEndWeekUnix;
+
+
+
+                thisReader = await mySqlEntities.GetDataAsync(QueryLeftSubThisWeek);
+                await thisReader.ReadAsync();
+                var ThisLeftSubWeekCountSub = thisReader.GetInt32("CountUser");
+                thisReader.Close();
+                OldReader = await mySqlEntities.GetDataAsync(QueryLeftSubOldWeek);
+                await OldReader.ReadAsync();
+                var OldLeftSubWeekCountSub = OldReader.GetInt32("CountUser");
+                OldReader.Close();
             }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "در نمایش داشبورد با خطایی مواجه شدیم");
-                return View();
-            }
-        }
 
-        [AuthorizeApp(Roles = "1,2,3,4")]
-        public ActionResult ViewerEvent()
-        {
-            return StiMvcViewer.ViewerEventResult();
-        }
 
-        public ActionResult _Dashboard()
-        {
             return PartialView();
         }
-
     }
 }

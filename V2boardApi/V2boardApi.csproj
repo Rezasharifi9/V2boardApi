@@ -339,6 +339,7 @@
     <Compile Include="Models\AdminModel\UsersModel.cs" />
     <Compile Include="Models\BanUserModel.cs" />
     <Compile Include="Models\CreateUserModel.cs" />
+    <Compile Include="Models\DashbordModel\WeeklyDataReportViewModel.cs" />
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
     <Compile Include="Models\ServerGroups\List_Model.cs" />
     <Compile Include="Models\ServerGroups\UserGroupsViewModel.cs" />
@@ -1606,7 +1607,6 @@
     <Content Include="Areas\App\Views\BotFactors\Index.cshtml" />
     <Content Include="Areas\App\Views\Settings\_EditBankNumber.cshtml" />
     <Content Include="Areas\App\Views\Learns\Index.cshtml" />
-    <Content Include="Areas\App\Views\Dashboard\_Dashboard.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\_MoveAccount.cshtml" />
     <Content Include="assets\fonts\farsi-fonts\woff2\iransansx-black.woff2" />
     <Content Include="assets\fonts\farsi-fonts\woff2\iransansx-bold.woff2" />
@@ -1741,6 +1741,7 @@
     <Content Include="Areas\App\Views\ServerGroups\Index.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetBotSetting.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetBankNumbers.cshtml" />
+    <Content Include="Areas\App\Views\Dashboard\_WeeklyDataReport.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />
