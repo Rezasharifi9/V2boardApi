@@ -26,13 +26,13 @@ namespace V2boardApi.Models.DashbordModel
         public double ProfitSub { get; set; }
 
         /// <summary>
-        /// مقدار ریزش اشتراک  
+        /// مقدار مصرف ترافیک  
         /// </summary>
-        public int SubscriptionDrop { get; set; }
+        public double SubscriptionUseage { get; set; }
         /// <summary>
-        /// مقدار درصد ریزش اشتراک
+        /// مقدار درصد مصرف ترافیک
         /// </summary>
-        public double ProfitDrop { get; set; }
+        public double ProfitUseage { get; set; }
 
         /// <summary>
         /// مقدار اشتراک حفظ شده

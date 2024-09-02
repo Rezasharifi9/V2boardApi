@@ -4,6 +4,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 using System.Web;
@@ -57,37 +58,28 @@ namespace V2boardApi.Areas.App.Controllers
         {
             var Use = db.tbUsers.Where(p => p.Username == User.Identity.Name).First();
             List<TelegramUsersResponseViewModel> Users = new List<TelegramUsersResponseViewModel>();
-            foreach (var item in Use.tbTelegramUsers.ToList())
+
+            foreach (var item in Use.tbTelegramUsers.OrderByDescending(s=> s.Tel_UserID).ToList())
             {
-                TelegramUsersResponseViewModel user = new TelegramUsersResponseViewModel();
-                user.id = item.Tel_UserID;
-                user.Username = item.Tel_Username;
-                user.FullName = item.Tel_FirstName + " " + item.Tel_LastName;
-                if (item.Tel_Parent_ID != null)
+                TelegramUsersResponseViewModel user = new TelegramUsersResponseViewModel
                 {
-                    var TelUser = item.tbTelegramUsers2.Tel_Username;
-                    user.InviteUser = TelUser;
-                    user.Invited = 1;
-                }
-                else
-                {
-                    user.Invited = 0;
-                }
-                user.SumBuy = item.tbOrders.Sum(s => s.Order_Price.Value).ConvertToMony();
-                user.Wallet = item.Tel_Wallet.Value.ConvertToMony();
-                if(item.Tel_Status != null)
-                {
-                    user.Status = (int)item.Tel_Status;
-                }
-                else
-                {
-                    user.Status = 0;
-                }
+                    id = item.Tel_UserID,
+                    Username = item.Tel_Username,
+                    FullName = item.Tel_FirstName + " " + item.Tel_LastName,
+                    InviteUser = item.Tel_Parent_ID != null ? item.tbTelegramUsers2.Tel_Username : null,
+                    Invited = item.Tel_Parent_ID != null ? 1 : 0,
+                    SumBuy = item.tbOrders.Sum(s => s.Order_Price.Value).ConvertToMony(),
+                    Wallet = item.Tel_Wallet.Value.ConvertToMony(),
+                    Status = item.Tel_Status,
+                    Profile = item.Tel_UniqUserID + ".jpg"
+                };
+
                 Users.Add(user);
             }
 
             return Json(new { data = Users }, JsonRequestBehavior.AllowGet);
         }
+
 
 
         #endregion
@@ -103,15 +95,16 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,2,3,4")]
         public ActionResult _UserCard(int user_id)
         {
-
-            var TelegramUser = RepositoryTelegramUsers.Where(p=> p.Tel_UserID == user_id).FirstOrDefault();
+            var user = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            var TelegramUser = RepositoryTelegramUsers.Where(p => p.Tel_UserID == user_id && p.FK_User_ID == user.User_ID).FirstOrDefault();
 
             return PartialView(TelegramUser);
         }
         [AuthorizeApp(Roles = "1,2,3,4")]
         public ActionResult Orders(int user_id)
         {
-            var Orders = RepositoryOrders.Where(p=> p.FK_Tel_UserID == user_id).ToList();
+            var user = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            var Orders = RepositoryOrders.Where(p => p.FK_Tel_UserID == user_id && p.tbTelegramUsers.FK_User_ID == user.User_ID).ToList();
 
             List<OrderResponseViewModel> orders = new List<OrderResponseViewModel>();
             foreach (var item in Orders)
@@ -133,7 +126,7 @@ namespace V2boardApi.Areas.App.Controllers
                 orders.Add(model);
             }
 
-            return Json(new {data = orders}, JsonRequestBehavior.AllowGet);
+            return Json(new { data = orders }, JsonRequestBehavior.AllowGet);
 
         }
 
@@ -336,7 +329,7 @@ namespace V2boardApi.Areas.App.Controllers
             await mysql.CloseAsync();
 
 
-            return Json(new {data = accounts },JsonRequestBehavior.AllowGet);
+            return Json(new { data = accounts }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

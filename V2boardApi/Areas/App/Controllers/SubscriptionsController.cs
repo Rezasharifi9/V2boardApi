@@ -31,6 +31,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbLogs> logsRepository { get; set; }
         private Repository<tbUsers> usersRepository { get; set; }
         private Repository<tbPlans> plansRepository { get; set; }
+        private Repository<tbServerGroups> groupsRepository { get; set; }
         private Repository<tbLinkUserAndPlans> linkUserAndPlansRepository { get; set; }
         private Repository<tbServers> serverRepository { get; set; }
         private Repository<tbLinkServerGroupWithUsers> linkUserGroupRepository { get; set; }
@@ -44,6 +45,7 @@ namespace V2boardApi.Areas.App.Controllers
             linkUserAndPlansRepository = new Repository<tbLinkUserAndPlans>(db);
             serverRepository = new Repository<tbServers>(db);
             linkUserGroupRepository = new Repository<tbLinkServerGroupWithUsers>(db);
+            groupsRepository = new Repository<tbServerGroups>(db);
         }
 
         #region لیست اشتراک ها 
@@ -348,7 +350,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     await mySql.OpenAsync();
 
                                     string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
-
+                                    var group = await groupsRepository.FirstOrDefaultAsync(s => s.Group_Id == plan.Group_Id);
                                     var Disc3 = new Dictionary<string, object>();
                                     Disc3.Add("@FullName", emilprx);
                                     Disc3.Add("@expired", exp);
@@ -356,7 +358,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     Disc3.Add("@guid", Guid.NewGuid());
                                     var vol = Utility.ConvertGBToByte(plan.PlanVolume.Value);
                                     Disc3.Add("@tran", vol);
-                                    Disc3.Add("@grid", plan.Group_Id);
+                                    Disc3.Add("@grid", group.V2_Group_Id);
                                     Disc3.Add("@planid", planid);
                                     Disc3.Add("@token", token);
                                     var DeviceLimit = "";

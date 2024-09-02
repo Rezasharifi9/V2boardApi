@@ -117,20 +117,46 @@ namespace V2boardApi.Areas.App.Controllers
                 wkData.Subscriptions = ThisWeekCountSub;
 
 
-                var QueryLeftSubThisWeek = "SELECT * FROM `v2_stat_user` WHERE v2_stat_user.created_at >=" + ThisWeekUnix;
+                var QueryUseageSubThisWeek = "SELECT SUM(d+u) as total FROM `v2_stat_user` WHERE v2_stat_user.created_at >=" + ThisWeekUnix;
 
-                var QueryLeftSubOldWeek = "SELECT * FROM `v2_stat_user` WHERE v2_stat_user.created_at <=" + OldWeekUnix + " and v2_stat_user.created_at >=" + OldEndWeekUnix;
+                var QueryUseageSubOldWeek = "SELECT SUM(d+u) as total FROM `v2_stat_user`WHERE v2_stat_user.created_at <=" + OldWeekUnix + " and v2_stat_user.created_at >=" + OldEndWeekUnix;
 
 
 
-                thisReader = await mySqlEntities.GetDataAsync(QueryLeftSubThisWeek);
+                thisReader = await mySqlEntities.GetDataAsync(QueryUseageSubThisWeek);
                 await thisReader.ReadAsync();
-                var ThisLeftSubWeekCountSub = thisReader.GetInt32("CountUser");
+                var ThisUseageWeek = thisReader.GetInt64("total");
                 thisReader.Close();
-                OldReader = await mySqlEntities.GetDataAsync(QueryLeftSubOldWeek);
+                OldReader = await mySqlEntities.GetDataAsync(QueryUseageSubOldWeek);
                 await OldReader.ReadAsync();
-                var OldLeftSubWeekCountSub = OldReader.GetInt32("CountUser");
+                var OldUseageWeek = OldReader.GetInt64("total");
                 OldReader.Close();
+
+
+                wkData.ProfitUseage = ((double)(ThisUseageWeek - OldUseageWeek) / OldUseageWeek) * 100;
+                wkData.SubscriptionUseage = Utility.ConvertByteToGB(ThisUseageWeek);
+
+                var DateNow = Utility.ConvertDatetimeToSecond(DateTime.Now);
+
+                var ThisQueryHoldSubWeek = "select COUNT(id) as CountUser from v2_user where transfer_enable>= (u+d) and expired_at >=UNIX_TIMESTAMP(NOW());";
+
+                var OldQueryHoldSubWeek = "SELECT COUNT(id) as CountUser from v2_user where expired_at >=UNIX_TIMESTAMP(NOW()) and v2_user.created_at >=" + ThisWeekUnix;
+
+
+
+                thisReader = await mySqlEntities.GetDataAsync(ThisQueryHoldSubWeek);
+                await thisReader.ReadAsync();
+                var ThisHoldWeek = thisReader.GetInt32("CountUser");
+                thisReader.Close();
+                OldReader = await mySqlEntities.GetDataAsync(OldQueryHoldSubWeek);
+                await OldReader.ReadAsync();
+                var OldHoldWeek = OldReader.GetInt32("CountUser");
+                OldReader.Close();
+
+
+                wkData.ProfitMaintainSub = ((double)(ThisHoldWeek - OldHoldWeek) / OldHoldWeek) * 100;
+                wkData.MaintainSubscription = ThisHoldWeek;
+
             }
 
 

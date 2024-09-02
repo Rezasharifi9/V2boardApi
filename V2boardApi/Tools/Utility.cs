@@ -62,6 +62,8 @@ namespace V2boardApi.Tools
 
         }
 
+
+
         public static int CalculateLeftDayes(DateTime date)
         {
             DateTime today = DateTime.Today;

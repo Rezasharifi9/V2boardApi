@@ -51,6 +51,8 @@ namespace V2boardApi
                 var user = Rep.GetAll().First();
                 HttpRuntime.Cache.Insert("Server", user.tbServers, null, Cache.NoAbsoluteExpiration, Cache.NoSlidingExpiration);
             }
+
+            TimerService timer = new TimerService();
         }
 
         void Application_Error(object sender, EventArgs e)

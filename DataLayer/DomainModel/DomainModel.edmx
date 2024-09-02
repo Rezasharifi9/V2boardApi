@@ -76,6 +76,8 @@
           <Property Name="IsActiveCardToCard" Type="bit" Nullable="false" />
           <Property Name="Enabled" Type="bit" Nullable="false" />
           <Property Name="FK_Plan_ID" Type="int" />
+          <Property Name="AdminUsername" Type="varchar" MaxLength="50" />
+          <Property Name="Is_ActiveChangeLimitUser" Type="bit" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -97,6 +99,7 @@
           <Property Name="dw_Status" Type="varchar" MaxLength="50" />
           <Property Name="dw_CreateDatetime" Type="datetime" />
           <Property Name="dw_payment_id" Type="varchar" MaxLength="50" />
+          <Property Name="dw_message_id" Type="int" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -183,6 +186,7 @@
           <Property Name="payment_id" Type="varchar" MaxLength="50" />
           <Property Name="Traffic" Type="int" />
           <Property Name="Month" Type="int" />
+          <Property Name="Tel_RenewedDate" Type="datetime" />
         </EntityType>
         <EntityType Name="tbPlans">
           <Key>
@@ -255,6 +259,7 @@
           <Property Name="Tel_UpdateMessage" Type="datetime" />
           <Property Name="Tel_GetedTestAccount" Type="bit" />
           <Property Name="FK_User_ID" Type="int" />
+          <Property Name="Tel_RegisterDate" Type="datetime" />
           <Property Name="Tel_Status" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
@@ -991,6 +996,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="IsActiveCardToCard" Type="Boolean" Nullable="false" />
           <Property Name="Enabled" Type="Boolean" Nullable="false" />
           <Property Name="FK_Plan_ID" Type="Int32" />
+          <Property Name="AdminUsername" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Is_ActiveChangeLimitUser" Type="Boolean" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
         </EntityType>
@@ -1015,6 +1022,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="dw_Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="dw_CreateDatetime" Type="DateTime" Precision="3" />
           <Property Name="dw_payment_id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="dw_message_id" Type="Int32" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbExpLog">
@@ -1112,6 +1120,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="payment_id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Traffic" Type="Int32" />
           <Property Name="Month" Type="Int32" />
+          <Property Name="Tel_RenewedDate" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
         </EntityType>
@@ -1198,6 +1207,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="Tel_UpdateMessage" Type="DateTime" Precision="3" />
           <Property Name="Tel_GetedTestAccount" Type="Boolean" />
           <Property Name="FK_User_ID" Type="Int32" />
+          <Property Name="Tel_RegisterDate" Type="DateTime" Precision="3" />
           <Property Name="Tel_Status" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
@@ -1677,6 +1687,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbBotSettings">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
+                <ScalarProperty Name="Is_ActiveChangeLimitUser" ColumnName="Is_ActiveChangeLimitUser" />
+                <ScalarProperty Name="AdminUsername" ColumnName="AdminUsername" />
                 <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
                 <ScalarProperty Name="Enabled" ColumnName="Enabled" />
                 <ScalarProperty Name="IsActiveCardToCard" ColumnName="IsActiveCardToCard" />
@@ -1711,6 +1723,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbDepositWallet_Log">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
+                <ScalarProperty Name="dw_message_id" ColumnName="dw_message_id" />
                 <ScalarProperty Name="dw_payment_id" ColumnName="dw_payment_id" />
                 <ScalarProperty Name="dw_CreateDatetime" ColumnName="dw_CreateDatetime" />
                 <ScalarProperty Name="dw_Status" ColumnName="dw_Status" />
@@ -1796,6 +1809,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbOrders">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbOrders">
               <MappingFragment StoreEntitySet="tbOrders">
+                <ScalarProperty Name="Tel_RenewedDate" ColumnName="Tel_RenewedDate" />
                 <ScalarProperty Name="Month" ColumnName="Month" />
                 <ScalarProperty Name="Traffic" ColumnName="Traffic" />
                 <ScalarProperty Name="payment_id" ColumnName="payment_id" />
@@ -1872,6 +1886,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             <EntityTypeMapping TypeName="V2boardSiteModel.tbTelegramUsers">
               <MappingFragment StoreEntitySet="tbTelegramUsers">
                 <ScalarProperty Name="Tel_Status" ColumnName="Tel_Status" />
+                <ScalarProperty Name="Tel_RegisterDate" ColumnName="Tel_RegisterDate" />
                 <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="Tel_GetedTestAccount" ColumnName="Tel_GetedTestAccount" />
                 <ScalarProperty Name="Tel_UpdateMessage" ColumnName="Tel_UpdateMessage" />

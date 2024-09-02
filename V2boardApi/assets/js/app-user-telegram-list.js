@@ -59,7 +59,7 @@ $(function () {
                             $userId = full["id"];
                         if ($image) {
                             var $output =
-                                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
+                                '<img src="' + assetsPath + 'img/TelegramUserProfiles/' + $image + '" alt="Avatar" class="rounded-circle">';
                         } else {
                             var stateNum = Math.floor(Math.random() * 6);
                             var states = ['success', 'danger', 'warning', 'info', 'primary', 'secondary'];

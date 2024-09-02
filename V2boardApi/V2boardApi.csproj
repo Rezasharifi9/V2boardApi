@@ -345,6 +345,7 @@
     <Compile Include="Models\ServerGroups\UserGroupsViewModel.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
     <Compile Include="Tools\BotManager.cs" />
+    <Compile Include="Tools\BotUtility.cs" />
     <Compile Include="Tools\ObjectExtensions.cs" />
     <Compile Include="Tools\EqualToAttribute.cs" />
     <Compile Include="Tools\ModelStateExtensions.cs" />
@@ -372,6 +373,7 @@
     <Compile Include="Tools\Network.cs" />
     <Compile Include="Tools\RealUser.cs" />
     <Compile Include="Tools\Stimulsoft.cs" />
+    <Compile Include="Tools\Timers.cs" />
     <Compile Include="Tools\UserLog.cs" />
     <Compile Include="Tools\Utility.cs" />
   </ItemGroup>
@@ -722,6 +724,7 @@
     <Content Include="assets\img\products\oneplus.png" />
     <Content Include="assets\img\products\play-station.png" />
     <Content Include="assets\img\products\woodenchair.png" />
+    <Content Include="assets\img\TelegramUserProfiles\default.png" />
     <Content Include="assets\js\app-academy-course-details.js" />
     <Content Include="assets\js\app-academy-course.js" />
     <Content Include="assets\js\app-academy-dashboard.js" />

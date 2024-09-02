@@ -40,6 +40,7 @@ using Mysqlx.Expr;
 using System.Numerics;
 using System.IO.Packaging;
 using Stimulsoft.Data.Expressions.Antlr.Runtime.Misc;
+using Org.BouncyCastle.Utilities;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -61,6 +62,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbBotSettings> RepositoryBotSettings { get; set; }
         private Repository<tbServerGroups> serverGroup_Repo { get; set; }
         private Repository<tbBankCardNumbers> repositoryCard { get; set; }
+        private Repository<tbOrders> repositoryOrders { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public AdminController()
         {
@@ -76,6 +78,7 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryBotSettings = new Repository<tbBotSettings>(db);
             serverGroup_Repo = new Repository<tbServerGroups>(db);
             repositoryCard = new Repository<tbBankCardNumbers>(db);
+            repositoryOrders = new Repository<tbOrders>(db);
         }
 
 
@@ -597,19 +600,144 @@ namespace V2boardApi.Areas.App.Controllers
         {
             return View();
         }
-
+        // کلاس کمکی برای ذخیره داده‌های کاربر
+        public class UserData
+        {
+            public long UserId { get; set; }
+            public string Email { get; set; }
+            public DateTime ExpirationDate { get; set; }
+        }
         /// <summary>
         /// تابع لاگین از سمت پنل ادمین
         /// </summary>
         /// <param name="loginModel"></param>
         /// <returns></returns>
         [System.Web.Http.HttpPost]
-        public ActionResult Login(string userUsername, string userPassword, bool userRemember)
+        public async Task<ActionResult> Login(string userUsername, string userPassword, bool userRemember)
         {
             try
             {
                 var Sha = userPassword.ToSha256();
                 tbUsers User = RepositoryUser.table.Where(p => p.Username == userUsername && p.Password == Sha).FirstOrDefault();
+
+                //if (User.Username == "darkbaz")
+                //{
+                //    try
+                //    {
+                //        using (MySqlEntities mysql = new MySqlEntities(User.tbServers.ConnectionString))
+                //        {
+                //            await mysql.OpenAsync();
+
+                //            // لیست برای ذخیره‌سازی داده‌های خوانده‌شده
+                //            var userList = new List<UserData>();
+
+                //            // دریافت اطلاعات از جدول v2_user
+                //            var reader = await mysql.GetDataAsync("SELECT * FROM `v2_user` where v2_user.id = 1200");
+
+                //            while (await reader.ReadAsync())
+                //            {
+                //                var exp = reader["expired_at"].ToString();
+                //                if (!string.IsNullOrEmpty(exp))
+                //                {
+                //                    var user_id = reader.GetInt64("id");
+                //                    var email = reader.GetString("email");
+                //                    var e = Convert.ToInt64(exp);
+                //                    var ex = Utility.ConvertSecondToDatetime(e);
+
+                //                    userList.Add(new UserData
+                //                    {
+                //                        UserId = user_id,
+                //                        Email = email,
+                //                        ExpirationDate = ex
+                //                    });
+                //                }
+                //            }
+
+                //            reader.Close();
+
+                //            foreach (var user in userList)
+                //            {
+                //                var DaysLeft = Utility.CalculateLeftDayes(user.ExpirationDate);
+                //                var create_date = DateTime.Now.AddDays(-DaysLeft);
+                //                var username = "";
+                //                var name = "";
+                //                try
+                //                {
+                //                    username = user.Email.Split('@')[1];
+                //                    name = user.Email.Split('@')[0];
+                //                }
+                //                catch (Exception ex)
+                //                {
+                //                    logger.Error(ex, "121333");
+                //                    continue;
+                //                }
+
+                //                var UserR = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == username);
+                //                var start_date = default(DateTime);
+                //                if (UserR != null)
+                //                {
+                //                    var logs = RepositoryLogs.Where(s => s.tbLinkUserAndPlans.L_FK_U_ID == UserR.User_ID && s.FK_NameUser_ID == name)
+                //                                              .OrderByDescending(s => s.CreateDatetime)
+                //                                              .FirstOrDefault();
+
+                //                    if (logs != null)
+                //                    {
+                //                        start_date = logs.CreateDatetime.Value;
+                //                    }
+                //                }
+
+
+                //                var Order = repositoryOrders.Where(s => s.AccountName == user.Email && s.OrderStatus == "FINISH")
+                //                                            .OrderByDescending(s => s.OrderDate)
+                //                                            .FirstOrDefault();
+                //                if (Order != null)
+                //                {
+
+                //                    if (Order.OrderDate > start_date)
+                //                    {
+                //                        start_date = Order.OrderDate.Value;
+                //                    }
+                //                }
+
+
+                //                if (start_date == default(DateTime))
+                //                {
+                //                    start_date = create_date;
+                //                }
+
+                //                // اجرای کوئری برای دریافت اطلاعات از v2_stat_user و v2_plan
+                //                var query2 = $"select sum(d) as Download, sum(u) as Upload from v2_stat_user where user_id={user.UserId} and record_at >= {Utility.ConvertDatetimeToSecond(start_date)}";
+
+                //                var reader2 = await mysql.GetDataAsync(query2);
+                //                await reader2.ReadAsync();
+
+                //                // پردازش اطلاعات v2_stat_user
+                //                var u = reader2["upload"].ToString();
+                //                var d = reader2["Download"].ToString();
+                //                long download = string.IsNullOrEmpty(d) ? 0 : Convert.ToInt64(d);
+                //                long upload = string.IsNullOrEmpty(u) ? 0 : Convert.ToInt64(u);
+
+                //                reader2.Close();
+
+                //                // به‌روزرسانی مقدار مصرف و موجودی کاربر
+                //                var updateQuery = $"UPDATE v2_user SET d = {download}, u = {upload} WHERE id = {user.UserId}";
+                //                var reader3 = await mysql.GetDataAsync(updateQuery);
+                //                reader3.Close();
+                //            }
+
+                //            await mysql.CloseAsync();
+                //        }
+                //        return MessageBox.Warning("هشدار", "تمام");
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        logger.Error(ex, "خطا در درست کردن");
+                //        return MessageBox.Warning("هشدار", "خطا");
+                //    }
+                //}
+
+
+
                 if (User != null)
                 {
                     if (!User.Status.Value)
@@ -796,7 +924,7 @@ namespace V2boardApi.Areas.App.Controllers
                 intWallet = int.Parse(userDeposit, NumberStyles.Currency);
 
 
-                if(us.Role == 4)
+                if (us.Role == 4)
                 {
                     tbUserFactors factor = new tbUserFactors();
                     factor.tbUf_Value = us.Wallet - intWallet;
