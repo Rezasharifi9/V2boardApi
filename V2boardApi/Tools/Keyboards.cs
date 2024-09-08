@@ -34,19 +34,19 @@ namespace V2boardBot.Models
                             new[]
                             {
 
-                                new KeyboardButton("💰 خرید سرویس"),
-                                new KeyboardButton("💸 تمدید سرویس"),
-                                new KeyboardButton("⚙️ سرویس ها")
+                                new KeyboardButton("🛒 خرید اشتراک"),
+                                new KeyboardButton("🔄 تمدید اشتراک"),
+                                new KeyboardButton("🌐 مدیریت اشتراک ‌ها")
                             },new[]
                             {
-                                new KeyboardButton("👜 کیف پول"),
-                                new KeyboardButton("📊 تعرفه ها"),
-                                new KeyboardButton("♨️ اشتراک تست"),
+                                new KeyboardButton("👜 کیف پول من"),
+                                new KeyboardButton("📊 تعرفه‌ها"),
+                                new KeyboardButton("🎁 اشتراک تست"),
                             },
                             new[]
                             {
-                                new KeyboardButton("❔ سوالات متداول"),
-                                new KeyboardButton("📚 راهنمای اتصال")
+                                new KeyboardButton("❓ سؤالات رایج"),
+                                new KeyboardButton("📘 آموزش اتصال")
                             },
                             new[]
                             {
@@ -56,7 +56,7 @@ namespace V2boardBot.Models
                         });
 
 
-            keyboard.IsPersistent = true;
+            keyboard.IsPersistent = false;
             keyboard.ResizeKeyboard = true;
             keyboard.OneTimeKeyboard = false;
 

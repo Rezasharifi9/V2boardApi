@@ -176,6 +176,9 @@
     <Compile Include="DomainModel\tbServers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbSocks5.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbTelegramUsers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

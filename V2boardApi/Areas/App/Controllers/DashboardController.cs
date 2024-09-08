@@ -63,7 +63,7 @@ namespace V2boardApi.Areas.App.Controllers
             DayOfWeek dayOfWeek = persianCalendar.GetDayOfWeek(today);
 
             // محاسبه شروع هفته جاری (شنبه این هفته)
-            int daysToSubtract = (int)dayOfWeek+1; // تعداد روزهایی که باید از امروز کم کنیم
+            int daysToSubtract = (int)dayOfWeek + 1; // تعداد روزهایی که باید از امروز کم کنیم
             DateTime startOfThisWeek = today.AddDays(-daysToSubtract);
 
             // محاسبه شروع هفته گذشته
@@ -84,10 +84,18 @@ namespace V2boardApi.Areas.App.Controllers
 
             WeeklyDataReportViewModel wkData = new WeeklyDataReportViewModel();
 
-            var ThisWeekSale = db.vi_MajorSales.Where(s => s.CreateDatetime >= startOfThisWeek).Sum(s => s.SalePrice.Value);
-            var OldWeekSale = db.vi_MajorSales.Where(s => s.CreateDatetime >= startOfLastWeek && s.CreateDatetime <= endOfLastWeek).Sum(s => s.SalePrice.Value);
-            wkData.Sale = ThisWeekSale;
-            wkData.ProfitSale = ((double)(ThisWeekSale - OldWeekSale) / OldWeekSale) * 100;
+            var ThisWeekSale = db.vi_MajorSales.Where(s => s.CreateDatetime >= startOfThisWeek).Sum(s => s.SalePrice);
+            if(ThisWeekSale == null)
+            {
+                ThisWeekSale = 0;
+            }
+            var OldWeekSale = db.vi_MajorSales.Where(s => s.CreateDatetime >= startOfLastWeek && s.CreateDatetime <= endOfLastWeek).Sum(s => s.SalePrice);
+            if(OldWeekSale == null)
+            {
+                OldWeekSale = 0;
+            }
+            wkData.Sale = (long)ThisWeekSale;
+            wkData.ProfitSale = Math.Round((double)(((double)(ThisWeekSale - OldWeekSale) / OldWeekSale) * 100), 2);
 
             using (MySqlEntities mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString))
             {
@@ -113,13 +121,13 @@ namespace V2boardApi.Areas.App.Controllers
                 await OldReader.ReadAsync();
                 var OldWeekCountSub = OldReader.GetInt32("CountUser");
                 OldReader.Close();
-                wkData.ProfitSub = ((double)(ThisWeekCountSub - OldWeekCountSub) / OldWeekCountSub) * 100;
+                wkData.ProfitSub = Math.Round(((double)(ThisWeekCountSub - OldWeekCountSub) / OldWeekCountSub) * 100, 2);
                 wkData.Subscriptions = ThisWeekCountSub;
 
 
                 var QueryUseageSubThisWeek = "SELECT SUM(d+u) as total FROM `v2_stat_user` WHERE v2_stat_user.created_at >=" + ThisWeekUnix;
 
-                var QueryUseageSubOldWeek = "SELECT SUM(d+u) as total FROM `v2_stat_user`WHERE v2_stat_user.created_at <=" + OldWeekUnix + " and v2_stat_user.created_at >=" + OldEndWeekUnix;
+                var QueryUseageSubOldWeek = "SELECT SUM(d+u) as total FROM `v2_stat_user`WHERE v2_stat_user.created_at >=" + OldWeekUnix + " and v2_stat_user.created_at <=" + OldEndWeekUnix;
 
 
 
@@ -133,34 +141,48 @@ namespace V2boardApi.Areas.App.Controllers
                 OldReader.Close();
 
 
-                wkData.ProfitUseage = ((double)(ThisUseageWeek - OldUseageWeek) / OldUseageWeek) * 100;
-                wkData.SubscriptionUseage = Utility.ConvertByteToGB(ThisUseageWeek);
+                wkData.ProfitUseage = Math.Round(((double)(ThisUseageWeek - OldUseageWeek) / OldUseageWeek) * 100,2);
+                wkData.SubscriptionUseage = Math.Round(Utility.ConvertByteToGB(ThisUseageWeek),2);
 
                 var DateNow = Utility.ConvertDatetimeToSecond(DateTime.Now);
 
-                var ThisQueryHoldSubWeek = "select COUNT(id) as CountUser from v2_user where transfer_enable>= (u+d) and expired_at >=UNIX_TIMESTAMP(NOW());";
+                //کاربران پایان دوره
+                var Query_UsersForThisPeriod = "select COUNT(id) as CountUser from v2_user where transfer_enable>= (u+d) and expired_at >=" + DateNow;
+                // کاربران ابتدای دوره
+                var Query_UsersForFirstPeriod = "SELECT COUNT(id) as CountUser from v2_user where transfer_enable>= (u+d) and expired_at >= " + DateNow + " and v2_user.created_at <=" + ThisWeekUnix;
+                // کاربران جدید
+                var Query_UsersForLastPeriod = "SELECT COUNT(id) as CountUser from v2_user where transfer_enable>= (u+d) and expired_at >= " + DateNow + " and v2_user.created_at >=" + ThisWeekUnix;
 
-                var OldQueryHoldSubWeek = "SELECT COUNT(id) as CountUser from v2_user where expired_at >=UNIX_TIMESTAMP(NOW()) and v2_user.created_at >=" + ThisWeekUnix;
 
 
-
-                thisReader = await mySqlEntities.GetDataAsync(ThisQueryHoldSubWeek);
+                thisReader = await mySqlEntities.GetDataAsync(Query_UsersForThisPeriod);
                 await thisReader.ReadAsync();
-                var ThisHoldWeek = thisReader.GetInt32("CountUser");
+                //کاربران پایان دوره
+                var UsersForThisPeriod = thisReader.GetInt32("CountUser");
                 thisReader.Close();
-                OldReader = await mySqlEntities.GetDataAsync(OldQueryHoldSubWeek);
+
+                OldReader = await mySqlEntities.GetDataAsync(Query_UsersForFirstPeriod);
                 await OldReader.ReadAsync();
-                var OldHoldWeek = OldReader.GetInt32("CountUser");
+                // کاربران ابتدای دوره
+                var UsersForFirstPeriod = OldReader.GetInt32("CountUser");
+                OldReader.Close();
+
+                OldReader = await mySqlEntities.GetDataAsync(Query_UsersForLastPeriod);
+                await OldReader.ReadAsync();
+                // کاربران جدید
+                var UsersForLastPeriod = OldReader.GetInt32("CountUser");
                 OldReader.Close();
 
 
-                wkData.ProfitMaintainSub = ((double)(ThisHoldWeek - OldHoldWeek) / OldHoldWeek) * 100;
-                wkData.MaintainSubscription = ThisHoldWeek;
+                wkData.ProfitMaintainSub = Math.Round(((double)(UsersForThisPeriod - UsersForLastPeriod) / UsersForFirstPeriod) * 100, 2);
+                wkData.MaintainSubscription = UsersForFirstPeriod;
 
+
+                await mySqlEntities.CloseAsync();
             }
 
 
-            return PartialView();
+            return PartialView(wkData);
         }
     }
 }

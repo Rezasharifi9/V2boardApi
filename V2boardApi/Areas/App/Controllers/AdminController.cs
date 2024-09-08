@@ -81,7 +81,6 @@ namespace V2boardApi.Areas.App.Controllers
             repositoryOrders = new Repository<tbOrders>(db);
         }
 
-
         #region تغییر پروفایل
         [System.Web.Mvc.Authorize]
         public ActionResult _Profile()
@@ -848,7 +847,7 @@ namespace V2boardApi.Areas.App.Controllers
                         model.Event = item.Action;
                         model.CreateDate = item.CreateDatetime.Value.ConvertDateTimeToShamsi2();
                         model.SellPrice = item.SalePrice.Value.ConvertToMony();
-                        model.Plan = item.tbLinkUserAndPlans.tbPlans.Plan_Name;
+                        model.Plan = item.PlanName;
                         logs.Add(model);
                     }
 

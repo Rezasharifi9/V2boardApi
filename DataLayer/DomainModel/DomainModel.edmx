@@ -167,6 +167,7 @@
           <Property Name="SalePrice" Type="int" />
           <Property Name="PlanName" Type="nvarchar" MaxLength="150" />
           <Property Name="PlanVolume" Type="int" />
+          <Property Name="PlanMonth" Type="int" />
         </EntityType>
         <EntityType Name="tbOrders">
           <Key>
@@ -199,7 +200,7 @@
           <Property Name="Plan_Des" Type="varchar" MaxLength="200" />
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="Status" Type="bit" />
-          <Property Name="CountDayes" Type="int" />
+          <Property Name="PlanMonth" Type="int" />
           <Property Name="PlanVolume" Type="int" />
           <Property Name="Price" Type="int" />
           <Property Name="Group_Id" Type="int" />
@@ -239,6 +240,17 @@
           <Property Name="PricePerGig" Type="int" />
           <Property Name="PricePerMonth" Type="int" />
           <Property Name="BotbaseAddress" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="tbSocks5">
+          <Key>
+            <PropertyRef Name="Socks5_ID" />
+          </Key>
+          <Property Name="Socks5_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="HostName" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Username" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Password" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Port" Type="int" Nullable="false" />
+          <Property Name="Active" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
           <Key>
@@ -656,6 +668,23 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
@@ -673,6 +702,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServerGroups" EntityType="Self.tbServerGroups" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbSocks5" EntityType="Self.tbSocks5" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbTelegramUsers" EntityType="Self.tbTelegramUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUpdateLogs" EntityType="Self.tbUpdateLogs" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
@@ -813,6 +843,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
           <EntitySet Name="tbServerGroups" EntityType="V2boardSiteModel.tbServerGroups" />
           <EntitySet Name="tbServers" EntityType="V2boardSiteModel.tbServers" />
+          <EntitySet Name="tbSocks5" EntityType="V2boardSiteModel.tbSocks5" />
           <EntitySet Name="tbTelegramUsers" EntityType="V2boardSiteModel.tbTelegramUsers" />
           <EntitySet Name="tbUpdateLogs" EntityType="V2boardSiteModel.tbUpdateLogs" />
           <EntitySet Name="tbUseages" EntityType="V2boardSiteModel.tbUseages" />
@@ -1100,6 +1131,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="SalePrice" Type="Int32" />
           <Property Name="PlanName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="PlanVolume" Type="Int32" />
+          <Property Name="PlanMonth" Type="Int32" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
         </EntityType>
         <EntityType Name="tbOrders">
@@ -1135,7 +1167,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="Plan_Des" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="Status" Type="Boolean" />
-          <Property Name="CountDayes" Type="Int32" />
+          <Property Name="PlanMonth" Type="Int32" />
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="Price" Type="Int32" />
           <Property Name="Group_Id" Type="Int32" />
@@ -1187,6 +1219,17 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <NavigationProperty Name="tbUpdateLogs" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
           <NavigationProperty Name="tbUseages" Relationship="V2boardSiteModel.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="tbSocks5">
+          <Key>
+            <PropertyRef Name="Socks5_ID" />
+          </Key>
+          <Property Name="Socks5_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="HostName" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Username" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Password" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Port" Type="Int32" Nullable="false" />
+          <Property Name="Active" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
           <Key>
@@ -1795,6 +1838,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbLogs">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLogs">
               <MappingFragment StoreEntitySet="tbLogs">
+                <ScalarProperty Name="PlanMonth" ColumnName="PlanMonth" />
                 <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
                 <ScalarProperty Name="PlanName" ColumnName="PlanName" />
                 <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
@@ -1836,7 +1880,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
                 <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
                 <ScalarProperty Name="Price" ColumnName="Price" />
                 <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
-                <ScalarProperty Name="CountDayes" ColumnName="CountDayes" />
+                <ScalarProperty Name="PlanMonth" ColumnName="PlanMonth" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
                 <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
@@ -1879,6 +1923,18 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
                 <ScalarProperty Name="ServerIP" ColumnName="ServerIP" />
                 <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
                 <ScalarProperty Name="ServerID" ColumnName="ServerID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbSocks5">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbSocks5">
+              <MappingFragment StoreEntitySet="tbSocks5">
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="Port" ColumnName="Port" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="HostName" ColumnName="HostName" />
+                <ScalarProperty Name="Socks5_ID" ColumnName="Socks5_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

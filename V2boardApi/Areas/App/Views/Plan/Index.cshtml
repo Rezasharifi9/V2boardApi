@@ -30,7 +30,7 @@
                 <tr>
                     <th></th>
                     <th>نام تعرفه</th>
-                    <th>تعداد روز</th>
+                    <th>مدت زمان (ماه)</th>
                     <th>ترافیک (گیگابایت)</th>
                     <th>قیمت</th>
                     <th>محدودیت سرعت</th>
@@ -69,13 +69,15 @@
                 </div>
             </div>
             <div class="col-sm-12">
-                <label class="form-label" for="basicPost">زمان (روز)</label>
-                <div class="input-group input-group-merge">
-                    <span class="input-group-text" id="basicPost2">
-                        <i class="ti ti-calendar-plus"></i>
-                    </span>
-                    <input aria-describedby="basicPost2" aria-label="90" class="form-control dt-post" id="planTime" name="planTime" placeholder="90 روز" type="text" />
-                </div>
+                <label class="form-label" for="basicSalary">مدت زمان</label>
+                <select id="planTime" class="select2 form-select" autocomplete="off" name="planTime">
+                    <option value="1">1 ماه</option>
+                    <option value="2">2 ماه</option>
+                    <option value="3">3 ماه</option>
+                    <option value="4">4 ماه</option>
+                    <option value="5">5 ماه</option>
+                    <option value="6">6 ماه</option>
+                </select>
             </div>
             <div class="col-sm-12">
                 <label class="form-label" for="basicSalary">قیمت</label>
@@ -170,6 +172,15 @@
             });
 
             Groups("#planGroup");
+
+
+            $("#planTime").wrap('<div class="position-relative"></div>').select2({
+                placeholder: 'انتخاب مدت زمان',
+                dropdownParent: $("#planTime").parent(),
+                allowClear: false
+            });
+
+            
 
         });
 

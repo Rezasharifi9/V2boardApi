@@ -1,4 +1,4 @@
-﻿
+﻿@model V2boardApi.Models.DashbordModel.WeeklyDataReportViewModel 
 <div class="col-sm-6 col-lg-3 mb-4">
     <div class="card card-border-shadow-primary">
         <div class="card-body">
@@ -8,12 +8,12 @@
                         <i class="ti ti-truck ti-md"></i>
                     </span>
                 </div>
-                <h4 class="ms-1 mb-0">58,000,000</h4>
+                <h4 class="ms-1 mb-0">@V2boardApi.Tools.Utility.ConvertToMony(Model.Sale)</h4>
             </div>
             <p class="mb-1">فروش</p>
             <p class="mb-0">
                 <span class="fw-medium me-1">
-                    <bdi>+18.2</bdi>
+                    <bdi>@Model.ProfitSale</bdi>
                     درصد
                 </span>
                 <small class="text-muted">نسبت به هفته گذشته</small>
@@ -30,12 +30,12 @@
                         <i class="ti ti-alert-triangle ti-md"></i>
                     </span>
                 </div>
-                <h4 class="ms-1 mb-0">1520</h4>
+                <h4 class="ms-1 mb-0">@Model.Subscriptions</h4>
             </div>
-            <p class="mb-1">مشتریان</p>
+            <p class="mb-1">مشتریان جدید</p>
             <p class="mb-0">
                 <span class="fw-medium me-1">
-                    <bdi>-8.7</bdi>
+                    <bdi>@Model.ProfitSub</bdi>
                     درصد
                 </span>
                 <small class="text-muted">نسبت به هفته گذشته</small>
@@ -52,12 +52,12 @@
                         <i class="ti ti-git-fork ti-md"></i>
                     </span>
                 </div>
-                <h4 class="ms-1 mb-0">27</h4>
+                <h4 class="ms-1 mb-0">@Model.SubscriptionUseage</h4>
             </div>
-            <p class="mb-1">ریزش مشتری</p>
+            <p class="mb-1">مقدار ترافیک مصرف شده</p>
             <p class="mb-0">
                 <span class="fw-medium me-1">
-                    <bdi>+4.3</bdi>
+                    <bdi>@Model.ProfitUseage</bdi>
                     درصد
                 </span>
                 <small class="text-muted">نسبت به هفته گذشته</small>
@@ -74,12 +74,12 @@
                         <i class="ti ti-clock ti-md"></i>
                     </span>
                 </div>
-                <h4 class="ms-1 mb-0">13</h4>
+                <h4 class="ms-1 mb-0">@Model.MaintainSubscription</h4>
             </div>
-            <p class="mb-1">ریزش مشتری </p>
+            <p class="mb-1">مقدار حفظ مشترک</p>
             <p class="mb-0">
                 <span class="fw-medium me-1">
-                    <bdi>-2.5</bdi>
+                    <bdi>@Model.ProfitMaintainSub</bdi>
                     درصد
                 </span>
                 <small class="text-muted">نسبت به هفته گذشته</small>

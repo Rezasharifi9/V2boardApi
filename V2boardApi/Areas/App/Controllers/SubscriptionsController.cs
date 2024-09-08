@@ -301,13 +301,13 @@ namespace V2boardApi.Areas.App.Controllers
                                         return MessageBox.Warning("هشدار", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
                                     }
                                     string exp = "";
-                                    if (plan.CountDayes == 0)
+                                    if (plan.PlanMonth == 0)
                                     {
                                         exp = null;
                                     }
                                     else
                                     {
-                                        exp = DateTime.Now.AddDays((int)plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                                        exp = DateTime.Now.AddMonths((int)plan.PlanMonth).ConvertDatetimeToSecond().ToString();
                                     }
 
                                     
@@ -317,7 +317,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         if (user.tbUsers2 != null)
                                         {
                                             var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.User_ID);
-                                            user.Wallet += plan.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
+                                            user.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth);
                                         }
                                         else
                                         {
@@ -329,11 +329,15 @@ namespace V2boardApi.Areas.App.Controllers
                                     {
                                         if (user.tbUsers2 != null)
                                         {
+                                            if (user.tbUsers2.Wallet >= user.tbUsers2.Limit)
+                                            {
+                                                return MessageBox.Warning("هشدار", "فروش موقتا توسط ادمین متوقف شده است لطفا با پشتیبانی ارتباط بگیرید !!");
+                                            }
                                             if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                             {
                                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
 
-                                                user.tbUsers2.Wallet += plan.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
+                                                user.tbUsers2.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth);
                                             }
                                         }
                                         else
@@ -390,7 +394,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     await mySql.CloseAsync();
                                     linkUserAndPlansRepository.Save();
                                     usersRepository.Save();
-                                    AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name, plan.PlanVolume.Value);
+                                    AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name, plan.PlanVolume.Value, plan.PlanMonth.Value);
                                     logger.Info("اشتراک جدید توسط نماینده ایجاد گردید");
                                     return Toaster.Success("موفق", "اشتراک با موفقیت ایجاد گردید");
                                 }
@@ -444,7 +448,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #region افزودن لاگ تمدید یا ساخت کاربر
-        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, int planVolume)
+        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, int planVolume,int planMonth)
         {
             try
             {
@@ -456,6 +460,7 @@ namespace V2boardApi.Areas.App.Controllers
                 tbLogs.SalePrice = price;
                 tbLogs.PlanName = planName;
                 tbLogs.PlanVolume = planVolume;
+                tbLogs.PlanMonth = planMonth;
                 logsRepository.Insert(tbLogs);
                 logger.Info("لاگ ساخت اشتراک اضافه شد");
                 return logsRepository.Save();
@@ -667,13 +672,13 @@ namespace V2boardApi.Areas.App.Controllers
 
                         var t = Utility.ConvertGBToByte(System.Convert.ToInt64(Plan.PlanVolume));
                         string exp = "";
-                        if (Plan.CountDayes == 0)
+                        if (Plan.PlanMonth == 0)
                         {
                             exp = null;
                         }
                         else
                         {
-                            exp = DateTime.Now.AddDays((int)Plan.CountDayes).ConvertDatetimeToSecond().ToString();
+                            exp = DateTime.Now.AddMonths((int)Plan.PlanMonth).ConvertDatetimeToSecond().ToString();
                         }
                         //چک می کنیم اگر نماینده بود از بر اساس محاسبات نماینده کل از کیف پولش کسر میکنیم
                         if (user.Role == 3)
@@ -682,7 +687,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.User_ID);
 
-                                user.Wallet += Plan.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
+                                user.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig))  + (Plan.PlanMonth * linkGroupUser.PriceForMonth);
                             }
                             else
                             {
@@ -694,10 +699,14 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             if (user.tbUsers2 != null)
                             {
+                                if(user.tbUsers2.Wallet >= user.tbUsers2.Limit)
+                                {
+                                    return MessageBox.Warning("هشدار", "فروش موقتا توسط ادمین متوقف شده است لطفا با پشتیبانی ارتباط بگیرید !!");
+                                }
                                 if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                 {
                                     var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
-                                    user.tbUsers2.Wallet += Plan.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
+                                    user.tbUsers2.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth);
                                 }
                             }
                             else
@@ -746,7 +755,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 user.Wallet += link.tbPlans.Price;
                             }
 
-                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume.Value);
+                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume.Value, Plan.PlanMonth.Value);
                         }
                         reader2.Close();
 
@@ -868,11 +877,11 @@ namespace V2boardApi.Areas.App.Controllers
                                     if (log.PlanVolume != null)
                                     {
 
-                                        userAccount.Wallet -= log.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
+                                        userAccount.Wallet -= (log.PlanVolume * (linkGroupUser.PriceForGig)) + (log.PlanMonth * linkGroupUser.PriceForMonth);
                                     }
                                     else
                                     {
-                                        userAccount.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
+                                        userAccount.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth);
                                     }
                                 }
                                 else
@@ -891,11 +900,11 @@ namespace V2boardApi.Areas.App.Controllers
                                         var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.tbUsers2.User_ID);
                                         if (log.PlanVolume != null)
                                         {
-                                            userAccount.tbUsers2.Wallet -= log.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
+                                            userAccount.tbUsers2.Wallet -= (log.PlanVolume * (linkGroupUser.PriceForGig)) + (log.PlanMonth * linkGroupUser.PriceForMonth);
                                         }
                                         else
                                         {
-                                            userAccount.tbUsers2.Wallet -= log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig + linkGroupUser.PriceForMonth);
+                                            userAccount.tbUsers2.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth);
                                         }
                                     }
                                 }

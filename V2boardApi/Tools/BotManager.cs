@@ -1,12 +1,15 @@
 ﻿using DataLayer.DomainModel;
 using DeviceDetectorNET.Class;
+using MihaZupan;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
+using System.Web.Services.Description;
 using Telegram.Bot;
 using static System.Net.WebRequestMethods;
 
@@ -17,12 +20,49 @@ namespace V2boardApi.Tools
         public static tbServers Server;
         public static void AddBot(string name, string token)
         {
+            var Sock = new tbSocks5();
+            using (Entities db = new Entities())
+            {
+                var Sok = db.tbSocks5.Where(s => s.Active == true).FirstOrDefault();
+                if (Sok != null)
+                {
+                    Sock = Sok;
+                }
+                else
+                {
+                    Sock = null;
+                }
+            }
 
+            TelegramBotClient botClient;
+
+            if (Sock != null)
+            {
+                // آدرس پروکسی و پورت
+                var proxy = new HttpToSocks5Proxy(Sock.HostName, Sock.Port, username: Sock.Username, password: Sock.Password);
+
+                // تنظیمات TelegramBotClient با پروکسی
+
+                HttpClient http = new HttpClient(new HttpClientHandler
+                {
+                    Proxy = proxy,
+                    UseProxy = true
+                });
+                botClient = new TelegramBotClient(token, http);
+            }
+            else
+            {
+                botClient = new TelegramBotClient(token);
+            }
+            
+
+
+            
             var botInfo = new BotInfo();
             botInfo.Name = name;
             botInfo.Token = token;
             botInfo.Started = false;
-            botInfo.Client = new TelegramBotClient(token);
+            botInfo.Client = botClient;
             var res = HttpRuntime.Cache[name];
             if (res == null)
             {
@@ -78,7 +118,7 @@ namespace V2boardApi.Tools
             return true;
         }
 
-        public static bool SetNewToken(string name,string Token)
+        public static bool SetNewToken(string name, string Token)
         {
             BotInfo myObject = HttpRuntime.Cache[name] as BotInfo;
 

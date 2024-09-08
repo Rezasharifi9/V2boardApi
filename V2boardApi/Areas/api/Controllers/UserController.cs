@@ -160,42 +160,14 @@ namespace V2boardApi.Areas.api.Controllers
                             item.dw_Status = "FINISH";
                             item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
                             StringBuilder str = new StringBuilder();
-                            str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد");
+                            str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد!");
                             str.AppendLine("");
-                            str.AppendLine("💳 موجودی کیف پول شما : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                            str.AppendLine("💰 موجودی فعلی کیف پول شما: " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
                             str.AppendLine("");
-                            str.AppendLine("❗️ الان می تونید برای خرید یا تمدید اقدام کنید");
+                            str.AppendLine("🔔 حالا می‌توانید برای خرید اشتراک جدید یا تمدید اشتراک اقدام کنید.");
 
-                            var keyboard = new ReplyKeyboardMarkup(new[]
-                        {
-                            new[]
-                            {
 
-                                new KeyboardButton("💰 خرید سرویس"),
-                                new KeyboardButton("💸 تمدید سرویس"),
-                                new KeyboardButton("⚙️ سرویس ها")
-                            },new[]
-                            {
-                                new KeyboardButton("👜 کیف پول"),
-                                new KeyboardButton("📊 تعرفه ها"),
-                                new KeyboardButton("♨️ اشتراک تست"),
-                            },
-                            new[]
-                            {
-                                new KeyboardButton("🔗 اضافه کردن لینک"),
-                                new KeyboardButton("📚 راهنمای اتصال"),
-                            },
-                            new[]
-                            {
-                                new KeyboardButton("📞 ارتباط با پشتیبانی"),
-                                new KeyboardButton("❔ سوالات متداول"),
-                            }
-
-                        });
-
-                            keyboard.IsPersistent = true;
-                            keyboard.ResizeKeyboard = true;
-                            keyboard.OneTimeKeyboard = false;
+                            var keyboard = Keyboards.GetHomeButton();
 
                             await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
 

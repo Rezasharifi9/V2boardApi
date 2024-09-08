@@ -49,7 +49,7 @@ namespace V2boardBotApp.Models
             inlineKeyboards.Add(DynamicRow2);
 
             List<InlineKeyboardButton> StaticRow3 = new List<InlineKeyboardButton>();
-            StaticRow3.Add(InlineKeyboardButton.WithCallbackData("⏳ زمان سرویس", "زمان سرویس"));
+            StaticRow3.Add(InlineKeyboardButton.WithCallbackData("⏳ زمان اشتراک", "زمان اشتراک"));
 
             inlineKeyboards.Add(StaticRow3);
 

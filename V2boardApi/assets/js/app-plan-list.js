@@ -223,6 +223,9 @@ $(function () {
                     if (data.hasOwnProperty(key)) {
                         var input = $('input[name=' + key + ']');
 
+                        if (key == "planTime") {
+                            SelectPlan("#planTime", data[key]);
+                        }
                         if (key == "planGroup") {
                             SelectGroup("#planGroup", data[key]);
                         }
@@ -420,6 +423,11 @@ $(function () {
 });
 
 function SelectGroup(selectId, Ids) {
+    console.log("select shod");
+    $(selectId).val(Ids).trigger('change');
+}
+
+function SelectPlan(selectId, Ids) {
     console.log("select shod");
     $(selectId).val(Ids).trigger('change');
 }

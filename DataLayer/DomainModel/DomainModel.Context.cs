@@ -41,6 +41,7 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbPlans> tbPlans { get; set; }
         public virtual DbSet<tbServerGroups> tbServerGroups { get; set; }
         public virtual DbSet<tbServers> tbServers { get; set; }
+        public virtual DbSet<tbSocks5> tbSocks5 { get; set; }
         public virtual DbSet<tbTelegramUsers> tbTelegramUsers { get; set; }
         public virtual DbSet<tbUpdateLogs> tbUpdateLogs { get; set; }
         public virtual DbSet<tbUseages> tbUseages { get; set; }

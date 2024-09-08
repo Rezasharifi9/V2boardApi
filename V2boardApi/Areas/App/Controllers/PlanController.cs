@@ -68,9 +68,9 @@ namespace V2boardApi.Areas.App.Controllers
                         PlanResponseViewModel Plan = new PlanResponseViewModel();
                         Plan.id = item.Plan_ID;
                         Plan.PlanName = item.Plan_Name;
-                        if (item.CountDayes != null)
+                        if (item.PlanMonth != null)
                         {
-                            Plan.DayesCount = item.CountDayes.Value;
+                            Plan.DayesCount = item.PlanMonth.Value;
                         }
                         else
                         {
@@ -132,7 +132,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                         else
                         {
-                            var Date = DateTime.Now.AddDays(model.planTime.Value);
+                            var Date = DateTime.Now.AddMonths(model.planTime.Value);
 
                             time = Utility.ConvertDatetimeToSecond(Date).ToString();
                         }
@@ -203,11 +203,11 @@ namespace V2boardApi.Areas.App.Controllers
                             plan.PlanVolume = model.planTraffic;
                             if (model.planTime == null)
                             {
-                                plan.CountDayes = 0;
+                                plan.PlanMonth = 0;
                             }
                             else
                             {
-                                plan.CountDayes = model.planTime;
+                                plan.PlanMonth = model.planTime;
                             }
 
                             plan.Price = OrgPrice;
@@ -269,7 +269,7 @@ namespace V2boardApi.Areas.App.Controllers
                 requestPlan.planTraffic = plan.PlanVolume.Value;
                 requestPlan.planGroup = plan.Group_Id;
                 requestPlan.planPrice = plan.Price.Value.ConvertToMony();
-                requestPlan.planTime = plan.CountDayes;
+                requestPlan.planTime = plan.PlanMonth;
                 requestPlan.planSpeed = plan.Speed_limit;
                 requestPlan.planDevicelimit = plan.device_limit;
                 var data = requestPlan.ToDictionary();
@@ -360,23 +360,23 @@ namespace V2boardApi.Areas.App.Controllers
                         if (Month_Price != "")
                         {
                             plan.Price = Convert.ToInt32(Month_Price) / 100;
-                            plan.CountDayes = 30;
+                            plan.PlanMonth = 1;
 
                         }
                         else if (quarter_price != "")
                         {
                             plan.Price = Convert.ToInt32(quarter_price) / 100;
-                            plan.CountDayes = 90;
+                            plan.PlanMonth = 3;
                         }
                         else if (half_year_price != "")
                         {
                             plan.Price = Convert.ToInt32(half_year_price) / 100;
-                            plan.CountDayes = 180;
+                            plan.PlanMonth = 6;
                         }
                         else if (year_price != "")
                         {
                             plan.Price = Convert.ToInt32(year_price) / 100;
-                            plan.CountDayes = 360;
+                            plan.PlanMonth = 12;
                         }
                         if (show == 1)
                         {
@@ -406,23 +406,23 @@ namespace V2boardApi.Areas.App.Controllers
                         if (Month_Price != "")
                         {
                             planD.Price = Convert.ToInt32(Month_Price) / 100;
-                            planD.CountDayes = 30;
+                            planD.PlanMonth = 1;
 
                         }
                         else if (quarter_price != "")
                         {
                             planD.Price = Convert.ToInt32(quarter_price) / 100;
-                            planD.CountDayes = 90;
+                            planD.PlanMonth = 3;
                         }
                         else if (half_year_price != "")
                         {
                             planD.Price = Convert.ToInt32(half_year_price) / 100;
-                            planD.CountDayes = 180;
+                            planD.PlanMonth = 6;
                         }
                         else if (year_price != "")
                         {
                             planD.Price = Convert.ToInt32(year_price) / 100;
-                            planD.CountDayes = 360;
+                            planD.PlanMonth = 12;
                         }
                         if (show == 1)
                         {
