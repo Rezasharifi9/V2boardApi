@@ -94,7 +94,33 @@ namespace V2boardApi.Areas.App.Controllers
                         searchQuery += $" AND token='{tokenValue}'";
                         if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                         {
-                            searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                            if (userRole == 4)
+                            {
+                                searchQuery += $" AND (";
+                                var Counter = 1;
+                                foreach (var item in user.tbUsers1)
+                                {
+
+
+                                    if (Counter == user.tbUsers1.Count)
+                                    {
+                                        searchQuery += $"email LIKE '%@{item.Username}%')";
+                                    }
+                                    else
+                                    {
+                                        searchQuery += $"email LIKE '%@{item.Username}%' OR  ";
+                                    }
+                                    Counter++;
+
+                                }
+
+
+                            }
+                            else
+                            {
+                                searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                            }
+
                         }
                     }
                     else
@@ -102,13 +128,63 @@ namespace V2boardApi.Areas.App.Controllers
                         searchQuery += $" AND email LIKE '%{searchValue}%'";
                         if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                         {
-                            searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                            if (userRole == 4)
+                            {
+                                searchQuery += $" AND (";
+                                var Counter = 1;
+                                foreach (var item in user.tbUsers1)
+                                {
+
+
+                                    if (Counter == user.tbUsers1.Count)
+                                    {
+                                        searchQuery += $"email LIKE '%@{item.Username}%')";
+                                    }
+                                    else
+                                    {
+                                        searchQuery += $"email LIKE '%@{item.Username}%' OR  ";
+                                    }
+                                    Counter++;
+
+                                }
+
+
+                            }
+                            else
+                            {
+                                searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                            }
                         }
                     }
                 }
                 else if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                 {
-                    searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                    if (userRole == 4)
+                    {
+                        searchQuery += $" AND (";
+                        var Counter = 1;
+                        foreach (var item in user.tbUsers1)
+                        {
+
+
+                            if (Counter == user.tbUsers1.Count)
+                            {
+                                searchQuery += $"email LIKE '%@{item.Username}%')";
+                            }
+                            else
+                            {
+                                searchQuery += $"email LIKE '%@{item.Username}%' OR  ";
+                            }
+                            Counter++;
+
+                        }
+
+
+                    }
+                    else
+                    {
+                        searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                    }
                 }
 
                 string query = baseQuery + searchQuery;
@@ -216,8 +292,34 @@ namespace V2boardApi.Areas.App.Controllers
                     var countQuery = "SELECT COUNT(*) AS Count FROM `v2_user` WHERE 1=1";
                     if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
                     {
-                        countQuery += $" AND email LIKE '%@{user.Username}%'";
+                        if (userRole == 4)
+                        {
+                            countQuery += $" AND (";
+                            var Counter = 1;
+                            foreach (var item in user.tbUsers1)
+                            {
+
+
+                                if (Counter == user.tbUsers1.Count)
+                                {
+                                    countQuery += $"email LIKE '%@{item.Username}%' )";
+                                }
+                                else
+                                {
+                                    countQuery += $"email LIKE '%@{item.Username}%' OR  ";
+                                }
+                                Counter++;
+
+                            }
+
+
+                        }
+                        else
+                        {
+                            countQuery += $" AND email LIKE '%@{user.Username}%'";
+                        }
                     }
+
                     if (!string.IsNullOrEmpty(searchValue))
                     {
                         if (searchValue.Contains("token="))
@@ -310,7 +412,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         exp = DateTime.Now.AddMonths((int)plan.PlanMonth).ConvertDatetimeToSecond().ToString();
                                     }
 
-                                    
+
 
                                     if (user.Role == 3)
                                     {
@@ -379,7 +481,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         DeviceLimitCol = ",device_limit";
                                     }
 
-                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at"+DeviceLimitCol +") VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create "+DeviceLimit+" )";
+                                    string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at" + DeviceLimitCol + ") VALUES (@FullName,@expired,@create,@guid,0,0,0,@tran,0,@grid,@planid,@token,'" + Guid.NewGuid() + "',@create " + DeviceLimit + " )";
 
                                     var reader = await mySql.GetDataAsync(Query, Disc3);
                                     reader.Close();
@@ -448,7 +550,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #region افزودن لاگ تمدید یا ساخت کاربر
-        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, int planVolume,int planMonth)
+        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, int planVolume, int planMonth)
         {
             try
             {
@@ -687,7 +789,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.User_ID);
 
-                                user.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig))  + (Plan.PlanMonth * linkGroupUser.PriceForMonth);
+                                user.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth);
                             }
                             else
                             {
@@ -699,7 +801,7 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             if (user.tbUsers2 != null)
                             {
-                                if(user.tbUsers2.Wallet >= user.tbUsers2.Limit)
+                                if (user.tbUsers2.Wallet >= user.tbUsers2.Limit)
                                 {
                                     return MessageBox.Warning("هشدار", "فروش موقتا توسط ادمین متوقف شده است لطفا با پشتیبانی ارتباط بگیرید !!");
                                 }
@@ -719,13 +821,13 @@ namespace V2boardApi.Areas.App.Controllers
                         Disc1.Add("@Plan_ID_V2", Plan.Plan_ID_V2);
                         Disc1.Add("@transfer_enable", t);
                         Disc1.Add("@exp", exp);
-                        
+
 
                         var DeviceLimit = "";
 
                         if (Plan.device_limit == null || Plan.device_limit.Value == 0)
                         {
-                           
+
                         }
                         else
                         {
