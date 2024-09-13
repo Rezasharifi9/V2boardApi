@@ -639,16 +639,7 @@ $(function () {
                         message: 'آیدی عددی ادمین را وارد کنید'
                     }
                 }
-            },
-            Present_Discount: {
-                validators: {
-                    between: {
-                        min: 1,
-                        max: 100,
-                        message: 'درصد تخفیف باید بین 1 تا 100 درصد باشد'
-                    }
-                }
-            },
+            }
         },
         plugins: {
             trigger: new FormValidation.plugins.Trigger(),
