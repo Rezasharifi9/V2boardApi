@@ -1411,6 +1411,11 @@ namespace V2boardApi.Areas.App.Controllers
                         botSettings.Present_Discount = Present_Discount / 100;
                     }
 
+                    if(Present_Discount == null)
+                    {
+                        botSettings.Present_Discount = null;
+                    }
+
                     var ress = BotManager.GetBot(Use.Username);
                     if (ress == null)
                     {
