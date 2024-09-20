@@ -33,6 +33,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> FK_Plan_ID { get; set; }
         public string AdminUsername { get; set; }
         public Nullable<bool> Is_ActiveChangeLimitUser { get; set; }
+        public Nullable<double> InvitePercent { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }

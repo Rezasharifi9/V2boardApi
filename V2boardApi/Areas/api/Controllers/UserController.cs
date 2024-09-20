@@ -178,6 +178,26 @@ namespace V2boardApi.Areas.api.Controllers
                                 TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
                                 await RepositoryDepositWallet.SaveChangesAsync();
                                 await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+
+                                if (botSetting.InvitePercent != null)
+                                {
+                                    if (item.tbTelegramUsers.Tel_Parent_ID != null)
+                                    {
+                                        var parent = item.tbTelegramUsers.tbTelegramUsers2;
+                                        parent.Tel_Wallet += Convert.ToInt32((item.dw_Price / 10) * botSetting.InvitePercent.Value);
+
+                                        StringBuilder str1 = new StringBuilder();
+                                        str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("🆔 @" + botSetting.Bot_ID);
+
+                                        await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                    }
+                                }
+
+                                await RepositoryDepositWallet.SaveChangesAsync();
                                 transaction.Commit();
 
                                 logger.Info("فاکتور به مبلغ " + pr.ConvertToMony() + " با موفقیت پرداخت شد");
@@ -211,57 +231,6 @@ namespace V2boardApi.Areas.api.Controllers
         }
 
         #endregion
-
-        //#region تاریخچه مصرف کاربر
-
-        //[Authorize]
-        //public async Task<IHttpActionResult> GetTrafficUsage(int userId)
-        //{
-        //    var Token = Request.Headers.Authorization;
-        //    var User = RepositoryUser.table.Where(p => p.Token == Token.Scheme && p.Status == true).First();
-
-        //    try
-        //    {
-
-        //        MySqlEntities mysql = new MySqlEntities(User.tbServers.ConnectionString);
-        //        await mysql.OpenAsync();
-
-        //        var reader = await mysql.GetDataAsync("select * from v2_stat_user where user_id=" + userId);
-        //        List<UsagesModel> Useages = new List<UsagesModel>();
-        //        while (reader.Read())
-        //        {
-        //            UsagesModel model = new UsagesModel();
-        //            var d = reader.GetInt64("d");
-        //            var u = reader.GetInt64("u");
-
-        //            var total = d + u;
-
-        //            var UnixDate = reader.GetInt64("updated_at");
-
-        //            var Date = Utility.ConvertSecondToDatetime(UnixDate);
-
-        //            model.Date = Utility.ConvertDateTimeToShamsi(Date);
-        //            model.Used = Utility.ConvertByteToMG(total);
-
-        //            Useages.Add(model);
-        //        }
-
-        //        var Useage = Useages.GroupBy(p => p.Date).ToList();
-        //        var use = Useage.Select(p => new { Date = p.Key, Used = p.Sum(s => Math.Round(s.Used, 2)) }).ToList();
-
-        //        await mysql.CloseAsync();
-        //        return Ok(use);
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        logger.Error(ex, "دریافت تاریخچه مصرف اشتراک با خطا مواجه شد");
-        //        return Content(System.Net.HttpStatusCode.InternalServerError, "دریافت اطلاعات با خطا مواجه شد");
-        //    }
-
-        //}
-
-        //#endregion
 
         #region دریافت فاکتور ها برای اپلیکیشن
 

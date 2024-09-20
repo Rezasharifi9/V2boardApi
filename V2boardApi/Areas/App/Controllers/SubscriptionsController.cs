@@ -98,6 +98,9 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 searchQuery += $" AND (";
                                 var Counter = 1;
+
+                                searchQuery += $"email LIKE '%@{user.Username}%' OR  ";
+
                                 foreach (var item in user.tbUsers1)
                                 {
 
@@ -132,6 +135,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 searchQuery += $" AND (";
                                 var Counter = 1;
+                                searchQuery += $"email LIKE '%@{user.Username}%' OR  ";
                                 foreach (var item in user.tbUsers1)
                                 {
 
@@ -163,6 +167,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         searchQuery += $" AND (";
                         var Counter = 1;
+                        searchQuery += $"email LIKE '%@{user.Username}%' OR  ";
                         foreach (var item in user.tbUsers1)
                         {
 
@@ -296,6 +301,7 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             countQuery += $" AND (";
                             var Counter = 1;
+                            countQuery += $"email LIKE '%@{user.Username}%' OR  ";
                             foreach (var item in user.tbUsers1)
                             {
 

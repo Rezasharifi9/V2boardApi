@@ -93,7 +93,14 @@ public class TimerService
                                                                     st.Append("درحال اتمام حجم بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
                                                                     st.AppendLine("");
                                                                     st.AppendLine("🆔 @" + BotSetting.Bot_ID);
-                                                                    await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                    try
+                                                                    {
+                                                                        await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                    }
+                                                                    catch
+                                                                    {
+                                                                        continue;
+                                                                    }
                                                                     link.tbL_Warning = true;
                                                                     await tbTelegramUserRepository.SaveChangesAsync();
                                                                 }
@@ -110,7 +117,14 @@ public class TimerService
                                                                         st.AppendLine(" درحال اتمام زمان بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
                                                                         st.AppendLine("");
                                                                         st.AppendLine("🆔 @"+ BotSetting.Bot_ID);
-                                                                        await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                        try
+                                                                        {
+                                                                            await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                        }
+                                                                        catch
+                                                                        {
+                                                                            continue;
+                                                                        }
                                                                         link.tbL_Warning = true;
                                                                         await tbTelegramUserRepository.SaveChangesAsync();
                                                                     }

@@ -406,7 +406,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 #endregion
 
                                 #region بخش نمایش منو اصلی
-                                if (mess == "/start" || mess.StartsWith("/start") || mess.StartsWith("⬅️ برگشت به صفحه اصلی"))
+                                if (mess == "/start" || mess.StartsWith("/start"))
                                 {
 
                                     inlineKeyboardMarkup = Keyboards.GetHomeButton();
@@ -429,6 +429,24 @@ namespace V2boardApi.Areas.api.Controllers
                                     return;
 
                                 }
+
+                                if (mess.StartsWith("⬅️ برگشت به صفحه اصلی"))
+                                {
+                                    inlineKeyboardMarkup = Keyboards.GetHomeButton();
+                                    StringBuilder st = new StringBuilder();
+
+                                    st.AppendLine("<b>" + " 🌺 سلام به ربات " + BotSettings.tbUsers.BussinesTitle + " خوش آمدید 👋 " + "</b>");
+                                    st.AppendLine("");
+                                    st.AppendLine("");
+                                    st.AppendLine("برای ادامه یکی از گزینه های زیر را انتخاب کنید 👇");
+                                    st.AppendLine("");
+                                    st.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                    await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
+
+                                    var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                                    return;
+                                }
+
                                 #endregion
 
                                 #region بخش چک کردن برای اینکه کاربر نام اکانت جدید خودش را وارد کند
@@ -1502,23 +1520,19 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region نمایش آموزش ها
 
-                                if (User.Tel_Step == "WaitForSelectPlatform")
-                                {
 
-                                    if (BotSettings.tbUsers.tbConnectionHelp.Count > 0)
+                                if (callback.Length == 1)
+                                {
+                                    if (callback[0] == "ConnectionHelp")
                                     {
                                         var id = Convert.ToInt32(callbackQuery.Data);
-                                        var Learn = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_ID == id).FirstOrDefault();
+                                        var Learn = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_ID == id && p.ch_Type == "vpn").FirstOrDefault();
                                         if (Learn != null)
                                         {
                                             await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, Learn.ch_Link, disableWebPagePreview: false);
                                         }
-
                                     }
-
-
                                 }
-
 
                                 #endregion
 
@@ -1597,17 +1611,23 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (callbackQuery.Data == "InventoryIncreaseSub")
                                 {
+                                    if (BotSettings.InvitePercent != null)
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("✅ شما میتوانید با اشتراک گذاری این لینک به ازای هر خرید یا تمدیدی که فرد دعوت شده توسط شما انجام میدهد " + (BotSettings.InvitePercent.Value * 100) + " درصد مبلغ اون تعرفه را از ما اعتبار رایگان بگیرید 😄");
+                                        str.AppendLine("");
+                                        str.AppendLine("📌 شما میتوانید از طریق این اعتبار اشتراک های مارا خریداری کنید یا اشتراک های خریداری شده را تمدید کنید");
+                                        str.AppendLine("");
+                                        str.AppendLine("لینک دعوت شما 👇");
+                                        str.AppendLine("🔗 https://t.me/" + callbackQuery.Message.From.Username + "?start=" + callbackQuery.From.Id);
 
+                                        await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, str.ToString(), parseMode: ParseMode.Html);
+                                    }
+                                    else
+                                    {
+                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "⚠️ این روش موقتا از دسترس خارج شده لطفا از روش کارت به کارت استفاده کنید");
+                                    }
 
-                                    StringBuilder str = new StringBuilder();
-                                    str.AppendLine("✅ شما میتوانید با اشتراک گذاری این لینک به ازای هر خرید یا تمدیدی که فرد دعوت شده توسط شما انجام میدهد " /*+ (BotSetting.FreeCredit.Value * 100) +*/ + " درصد مبلغ اون تعرفه را از ما اعتبار رایگان بگیرید 😄");
-                                    str.AppendLine("");
-                                    str.AppendLine("📌 شما میتوانید از طریق این اعتبار اشتراک های مارا خریداری کنید یا اشتراک های خریداری شده را تمدید کنید");
-                                    str.AppendLine("");
-                                    str.AppendLine("لینک دعوت شما 👇");
-                                    str.AppendLine("🔗 https://t.me/" + callbackQuery.Message.From.Username + "?start=" + callbackQuery.From.Id);
-
-                                    await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, str.ToString(), parseMode: ParseMode.Html);
                                 }
 
                                 #endregion
@@ -2018,7 +2038,10 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                             else
                                             {
-                                                AccountName += User.Tel_Username;
+                                                if (string.IsNullOrEmpty(AccountName))
+                                                {
+                                                    AccountName += User.Tel_Username;
+                                                }
                                             }
 
                                             if (Utility.IsPersian(AccountName))
@@ -2136,23 +2159,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             }
 
-                                            if (UserAc.Tel_Parent_ID != null)
-                                            {
-                                                var TelParentUser = tbTelegramUserRepository.Where(p => p.Tel_UserID == UserAc.Tel_Parent_ID && p.tbUsers.Username == botName).FirstOrDefault();
-                                                TelParentUser.Tel_Wallet += Convert.ToInt32((Price * Server.FreeCredit));
-
-
-
-                                                StringBuilder str = new StringBuilder();
-                                                str.AppendLine("✅ کاربر زیر مجموعه شما با موفقیت خرید انجام داد و کیف پول شما شارژ شد");
-                                                str.AppendLine("");
-                                                str.AppendLine("📌 موجودی کیف پول شما : " + TelParentUser.Tel_Wallet.Value.ConvertToMony() + " تومان");
-
-                                                var Keys = Keyboards.GetHomeButton();
-                                                await bot.Client.SendTextMessageAsync(TelParentUser.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys);
-
-
-                                            }
                                             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
 
                                             List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
@@ -2285,6 +2291,71 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
+                                #region ایجاد فاکتور
+
+                                if (callback.Length == 1)
+                                {
+                                    if (callback[0] == "CreateFactor")
+                                    {
+                                        var PriceForGig = BotSettings.PricePerGig_Major;
+                                        var PriceForMonth = BotSettings.PricePerMonth_Major;
+                                        int price = Convert.ToInt32((User.Tel_Traffic * PriceForGig) + (User.Tel_Monthes * PriceForMonth));
+
+                                        Random ran = new Random();
+                                        var RanNumber = ran.Next(1, 999);
+
+                                        var fullPrice = (price * 10) + RanNumber;
+                                        StringBuilder str = new StringBuilder();
+
+                                        var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
+
+                                        str.AppendLine("✅ فاکتور افزایش موجودی کیف پول شما  :");
+                                        str.AppendLine("");
+                                        str.AppendLine(" لطفا مبلغ " + "<code>" + fullPrice.ConvertToMony() + "</code>" + " ریال " + " را به شماره کارت " + FirstCard.CardNumber + " " + " به نام " + FirstCard.InTheNameOf + " واریز نمائید");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ روی مبلغ کلیک کنید مبلغ کپی می شود و نیازی به حفظ نیست");
+                                        if ((bool)BotSettings.IsActiveSendReceipt && (bool)BotSettings.IsActiveCardToCard)
+                                        {
+                                            str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
+                                            str.AppendLine("");
+                                            str.AppendLine("❗️ در صورت عدم تایید خودکار رسید واریزیتون رو به صورت تصویر ( نه فایل ) برای ربات بفرستید");
+                                        }
+                                        else
+                                        {
+                                            if ((bool)BotSettings.IsActiveCardToCard)
+                                            {
+                                                str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
+                                            }
+                                            if ((bool)BotSettings.IsActiveSendReceipt)
+                                            {
+                                                str.AppendLine("");
+                                                str.Append("✅");
+                                                str.AppendLine("بعد واریزی حتما رسید را برای ربات بفرستید");
+                                            }
+                                        }
+                                        str.AppendLine("");
+                                        str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
+                                        tbDeposit.dw_Price = fullPrice;
+                                        tbDeposit.dw_CreateDatetime = DateTime.Now;
+                                        tbDeposit.dw_Status = "FOR_PAY";
+                                        tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
+                                        //tbDeposit.dw_message_id = update.Message.MessageId;
+                                        tbDepositLogRepo.Insert(tbDeposit);
+                                        await tbDepositLogRepo.SaveChangesAsync();
+                                        str.AppendLine("");
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+
+
+
+                                        return;
+                                    }
+                                }
+
+                                #endregion
+
                             }
                             else
                             {
@@ -2410,7 +2481,7 @@ namespace V2boardApi.Areas.api.Controllers
             }
         }
 
-        public async Task<bool> SaveUserProfilePicture(long userId, TelegramBotClient bot, string token,string path)
+        public async Task<bool> SaveUserProfilePicture(long userId, TelegramBotClient bot, string token, string path)
         {
 
             if (!System.IO.File.Exists(path))
@@ -2480,7 +2551,7 @@ namespace V2boardApi.Areas.api.Controllers
                 }
             }
 
-            
+
 
             return false;
         }

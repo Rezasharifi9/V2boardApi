@@ -94,13 +94,18 @@ namespace V2boardBotApp.Models
 
             inlineKeyboards.Add(PriceRow);
 
+            List<InlineKeyboardButton> CreateFactor = new List<InlineKeyboardButton>();
+            //FinishRow.Add(InlineKeyboardButton.WithCallbackData("بازگشت 🔙", "بازگشت"));
+            CreateFactor.Add(InlineKeyboardButton.WithCallbackData("ایجاد فاکتور 🏧", "CreateFactor"));
+            inlineKeyboards.Add(CreateFactor);
+
             List<InlineKeyboardButton> FinishRow = new List<InlineKeyboardButton>();
             //FinishRow.Add(InlineKeyboardButton.WithCallbackData("بازگشت 🔙", "بازگشت"));
             FinishRow.Add(InlineKeyboardButton.WithCallbackData("🔜 مرحله بعد", "NextLevel"));
-
-
+            
             inlineKeyboards.Add(FinishRow);
 
+            
             keyboardButtons = new InlineKeyboardMarkup(inlineKeyboards);
 
         }
