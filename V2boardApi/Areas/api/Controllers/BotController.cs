@@ -36,6 +36,7 @@ using static System.Windows.Forms.LinkLabel;
 using MihaZupan;
 using System.Windows.Forms;
 using System.Windows.Input;
+using V2boardApi.Tools;
 
 
 namespace V2boardApi.Areas.api.Controllers
@@ -494,16 +495,10 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     var me = BotMessages.SendAccpetPolicySub(BotSettings);
 
-                                    await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId);
+                                    await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId,parseMode:ParseMode.Html);
 
                                     //await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
-
-
-
                                     return;
-
-
-
                                 }
 
                                 #endregion
@@ -823,43 +818,14 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (mess == "🎁 اشتراک تست")
                                 {
+                                    await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
-                                    var type = BotMessages.SendSelectSubTypeTest(BotSettings);
+                                    var me = BotMessages.SendSelectSubTypeTest(BotSettings);
 
-                                    await bot.Client.SendTextMessageAsync(chatid, type.text, parseMode: ParseMode.Html, replyMarkup: type.keyboard);
+                                    await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
-                                    reader = await mySql.GetDataAsync(Query, Disc3);
-                                    reader.Close();
-
-                                    StringBuilder str = new StringBuilder();
-                                    str.AppendLine("🌿 کاربر عزیز اشتراک تست شما با موفقیت ساخته شد❕");
-                                    str.AppendLine("");
-                                    str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
-                                    str.AppendLine("");
-                                    str.AppendLine("🚦 حجم کل : 500 مگ");
-                                    str.AppendLine("⏳ مدت زمان : یک روز");
-                                    str.AppendLine("");
-                                    str.AppendLine("🔗 لینک اتصال: ");
-                                    str.AppendLine("👇👇👇👇👇👇👇");
-                                    str.AppendLine("");
-                                    var SubLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + token;
-                                    str.AppendLine("<code>" + SubLink + "</code>");
-                                    str.AppendLine("");
-                                    str.AppendLine("⁉️ برای دریافت راهنما به بخش \"📘 آموزش اتصال\" بروید.");
-                                    await RealUser.SetGetedAccountTest(User.Tel_UniqUserID, db, botName);
-                                    await mySql.CloseAsync();
-
-                                    str.AppendLine("");
-                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                    await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-                                }
-                                else
-                                {
-                                    StringBuilder str = new StringBuilder();
-                                    str.AppendLine("❌ شما قبلا اشتراک تست دریافت کرده اید");
-                                    str.AppendLine("");
-                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                    await bot.Client.SendTextMessageAsync(chatid, str.ToString(), replyToMessageId: message.MessageId);
+                                    //await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
+                                    return;
                                 }
                             }
 
