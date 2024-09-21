@@ -495,7 +495,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     var me = BotMessages.SendAccpetPolicySub(BotSettings);
 
-                                    await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId,parseMode:ParseMode.Html);
+                                    await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
                                     //await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
                                     return;
