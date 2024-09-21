@@ -34,19 +34,19 @@ namespace V2boardBot.Models
                             new[]
                             {
 
-                                new KeyboardButton("🛒 خرید اشتراک"),
-                                new KeyboardButton("🔄 تمدید اشتراک"),
-                                new KeyboardButton("🌐 مدیریت اشتراک ‌ها")
+                                new KeyboardButton("🛒 خرید سرویس"),
+                                new KeyboardButton("🔄 تمدید سرویس"),
+                                new KeyboardButton("🌐 سرویس های من")
                             },new[]
                             {
-                                new KeyboardButton("👜 کیف پول من"),
+                                new KeyboardButton("💳 کیف پول من"),
                                 new KeyboardButton("📊 تعرفه‌ها"),
                                 new KeyboardButton("🎁 اشتراک تست"),
                             },
                             new[]
                             {
-                                new KeyboardButton("❓ سؤالات رایج"),
-                                new KeyboardButton("📘 آموزش اتصال")
+                                new KeyboardButton("⁉️ سوالات متداول"),
+                                new KeyboardButton("📚 راهنمای اتصال")
                             },
                             new[]
                             {

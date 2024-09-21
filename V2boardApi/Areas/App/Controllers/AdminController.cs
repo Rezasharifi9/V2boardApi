@@ -1411,7 +1411,7 @@ namespace V2boardApi.Areas.App.Controllers
                         botSettings.Present_Discount = Present_Discount / 100;
                     }
 
-                    if (Present_Discount == null)
+                    if(Present_Discount == null)
                     {
                         botSettings.Present_Discount = null;
                     }

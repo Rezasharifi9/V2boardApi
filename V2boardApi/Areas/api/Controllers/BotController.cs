@@ -417,15 +417,12 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     StringBuilder st = new StringBuilder();
 
-                                    st.AppendLine("<b>" + " به جمع ما خوش آمدید! 👋" + "</b>");
+                                    st.AppendLine("<b> 🌺 سلام به ربات MdVpnSec خوش آمدید 👋 </b>");
                                     st.AppendLine("");
-                                    st.AppendLine("با سرویس‌های ویژه ما، VPN سریع‌تر و تجربه‌ای بهتر در انتظار شماست.");
+                                    st.AppendLine("📌 جهت استفاده از ربات لطفا یکی از موارد زیر را انتخاب کنید");
                                     st.AppendLine("");
-                                    st.AppendLine("💼 هر لحظه و هر جا که بخواهید، به ما اعتماد کنید!");
-                                    st.AppendLine("");
-                                    st.AppendLine("برای ادامه یکی از گزینه های زیر را انتخاب کنید 👇");
-                                    st.AppendLine("");
-                                    st.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                    st.AppendLine("〰️〰️〰️〰️〰️");
+                                    st.AppendLine("🚀@" + BotSettings.Bot_ID);
                                     await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
                                     var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
@@ -488,7 +485,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region بخش فشردن گزینه خرید سرویس
 
-                                else if (mess == "🛒 خرید اشتراک")
+                                else if (mess == "🛒 خرید سرویس")
                                 {
                                     await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
@@ -509,7 +506,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 #endregion
 
                                 #region دکمه سرویس ها
-                                if (mess == "🌐 مدیریت اشتراک ‌ها")
+                                if (mess == "🌐 سرویس های من")
                                 {
                                     var keyboard = Keyboards.GetServiceLinksKeyboard(UserAcc.Tel_UserID, tbLinksRepository);
                                     if (keyboard == null)
@@ -517,15 +514,15 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str2 = new StringBuilder();
                                         str2.AppendLine("❌ شما سرویسی ندارید");
                                         str2.AppendLine("");
-                                        str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                        str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyToMessageId: message.MessageId); return;
                                     }
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_AccountForShowInfo", db, botName);
                                     StringBuilder str = new StringBuilder();
-                                    str.AppendLine("💢 لطفا اشتراک مورد نظر را انتخاب کنید 👇");
+                                    str.AppendLine("✅ سرویس های شما با موفقیت دریافت شدند!\r\n لطفا اشتراک مورد نظر را انتخاب کنید 👇");
                                     str.AppendLine("");
-                                    str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                     var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, text: str.ToString(), replyToMessageId: message.MessageId, replyMarkup: keyboard);
                                     return;
                                 }
@@ -534,7 +531,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 #region بخش تمدید سرویس 
 
                                 #region بخش فشار دادن دکمه تمدید
-                                else if (mess == "🔄 تمدید اشتراک")
+                                else if (mess == "🔄 تمدید سرویس")
                                 {
                                     #region بخش نمایش لینک های موجود کاربر
                                     await RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
@@ -544,7 +541,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str2 = new StringBuilder();
                                         str2.AppendLine("❌ شما سرویسی ندارید");
                                         str2.AppendLine("");
-                                        str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                        str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString());
                                         return;
                                     }
@@ -553,7 +550,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     StringBuilder str3 = new StringBuilder();
                                     str3.AppendLine("♨️  لطفا اشتراک مورد نظر را انتخاب کنید");
                                     str3.AppendLine("");
-                                    str3.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                    str3.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
                                     var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str3.ToString(), replyMarkup: keyboard, replyToMessageId: message.MessageId);
                                     return;
@@ -692,29 +689,14 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
 
                                     StringBuilder str = new StringBuilder();
-                                    str.AppendLine("1- 🏅 اشتراک گُلد ( حجمی )");
+                                    str.AppendLine("✨ خدمات بی‌نهایت، قیمت مناسب! ✨");
                                     str.AppendLine("");
-                                    str.AppendLine("💸 هر گیگ حجم : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
-                                    str.AppendLine("⏳ هر ماه اشتراک : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
+                                    str.AppendLine("💸 قیمت هر گیگ: " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
+                                    str.AppendLine("⏳ قیمت هر ماه: " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
                                     str.AppendLine("");
-
-                                    var Plans = BotSettings.tbUsers.tbPlans.Where(s => s.IsRobotPlan == true).ToList();
-                                    if(Plans.Count >= 1)
-                                    {
-                                        str.AppendLine("2- 💎 اشتراک پرمیوم ( نامحدود ) :");
-                                        str.AppendLine("");
-                                        var Counter = 1;
-                                        foreach(var item in Plans)
-                                        {
-                                            str.AppendLine(Counter + " - " + item.PlanMonth + " ماهه" + " " + (item.device_limit-1) + " کاربر");
-                                            Counter++;
-                                        }
-                                        
-                                    }
-
+                                    str.AppendLine("📱⚡ تجربه یک VPN پرسرعت و بی‌وقفه را با ما داشته باشید");
                                     str.AppendLine("");
-                                    str.AppendLine("〰️〰️〰️〰️〰️");
-                                    str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                     await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
 
                                 }
@@ -723,7 +705,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region راهنمای اتصال
 
-                                if (mess == "📘 آموزش اتصال")
+                                if (mess == "📚 راهنمای اتصال")
                                 {
 
                                     if (BotSettings.tbUsers.tbConnectionHelp.Count > 0)
@@ -734,8 +716,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("📲 لطفا با توجه به نوع دستگاه خود یکی از گزینه های زیر را انتخاب کنید");
                                         str.AppendLine("");
-                                        str.AppendLine("〰️〰️〰️〰️〰️");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys, replyToMessageId: message.MessageId);
 
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlatform", db, botName);
@@ -745,8 +726,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("❌ ربات فاقد آموزش می باشد لطفا به پشتیبانی پیام دهید");
                                         str.AppendLine("");
-                                        str.AppendLine("〰️〰️〰️〰️〰️");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
 
                                     }
@@ -759,13 +739,13 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region کیف پول
 
-                                if (mess == "👜 کیف پول من")
+                                if (mess == "💳 کیف پول من")
                                 {
                                     if (UserAcc != null)
                                     {
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("");
-                                        str.AppendLine("<b>" + "📌 موجودی کیف پول شما : " + UserAcc.Tel_Wallet.Value.ConvertToMony() + " تومان" + "</b>");
+                                        str.AppendLine("<b>" + "💰 موجودی کیف پول شما : " + UserAcc.Tel_Wallet.Value.ConvertToMony() + " تومان" + "</b>");
                                         str.AppendLine("");
 
                                         var learns = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_Type == "crypto").ToList();
@@ -774,12 +754,13 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine(" <a href='" + item.ch_Link + "'>" + item.ch_Title + "</a>");
                                         }
                                         str.AppendLine("");
-                                        str.AppendLine("✅ جهت شارژ کیف پول، لطفا یکی از روش های زیر را انتخاب کنید");
+                                        str.AppendLine("✅ در صورتی که قصد افزایش موجودی دارید لطفا یکی از روش های زیر را انتخاب کنید:");
                                         str.AppendLine("");
                                         str.AppendLine("👥 با دعوت دوستان خود از بخش " + "<b>زیر مجموعه گیری</b>" + "، اعتبار رایگان دریافت کنید!");
                                         str.AppendLine("");
-                                        str.AppendLine("〰️〰️〰️〰️〰️");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                        str.AppendLine("➖➖➖➖➖➖➖➖➖");
+                                        str.AppendLine("");
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
 
 
@@ -823,10 +804,9 @@ namespace V2boardApi.Areas.api.Controllers
                                     str.AppendLine("");
                                     str.AppendLine("📱 @" + BotSettings.AdminUsername);
                                     str.AppendLine("");
-                                    str.AppendLine("⚠️ لطفا قبل از ارسال پیام اگر مشکلی در اتصال دارید ابتدا بخش <b>📘 آموزش اتصال</b> را مطالعه کنید.");
+                                    str.AppendLine("⚠️ لطفا قبل از ارسال پیام اگر مشکلی در اتصال دارید ابتدا بخش <b>\"📚 راهنمای اتصال\"</b> را مطالعه کنید.");
                                     str.AppendLine("");
-                                    str.AppendLine("〰️〰️〰️〰️〰️");
-                                    str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
                                     await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
 
@@ -845,38 +825,65 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     await bot.Client.SendTextMessageAsync(chatid, type.text, parseMode: ParseMode.Html, replyMarkup: type.keyboard);
 
-                                    
+                                        reader = await mySql.GetDataAsync(Query, Disc3);
+                                        reader.Close();
+
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست شما با موفقیت ساخته شد❕");
+                                        str.AppendLine("");
+                                        str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
+                                        str.AppendLine("");
+                                        str.AppendLine("🚦 حجم کل : 500 مگ");
+                                        str.AppendLine("⏳ مدت زمان : یک روز");
+                                        str.AppendLine("");
+                                        str.AppendLine("🔗 لینک اتصال: ");
+                                        str.AppendLine("👇👇👇👇👇👇👇");
+                                        str.AppendLine("");
+                                        var SubLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + token;
+                                        str.AppendLine("<code>" + SubLink + "</code>");
+                                        str.AppendLine("");
+                                        str.AppendLine("⁉️ برای دریافت راهنما به بخش \"📘 آموزش اتصال\" بروید.");
+                                        await RealUser.SetGetedAccountTest(User.Tel_UniqUserID, db, botName);
+                                        await mySql.CloseAsync();
+
+                                        str.AppendLine("");
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                        await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                    }
+                                    else
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("❌ شما قبلا اشتراک تست دریافت کرده اید");
+                                        str.AppendLine("");
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                        await bot.Client.SendTextMessageAsync(chatid, str.ToString(), replyToMessageId: message.MessageId);
+                                    }
                                 }
 
                                 #endregion
 
                                 #region سوالات متداول
 
-                                if (mess == "❓ سؤالات رایج")
+                                if (mess == "⁉️ سوالات متداول")
                                 {
                                     StringBuilder str = new StringBuilder();
-                                    str.AppendLine("<b>" + "❓ سؤالات متداول درباره اشتراک‌ها ❓" + "</b>");
+                                    str.AppendLine("<b> ⁉️ سوالات متداول مربوط به سرویس MdVpnSec </b>");
                                     str.AppendLine("");
+                                    str.AppendLine("<b>🔸 سرویس شما آیپی ثابت هست؟ نمی‌خوام آیپیم تغییر کنه! </b>");
+                                    str.AppendLine("🔹 بله ؛ تمامی کانفیگ های موجود در اشتراک ما آیپی ثابت هستن");
                                     str.AppendLine("");
-                                    str.AppendLine("<b>" + "🔹 آیا اشتراک من ثابت است و می‌توانم آی‌پی را تغییر دهم؟" + "</b>");
-                                    str.AppendLine("بله، اشتراک ها به صورت ثابت (استاتیک) ارائه می‌شود.");
-                                    str.AppendLine("");
-                                    str.AppendLine("<b>" + "🔹 آیا می‌توانم با چند دستگاه به یک اشتراک متصل شوم؟" + "</b>");
-                                    str.AppendLine("بله، اشتراک ما به شما اجازه می‌دهد که بدون محدودیت کاربری، به چندین دستگاه به طور همزمان متصل شوید.");
+                                    str.AppendLine("<b>🔸 با چند تا دستگاه میتونم از سرویسم استفاده کنم؟ </b>");
+                                    str.AppendLine("🔹 اشتراک های تانل شده ی ما تا 10 نفر محدودیت کاربر دارن و برای خرید اشتراک های نامحدود میتونید بین دو اشتراک تک و دو کاربر انتخاب کنید");
                                     str.AppendLine("");
                                     str.AppendLine("<b>" + "🔹 آیا می‌توانم موقعیت سرورم را تغییر دهم؟" + "</b>");
                                     str.AppendLine("بله، شما می‌توانید به راحتی از طریق لیست سرورهای موجود در اشتراک ، سرور مورد نظر خود را انتخاب کنید");
                                     str.AppendLine("");
-                                    str.AppendLine("<b>" + "🔹 آیا حجم باقی مانده یا زمان باقی مانده به دوره بعد انتقال می یابد؟" + "</b>");
-                                    str.AppendLine("خیر، حجم یا زمان باقی مانده شما به دوره بعد انتقال نمی یابد و باید در دوره خریداری شده مصرف شود !!");
-                                    str.AppendLine("");
-                                    str.AppendLine("<b>" + "🔹 آیا قبل از اتمام زمان یا حجم , بسته جدید تمدید کنم بسته قبلی از بین میرود ؟" + "</b>");
-                                    str.AppendLine("خیر، اگر حجم یا زمان داشته باشید بسته جدید رزرو خواهد شد و بعد از پایان بسته فعلی جایگزین خواهد شد !!");
+                                    str.AppendLine("<b>🔸 با خرید یک سرویس به چه لوکیشن های میتونم وصل بشم؟ </b>");
+                                    str.AppendLine("🔹با یک خرید به همه لوکیشن های ما میتونید وصل بشید ("+ "<a href='https://t.me/MdVpnSec/2162'>لیست لوکیشن ها</a>" + ")");
                                     str.AppendLine("");
                                     str.AppendLine("💬 اگر سوالی داشتید که پاسخ آن را نیافتید با پشتیبانی در ارتباط باشید.");
                                     str.AppendLine("");
-                                    str.AppendLine("〰️〰️〰️〰️〰️");
-                                    str.AppendLine("🚀 @" + BotSettings.AdminUsername);
+                                    str.AppendLine("🆔 @" + BotSettings.AdminUsername);
 
                                     await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
                                 }
@@ -1813,12 +1820,12 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (callbackQuery.Data == "NextLevel")
                                 {
                                     StringBuilder str = new StringBuilder();
-                                    str.AppendLine("📌 اشتراک انتخابی شما 👇");
+                                    str.AppendLine("📌 سرویس انتخابی شما 👇");
                                     str.AppendLine();
-                                    if (User.Tel_Data != null)
-                                    {
-                                        str.AppendLine("نام اشتراک :" + User.Tel_Data.Split('%')[0].Split('@')[0].Split('$')[0]);
-                                    }
+                                    //if (User.Tel_Data != null)
+                                    //{
+                                    //    str.AppendLine("نام اشتراک :" + User.Tel_Data.Split('%')[0].Split('@')[0].Split('$')[0]);
+                                    //}
                                     str.AppendLine();
                                     str.AppendLine("♾ ترافیک : " + User.Tel_Traffic + " گیگ");
                                     str.AppendLine("⏳ مدت زمان : " + User.Tel_Monthes + " ماه");
@@ -1837,7 +1844,8 @@ namespace V2boardApi.Areas.api.Controllers
                                     str.AppendLine("");
                                     str.AppendLine("⭐️ شما میتوانید به مراحل قبل برگردید و اشتراک را تغییر دهید یا از همین مرحله خرید خود را تایید کنید.");
                                     str.AppendLine("");
-                                    str.AppendLine("");
+                                    str.AppendLine("〰️〰️〰️〰️〰️");
+                                    str.AppendLine("🚀@" + BotSettings.Bot_ID);
 
                                     var keys = Keyboards.GetAccpetBuyFromWallet();
 
@@ -3059,7 +3067,7 @@ namespace V2boardApi.Areas.api.Controllers
                         StringBuilder str2 = new StringBuilder();
                         str2.AppendLine("⚠️ با عرض پوزش ربات برای مدت کمی از دسترس خارج شده لطفا بعدا تلاش کنید");
                         str2.AppendLine("");
-                        str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                        str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
                         if (update.CallbackQuery != null)
                         {
                             await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html);
@@ -3140,11 +3148,11 @@ namespace V2boardApi.Areas.api.Controllers
             var key = keyboard.GetKeyboard();
 
             StringBuilder str = new StringBuilder();
-            str.AppendLine("🔐 اشتراکت رو خودت بساز");
+            str.AppendLine("🔐 سرویست رو خودت بساز");
             str.AppendLine("");
-            str.AppendLine("💸 به ازای هر گیگ  : " + BotSetting.PricePerGig_Major.ConvertToMony() + " تومان");
-            str.AppendLine("");
-            str.AppendLine("⏳ هر ماه : " + BotSetting.PricePerMonth_Major.ConvertToMony() + " تومان");
+            str.AppendLine("〰️〰️〰️〰️〰️");
+            str.AppendLine("🚀@" + BotSetting.Bot_ID);
+
 
             await bot.EditMessageTextAsync(chatId: User.Tel_UniqUserID, messageId: MessageId, str.ToString(), replyMarkup: key);
         }
