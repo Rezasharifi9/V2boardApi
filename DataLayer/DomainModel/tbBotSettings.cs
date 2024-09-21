@@ -34,6 +34,8 @@ namespace DataLayer.DomainModel
         public string AdminUsername { get; set; }
         public Nullable<bool> Is_ActiveChangeLimitUser { get; set; }
         public Nullable<double> InvitePercent { get; set; }
+        public Nullable<int> GroupId_test { get; set; }
+        public Nullable<int> GroupId_testUnlimited { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }

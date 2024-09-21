@@ -79,6 +79,8 @@
           <Property Name="AdminUsername" Type="varchar" MaxLength="50" />
           <Property Name="Is_ActiveChangeLimitUser" Type="bit" />
           <Property Name="InvitePercent" Type="float" />
+          <Property Name="GroupId_test" Type="int" />
+          <Property Name="GroupId_testUnlimited" Type="int" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -208,6 +210,7 @@
           <Property Name="Group_Name" Type="varchar" MaxLength="50" />
           <Property Name="Speed_limit" Type="smallint" />
           <Property Name="device_limit" Type="smallint" />
+          <Property Name="IsRobotPlan" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbServerGroups">
           <Key>
@@ -274,6 +277,7 @@
           <Property Name="FK_User_ID" Type="int" />
           <Property Name="Tel_RegisterDate" Type="datetime" />
           <Property Name="Tel_Status" Type="int" Nullable="false" />
+          <Property Name="Tel_GetedTestAccountUnlimited" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -400,7 +404,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbDepositWallet_Log_tbTelegramUsers">
-          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbDepositWallet_Log" Type="Self.tbDepositWallet_Log" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
@@ -450,7 +456,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbTelegramUsers">
-          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
@@ -538,7 +546,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbTelegramUsers">
-          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
@@ -1016,6 +1026,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="InvitePercent" Type="Double" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
+          <Property Name="GroupId_test" Type="Int32" />
+          <Property Name="GroupId_testUnlimited" Type="Int32" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1165,6 +1177,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbPlans" ToRole="tbUsers" />
+          <Property Name="IsRobotPlan" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="tbServerGroups">
           <Key>
@@ -1244,6 +1257,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <NavigationProperty Name="tbTelegramUsers2" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
+          <Property Name="Tel_GetedTestAccountUnlimited" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -1715,6 +1729,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbBotSettings">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
+                <ScalarProperty Name="GroupId_testUnlimited" ColumnName="GroupId_testUnlimited" />
+                <ScalarProperty Name="GroupId_test" ColumnName="GroupId_test" />
                 <ScalarProperty Name="InvitePercent" ColumnName="InvitePercent" />
                 <ScalarProperty Name="Is_ActiveChangeLimitUser" ColumnName="Is_ActiveChangeLimitUser" />
                 <ScalarProperty Name="AdminUsername" ColumnName="AdminUsername" />
@@ -1860,6 +1876,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbPlans">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
               <MappingFragment StoreEntitySet="tbPlans">
+                <ScalarProperty Name="IsRobotPlan" ColumnName="IsRobotPlan" />
                 <ScalarProperty Name="device_limit" ColumnName="device_limit" />
                 <ScalarProperty Name="Speed_limit" ColumnName="Speed_limit" />
                 <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
@@ -1927,6 +1944,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbTelegramUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbTelegramUsers">
               <MappingFragment StoreEntitySet="tbTelegramUsers">
+                <ScalarProperty Name="Tel_GetedTestAccountUnlimited" ColumnName="Tel_GetedTestAccountUnlimited" />
                 <ScalarProperty Name="Tel_Status" ColumnName="Tel_Status" />
                 <ScalarProperty Name="Tel_RegisterDate" ColumnName="Tel_RegisterDate" />
                 <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />

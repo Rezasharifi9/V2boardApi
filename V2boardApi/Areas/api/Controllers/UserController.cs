@@ -191,7 +191,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str1.AppendLine("");
                                         str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
                                         str1.AppendLine("");
-                                        str1.AppendLine("🆔 @" + botSetting.Bot_ID);
+                                        str1.AppendLine("🚀 @" + botSetting.Bot_ID);
 
                                         await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
                                     }

@@ -147,7 +147,7 @@ namespace V2boardApi.Tools
             //}
 
             //var url = method + "://" + HttpContext.Current.Request.Url.Authority;
-            var url = "https://031c-2a09-bac5-2808-18f0-00-27c-21.ngrok-free.app";
+            var url = "https://d4aa-2a05-f480-1400-22ed-5400-5ff-fe18-8922.ngrok-free.app";
 
 
             //var url = "https://";
