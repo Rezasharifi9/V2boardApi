@@ -31,29 +31,29 @@ namespace V2boardBot.Models
         {
             var keyboard = new ReplyKeyboardMarkup(new[]
                         {
-                            new[]
-                            {
+                    new[]
+                    {
 
-                                new KeyboardButton("🛒 خرید سرویس"),
-                                new KeyboardButton("🔄 تمدید سرویس"),
-                                new KeyboardButton("🌐 سرویس های من")
-                            },new[]
-                            {
-                                new KeyboardButton("💳 کیف پول من"),
-                                new KeyboardButton("📊 تعرفه‌ها"),
-                                new KeyboardButton("🎁 اشتراک تست"),
-                            },
-                            new[]
-                            {
-                                new KeyboardButton("⁉️ سوالات متداول"),
-                                new KeyboardButton("📚 راهنمای اتصال")
-                            },
-                            new[]
-                            {
-                                new KeyboardButton("📞 ارتباط با پشتیبانی"),
-                            }
+                        new KeyboardButton("🛒 خرید سرویس"),
+                        new KeyboardButton("🔄 تمدید سرویس"),
+                        new KeyboardButton("🌐 سرویس های من")
+                    },new[]
+                    {
+                        new KeyboardButton("💳 کیف پول من"),
+                        new KeyboardButton("📊 تعرفه‌ها"),
+                        new KeyboardButton("🎁 اشتراک تست"),
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("⁉️ سوالات متداول"),
+                        new KeyboardButton("📚 راهنمای اتصال")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("📞 ارتباط با پشتیبانی"),
+                    }
 
-                        });
+                });
 
 
             keyboard.IsPersistent = false;
@@ -88,7 +88,7 @@ namespace V2boardBot.Models
                                 new KeyboardButton("💳 کیف پول"),
                             }
 
-                        }) ;
+                        });
 
 
             keyboard.IsPersistent = true;
@@ -198,14 +198,69 @@ namespace V2boardBot.Models
 
                 for (int j = i; j < i + itemsPerRow && j < Plans.Count; j++)
                 {
-                    row.Add(InlineKeyboardButton.WithCallbackData(Plans[j].tbPlans.Plan_Des, Plans[j].tbPlans.Plan_ID + "_" + Email));
+                    row.Add(InlineKeyboardButton.WithCallbackData(Plans[j].tbPlans.Plan_Name, Plans[j].tbPlans.Plan_ID + "%" + Email));
                 }
 
                 inlineKeyboards.Add(row);
             }
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
-            row1.Add(InlineKeyboardButton.WithCallbackData("⬅️ برگشت به منو اصلی", "back"));
+            row1.Add(InlineKeyboardButton.WithCallbackData("⬅️ برگشت", "backToInfo"));
             inlineKeyboards.Add(row1);
+
+
+            var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
+
+            return keyboard;
+        }
+
+        public static InlineKeyboardMarkup GetMonthUnlimitedPlansKeyboard(List<tbPlans> plans)
+        {
+
+            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+            int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
+            for (int i = 0; i < plans.Count; i += itemsPerRow)
+            {
+                List<InlineKeyboardButton> row = new List<InlineKeyboardButton>();
+
+                for (int j = i; j < i + itemsPerRow && j < plans.Count; j++)
+                {
+                    row.Add(InlineKeyboardButton.WithCallbackData(plans[j].PlanMonth.ToString() + " ماهه", plans[j].Plan_ID.ToString()));
+                }
+
+                inlineKeyboards.Add(row);
+            }
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            row1.Add(InlineKeyboardButton.WithCallbackData("⬅️ برگشت", "backToInfo"));
+            inlineKeyboards.Add(row1);
+
+
+            var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
+
+            return keyboard;
+        }
+
+        public static InlineKeyboardMarkup GetUserUnlimitedPlansKeyboard(List<tbPlans> plans)
+        {
+
+            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+            int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
+
+            for (int i = 0; i < plans.Count; i += itemsPerRow)
+            {
+                List<InlineKeyboardButton> row = new List<InlineKeyboardButton>();
+
+                for (int j = i; j < i + itemsPerRow && j < plans.Count; j++)
+                {
+                    row.Add(InlineKeyboardButton.WithCallbackData((plans[j].device_limit - 1).ToString() + " کاربر", plans[j].Plan_ID.ToString()));
+                }
+
+                inlineKeyboards.Add(row);
+            }
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            row1.Add(InlineKeyboardButton.WithCallbackData("⬅️ برگشت", "backToInfo"));
+            inlineKeyboards.Add(row1);
+
+
             var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
             return keyboard;
@@ -315,7 +370,7 @@ namespace V2boardBot.Models
 
             btn.CallbackData = "paid_" + paymentId;
             var url = "https://t.me/SwapinoBot?start=BuyTron-" + Wallet + "-" + price + "-Tron";
-            
+
             row1.Add(InlineKeyboardButton.WithUrl("🏧 پرداخت", url));
             row1.Add(btn);
             var keyborad = new InlineKeyboardMarkup(row1);
@@ -390,6 +445,83 @@ namespace V2boardBot.Models
             btn2.CallbackData = "BackToCalc";
             row2.Add(btn2);
             btns.Add(row2);
+            var keyborad = new InlineKeyboardMarkup(btns);
+
+            return keyborad;
+        }
+
+        /// <summary>
+        /// تابع آوردن دکمه تائید پرداخت
+        /// </summary>
+        /// <returns></returns>
+        public static InlineKeyboardMarkup GetAccpetBuyUnlimtedFromWallet(int PlanId)
+        {
+            List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn = new InlineKeyboardButton("💰 پرداخت از کیف پول");
+            btn.CallbackData = "AccpetWalletUnlimited%" + PlanId;
+            row1.Add(btn);
+            btns.Add(row1);
+
+            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("🔙 برگشت");
+            btn2.CallbackData = "backToInfo%" + PlanId;
+            row2.Add(btn2);
+            btns.Add(row2);
+            var keyborad = new InlineKeyboardMarkup(btns);
+
+            return keyborad;
+        }
+
+
+        /// <summary>
+        /// تابع آوردن دکمه انتخاب نوع اشتراک
+        /// </summary>
+        /// <returns></returns>
+        public static InlineKeyboardMarkup GetSubTypeKey()
+        {
+            List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn = new InlineKeyboardButton("🏅 گُلد");
+            btn.CallbackData = "gold";
+            row1.Add(btn);
+
+
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("💎 پرمیوم");
+            btn2.CallbackData = "premium";
+            row1.Add(btn2);
+
+            btns.Add(row1);
+
+            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+
+            row2.Add(InlineKeyboardButton.WithCallbackData("⬅️ برگشت", "backToInfo"));
+            btns.Add(row2);
+
+            var keyborad = new InlineKeyboardMarkup(btns);
+
+            return keyborad;
+        }
+
+        /// <summary>
+        /// تابع آوردن دکمه انتخاب نوع اشتراک
+        /// </summary>
+        /// <returns></returns>
+        public static InlineKeyboardMarkup GetSubTypeKeyTest()
+        {
+            List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn = new InlineKeyboardButton("🏅 گُلد");
+            btn.CallbackData = "gold_test";
+            row1.Add(btn);
+
+
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("💎 پرمیوم");
+            btn2.CallbackData = "premium_test";
+            row1.Add(btn2);
+
+            btns.Add(row1);
+
             var keyborad = new InlineKeyboardMarkup(btns);
 
             return keyborad;

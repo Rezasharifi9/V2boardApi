@@ -88,11 +88,19 @@ public class TimerService
                                                                 if (d <= 1)
                                                                 {
                                                                     StringBuilder st = new StringBuilder();
-                                                                    st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                    if (link.tbL_Email.Split('@')[0].Contains('$'))
+                                                                    {
+                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                    }
                                                                     st.AppendLine("");
                                                                     st.Append("درحال اتمام حجم بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
                                                                     st.AppendLine("");
-                                                                    st.AppendLine("🆔 @" + BotSetting.Bot_ID);
+                                                                    st.AppendLine("〰️〰️〰️〰️〰️");
+                                                                    st.AppendLine("🚀@" + BotSetting.Bot_ID);
                                                                     await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
                                                                     link.tbL_Warning = true;
                                                                     await tbTelegramUserRepository.SaveChangesAsync();
@@ -105,11 +113,19 @@ public class TimerService
                                                                     if (ex <= DateTime.Now.AddDays(-2) && ex >= DateTime.Now.AddDays(31))
                                                                     {
                                                                         StringBuilder st = new StringBuilder();
-                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                        if (link.tbL_Email.Split('@')[0].Contains('$'))
+                                                                        {
+                                                                            st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                        }
                                                                         st.AppendLine("");
                                                                         st.AppendLine(" درحال اتمام زمان بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
                                                                         st.AppendLine("");
-                                                                        st.AppendLine("🆔 @"+ BotSetting.Bot_ID);
+                                                                        st.AppendLine("〰️〰️〰️〰️〰️");
+                                                                        st.AppendLine("🚀@" + BotSetting.Bot_ID);
                                                                         await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
                                                                         link.tbL_Warning = true;
                                                                         await tbTelegramUserRepository.SaveChangesAsync();
@@ -119,11 +135,20 @@ public class TimerService
                                                             else
                                                             {
                                                                 StringBuilder st = new StringBuilder();
-                                                                st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                if (link.tbL_Email.Split('@')[0].Contains('$'))
+                                                                {
+                                                                    st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
+                                                                }
+                                                                else
+                                                                {
+                                                                    st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                }
+
                                                                 st.AppendLine("");
                                                                 st.AppendLine("توسط ادمین مسدود شد برای دانستن علت مسدودی به پشتیبانی پیام دهید");
                                                                 st.AppendLine("");
-                                                                st.AppendLine("🆔 @" + BotSetting.Bot_ID);
+                                                                st.AppendLine("〰️〰️〰️〰️〰️");
+                                                                st.AppendLine("🚀@" + BotSetting.Bot_ID);
                                                                 await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
                                                                 link.tbL_Warning = true;
                                                                 await tbTelegramUserRepository.SaveChangesAsync();

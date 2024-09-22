@@ -348,13 +348,14 @@
     <Compile Include="Models\ServerGroups\UserGroupsViewModel.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
     <Compile Include="Tools\BotManager.cs" />
+    <Compile Include="Tools\BotMessages.cs" />
     <Compile Include="Tools\BotUtility.cs" />
+    <Compile Include="Tools\Keyboards.cs" />
     <Compile Include="Tools\ObjectExtensions.cs" />
     <Compile Include="Tools\EqualToAttribute.cs" />
     <Compile Include="Tools\ModelStateExtensions.cs" />
     <Compile Include="Tools\CustomTrafficKeyboard.cs" />
     <Compile Include="Tools\ExceptionHandling.cs" />
-    <Compile Include="Tools\Keyboards.cs" />
     <Compile Include="Models\ManifestModel.cs" />
     <Compile Include="Models\MysqlModel\UserMySqlModel.cs" />
     <Compile Include="Models\Plans.cs" />

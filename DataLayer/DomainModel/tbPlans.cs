@@ -37,6 +37,7 @@ namespace DataLayer.DomainModel
         public string Group_Name { get; set; }
         public Nullable<short> Speed_limit { get; set; }
         public Nullable<short> device_limit { get; set; }
+        public bool IsRobotPlan { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbBotSettings> tbBotSettings { get; set; }
