@@ -155,10 +155,11 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             deviceLimit = null;
                         }
+
                         var TimeNow = Utility.ConvertDatetimeToSecond(DateTime.Now);
 
                         var Query = "";
-
+                       
                         var group = user.tbLinkServerGroupWithUsers.Where(s => s.FK_Group_Id == model.planGroup).First();
                         tbPlans plan = new tbPlans();
                         var Disc1 = new Dictionary<string, object>();
@@ -199,7 +200,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 NewReader.Close();
                             }
                             plan.Plan_Name = model.planName;
-
+                            plan.IsRobotPlan = model.UnlimitedPlan;
                             plan.PlanVolume = model.planTraffic;
                             if (model.planTime == null)
                             {
@@ -271,6 +272,7 @@ namespace V2boardApi.Areas.App.Controllers
                 requestPlan.planPrice = plan.Price.Value.ConvertToMony();
                 requestPlan.planTime = plan.PlanMonth;
                 requestPlan.planSpeed = plan.Speed_limit;
+                requestPlan.UnlimitedPlan = plan.IsRobotPlan;
                 requestPlan.planDevicelimit = plan.device_limit;
                 var data = requestPlan.ToDictionary();
                 return Json(new { status = "success", data = data }, JsonRequestBehavior.AllowGet);

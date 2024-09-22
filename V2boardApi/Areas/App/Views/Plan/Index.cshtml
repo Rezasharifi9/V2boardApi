@@ -110,6 +110,18 @@
                     <option value="-1">در حال بارگزاری ...</option>
                 </select>
             </div>
+
+            @if (Role == "1")
+            {
+                <div class="col-sm-12">
+                    <div class="form-check form-check-flat form-check-success" style="margin-bottom: 41px; margin-top: 10px;">
+                       <label class="form-check-label">
+                            تعرفه نامحدود است ؟ <i class="input-helper"></i> <input type="checkbox" class="form-check-input" id="UnlimitedPlan" name="UnlimitedPlan">
+                       </label>
+                    </div>
+                </div>
+            }
+
             <div class="col-sm-12">
                 <button class="btn btn-primary data-submit me-sm-3 me-1" type="submit">ثبت</button>
                 <button class="btn btn-outline-secondary" data-bs-dismiss="offcanvas" type="reset">لغو</button>
