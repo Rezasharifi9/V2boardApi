@@ -688,14 +688,61 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
 
                                     StringBuilder str = new StringBuilder();
-                                    str.AppendLine("✨ خدمات بی‌نهایت، قیمت مناسب! ✨");
+                                    str.AppendLine("📊 تعرفه های اشتراک به شرح زیر است :");
                                     str.AppendLine("");
-                                    str.AppendLine("💸 هر گیگ حجم : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
-                                    str.AppendLine("⏳ هر ماه اشتراک : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
+
+
+                                    if (BotSettings.Present_Discount != null)
+                                    {
+                                        str.AppendLine("<b>1- 🏅 اشتراک گُلد ( با تخفیف )</b>");
+                                        str.AppendLine("");
+                                        str.AppendLine("💸 قیمت هر گیگ : " + "<s> " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان" + " </s>" + " 👈 " + (BotSettings.PricePerGig_Major - (BotSettings.PricePerGig_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                        str.AppendLine("⏳ قیمت هر ماه : " + "<s>" + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (BotSettings.PricePerMonth_Major - (BotSettings.PricePerMonth_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                        str.AppendLine("");
+                                    }
+                                    else
+                                    {
+                                        str.AppendLine("<b>1- 🏅 اشتراک گُلد</b>");
+                                        str.AppendLine("");
+                                        str.AppendLine("💸 قیمت هر گیگ : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
+                                        str.AppendLine("⏳ قیمت هر ماه : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
+                                        str.AppendLine("");
+                                    }
+
+
+                                    var Plans = BotSettings.tbUsers.tbPlans.Where(s => s.IsRobotPlan).ToList();
+                                    if (Plans.Count() >= 1)
+                                    {
+                                        if (BotSettings.Present_Discount != null)
+                                        {
+                                            str.AppendLine("<b>2-  💎 اشتراک پرمیوم ( باتخفیف )</b>");
+                                            str.AppendLine("");
+                                            var counter = 1;
+                                            foreach (var item in Plans)
+                                            {
+                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + item.device_limit + " کاربر" + " | " + "<s>" + item.Price.Value.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (item.Price.Value - (item.Price.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                                counter++;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            str.AppendLine("<b>2- 💎 اشتراک پرمیوم</b>");
+                                            str.AppendLine("");
+                                            var counter = 1;
+                                            foreach (var item in Plans)
+                                            {
+                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + item.device_limit + " کاربر" + " | " + item.Price.Value.ConvertToMony() + " تومان");
+                                                counter++;
+                                            }
+                                        }
+                                    }
+
                                     str.AppendLine("");
-                                    str.AppendLine("📱⚡ تجربه یک VPN پرسرعت و بی‌وقفه را با ما داشته باشید");
                                     str.AppendLine("");
-                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                    str.AppendLine("🔗 شما با خرید این سرویس میتوانید با تمامی اینترنت ها متصل شوید.");
+                                    str.AppendLine("");
+                                    str.AppendLine("〰️〰️〰️〰️〰️");
+                                    str.AppendLine("🚀@" + BotSettings.Bot_ID);
                                     await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
 
                                 }
@@ -828,9 +875,10 @@ namespace V2boardApi.Areas.api.Controllers
                                     //await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
                                     return;
                                 }
+                                #endregion
                             }
 
-                            #endregion
+
 
                             #region سوالات متداول
 
@@ -1856,8 +1904,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region پرداخت از کیف پول
 
-
-
                                 if (callbackQuery.Data == "AccpetWallet")
                                 {
                                     var AccountName = "";
@@ -2557,8 +2603,8 @@ namespace V2boardApi.Areas.api.Controllers
                                                     var DeviceLimit_Structur = "";
                                                     if (Plan.device_limit != null)
                                                     {
-                                                        DeviceLimit_Structur = ",@device_limit=" + Plan.device_limit;
-                                                        Disc3.Add("@device_limit", Plan.device_limit);
+                                                        DeviceLimit_Structur = ",device_limit=" + Plan.device_limit;
+                                                        //Disc3.Add("@device_limit", Plan.device_limit);
                                                     }
 
                                                     var Query = "update v2_user set u=0,d=0,t=0,plan_id=@DefaultPlanIdInV2board,group_id=@group" + DeviceLimit_Structur + ", transfer_enable=@transfer_enable,expired_at=@exp where email=@email";
@@ -2651,7 +2697,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                     AccountName += User.Tel_Username + acc;
                                                 }
-
+                                                Order.AccountName = AccountName;
                                                 while (IsExists)
                                                 {
                                                     var Links = tbLinksRepository.Where(p => p.tbL_Email == Order.AccountName).Any();
