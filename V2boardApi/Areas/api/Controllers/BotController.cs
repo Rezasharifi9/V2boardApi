@@ -436,6 +436,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (mess.StartsWith("⬅️ برگشت به صفحه اصلی"))
                                 {
+
                                     inlineKeyboardMarkup = Keyboards.GetHomeButton();
                                     StringBuilder st = new StringBuilder();
 
