@@ -209,7 +209,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 plan.PlanMonth = model.planTime;
                             }
-
+                            plan.IsRobotPlan = model.UnlimitedPlan;
                             plan.Price = OrgPrice;
                             plan.FK_Server_ID = user.FK_Server_ID;
                             plan.Status = true;
@@ -272,6 +272,7 @@ namespace V2boardApi.Areas.App.Controllers
                 requestPlan.planTime = plan.PlanMonth;
                 requestPlan.planSpeed = plan.Speed_limit;
                 requestPlan.planDevicelimit = plan.device_limit;
+                requestPlan.UnlimitedPlan = plan.IsRobotPlan;
                 var data = requestPlan.ToDictionary();
                 return Json(new { status = "success", data = data }, JsonRequestBehavior.AllowGet);
             }

@@ -29,5 +29,6 @@ namespace V2boardApi.Areas.App.Data.PlanViewModels
         public Nullable<short> planDevicelimit { get; set; }
         [Required(ErrorMessage = "لطفا دسته بندی را انتخاب کنید")]
         public Nullable<int> planGroup { get; set; }
+        public bool UnlimitedPlan { get; set; }
     }
 }

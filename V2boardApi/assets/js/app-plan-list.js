@@ -222,7 +222,18 @@ $(function () {
                 for (var key in data) {
                     if (data.hasOwnProperty(key)) {
                         var input = $('input[name=' + key + ']');
+                        if (key == "UnlimitedPlan") {
+                            console.log(data[key]);
+                            if (data[key] == true) {
+                                $("#UnlimitedPlan").attr("checked", true);
+                                $('#UnlimitedPlan').val("True");
 
+                            }
+                            else {
+                                $("#UnlimitedPlan").attr("checked", false);
+                                $('#UnlimitedPlan').val("False");
+                            }
+                        }
                         if (key == "planTime") {
                             SelectPlan("#planTime", data[key]);
                         }
@@ -403,6 +414,12 @@ $(function () {
     });
 
     fv.on('core.form.valid', function (e) {
+
+        if ($('#UnlimitedPlan').is(':checked')) {
+            $('#UnlimitedPlan').val("True");
+        } else {
+            $('#UnlimitedPlan').val("False");
+        }
 
         blockUI('.section-block');
         AjaxFormPost('/App/Plan/CreateOrEdit', "#planForm").then(res => {
