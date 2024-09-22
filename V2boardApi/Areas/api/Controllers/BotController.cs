@@ -720,7 +720,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             var counter = 1;
                                             foreach (var item in Plans)
                                             {
-                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + item.device_limit + " کاربر" + " | " + "<s>" + item.Price.Value.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (item.Price.Value - (item.Price.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit - 1) + " کاربر" + " | " + "<s>" + item.Price.Value.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (item.Price.Value - (item.Price.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
                                                 counter++;
                                             }
                                         }
@@ -731,7 +731,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             var counter = 1;
                                             foreach (var item in Plans)
                                             {
-                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + item.device_limit + " کاربر" + " | " + item.Price.Value.ConvertToMony() + " تومان");
+                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit - 1) + " کاربر" + " | " + item.Price.Value.ConvertToMony() + " تومان");
                                                 counter++;
                                             }
                                         }
