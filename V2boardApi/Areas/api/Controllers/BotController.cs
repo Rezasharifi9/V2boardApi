@@ -2404,7 +2404,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (callbackQuery.Data == "premium")
                                 {
-                                    var plans = BotSettings.tbUsers.tbPlans.Where(s => s.IsRobotPlan == true).ToList();
+                                    var plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true).Select(s => s.tbPlans).ToList();
                                     if (plans.Count > 0)
                                     {
                                         var mess = BotMessages.SendSelectMonth(BotSettings, plans);
@@ -2485,7 +2485,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (callback[0] == "AccpetWalletUnlimited")
                                     {
                                         var PlanID = callback[1];
-                                        var Plan = await tbPlansRepository.FirstOrDefaultAsync(s => s.Plan_ID.ToString() == PlanID);
+                                        var Plan = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.Plan_ID.ToString() == PlanID).Select(s => s.tbPlans).FirstOrDefault();
                                         var AccountName = "";
                                         if (User.Tel_Data != null)
                                         {
