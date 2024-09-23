@@ -2519,7 +2519,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (callback[0] == "AccpetWalletUnlimited")
                                     {
                                         var PlanID = callback[1];
-                                        var Plan = await tbPlansRepository.FirstOrDefaultAsync(s => s.Plan_ID.ToString() == PlanID);
+                                        var Plan = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.Plan_ID.ToString() == PlanID).Select(s => s.tbPlans).FirstOrDefault();
                                         var AccountName = "";
                                         if (User.Tel_Data != null)
                                         {
