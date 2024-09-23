@@ -69,7 +69,7 @@ namespace V2boardApi.Tools
         /// <returns></returns>
         public static MessageModel SendSelectUser(tbBotSettings BotSettings,CallbackQuery callbackQuery)
         {
-            var plans = BotSettings.tbUsers.tbPlans.Where(s => s.IsRobotPlan == true && s.Plan_ID.ToString() == callbackQuery.Data).ToList();
+            var plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.Plan_ID.ToString() == callbackQuery.Data).Select(s=> s.tbPlans).ToList();
 
 
             var keys = Keyboards.GetUserUnlimitedPlansKeyboard(plans);

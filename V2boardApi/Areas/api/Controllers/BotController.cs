@@ -1220,7 +1220,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                     if (User.Tel_Step == "SelectDevice")
                                     {
-                                        var plans = BotSettings.tbUsers.tbPlans.Where(s => s.IsRobotPlan == true).ToList();
+                                        var plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true).Select(s => s.tbPlans).ToList();
                                         var model = BotMessages.SendSelectMonth(BotSettings, plans);
                                         await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectMonth", db, botName);
                                         await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, model.text, parseMode: ParseMode.Html, replyMarkup: model.keyboard);
@@ -2438,7 +2438,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (callbackQuery.Data == "premium")
                                 {
-                                    var plans = BotSettings.tbUsers.tbPlans.Where(s => s.IsRobotPlan == true).ToList();
+                                    var plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true).Select(s => s.tbPlans).ToList();
                                     if (plans.Count > 0)
                                     {
                                         var mess = BotMessages.SendSelectMonth(BotSettings, plans);
