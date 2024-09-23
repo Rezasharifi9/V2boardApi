@@ -127,7 +127,6 @@ namespace V2boardApi.Areas.api.Controllers
                         tbTelegramUsers UserAcc = new tbTelegramUsers();
                         if (update.Message is Telegram.Bot.Types.Message message)
                         {
-
                             chatid = update.Message.From.Id;
                             var mess = message.Text;
 
@@ -176,7 +175,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                             if (chatid.ToString() == BotSettings.AdminBot_ID.ToString())
                             {
-
                                 #region ارسال پیغام همگانی توسط ادمین
                                 if (update.Message.Type == MessageType.Photo && message.Caption != null)
                                 {
@@ -279,7 +277,6 @@ namespace V2boardApi.Areas.api.Controllers
                             }
                             if (update.Message.Type == MessageType.Text)
                             {
-
                                 #region چک کردن اینکه آیا کاربر وجود دارد در دیتابیس یا نه
                                 var User = await tbTelegramUserRepository.FirstOrDefaultAsync(p => p.Tel_UniqUserID == chatid.ToString() && p.tbUsers.Username == botName);
                                 if (User == null)
