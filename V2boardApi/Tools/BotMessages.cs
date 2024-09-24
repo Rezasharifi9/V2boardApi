@@ -69,10 +69,10 @@ namespace V2boardApi.Tools
         /// <returns></returns>
         public static MessageModel SendSelectUser(tbBotSettings BotSettings,CallbackQuery callbackQuery)
         {
-            var plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.Plan_ID.ToString() == callbackQuery.Data).Select(s=> s.tbPlans).ToList();
+            var Plan = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.Plan_ID.ToString() == callbackQuery.Data).Select(s => s.tbPlans).FirstOrDefault();
+            var Plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.PlanMonth == Plan.PlanMonth).Select(s => s.tbPlans).ToList();
 
-
-            var keys = Keyboards.GetUserUnlimitedPlansKeyboard(plans);
+            var keys = Keyboards.GetUserUnlimitedPlansKeyboard(Plans);
 
             StringBuilder str = new StringBuilder();
             str.AppendLine("♨️ لطفا تعداد کاربر را انتخاب کنید");
