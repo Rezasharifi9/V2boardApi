@@ -2019,7 +2019,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
 
 
-                                                BotSettings.tbUsers.Wallet += Price;
+                                                BotSettings.tbUsers.Wallet += PirceWithoutDiscount;
                                                 await BotSettingRepository.SaveChangesAsync();
                                                 return;
                                             }
