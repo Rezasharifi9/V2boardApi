@@ -1952,7 +1952,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
                                                 await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, "🏘 به منو اصلی بازگشتید", replyMarkup: kyes, parseMode: ParseMode.Html);
 
-                                                BotSettings.tbUsers.Wallet += Price;
+                                                BotSettings.tbUsers.Wallet += PirceWithoutDiscount;
                                                 await BotSettingRepository.SaveChangesAsync();
                                                 return;
                                             }
