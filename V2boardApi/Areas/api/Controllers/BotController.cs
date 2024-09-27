@@ -2967,7 +2967,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
 
-                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == User.Tel_UniqUserID).FirstOrDefault();
+                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == User.Tel_UniqUserID && s.tbUsers.Username == botName).FirstOrDefault();
                                         if (tbTelegram != null)
                                         {
                                             tbTelegram.Tel_GetedTestAccountUnlimited = true;
@@ -3068,7 +3068,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
 
-                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == User.Tel_UniqUserID).FirstOrDefault();
+                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == User.Tel_UniqUserID && s.tbUsers.Username == botName).FirstOrDefault();
                                         if (tbTelegram != null)
                                         {
                                             tbTelegram.Tel_GetedTestAccount = true;
