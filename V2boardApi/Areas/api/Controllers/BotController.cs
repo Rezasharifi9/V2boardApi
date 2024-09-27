@@ -554,7 +554,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         Random ran = new Random();
                                         var RanNumber = ran.Next(1, 999);
 
-                                        var fullPrice = (price * 10) + RanNumber;
+                                        var fullPrice = (price * 10);
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            fullPrice += RanNumber;
+                                        }
                                         StringBuilder str = new StringBuilder();
 
                                         var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
@@ -584,7 +588,10 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                         }
                                         str.AppendLine("");
-                                        str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        }
                                         tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
                                         tbDeposit.dw_Price = fullPrice;
                                         tbDeposit.dw_CreateDatetime = DateTime.Now;
@@ -2325,7 +2332,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         Random ran = new Random();
                                         var RanNumber = ran.Next(1, 999);
 
-                                        var fullPrice = (price * 10) + RanNumber;
+                                        var fullPrice = (price * 10);
+                                        if(BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            fullPrice += RanNumber;
+                                        }
                                         StringBuilder str = new StringBuilder();
 
                                         var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
@@ -2355,7 +2366,10 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                         }
                                         str.AppendLine("");
-                                        str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        if(BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        }
                                         tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
                                         tbDeposit.dw_Price = fullPrice;
                                         tbDeposit.dw_CreateDatetime = DateTime.Now;
@@ -2854,7 +2868,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         while (isExists)
                                         {
                                             Random ran = new Random();
-                                            FullName = Guid.NewGuid().ToString().Split('-')[0] + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
+                                            FullName = BotSettings.Bot_ID + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
                                             var Disc2 = new Dictionary<string, object>();
                                             Disc2.Add("@FullName", FullName);
                                             var reader2 = await mySql.GetDataAsync("select * from v2_user where email=@FullName", Disc2);
@@ -2955,7 +2969,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         while (isExists)
                                         {
                                             Random ran = new Random();
-                                            FullName = Guid.NewGuid().ToString().Split('-')[0] + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
+                                            FullName = BotSettings.Bot_ID + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
                                             var Disc2 = new Dictionary<string, object>();
                                             Disc2.Add("@FullName", FullName);
                                             var reader2 = await mySql.GetDataAsync("select * from v2_user where email=@FullName", Disc2);

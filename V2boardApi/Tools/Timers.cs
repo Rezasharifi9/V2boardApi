@@ -367,7 +367,7 @@ public class TimerService
                 try
                 {
 
-                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Active == true && s.Enabled == true).Count() != 0)
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Active == true && s.Enabled == true && s.IsActiveCardToCard == true).Count() != 0)
                     {
                         var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
 
