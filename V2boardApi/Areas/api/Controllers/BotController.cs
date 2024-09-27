@@ -670,7 +670,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     if (BotSettings.Present_Discount != null)
                                     {
-                                        str.AppendLine("<b>1- 🏅 اشتراک گُلد ( با تخفیف ) : </b>");
+                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی ( با تخفیف ) : </b>");
                                         str.AppendLine("");
                                         str.AppendLine("💸 قیمت هر گیگ : " + "<s> "+ BotSettings.PricePerGig_Major.ConvertToMony() + " تومان" + " </s>" + " 👈 " +  (BotSettings.PricePerGig_Major - (BotSettings.PricePerGig_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
                                         str.AppendLine("⏳ قیمت هر ماه : " + "<s>"+ BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (BotSettings.PricePerMonth_Major - (BotSettings.PricePerMonth_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
@@ -678,7 +678,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                     else
                                     {
-                                        str.AppendLine("<b>1- 🏅 اشتراک گُلد : </b>");
+                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی : </b>");
                                         str.AppendLine("");
                                         str.AppendLine("💸 قیمت هر گیگ 👈 " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
                                         str.AppendLine("⏳ قیمت هر ماه 👈 " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
@@ -691,7 +691,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         if (BotSettings.Present_Discount != null)
                                         {
-                                            str.AppendLine("<b>2-  💎 اشتراک پرمیوم ( باتخفیف ) : </b>");
+                                            str.AppendLine("<b>2-  🥈 اشتراک نقره ای ( باتخفیف ) : </b>");
                                             str.AppendLine("");
                                             var counter = 1;
                                             foreach (var item in Plans)
@@ -702,7 +702,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                         else
                                         {
-                                            str.AppendLine("<b>2- 💎 اشتراک پرمیوم : </b>");
+                                            str.AppendLine("<b>2- 🥈 اشتراک نقره ای : </b>");
                                             str.AppendLine("");
                                             var counter = 1;
                                             foreach (var item in Plans)
@@ -2029,8 +2029,12 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                             else
                                             {
-                                                AccountName += User.Tel_Username;
+                                                var acc = tbLinksRepository.Where(p => p.FK_TelegramUserID == User.Tel_UserID).Count();
+                                                acc += 1;
+
+                                                AccountName += User.Tel_Username + acc;
                                             }
+                                            Order.AccountName = AccountName + "@" + BotSettings.tbUsers.Username;
 
                                             if (Utility.IsPersian(AccountName))
                                             {
@@ -2038,7 +2042,6 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
 
 
-                                            Order.AccountName = AccountName + "$" + s.ToString().Split('-')[ran.Next(0, 3)] + "@" + BotSettings.tbUsers.Username;
                                             while (IsExists)
                                             {
                                                 var Links = tbLinksRepository.Where(p => p.tbL_Email == Order.AccountName).Any();
@@ -2391,7 +2394,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
-                                #region اشتراک گُلد
+                                #region اشتراک طلایی
 
                                 if (callbackQuery.Data == "gold")
                                 {
@@ -2400,7 +2403,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
-                                #region اشتراک پریمیوم
+                                #region اشتراک نقره ای
 
                                 if (callbackQuery.Data == "premium")
                                 {
@@ -2414,7 +2417,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                     else
                                     {
-                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "⚠️ فروش اشتراک پریمیوم موقتا متوقف شده است");
+                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "⚠️ فروش اشتراک نقره ای موقتا متوقف شده است");
                                     }
                                 }
 
@@ -2663,7 +2666,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                     AccountName += User.Tel_Username + acc;
                                                 }
-                                                Order.AccountName = AccountName + "$" + s.ToString().Split('-')[ran.Next(0, 3)] + "@" + BotSettings.tbUsers.Username;
+                                                Order.AccountName = AccountName + "@" + BotSettings.tbUsers.Username;
                                                 while (IsExists)
                                                 {
                                                     var Links = tbLinksRepository.Where(p => p.tbL_Email == Order.AccountName).Any();
@@ -2828,7 +2831,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region ایجاد اشتراک تست
 
-                                #region پریمیوم
+                                #region نقره ای
 
                                 if (callbackQuery.Data == "premium_test")
                                 {
@@ -2891,7 +2894,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         reader.Close();
 
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست پرمیوم شما با موفقیت ساخته شد❕");
+                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست نقره ای شما با موفقیت ساخته شد❕");
                                         str.AppendLine("");
                                         str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
                                         str.AppendLine("");
@@ -2922,7 +2925,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     else
                                     {
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("❌ شما قبلا اشتراک تست پرمیوم دریافت کرده اید");
+                                        str.AppendLine("❌ شما قبلا اشتراک تست نقره ای دریافت کرده اید");
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
@@ -2931,7 +2934,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
-                                #region گُلد
+                                #region طلایی
 
                                 if (callbackQuery.Data == "gold_test")
                                 {
@@ -2992,7 +2995,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         reader.Close();
 
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست گلد شما با موفقیت ساخته شد❕");
+                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست طلایی شما با موفقیت ساخته شد❕");
                                         str.AppendLine("");
                                         str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
                                         str.AppendLine("");
@@ -3022,7 +3025,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     else
                                     {
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("❌ شما قبلا اشتراک تست گُلد دریافت کرده اید");
+                                        str.AppendLine("❌ شما قبلا اشتراک تست طلایی دریافت کرده اید");
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
