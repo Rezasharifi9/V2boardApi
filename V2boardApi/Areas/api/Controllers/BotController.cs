@@ -576,7 +576,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         Random ran = new Random();
                                         var RanNumber = ran.Next(1, 999);
 
-                                        var fullPrice = (price * 10) + RanNumber;
+                                        var fullPrice = (price * 10);
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            fullPrice += RanNumber;
+                                        }
                                         StringBuilder str = new StringBuilder();
 
                                         var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
@@ -606,7 +610,10 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                         }
                                         str.AppendLine("");
-                                        str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        }
                                         tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
                                         tbDeposit.dw_Price = fullPrice;
                                         tbDeposit.dw_CreateDatetime = DateTime.Now;
@@ -616,8 +623,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         tbDepositLogRepo.Insert(tbDeposit);
                                         await tbDepositLogRepo.SaveChangesAsync();
                                         str.AppendLine("");
-                                        str.AppendLine("〰️〰️〰️〰️〰️");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
 
@@ -636,8 +642,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("❗️ مبلغ را با اعداد انگلیسی وارد کنید");
                                         str.AppendLine("");
-                                        str.AppendLine("〰️〰️〰️〰️〰️");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db, botName);
 
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
@@ -2366,7 +2371,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         Random ran = new Random();
                                         var RanNumber = ran.Next(1, 999);
 
-                                        var fullPrice = (price * 10) + RanNumber;
+                                        var fullPrice = (price * 10);
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            fullPrice += RanNumber;
+                                        }
                                         StringBuilder str = new StringBuilder();
 
                                         var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
@@ -2396,7 +2405,10 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                         }
                                         str.AppendLine("");
-                                        str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                        }
                                         tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
                                         tbDeposit.dw_Price = fullPrice;
                                         tbDeposit.dw_CreateDatetime = DateTime.Now;
