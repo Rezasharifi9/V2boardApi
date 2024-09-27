@@ -2908,7 +2908,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         while (isExists)
                                         {
                                             Random ran = new Random();
-                                            FullName = Guid.NewGuid().ToString().Split('-')[0] + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
+                                            FullName = BotSettings.Bot_ID + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
                                             var Disc2 = new Dictionary<string, object>();
                                             Disc2.Add("@FullName", FullName);
                                             var reader2 = await mySql.GetDataAsync("select * from v2_user where email=@FullName", Disc2);
@@ -2948,7 +2948,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         reader.Close();
 
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست شما با موفقیت ساخته شد❕");
+                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست نقره ای شما با موفقیت ساخته شد❕");
                                         str.AppendLine("");
                                         str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
                                         str.AppendLine("");
@@ -2979,7 +2979,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     else
                                     {
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("❌ شما قبلا اشتراک تست نقره ای را دریافت کرده اید");
+                                        str.AppendLine("❌ شما قبلا اشتراک تست نقره ای دریافت کرده اید");
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
@@ -3009,7 +3009,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         while (isExists)
                                         {
                                             Random ran = new Random();
-                                            FullName = Guid.NewGuid().ToString().Split('-')[0] + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
+                                            FullName = BotSettings.Bot_ID + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
                                             var Disc2 = new Dictionary<string, object>();
                                             Disc2.Add("@FullName", FullName);
                                             var reader2 = await mySql.GetDataAsync("select * from v2_user where email=@FullName", Disc2);
@@ -3049,11 +3049,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         reader.Close();
 
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست شما با موفقیت ساخته شد❕");
+                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست طلایی شما با موفقیت ساخته شد❕");
                                         str.AppendLine("");
                                         str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
                                         str.AppendLine("");
-                                        str.AppendLine("🚦 حجم کل : 500 مگ");
+                                        str.AppendLine("🚦 حجم کل : 500 مگابایت");
                                         str.AppendLine("⏳ مدت زمان : یک روز");
                                         str.AppendLine("");
                                         str.AppendLine("🔗 لینک اتصال: ");
@@ -3079,7 +3079,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     else
                                     {
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("❌ شما قبلا اشتراک تست طلایی را دریافت کرده اید");
+                                        str.AppendLine("❌ شما قبلا اشتراک تست طلایی دریافت کرده اید");
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
