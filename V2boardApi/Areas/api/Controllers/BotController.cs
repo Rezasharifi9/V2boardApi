@@ -694,7 +694,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     if (BotSettings.Present_Discount != null)
                                     {
-                                        str.AppendLine("<b>1- 🏅 اشتراک گُلد ( با تخفیف )</b>");
+                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی ( با تخفیف ) ( حجمی )</b>");
                                         str.AppendLine("");
                                         str.AppendLine("💸 قیمت هر گیگ : " + "<s> " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان" + " </s>" + " 👈 " + (BotSettings.PricePerGig_Major - (BotSettings.PricePerGig_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
                                         str.AppendLine("⏳ قیمت هر ماه : " + "<s>" + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (BotSettings.PricePerMonth_Major - (BotSettings.PricePerMonth_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
@@ -702,7 +702,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                     else
                                     {
-                                        str.AppendLine("<b>1- 🏅 اشتراک گُلد</b>");
+                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی ( حجمی )</b>");
                                         str.AppendLine("");
                                         str.AppendLine("💸 قیمت هر گیگ : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
                                         str.AppendLine("⏳ قیمت هر ماه : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
@@ -715,7 +715,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         if (BotSettings.Present_Discount != null)
                                         {
-                                            str.AppendLine("<b>2-  💎 اشتراک پرمیوم ( باتخفیف )</b>");
+                                            str.AppendLine("<b>2-  🥈 اشتراک نقره ای ( باتخفیف ) ( نامحدود )</b>");
                                             str.AppendLine("");
                                             var counter = 1;
                                             foreach (var item in Plans)
@@ -726,7 +726,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                         else
                                         {
-                                            str.AppendLine("<b>2- 💎 اشتراک پرمیوم</b>");
+                                            str.AppendLine("<b>2- 🥈 اشتراک نقره ای ( نامحدود )</b>");
                                             str.AppendLine("");
                                             var counter = 1;
                                             foreach (var item in Plans)
@@ -885,7 +885,7 @@ namespace V2boardApi.Areas.api.Controllers
                             if (mess == "❓ سؤالات رایج")
                             {
                                 StringBuilder str = new StringBuilder();
-                                str.AppendLine("<b>" + "❓ سؤالات متداول درباره اشتراک‌ها ❓" + "</b>");
+                                str.AppendLine("<b>" + "❓ سؤالات رایج در خصوص سرویس ها ❓" + "</b>");
                                 str.AppendLine("");
                                 str.AppendLine("");
                                 str.AppendLine("<b>" + "🔹 آیا اشتراک من ثابت است و می‌توانم آی‌پی را تغییر دهم؟" + "</b>");
@@ -902,6 +902,9 @@ namespace V2boardApi.Areas.api.Controllers
                                 str.AppendLine("");
                                 str.AppendLine("<b>" + "🔹 آیا قبل از اتمام زمان یا حجم , بسته جدید تمدید کنم بسته قبلی از بین میرود ؟" + "</b>");
                                 str.AppendLine("خیر، اگر حجم یا زمان داشته باشید بسته جدید رزرو خواهد شد و بعد از پایان بسته فعلی جایگزین خواهد شد !!");
+                                str.AppendLine("");
+                                str.AppendLine("<b>" + "🔹 تفاوت بین اشتراک نقره ای و طلایی چیست ؟" + "</b>");
+                                str.AppendLine("تفاوتشون توی حجم و پایداری سرویس است در اشتراک نقره ای شما حجم نامحدود دارید اما در برخی شرایط پایدار نیست . اما در اشتراک طلایی حجم مشخص معین می شود و پایدار است");
                                 str.AppendLine("");
                                 str.AppendLine("💬 اگر سوالی داشتید که پاسخ آن را نیافتید با پشتیبانی در ارتباط باشید.");
                                 str.AppendLine("");
@@ -2434,7 +2437,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
-                                #region اشتراک پریمیوم
+                                #region اشتراک نقره ای
 
                                 if (callbackQuery.Data == "premium")
                                 {
@@ -2448,7 +2451,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                     else
                                     {
-                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "⚠️ فروش اشتراک پریمیوم موقتا متوقف شده است");
+                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "⚠️ فروش اشتراک نقره ای موقتا متوقف شده است");
                                     }
                                 }
 
@@ -2697,7 +2700,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                     AccountName += User.Tel_Username + acc;
                                                 }
-                                                Order.AccountName = AccountName;
+                                                Order.AccountName = AccountName + "@" + BotSettings.tbUsers.Username;
                                                 while (IsExists)
                                                 {
                                                     var Links = tbLinksRepository.Where(p => p.tbL_Email == Order.AccountName).Any();
@@ -2780,7 +2783,8 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var SubLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + token;
                                                 st.AppendLine("<code>" + SubLink + "</code>");
                                                 st.AppendLine("");
-
+                                                st.AppendLine("⚠️ نکته مهم : اگر تعداد دستگاه ها بیشتر از حد مجاز شود اشتراک شما با قعطی مواجه خواهد شد");
+                                                st.AppendLine("");
                                                 st.AppendLine("◀️ روی لینک کلیک کنید به صورت خودکار لینک کپی می شود");
                                                 st.AppendLine("");
                                                 st.AppendLine("◀️ برای نمایش جزئیات اشتراک به بخش مدیریت اشتراک ها مراجعه کنید");
@@ -2862,7 +2866,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region ایجاد اشتراک تست
 
-                                #region پریمیوم
+                                #region نقره ای
 
                                 if (callbackQuery.Data == "premium_test")
                                 {
@@ -2956,7 +2960,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     else
                                     {
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("❌ شما قبلا اشتراک تست پرمیوم دریافت کرده اید");
+                                        str.AppendLine("❌ شما قبلا اشتراک تست نقره ای را دریافت کرده اید");
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
@@ -2965,7 +2969,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
-                                #region گُلد
+                                #region طلایی
 
                                 if (callbackQuery.Data == "gold_test")
                                 {
@@ -3056,7 +3060,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     else
                                     {
                                         StringBuilder str = new StringBuilder();
-                                        str.AppendLine("❌ شما قبلا اشتراک تست گُلد دریافت کرده اید");
+                                        str.AppendLine("❌ شما قبلا اشتراک تست طلایی را دریافت کرده اید");
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());

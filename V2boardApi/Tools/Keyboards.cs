@@ -482,12 +482,12 @@ namespace V2boardBot.Models
         {
             List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
-            InlineKeyboardButton btn = new InlineKeyboardButton("🏅 گُلد");
+            InlineKeyboardButton btn = new InlineKeyboardButton("🥇 طلایی");
             btn.CallbackData = "gold";
             row1.Add(btn);
             
 
-            InlineKeyboardButton btn2 = new InlineKeyboardButton("💎 پرمیوم");
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("🥈 نقره ای");
             btn2.CallbackData = "premium";
             row1.Add(btn2);
 
@@ -511,12 +511,12 @@ namespace V2boardBot.Models
         {
             List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
-            InlineKeyboardButton btn = new InlineKeyboardButton("🏅 گُلد");
+            InlineKeyboardButton btn = new InlineKeyboardButton("🥇 طلایی");
             btn.CallbackData = "gold_test";
             row1.Add(btn);
 
 
-            InlineKeyboardButton btn2 = new InlineKeyboardButton("💎 پرمیوم");
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("🥈 نقره ای");
             btn2.CallbackData = "premium_test";
             row1.Add(btn2);
 
