@@ -666,48 +666,48 @@ namespace V2boardApi.Areas.api.Controllers
                                     StringBuilder str = new StringBuilder();
                                     str.AppendLine("📊 تعرفه های اشتراک به شرح زیر است :");
                                     str.AppendLine("");
-                                    
+
 
                                     if (BotSettings.Present_Discount != null)
                                     {
-                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی ( با تخفیف ) : </b>");
+                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی ( با تخفیف ) ( حجمی )</b>");
                                         str.AppendLine("");
-                                        str.AppendLine("💸 قیمت هر گیگ : " + "<s> "+ BotSettings.PricePerGig_Major.ConvertToMony() + " تومان" + " </s>" + " 👈 " +  (BotSettings.PricePerGig_Major - (BotSettings.PricePerGig_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
-                                        str.AppendLine("⏳ قیمت هر ماه : " + "<s>"+ BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (BotSettings.PricePerMonth_Major - (BotSettings.PricePerMonth_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                        str.AppendLine("💸 قیمت هر گیگ : " + "<s> " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان" + " </s>" + " 👈 " + (BotSettings.PricePerGig_Major - (BotSettings.PricePerGig_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                        str.AppendLine("⏳ قیمت هر ماه : " + "<s>" + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (BotSettings.PricePerMonth_Major - (BotSettings.PricePerMonth_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
                                         str.AppendLine("");
                                     }
                                     else
                                     {
-                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی : </b>");
+                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی ( حجمی )</b>");
                                         str.AppendLine("");
-                                        str.AppendLine("💸 قیمت هر گیگ 👈 " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
-                                        str.AppendLine("⏳ قیمت هر ماه 👈 " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
+                                        str.AppendLine("💸 قیمت هر گیگ : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
+                                        str.AppendLine("⏳ قیمت هر ماه : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
                                         str.AppendLine("");
                                     }
-                                    
 
-                                    var Plans = BotSettings.tbUsers.tbPlans.Where(s=> s.IsRobotPlan).ToList();
+
+                                    var Plans = BotSettings.tbUsers.tbPlans.Where(s => s.IsRobotPlan).ToList();
                                     if (Plans.Count() >= 1)
                                     {
                                         if (BotSettings.Present_Discount != null)
                                         {
-                                            str.AppendLine("<b>2-  🥈 اشتراک نقره ای ( باتخفیف ) : </b>");
+                                            str.AppendLine("<b>2-  🥈 اشتراک نقره ای ( باتخفیف ) ( نامحدود )</b>");
                                             str.AppendLine("");
                                             var counter = 1;
                                             foreach (var item in Plans)
                                             {
-                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit-1) + " کاربر" + " | " + "<s>"+ item.Price.Value.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (item.Price.Value - (item.Price.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit - 1) + " کاربر" + " | " + "<s>" + item.Price.Value.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (item.Price.Value - (item.Price.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
                                                 counter++;
                                             }
                                         }
                                         else
                                         {
-                                            str.AppendLine("<b>2- 🥈 اشتراک نقره ای : </b>");
+                                            str.AppendLine("<b>2- 🥈 اشتراک نقره ای ( نامحدود )</b>");
                                             str.AppendLine("");
                                             var counter = 1;
                                             foreach (var item in Plans)
                                             {
-                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit - 1) + " کاربر" + " 👈 " + item.Price.Value.ConvertToMony() + " تومان");
+                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit - 1) + " کاربر" + " | " + item.Price.Value.ConvertToMony() + " تومان");
                                                 counter++;
                                             }
                                         }
