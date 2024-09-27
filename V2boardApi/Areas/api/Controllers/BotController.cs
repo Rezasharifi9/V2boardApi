@@ -411,7 +411,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     StringBuilder st = new StringBuilder();
 
-                                    st.AppendLine("<b> 🌺 سلام به ربات MdVpnSec خوش آمدید 👋 </b>");
+                                    st.AppendLine("<b> 🌺 سلام به ربات " + BotSettings.tbUsers.BussinesTitle + "خوش آمدید 👋 </b>");
                                     st.AppendLine("");
                                     st.AppendLine("📌 جهت استفاده از ربات لطفا یکی از موارد زیر را انتخاب کنید");
                                     st.AppendLine("");
@@ -858,7 +858,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (mess == "⁉️ سوالات متداول")
                                 {
                                     StringBuilder str = new StringBuilder();
-                                    str.AppendLine("<b> ⁉️ سوالات متداول مربوط به سرویس MdVpnSec </b>");
+                                    str.AppendLine("<b> ⁉️ سوالات متداول مربوط به سرویس " + BotSettings.tbUsers.BussinesTitle + " </b>");
                                     str.AppendLine("");
                                     str.AppendLine("<b>🔸 سرویس شما آیپی ثابت هست؟ نمی‌خوام آیپیم تغییر کنه! </b>");
                                     str.AppendLine("🔹 بله ؛ تمامی کانفیگ های موجود در اشتراک ما آیپی ثابت هستن");
@@ -870,7 +870,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     str.AppendLine("بله، شما می‌توانید به راحتی از طریق لیست سرورهای موجود در اشتراک ، سرور مورد نظر خود را انتخاب کنید");
                                     str.AppendLine("");
                                     str.AppendLine("<b>🔸 با خرید یک سرویس به چه لوکیشن های میتونم وصل بشم؟ </b>");
-                                    str.AppendLine("🔹با یک خرید به همه لوکیشن های ما میتونید وصل بشید ("+ "<a href='https://t.me/MdVpnSec/2162'>لیست لوکیشن ها</a>" + ")");
+                                    str.AppendLine("🔹با یک خرید به همه لوکیشن های ما میتونید وصل بشید (" + "<a href='https://t.me/" + BotSettings.ChannelID + "/2162'>لیست لوکیشن ها</a>" + ")");
                                     str.AppendLine("");
                                     str.AppendLine("💬 اگر سوالی داشتید که پاسخ آن را نیافتید با پشتیبانی در ارتباط باشید.");
                                     str.AppendLine("");
