@@ -2084,6 +2084,13 @@ namespace V2boardApi.Areas.api.Controllers
                                                 {
                                                     AccountName += User.Tel_Username;
                                                 }
+                                                else
+                                                {
+                                                    var acc = UserAcc.tbLinks.Count;
+                                                    acc += 1;
+
+                                                    AccountName += User.Tel_Username + acc;
+                                                }
                                             }
 
                                             if (Utility.IsPersian(AccountName))
@@ -2695,7 +2702,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 }
                                                 else
                                                 {
-                                                    var acc = tbLinksRepository.Where(p => p.tbL_Email == Order.AccountName).Count();
+                                                    var acc = UserAcc.tbLinks.Count;
                                                     acc += 1;
 
                                                     AccountName += User.Tel_Username + acc;
