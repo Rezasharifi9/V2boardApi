@@ -511,7 +511,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (keyboard == null)
                                     {
                                         StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("❌ شما سرویسی ندارید");
+                                        str2.AppendLine("❌ شما اشتراکی ندارید");
                                         str2.AppendLine("");
                                         str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
@@ -538,7 +538,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (keyboard == null)
                                     {
                                         StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("❌ شما سرویسی ندارید");
+                                        str2.AppendLine("❌ شما اشتراکی ندارید");
                                         str2.AppendLine("");
                                         str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString());
