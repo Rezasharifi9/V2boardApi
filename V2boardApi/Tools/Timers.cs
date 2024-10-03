@@ -75,42 +75,18 @@ public class TimerService
                                                         var GetDataQuery = "select u,d,transfer_enable,banned,expired_at from v2_user where email=@email";
                                                         Dictionary<string, object> keyValuePairs = new Dictionary<string, object>();
                                                         keyValuePairs.Add("@email", link.tbL_Email);
-                                                        var reader = await mySql.GetDataAsync(GetDataQuery, keyValuePairs);
-                                                        while (await reader.ReadAsync())
+                                                        using (var reader = await mySql.GetDataAsync(GetDataQuery, keyValuePairs))
                                                         {
-                                                            var bannd = reader.GetBoolean("banned");
-                                                            if (!bannd)
+                                                            while (await reader.ReadAsync())
                                                             {
-                                                                var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
-
-                                                                var d = Utility.ConvertByteToGB(vol);
-
-                                                                if (d <= 1)
+                                                                var bannd = reader.GetBoolean("banned");
+                                                                if (!bannd)
                                                                 {
-                                                                    StringBuilder st = new StringBuilder();
-                                                                    if (link.tbL_Email.Split('@')[0].Contains('$'))
-                                                                    {
-                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
-                                                                    }
-                                                                    st.AppendLine("");
-                                                                    st.Append("درحال اتمام حجم بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
-                                                                    st.AppendLine("");
-                                                                    st.AppendLine("〰️〰️〰️〰️〰️");
-                                                                    st.AppendLine("🚀@" + BotSetting.Bot_ID);
-                                                                    await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
-                                                                    link.tbL_Warning = true;
-                                                                    await tbTelegramUserRepository.SaveChangesAsync();
-                                                                }
+                                                                    var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
 
-                                                                var exp = reader.GetBodyDefinition("expired_at");
-                                                                if (exp != "")
-                                                                {
-                                                                    var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
-                                                                    if (ex <= DateTime.Now.AddDays(-2) && ex >= DateTime.Now.AddDays(31))
+                                                                    var d = Utility.ConvertByteToGB(vol);
+
+                                                                    if (d <= 1)
                                                                     {
                                                                         StringBuilder st = new StringBuilder();
                                                                         if (link.tbL_Email.Split('@')[0].Contains('$'))
@@ -122,7 +98,7 @@ public class TimerService
                                                                             st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
                                                                         }
                                                                         st.AppendLine("");
-                                                                        st.AppendLine(" درحال اتمام زمان بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
+                                                                        st.Append("درحال اتمام حجم بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
                                                                         st.AppendLine("");
                                                                         st.AppendLine("〰️〰️〰️〰️〰️");
                                                                         st.AppendLine("🚀@" + BotSetting.Bot_ID);
@@ -130,32 +106,58 @@ public class TimerService
                                                                         link.tbL_Warning = true;
                                                                         await tbTelegramUserRepository.SaveChangesAsync();
                                                                     }
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                StringBuilder st = new StringBuilder();
-                                                                if (link.tbL_Email.Split('@')[0].Contains('$'))
-                                                                {
-                                                                    st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
+
+                                                                    var exp = reader.GetBodyDefinition("expired_at");
+                                                                    if (exp != "")
+                                                                    {
+                                                                        var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
+                                                                        if (ex <= DateTime.Now.AddDays(-2) && ex >= DateTime.Now.AddDays(31))
+                                                                        {
+                                                                            StringBuilder st = new StringBuilder();
+                                                                            if (link.tbL_Email.Split('@')[0].Contains('$'))
+                                                                            {
+                                                                                st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                            }
+                                                                            st.AppendLine("");
+                                                                            st.AppendLine(" درحال اتمام زمان بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
+                                                                            st.AppendLine("");
+                                                                            st.AppendLine("〰️〰️〰️〰️〰️");
+                                                                            st.AppendLine("🚀@" + BotSetting.Bot_ID);
+                                                                            await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                            link.tbL_Warning = true;
+                                                                            await tbTelegramUserRepository.SaveChangesAsync();
+                                                                        }
+                                                                    }
                                                                 }
                                                                 else
                                                                 {
-                                                                    st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                    StringBuilder st = new StringBuilder();
+                                                                    if (link.tbL_Email.Split('@')[0].Contains('$'))
+                                                                    {
+                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
+                                                                    }
+
+                                                                    st.AppendLine("");
+                                                                    st.AppendLine("توسط ادمین مسدود شد برای دانستن علت مسدودی به پشتیبانی پیام دهید");
+                                                                    st.AppendLine("");
+                                                                    st.AppendLine("〰️〰️〰️〰️〰️");
+                                                                    st.AppendLine("🚀@" + BotSetting.Bot_ID);
+                                                                    await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                    link.tbL_Warning = true;
+                                                                    await tbTelegramUserRepository.SaveChangesAsync();
                                                                 }
 
-                                                                st.AppendLine("");
-                                                                st.AppendLine("توسط ادمین مسدود شد برای دانستن علت مسدودی به پشتیبانی پیام دهید");
-                                                                st.AppendLine("");
-                                                                st.AppendLine("〰️〰️〰️〰️〰️");
-                                                                st.AppendLine("🚀@" + BotSetting.Bot_ID);
-                                                                await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
-                                                                link.tbL_Warning = true;
-                                                                await tbTelegramUserRepository.SaveChangesAsync();
                                                             }
-
                                                         }
-                                                        reader.Close();
+                                                       
                                                     }
 
 
