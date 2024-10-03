@@ -476,7 +476,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     }
                                     else
                                     {
-                                        Disc3.Add("@device_limit", plan.device_limit);
+                                        Disc3.Add("@device_limit", plan.device_limit+1);
                                         DeviceLimit = ",@device_limit";
                                         DeviceLimitCol = ",device_limit";
                                     }
@@ -831,7 +831,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                         else
                         {
-                            Disc1.Add("@device_limit", Plan.device_limit);
+                            Disc1.Add("@device_limit", Plan.device_limit + 1);
                             DeviceLimit = ",device_limit=@device_limit ";
                         }
 

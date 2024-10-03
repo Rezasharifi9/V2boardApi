@@ -375,13 +375,18 @@ $(function () {
                     }
                 }
             },
+
             planDevicelimit: {
                 validators: {
                     between: {
                         min: 1,
                         max: 20,
                         message: 'تعداد دستگاه ها باید بین 1 تا 20 باشد'
+                    },
+                    notEmpty: {
+                        message: 'تعداد دستگاه ها باید بین 1 تا 20 باشد'
                     }
+
                 }
             },
             planGroup: {

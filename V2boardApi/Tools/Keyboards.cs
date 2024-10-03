@@ -31,29 +31,29 @@ namespace V2boardBot.Models
         {
             var keyboard = new ReplyKeyboardMarkup(new[]
                         {
-                    new[]
-                    {
+                            new[]
+                            {
 
-                        new KeyboardButton("🛒 خرید سرویس"),
-                        new KeyboardButton("🔄 تمدید سرویس"),
-                        new KeyboardButton("🌐 سرویس های من")
-                    },new[]
-                    {
-                        new KeyboardButton("💳 کیف پول من"),
-                        new KeyboardButton("📊 تعرفه‌ها"),
-                        new KeyboardButton("🎁 اشتراک تست"),
-                    },
-                    new[]
-                    {
-                        new KeyboardButton("⁉️ سوالات متداول"),
-                        new KeyboardButton("📚 راهنمای اتصال")
-                    },
-                    new[]
-                    {
-                        new KeyboardButton("📞 ارتباط با پشتیبانی"),
-                    }
+                                new KeyboardButton("🛒 خرید اشتراک"),
+                                new KeyboardButton("🔄 تمدید اشتراک"),
+                                new KeyboardButton("🌐 مدیریت اشتراک ‌ها")
+                            },new[]
+                            {
+                                new KeyboardButton("👜 کیف پول من"),
+                                new KeyboardButton("📊 تعرفه‌ها"),
+                                new KeyboardButton("🎁 اشتراک تست"),
+                            },
+                            new[]
+                            {
+                                new KeyboardButton("❓ سؤالات رایج"),
+                                new KeyboardButton("📘 آموزش اتصال")
+                            },
+                            new[]
+                            {
+                                new KeyboardButton("📞 ارتباط با پشتیبانی"),
+                            }
 
-                });
+                        });
 
 
             keyboard.IsPersistent = false;
@@ -88,7 +88,7 @@ namespace V2boardBot.Models
                                 new KeyboardButton("💳 کیف پول"),
                             }
 
-                        });
+                        }) ;
 
 
             keyboard.IsPersistent = true;
@@ -251,7 +251,7 @@ namespace V2boardBot.Models
 
                 for (int j = i; j < i + itemsPerRow && j < plans.Count; j++)
                 {
-                    row.Add(InlineKeyboardButton.WithCallbackData((plans[j].device_limit - 1).ToString() + " کاربر", plans[j].Plan_ID.ToString()));
+                    row.Add(InlineKeyboardButton.WithCallbackData((plans[j].device_limit).ToString() + " کاربر", plans[j].Plan_ID.ToString()));
                 }
 
                 inlineKeyboards.Add(row);
@@ -370,7 +370,7 @@ namespace V2boardBot.Models
 
             btn.CallbackData = "paid_" + paymentId;
             var url = "https://t.me/SwapinoBot?start=BuyTron-" + Wallet + "-" + price + "-Tron";
-
+            
             row1.Add(InlineKeyboardButton.WithUrl("🏧 پرداخت", url));
             row1.Add(btn);
             var keyborad = new InlineKeyboardMarkup(row1);
@@ -459,7 +459,7 @@ namespace V2boardBot.Models
             List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
             InlineKeyboardButton btn = new InlineKeyboardButton("💰 پرداخت از کیف پول");
-            btn.CallbackData = "AccpetWalletUnlimited%" + PlanId;
+            btn.CallbackData = "AccpetWalletUnlimited%"+ PlanId;
             row1.Add(btn);
             btns.Add(row1);
 
@@ -485,7 +485,7 @@ namespace V2boardBot.Models
             InlineKeyboardButton btn = new InlineKeyboardButton("🥇 طلایی");
             btn.CallbackData = "gold";
             row1.Add(btn);
-
+            
 
             InlineKeyboardButton btn2 = new InlineKeyboardButton("🥈 نقره ای");
             btn2.CallbackData = "premium";

@@ -309,11 +309,11 @@ public class TimerService
                                         var Plan = tbPlanRepository.Where(s => s.Plan_ID == planId).FirstOrDefault();
                                         if (Plan.device_limit != null)
                                         {
-                                            DeviceLimit_Structur = ",@device_limit=" + Plan.device_limit;
-                                            Disc1.Add("@device_limit", Plan.device_limit);
+                                            DeviceLimit_Structur = ",device_limit=" + Plan.device_limit+1;
+                                            //Disc1.Add("@device_limit", Plan.device_limit);
                                         }
 
-                                        var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email" + DeviceLimit_Structur;
+                                        var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id"+ DeviceLimit_Structur + ",transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";
 
                                         var reader = await mySql.GetDataAsync(Query, Disc1);
                                         var result = reader.ReadAsync();
@@ -377,7 +377,7 @@ public class TimerService
                         str.Append("❌ فاکتور با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این فاکتور را پرداخت نکنید");
                         str.AppendLine("");
                         str.AppendLine("");
-                        str.AppendLine("🆔 @" + BotSetting.Bot_ID);
+                        str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
                         if (item.dw_message_id != null)
                         {
