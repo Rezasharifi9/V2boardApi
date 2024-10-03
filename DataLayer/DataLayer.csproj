@@ -170,6 +170,9 @@
     <Compile Include="DomainModel\tbPlans.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbRedisInfo.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbServerGroups.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

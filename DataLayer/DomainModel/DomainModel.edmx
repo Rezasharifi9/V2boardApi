@@ -212,6 +212,15 @@
           <Property Name="device_limit" Type="smallint" />
           <Property Name="IsRobotPlan" Type="bit" Nullable="false" />
         </EntityType>
+        <EntityType Name="tbRedisInfo">
+          <Key>
+            <PropertyRef Name="Redis_ID" />
+          </Key>
+          <Property Name="Redis_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Redis_addr" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Redis_Port" Type="int" Nullable="false" />
+          <Property Name="Redis_Password" Type="varchar" MaxLength="50" />
+        </EntityType>
         <EntityType Name="tbServerGroups">
           <Key>
             <PropertyRef Name="Group_Id" />
@@ -694,6 +703,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySet Name="tbLogs" EntityType="Self.tbLogs" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbRedisInfo" EntityType="Self.tbRedisInfo" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServerGroups" EntityType="Self.tbServerGroups" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbSocks5" EntityType="Self.tbSocks5" Schema="dbo" store:Type="Tables" />
@@ -948,6 +958,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
+          <EntitySet Name="tbRedisInfo" EntityType="V2boardSiteModel.tbRedisInfo" />
         </EntityContainer>
         <EntityType Name="NLog">
           <Key>
@@ -1667,6 +1678,15 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="tbRedisInfo">
+          <Key>
+            <PropertyRef Name="Redis_ID" />
+          </Key>
+          <Property Name="Redis_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Redis_addr" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Redis_Port" Type="Int32" Nullable="false" />
+          <Property Name="Redis_Password" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2041,6 +2061,16 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="log_ID" ColumnName="log_ID" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbRedisInfo">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbRedisInfo">
+              <MappingFragment StoreEntitySet="tbRedisInfo">
+                <ScalarProperty Name="Redis_Password" ColumnName="Redis_Password" />
+                <ScalarProperty Name="Redis_Port" ColumnName="Redis_Port" />
+                <ScalarProperty Name="Redis_addr" ColumnName="Redis_addr" />
+                <ScalarProperty Name="Redis_ID" ColumnName="Redis_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

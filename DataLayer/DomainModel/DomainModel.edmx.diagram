@@ -54,6 +54,7 @@
         <AssociationConnector Association="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbUserFactors_tbUsers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbUsers_tbUsers" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbRedisInfo" Width="1.5" PointX="3.375" PointY="6.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

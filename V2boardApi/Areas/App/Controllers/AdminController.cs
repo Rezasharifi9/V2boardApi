@@ -41,6 +41,7 @@ using System.Numerics;
 using System.IO.Packaging;
 using Stimulsoft.Data.Expressions.Antlr.Runtime.Misc;
 using Org.BouncyCastle.Utilities;
+using Newtonsoft.Json.Linq;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -616,6 +617,13 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
+                //RedisConnector redis = new RedisConnector();
+                //var key = redis.GetValue(100);
+                //var s = new Serializer();
+                //var d = (System.Collections.Hashtable)s.Deserialize(key); 
+               
+                
+
                 var Sha = userPassword.ToSha256();
                 tbUsers User = RepositoryUser.table.Where(p => p.Username == userUsername && p.Password == Sha).FirstOrDefault();
 
