@@ -970,7 +970,7 @@ namespace V2boardApi.Areas.App.Controllers
                 if (log != null)
                 {
 
-                    if (totalUse <= 1)
+                    if (totalUse <= 1 && (ExpireTime != default(DateTime) && ExpireTime <= DateTime.Now))
                     {
                         var userAccount = await usersRepository.FirstOrDefaultAsync(s => s.Username == username);
                         if (userAccount != null)
