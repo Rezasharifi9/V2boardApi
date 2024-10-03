@@ -123,6 +123,10 @@ namespace V2boardApi.Areas.App.Controllers
                 model.Plan = item.Traffic + " گیگ " + item.Month + " ماهه";
                 model.SubName = item.AccountName.Split('@')[0];
                 model.Price = item.Order_Price.Value.ConvertToMony();
+                if(model.Status == 1)
+                {
+                    model.ActiveDate = item.Tel_RenewedDate.Value.ConvertDateTimeToShamsi2();
+                }
                 orders.Add(model);
             }
 

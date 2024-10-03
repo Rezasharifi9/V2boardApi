@@ -16,6 +16,7 @@ $(function () {
                 { data: 'UserCreator' },
                 { data: 'Plan' },
                 { data: 'CreateDate' },
+                { data: 'ActiveDate' },
                 { data: 'Status' },
                 { data: 'Price' },
                 { data: '' },
@@ -78,8 +79,20 @@ $(function () {
                     }
                 },
                 {
-                    // CreateDate
+                    // ActiveDate
                     targets: 5,
+                    responsivePriority: 4,
+                    render: function (data, type, full, meta) {
+                        var $ActiveDate = full['ActiveDate'];
+
+                        var $row_output = "<span>" + $ActiveDate + "</span>";
+
+                        return $row_output;
+                    }
+                },
+                {
+                    // CreateDate
+                    targets:6,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $Status = full['Status'];
@@ -96,7 +109,7 @@ $(function () {
                 },
                 {
                     // Price
-                    targets: 6,
+                    targets: 7,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $Price = full['Price'];
