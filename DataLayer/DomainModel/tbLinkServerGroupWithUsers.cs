@@ -19,6 +19,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> FK_User_Id { get; set; }
         public int PriceForGig { get; set; }
         public int PriceForMonth { get; set; }
+        public int PriceForUser { get; set; }
     
         public virtual tbServerGroups tbServerGroups { get; set; }
         public virtual tbUsers tbUsers { get; set; }

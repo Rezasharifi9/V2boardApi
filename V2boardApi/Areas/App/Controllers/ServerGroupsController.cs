@@ -257,6 +257,7 @@ namespace V2boardApi.Areas.App.Controllers
                 mgroups.GroupName = item.tbServerGroups.Group_Name;
                 mgroups.PriceForMonth = item.PriceForMonth;
                 mgroups.PriceForGig = item.PriceForGig;
+                mgroups.PriceForUser = item.PriceForUser;
                 groups.Add(mgroups);
             }
 
@@ -267,7 +268,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
-        public async Task<ActionResult> SetGroupForUser(int user_id, int planGroup, int userPriceForGig, int userPriceForMonth, int id = 0)
+        public async Task<ActionResult> SetGroupForUser(int user_id, int planGroup, int userPriceForGig, int userPriceForMonth,int userPriceForUser, int id = 0)
         {
             try
             {
@@ -279,6 +280,7 @@ namespace V2boardApi.Areas.App.Controllers
                     LinkGroup.PriceForMonth = userPriceForMonth;
                     LinkGroup.PriceForGig = userPriceForGig;
                     LinkGroup.FK_Group_Id = planGroup;
+                    LinkGroup.PriceForUser = userPriceForUser;
                     await User_Repo.SaveChangesAsync();
                     logger.Info("دسته بندی برای کاربر ویرایش شد");
                     return Toaster.Success("موفق", "دسته بندی کاربر ویرایش شد");
@@ -290,6 +292,7 @@ namespace V2boardApi.Areas.App.Controllers
                     tbLinkServerGroupWithUsers userGroup = new tbLinkServerGroupWithUsers();
                     userGroup.PriceForMonth = userPriceForMonth;
                     userGroup.PriceForGig = userPriceForGig;
+                    userGroup.PriceForUser = userPriceForUser;
                     userGroup.FK_Group_Id = planGroup;
 
                     user.tbLinkServerGroupWithUsers.Add(userGroup);
