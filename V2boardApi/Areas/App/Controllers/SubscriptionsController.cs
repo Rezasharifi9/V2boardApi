@@ -425,7 +425,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         if (user.tbUsers2 != null)
                                         {
                                             var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.User_ID);
-                                            user.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth);
+                                            user.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser);
                                         }
                                         else
                                         {
@@ -445,7 +445,7 @@ namespace V2boardApi.Areas.App.Controllers
                                             {
                                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
 
-                                                user.tbUsers2.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth);
+                                                user.tbUsers2.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser); ;
                                             }
                                         }
                                         else
@@ -795,7 +795,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.User_ID);
 
-                                user.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth);
+                                user.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + (Plan.device_limit * linkGroupUser.PriceForUser);
                             }
                             else
                             {
@@ -814,7 +814,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                 {
                                     var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
-                                    user.tbUsers2.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth);
+                                    user.tbUsers2.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + (Plan.device_limit * linkGroupUser.PriceForUser);
                                 }
                             }
                             else
@@ -993,11 +993,11 @@ namespace V2boardApi.Areas.App.Controllers
                                     if (log.PlanVolume != null)
                                     {
 
-                                        userAccount.Wallet -= (log.PlanVolume * (linkGroupUser.PriceForGig)) + (log.PlanMonth * linkGroupUser.PriceForMonth);
+                                        userAccount.Wallet -= (log.PlanVolume * (linkGroupUser.PriceForGig)) + (log.PlanMonth * linkGroupUser.PriceForMonth) + (log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
                                     }
                                     else
                                     {
-                                        userAccount.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth);
+                                        userAccount.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth) + (log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
                                     }
                                 }
                                 else
@@ -1020,7 +1020,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         }
                                         else
                                         {
-                                            userAccount.tbUsers2.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth);
+                                            userAccount.tbUsers2.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth) + (log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
                                         }
                                     }
                                 }
