@@ -941,7 +941,7 @@ namespace V2boardApi.Areas.App.Controllers
                 await mySql.OpenAsync();
 
 
-                var Query = "select email,u,d from v2_user where id=" + user_id;
+                var Query = "select email,u,d,expired_at from v2_user where id=" + user_id;
                 var reader = await mySql.GetDataAsync(Query);
                 await reader.ReadAsync();
                 var name = reader.GetString("email").Split('@')[0];
