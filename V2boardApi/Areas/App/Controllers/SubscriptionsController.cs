@@ -952,11 +952,19 @@ namespace V2boardApi.Areas.App.Controllers
                 var username = reader.GetString("email").Split('@')[1];
 
                 var totalUse = Utility.ConvertByteToGB(reader.GetInt64("u") + reader.GetInt64("d"));
+
+                var Expire = reader.GetBodyDefinition("expired_at");
+                var ExpireTime = new DateTime();
+                if (Expire != "")
+                {
+                    ExpireTime = Utility.ConvertSecondToDatetime(Convert.ToDouble(Expire));
+                }
+
                 var log = await logsRepository.FirstOrDefaultAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
                 if (log != null)
                 {
 
-                    if (totalUse <= 1)
+                    if (totalUse <= 1 && (ExpireTime != default(DateTime) && ExpireTime <= DateTime.Now))
                     {
                         var userAccount = await usersRepository.FirstOrDefaultAsync(s => s.Username == username);
                         if (userAccount != null)
