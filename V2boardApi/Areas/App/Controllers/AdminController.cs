@@ -1173,14 +1173,16 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         var userPerMonth = 0;
                         var userPerGig = 0;
+                        var userPerUser = 0;
 
                         foreach (var item in user.tbLinkServerGroupWithUsers)
                         {
                             userPerMonth += item.PriceForMonth;
                             userPerGig += item.PriceForGig;
+                            userPerUser += item.PriceForUser;
                         }
 
-                        return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth } }, JsonRequestBehavior.AllowGet);
+                        return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth, pricePerUser = userPerUser } }, JsonRequestBehavior.AllowGet);
 
                     }
                     else
