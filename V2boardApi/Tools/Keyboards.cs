@@ -251,7 +251,7 @@ namespace V2boardBot.Models
 
                 for (int j = i; j < i + itemsPerRow && j < plans.Count; j++)
                 {
-                    row.Add(InlineKeyboardButton.WithCallbackData((plans[j].device_limit-1).ToString() + " کاربر", plans[j].Plan_ID.ToString()));
+                    row.Add(InlineKeyboardButton.WithCallbackData((plans[j].device_limit).ToString() + " کاربر", plans[j].Plan_ID.ToString()));
                 }
 
                 inlineKeyboards.Add(row);

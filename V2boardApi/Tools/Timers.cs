@@ -309,7 +309,7 @@ public class TimerService
                                         var Plan = tbPlanRepository.Where(s => s.Plan_ID == planId).FirstOrDefault();
                                         if (Plan.device_limit != null)
                                         {
-                                            DeviceLimit_Structur = ",device_limit=" + Plan.device_limit;
+                                            DeviceLimit_Structur = ",device_limit=" + Plan.device_limit+1;
                                             //Disc1.Add("@device_limit", Plan.device_limit);
                                         }
 
