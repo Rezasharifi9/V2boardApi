@@ -12,5 +12,6 @@ namespace V2boardApi.Models.ServerGroups
         public string GroupName { get; set; }
         public int PriceForGig { get; set; }
         public int PriceForMonth { get; set; }
+        public int PriceForUser { get; set; }
     }
 }

@@ -149,19 +149,23 @@
                             <input type="hidden" name="user_id" id="user_id" value="@Model" />
                             <input type="hidden" name="id" id="id" value="" />
                             <div class="row">
-                                <div class="col-12 col-md-4" data-bs-toggle="popover" title="تعیین کننده نود های قابل دسترسی">
+                                <div class="col-12 col-md-3" data-bs-toggle="popover" title="تعیین کننده نود های قابل دسترسی">
                                     <label class="form-label" for="planGroup">دسته بندی<span class="text-danger"> * </span></label>
                                     <select id="planGroup" class="select2 form-select" autocomplete="off" name="planGroup">
                                         <option value="-1">در حال بارگزاری ...</option>
                                     </select>
                                 </div>
-                                <div class="col-12 col-md-4">
+                                <div class="col-12 col-md-3">
                                     <label class="form-label" for="userPriceForGig"> قیمت هرگیگ <span class="text-danger"> * </span></label>
                                     <input class="form-control" id="userPriceForGig" name="userPriceForGig" placeholder="" type="number" min="0" max="1000000000" />
                                 </div>
-                                <div class="col-12 col-md-4">
+                                <div class="col-12 col-md-3">
                                     <label class="form-label" for="userPriceForMonth"> قیمت هرماه <span class="text-danger"> * </span></label>
                                     <input class="form-control" id="userPriceForMonth" name="userPriceForMonth" placeholder="" type="number" min="0" max="1000000000" />
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label" for="userPriceForUser"> قیمت کاربر <span class="text-danger"> * </span></label>
+                                    <input class="form-control" id="userPriceForUser" name="userPriceForUser" placeholder="" type="number" min="0" max="1000000000" />
                                 </div>
                             </div>
                             <div class="col-12" style="text-align:left;">
@@ -178,6 +182,7 @@
                                         <th>دسته بندی</th>
                                         <th>قیمت هر گیگ</th>
                                         <th>قیمت هر ماه</th>
+                                        <th>قیمت هر کاربر</th>
                                         <th>عملیات</th>
                                     </tr>
                                 </thead>

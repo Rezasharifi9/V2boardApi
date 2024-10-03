@@ -148,6 +148,7 @@
           <Property Name="FK_User_Id" Type="int" />
           <Property Name="PriceForGig" Type="int" Nullable="false" />
           <Property Name="PriceForMonth" Type="int" Nullable="false" />
+          <Property Name="PriceForUser" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
@@ -1103,6 +1104,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="PriceForMonth" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbServerGroups" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbLinkServerGroupWithUsers" ToRole="tbServerGroups" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbLinkServerGroupWithUsers" ToRole="tbUsers" />
+          <Property Name="PriceForUser" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
@@ -1819,6 +1821,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbLinkServerGroupWithUsers">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkServerGroupWithUsers">
               <MappingFragment StoreEntitySet="tbLinkServerGroupWithUsers">
+                <ScalarProperty Name="PriceForUser" ColumnName="PriceForUser" />
                 <ScalarProperty Name="PriceForMonth" ColumnName="PriceForMonth" />
                 <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
                 <ScalarProperty Name="FK_User_Id" ColumnName="FK_User_Id" />

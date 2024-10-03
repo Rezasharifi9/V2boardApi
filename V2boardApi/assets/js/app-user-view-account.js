@@ -331,6 +331,7 @@ $(function () {
                 { data: 'GroupName' },
                 { data: 'PriceForGig' },
                 { data: 'PriceForMonth' },
+                { data: 'PriceForUser' },
                 { data: '' }
             ],
             initComplete: function (setting, json) {
@@ -389,6 +390,17 @@ $(function () {
                     }
                 },
                 {
+                    // Price For User
+                    targets: 4,
+                    responsivePriority: 3,
+                    render: function (data, type, full, meta) {
+                        var $name = full['PriceForUser'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
                     // Actions
                     targets: -1,
                     title: 'عملیات',
@@ -396,7 +408,7 @@ $(function () {
                     searchable: false,
                     render: function (data, type, full, meta) {
                         return (
-                            '<button type="button" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditUserGroup" data-id="' + full["Id"] + '" data-gig="' + full["PriceForGig"] + '" data-month="' + full["PriceForMonth"] + '" data-group="' + full["groupId"] + '"><i class="text-primary ti ti-pencil"></i></button>' +
+                            '<button type="button" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditUserGroup" data-id="' + full["Id"] + '" data-gig="' + full["PriceForGig"] + '" data-month="' + full["PriceForMonth"] + '" data-user="' + full["PriceForUser"] + '" data-group="' + full["groupId"] + '"><i class="text-primary ti ti-pencil"></i></button>' +
                             '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteUserGroup" data-id="' + full["Id"] + '"><i class="text-primary ti ti-trash"></i></a>'
                         );
                     }
@@ -470,11 +482,13 @@ $(function () {
         var id = $(this).attr("data-id");
         var priceForGig = $(this).attr("data-gig");
         var priceForMonth = $(this).attr("data-month");
+        var priceForUser = $(this).attr("data-user");
         var GroupId = $(this).attr("data-group");
 
         $("#planGroup").val(GroupId).trigger('change');
         $("#userPriceForGig").val(priceForGig);
         $("#userPriceForMonth").val(priceForMonth);
+        $("#userPriceForUser").val(priceForUser);
         $("#editPriceForm").find("#id").val(id);
 
     });
