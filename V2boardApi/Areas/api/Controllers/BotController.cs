@@ -1996,11 +1996,10 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var DeviceLimit_Structur = "";
                                                 if (BotSettings.tbPlans.device_limit != null)
                                                 {
-                                                    DeviceLimit_Structur = ",@device_limit=" + BotSettings.tbPlans.device_limit;
-                                                    Disc1.Add("@device_limit", BotSettings.tbPlans.device_limit);
+                                                    Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
                                                 }
 
-                                                var Query = "update v2_user set u=0,d=0,t=0,plan_id=@DefaultPlanIdInV2board,transfer_enable=@transfer_enable,expired_at=@exp where email=@email" + DeviceLimit_Structur;
+                                                var Query = "update v2_user set u=0,d=0,t=0,plan_id=@DefaultPlanIdInV2board,transfer_enable=@transfer_enable,expired_at=@exp,device_limit=@device_limit where email=@email";
                                                 var reader = await mySql.GetDataAsync(Query, Disc3);
                                                 var result = await reader.ReadAsync();
                                                 reader.Close();
