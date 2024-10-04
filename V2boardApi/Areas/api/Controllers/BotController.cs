@@ -464,10 +464,10 @@ namespace V2boardApi.Areas.api.Controllers
                                 else if (mess == "🛒 خرید سرویس")
                                 {
                                     await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
+                                    await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
+                                    //var me = BotMessages.SendAccpetPolicySub(BotSettings);
 
-                                    var me = BotMessages.SendAccpetPolicySub(BotSettings);
-
-                                    await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                                    //await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
                                     //await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
                                     return;
