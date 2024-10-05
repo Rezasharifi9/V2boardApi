@@ -141,6 +141,16 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (update.Message.Type == MessageType.Photo)
                                 {
+                                    var Deposit = await tbDepositLogRepo.WhereAsync(p => p.dw_Status == "FOR_PAY");
+
+                                    if (Deposit.Count == 0)
+                                    {
+                                        StringBuilder st = new StringBuilder();
+                                        st.Append("❗️فاکتوری برای این رسید یافت نشد یا قبلا تائید شده است");
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                                        return;
+                                    }
+
                                     var fileId = message.Photo[message.Photo.Length - 1].FileId; // Get the highest quality photo
                                     var filed = await bot.Client.GetFileAsync(fileId);
 
@@ -1357,6 +1367,11 @@ namespace V2boardApi.Areas.api.Controllers
                                             List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
                                             row2.Add(InlineKeyboardButton.WithCallbackData("حذف اشتراک 🗑", "DeleteAcc%" + Link.tbL_Email));
                                             inlineKeyboards.Add(row2);
+                                            InlineKeyboardButton inlineKeyboard = new InlineKeyboardButton("🔗 اتصال به اشتراک");
+                                            WebAppInfo appInfo = new WebAppInfo();
+                                            appInfo.Url = SubLink;
+                                            inlineKeyboard.WebApp = appInfo;
+                                            row2.Add(inlineKeyboard);
 
                                             //List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
                                             //row3.Add(InlineKeyboardButton.WithCallbackData("تمدید خودکار ⏳", "AutoRenew%" + Link.tb_RandomEmail));
@@ -2215,7 +2230,11 @@ namespace V2boardApi.Areas.api.Controllers
                                             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
 
                                             List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-                                            row2.Add(InlineKeyboardButton.WithCallbackData("📚 راهنمای اتصال", "ConnectionHelp"));
+                                            InlineKeyboardButton inlineKeyboard = new InlineKeyboardButton("🔗 اتصال به اشتراک");
+                                            WebAppInfo appInfo = new WebAppInfo();
+                                            appInfo.Url = SubLink;
+                                            inlineKeyboard.WebApp = appInfo;
+                                            row2.Add(inlineKeyboard);
                                             inlineKeyboards.Add(row2);
                                             var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
@@ -2517,6 +2536,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("🔗 شما با خرید این اشتراک میتوانید با اینترنت ایرانسل متصل شوید.");
                                         str.AppendLine("");
+                                        str.AppendLine("⚠️ نکته : هر لینک حاوی چندین سرور است اگر سروری با اختلال مواجه شد به دیگری متصل شوید");
                                         str.AppendLine("⭐️ شما میتوانید به مراحل قبل برگردید و اشتراک را تغییر دهید یا از همین مرحله خرید خود را تایید کنید.");
                                         str.AppendLine("");
                                         str.AppendLine("");
@@ -2831,8 +2851,16 @@ namespace V2boardApi.Areas.api.Controllers
                                                 List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
 
                                                 List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-                                                row2.Add(InlineKeyboardButton.WithCallbackData("📚 راهنمای اتصال", "ConnectionHelp"));
+
+                                                InlineKeyboardButton inlineKeyboard = new InlineKeyboardButton("🔗 اتصال به اشتراک");
+
+                                                WebAppInfo appInfo = new WebAppInfo();
+                                                appInfo.Url = SubLink;
+                                                inlineKeyboard.WebApp = appInfo;
+
+                                                row2.Add(inlineKeyboard);
                                                 inlineKeyboards.Add(row2);
+
                                                 var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
                                                 tbOrdersRepository.Insert(Order);
