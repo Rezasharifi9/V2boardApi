@@ -2540,7 +2540,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (User.Tel_Step == "SelectDevice")
                                 {
-                                    var Plan = BotSettings.tbUsers.tbPlans.Where(s => s.Plan_ID.ToString() == callbackQuery.Data).FirstOrDefault();
+                                    var Plan = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.Plan_ID.ToString() == callbackQuery.Data && s.tbPlans.IsRobotPlan == true).Select(s => s.tbPlans).FirstOrDefault();
                                     if (Plan != null)
                                     {
                                         StringBuilder str = new StringBuilder();
