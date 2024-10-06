@@ -725,7 +725,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
 
 
-                                    var Plans = BotSettings.tbUsers.tbPlans.Where(s => s.IsRobotPlan).ToList();
+                                    var Plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true).Select(s => s.tbPlans).ToList();
                                     if (Plans.Count() >= 1)
                                     {
                                         if (BotSettings.Present_Discount != null)
