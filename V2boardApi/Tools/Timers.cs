@@ -102,6 +102,15 @@ public class TimerService
                                                                         st.AppendLine("");
                                                                         st.AppendLine("〰️〰️〰️〰️〰️");
                                                                         st.AppendLine("🚀@" + BotSetting.Bot_ID);
+
+                                                                        try
+                                                                        {
+                                                                            await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                        }
+                                                                        catch
+                                                                        {
+                                                                            continue;
+                                                                        }
                                                                         await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
                                                                         link.tbL_Warning = true;
                                                                         await tbTelegramUserRepository.SaveChangesAsync();
@@ -127,7 +136,14 @@ public class TimerService
                                                                             st.AppendLine("");
                                                                             st.AppendLine("〰️〰️〰️〰️〰️");
                                                                             st.AppendLine("🚀@" + BotSetting.Bot_ID);
-                                                                            await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                            try
+                                                                            {
+                                                                                await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                            }
+                                                                            catch
+                                                                            {
+                                                                                continue;
+                                                                            }
                                                                             link.tbL_Warning = true;
                                                                             await tbTelegramUserRepository.SaveChangesAsync();
                                                                         }
@@ -150,7 +166,14 @@ public class TimerService
                                                                     st.AppendLine("");
                                                                     st.AppendLine("〰️〰️〰️〰️〰️");
                                                                     st.AppendLine("🚀@" + BotSetting.Bot_ID);
-                                                                    await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                    try
+                                                                    {
+                                                                        await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                    }
+                                                                    catch
+                                                                    {
+                                                                        continue;
+                                                                    }
                                                                     link.tbL_Warning = true;
                                                                     await tbTelegramUserRepository.SaveChangesAsync();
                                                                 }

@@ -29,7 +29,48 @@ namespace V2boardBot.Models
         /// <returns></returns>
         public static ReplyKeyboardMarkup GetHomeButton()
         {
-            var keyboard = new ReplyKeyboardMarkup(new[]
+
+            ReplyKeyboardMarkup keyboard;
+            using (Entities db = new Entities())
+            {
+                
+                var learn = db.tbConnectionHelp.Where(s => s.ch_Type.Contains("buy")).FirstOrDefault();
+                if (learn != null)
+                {
+                    keyboard = new ReplyKeyboardMarkup(new[]
+                        {
+                           new[]
+                            {
+
+                                new KeyboardButton("📲 آموزش خرید")
+                            },
+                            new[]
+                            {
+
+                                new KeyboardButton("🛒 خرید اشتراک"),
+                                new KeyboardButton("🔄 تمدید اشتراک"),
+                                new KeyboardButton("🌐 مدیریت اشتراک ‌ها")
+                            },new[]
+                            {
+                                new KeyboardButton("👜 کیف پول من"),
+                                new KeyboardButton("📊 تعرفه‌ها"),
+                                new KeyboardButton("🎁 اشتراک تست"),
+                            },
+                            new[]
+                            {
+                                new KeyboardButton("❓ سؤالات رایج"),
+                                new KeyboardButton("📘 آموزش اتصال")
+                            },
+                            new[]
+                            {
+                                new KeyboardButton("📞 ارتباط با پشتیبانی"),
+                            }
+
+                        });
+                }
+                else
+                {
+                    keyboard = new ReplyKeyboardMarkup(new[]
                         {
                             new[]
                             {
@@ -54,6 +95,10 @@ namespace V2boardBot.Models
                             }
 
                         });
+                }
+            }
+
+            
 
 
             keyboard.IsPersistent = false;
@@ -518,6 +563,30 @@ namespace V2boardBot.Models
 
             InlineKeyboardButton btn2 = new InlineKeyboardButton("🥈 نقره ای");
             btn2.CallbackData = "premium_test";
+            row1.Add(btn2);
+
+            btns.Add(row1);
+
+            var keyborad = new InlineKeyboardMarkup(btns);
+
+            return keyborad;
+        }
+
+        /// <summary>
+        ///  تابع آوردن دکمه انتخاب نوع اشتراک برای آموزش خرید
+        /// </summary>
+        /// <returns></returns>
+        public static InlineKeyboardMarkup GetSubTypeKeyForLearn()
+        {
+            List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn = new InlineKeyboardButton("🥇 طلایی");
+            btn.CallbackData = "goldLearn";
+            row1.Add(btn);
+
+
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("🥈 نقره ای");
+            btn2.CallbackData = "silverLearn";
             row1.Add(btn2);
 
             btns.Add(row1);

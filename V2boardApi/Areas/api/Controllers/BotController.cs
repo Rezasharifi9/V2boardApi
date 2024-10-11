@@ -37,6 +37,7 @@ using MihaZupan;
 using System.Windows.Forms;
 using System.Windows.Input;
 using V2boardApi.Tools;
+using StackExchange.Redis;
 
 
 namespace V2boardApi.Areas.api.Controllers
@@ -190,7 +191,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                             if (chatid.ToString() == BotSettings.AdminBot_ID.ToString())
                             {
-
                                 #region ارسال پیغام همگانی توسط ادمین
                                 if (update.Message.Type == MessageType.Photo && message.Caption != null)
                                 {
@@ -547,21 +547,39 @@ namespace V2boardApi.Areas.api.Controllers
                                     var keyboard = Keyboards.GetServiceLinksKeyboard(UserAcc.Tel_UserID, tbLinksRepository);
                                     if (keyboard == null)
                                     {
-                                        StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("❌ شما اشتراکی ندارید");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString());
+                                        StringBuilder str3 = new StringBuilder();
+                                        str3.AppendLine("❌ شما اشتراکی ندارید");
+                                        str3.AppendLine("");
+                                        str3.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str3.ToString());
                                         return;
                                     }
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db, botName);
 
-                                    StringBuilder str3 = new StringBuilder();
-                                    str3.AppendLine("♨️  لطفا اشتراک مورد نظر را انتخاب کنید");
-                                    str3.AppendLine("");
-                                    str3.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                    StringBuilder str2 = new StringBuilder();
+                                    str2.AppendLine("");
+                                    str2.AppendLine("");
+                                    str2.AppendLine("<b>1- 🥇 اشتراک طلایی :</b>");
+                                    str2.AppendLine("📊 حجم مشخص و پایدار");
+                                    str2.AppendLine("🔒 اتصال پایدار در تمامی شرایط حتی اینترنت ملی");
+                                    str2.AppendLine("✅ مناسب برای کاربرانی که به کیفیت بالا و ثبات اتصال اهمیت می‌دهند");
+                                    str2.AppendLine("");
+                                    str2.AppendLine("");
+                                    str2.AppendLine("<b>2- 🥈 اشتراک نقره ای :</b>");
+                                    str2.AppendLine("🔄 حجم نامحدود");
+                                    str2.AppendLine("⚠️ ممکن است در برخی شرایط با نوسانات مواجه شود.");
+                                    str2.AppendLine("📱 مناسب برای دستگاه‌های پیشرفته‌تر و اینترنت پرسرعت.");
+                                    str2.AppendLine("");
+                                    str2.AppendLine("❗️ نکته : حتما قبلا از خرید اشتراک تست را فعال نموده و از عملکرد سرور ها با شرایط اینترنتان مطمئن شوید");
+                                    str2.AppendLine("");
+                                    str2.AppendLine("🌟 انتخاب اشتراک مناسب با توجه به نیازهای شما، بهترین تجربه را فراهم می‌کند");
+                                    str2.AppendLine("");
+                                    str2.AppendLine("");
+                                    str2.AppendLine("♨️  لطفا اشتراک مورد نظر را انتخاب کنید");
+                                    str2.AppendLine("〰️〰️〰️〰️〰️");
+                                    str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
-                                    var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str3.ToString(), replyMarkup: keyboard, replyToMessageId: message.MessageId);
+                                    var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyMarkup: keyboard, replyToMessageId: message.MessageId,parseMode:ParseMode.Html);
                                     return;
                                     #endregion
 
@@ -753,9 +771,6 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
 
                                     str.AppendLine("");
-                                    str.AppendLine("");
-                                    str.AppendLine("⚠️ نکته : اشتراک های نقره ای فقط مناسب اینترنت ایرانسل می باشد");
-                                    str.AppendLine("");
                                     str.AppendLine("〰️〰️〰️〰️〰️");
                                     str.AppendLine("🚀@" + BotSettings.Bot_ID);
                                     await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
@@ -890,6 +905,49 @@ namespace V2boardApi.Areas.api.Controllers
                                     //await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
                                     return;
                                 }
+                                #endregion
+
+                                #region آموزش خرید
+
+                                if (mess == "📲 آموزش خرید")
+                                {
+                                    var HomeKey = Keyboards.GetHomeButton();
+                                    var any = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type.Contains("buy")).FirstOrDefault();
+                                    if (any!=null)
+                                    {
+
+                                        var keys = Keyboards.GetSubTypeKeyForLearn();
+                                        StringBuilder str2 = new StringBuilder();
+                                        str2.AppendLine("");
+                                        str2.AppendLine("✨ <b> دو نوع آموزش خرید اشتراک برای کاربران عزیز داریم </b> ✨");
+                                        str2.AppendLine("");
+                                        str2.AppendLine("");
+                                        str2.AppendLine("<b>1- 🥇 اشتراک طلایی :</b>");
+                                        str2.AppendLine("📊 حجم مشخص و پایدار");
+                                        str2.AppendLine("🔒 اتصال پایدار در تمامی شرایط حتی اینترنت ملی");
+                                        str2.AppendLine("✅ مناسب برای کاربرانی که به کیفیت بالا و ثبات اتصال اهمیت می‌دهند");
+                                        str2.AppendLine("");
+                                        str2.AppendLine("");
+                                        str2.AppendLine("<b>2- 🥈 اشتراک نقره ای :</b>");
+                                        str2.AppendLine("🔄 حجم نامحدود");
+                                        str2.AppendLine("⚠️ ممکن است در برخی شرایط با نوسانات مواجه شود.");
+                                        str2.AppendLine("📱 مناسب برای دستگاه‌های پیشرفته‌تر و " + "<b>" + "اینترنت ایرانسل" + "</b>" + ".");
+                                        str2.AppendLine("");
+                                        str2.AppendLine("❗️ نکته : حتما قبلا از خرید اشتراک تست را فعال نموده و از عملکرد سرور ها با شرایط اینترنتان مطمئن شوید");
+                                        str2.AppendLine("");
+                                        str2.AppendLine("<b>" + "💻 لطفا آموزش مربوط به نوع اشتراک خود را انتخاب کنید" + "</b>");
+                                        str2.AppendLine("〰️〰️〰️〰️〰️");
+                                        str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
+
+                                        await bot.Client.SendTextMessageAsync(chatid, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: keys);
+                                    }
+                                    else
+                                    {
+                                        await bot.Client.SendTextMessageAsync(chatid, "بازگشت به منو اصلی", parseMode: ParseMode.Html, replyMarkup: HomeKey);
+                                    }
+
+                                }
+
                                 #endregion
                             }
 
@@ -3110,6 +3168,38 @@ namespace V2boardApi.Areas.api.Controllers
                                         await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
                                     }
                                 }
+
+                                #endregion
+
+                                #endregion
+
+                                #region آموزش خرید
+
+                                #region اشتراک طلایی
+
+                                if (callbackQuery.Data == "goldLearn")
+                                {
+                                    var learn = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type == "buy_goldLearn").FirstOrDefault();
+                                    if (learn!=null)
+                                    {
+                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, learn.ch_Link, disableWebPagePreview: false);
+                                    }
+                                }
+
+
+                                #endregion
+
+                                #region اشتراک نقره ای
+
+                                if (callbackQuery.Data == "silverLearn")
+                                {
+                                    var learn = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type == "buy_silverLearn").FirstOrDefault();
+                                    if (learn != null)
+                                    {
+                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, learn.ch_Link, disableWebPagePreview: false);
+                                    }
+                                }
+
 
                                 #endregion
 
