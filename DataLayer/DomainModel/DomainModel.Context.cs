@@ -39,6 +39,7 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbLogs> tbLogs { get; set; }
         public virtual DbSet<tbOrders> tbOrders { get; set; }
         public virtual DbSet<tbPlans> tbPlans { get; set; }
+        public virtual DbSet<tbRedisInfo> tbRedisInfo { get; set; }
         public virtual DbSet<tbServerGroups> tbServerGroups { get; set; }
         public virtual DbSet<tbServers> tbServers { get; set; }
         public virtual DbSet<tbSocks5> tbSocks5 { get; set; }
@@ -48,6 +49,5 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbUserFactors> tbUserFactors { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
         public virtual DbSet<vi_MajorSales> vi_MajorSales { get; set; }
-        public virtual DbSet<tbRedisInfo> tbRedisInfo { get; set; }
     }
 }

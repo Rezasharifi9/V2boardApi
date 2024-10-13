@@ -213,6 +213,15 @@
           <Property Name="device_limit" Type="smallint" />
           <Property Name="IsRobotPlan" Type="bit" Nullable="false" />
         </EntityType>
+        <EntityType Name="tbRedisInfo">
+          <Key>
+            <PropertyRef Name="Redis_ID" />
+          </Key>
+          <Property Name="Redis_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Redis_addr" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Redis_Port" Type="int" Nullable="false" />
+          <Property Name="Redis_Password" Type="varchar" MaxLength="50" />
+        </EntityType>
         <EntityType Name="tbServerGroups">
           <Key>
             <PropertyRef Name="Group_Id" />
@@ -345,7 +354,7 @@
           <Property Name="Register_Date" Type="datetime" />
         </EntityType>
         <!--Errors Found During Generation:
-warning 6002: The table/view 'V2boardNew.dbo.vi_MajorSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="vi_MajorSales">
           <Key>
             <PropertyRef Name="log_ID" />
@@ -682,6 +691,21 @@ warning 6002: The table/view 'V2boardNew.dbo.vi_MajorSales' does not have a prim
         </Association>
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
@@ -697,6 +721,7 @@ warning 6002: The table/view 'V2boardNew.dbo.vi_MajorSales' does not have a prim
           <EntitySet Name="tbLogs" EntityType="Self.tbLogs" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbRedisInfo" EntityType="Self.tbRedisInfo" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServerGroups" EntityType="Self.tbServerGroups" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbSocks5" EntityType="Self.tbSocks5" Schema="dbo" store:Type="Tables" />
@@ -838,6 +863,7 @@ warning 6002: The table/view 'V2boardNew.dbo.vi_MajorSales' does not have a prim
           <EntitySet Name="tbLogs" EntityType="V2boardSiteModel.tbLogs" />
           <EntitySet Name="tbOrders" EntityType="V2boardSiteModel.tbOrders" />
           <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
+          <EntitySet Name="tbRedisInfo" EntityType="V2boardSiteModel.tbRedisInfo" />
           <EntitySet Name="tbServerGroups" EntityType="V2boardSiteModel.tbServerGroups" />
           <EntitySet Name="tbServers" EntityType="V2boardSiteModel.tbServers" />
           <EntitySet Name="tbSocks5" EntityType="V2boardSiteModel.tbSocks5" />
@@ -1182,6 +1208,15 @@ warning 6002: The table/view 'V2boardNew.dbo.vi_MajorSales' does not have a prim
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbPlans" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="tbRedisInfo">
+          <Key>
+            <PropertyRef Name="Redis_ID" />
+          </Key>
+          <Property Name="Redis_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Redis_addr" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Redis_Port" Type="Int32" Nullable="false" />
+          <Property Name="Redis_Password" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbServerGroups">
           <Key>
@@ -1902,6 +1937,16 @@ warning 6002: The table/view 'V2boardNew.dbo.vi_MajorSales' does not have a prim
                 <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
                 <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
                 <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbRedisInfo">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbRedisInfo">
+              <MappingFragment StoreEntitySet="tbRedisInfo">
+                <ScalarProperty Name="Redis_Password" ColumnName="Redis_Password" />
+                <ScalarProperty Name="Redis_Port" ColumnName="Redis_Port" />
+                <ScalarProperty Name="Redis_addr" ColumnName="Redis_addr" />
+                <ScalarProperty Name="Redis_ID" ColumnName="Redis_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
