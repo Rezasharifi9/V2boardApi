@@ -42,7 +42,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> FK_Server_ID { get; set; }
         public string Token { get; set; }
         public Nullable<int> Limit { get; set; }
-        public Nullable<int> Wallet { get; set; }
+        public int Wallet { get; set; }
         public Nullable<int> Role { get; set; }
         public string TelegramID { get; set; }
         public string BussinesTitle { get; set; }

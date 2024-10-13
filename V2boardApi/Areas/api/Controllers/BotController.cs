@@ -753,7 +753,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             var counter = 1;
                                             foreach (var item in Plans)
                                             {
-                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit) + " کاربر" + " | " + "<s>" + item.Price.Value.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (item.Price.Value - (item.Price.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit) + " کاربر" + " | " + "<s>" + item.Price.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (item.Price - (item.Price * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
                                                 counter++;
                                             }
                                         }
@@ -764,7 +764,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             var counter = 1;
                                             foreach (var item in Plans)
                                             {
-                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit) + " کاربر" + " | " + item.Price.Value.ConvertToMony() + " تومان");
+                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit) + " کاربر" + " | " + item.Price.ConvertToMony() + " تومان");
                                                 counter++;
                                             }
                                         }
@@ -1996,7 +1996,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         Price -= (int)(Price * BotSettings.Present_Discount);
                                     }
-                                    var PirceWithoutDiscount = (User.Tel_Traffic * BotSettings.PricePerGig_Major) + (User.Tel_Monthes * BotSettings.PricePerMonth_Major);
+                                    int PirceWithoutDiscount = (int)((User.Tel_Traffic * BotSettings.PricePerGig_Major) + (User.Tel_Monthes * BotSettings.PricePerMonth_Major));
                                     if (Wallet >= Price)
                                     {
                                         var Link = await tbLinksRepository.FirstOrDefaultAsync(p => p.tbL_Email == AccountName);
@@ -2587,7 +2587,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                         else
                                         {
-                                            str.AppendLine("💵 قیمت نهایی :" + Plan.Price.Value.ConvertToMony() + " تومان");
+                                            str.AppendLine("💵 قیمت نهایی :" + Plan.Price.ConvertToMony() + " تومان");
                                         }
                                         str.AppendLine("");
                                         str.AppendLine("🔗 شما با خرید این اشتراک میتوانید با اینترنت ایرانسل متصل شوید.");
@@ -2623,12 +2623,12 @@ namespace V2boardApi.Areas.api.Controllers
                                             AccountName = User.Tel_Data.Split('%')[0];
                                         }
                                         var Wallet = UserAcc.Tel_Wallet;
-                                        var Price = Plan.Price;
+                                        var Price = (int)Plan.Price;
                                         if (BotSettings.Present_Discount != null && BotSettings.Present_Discount != 0)
                                         {
                                             Price -= (int)(Price * BotSettings.Present_Discount);
                                         }
-                                        var PirceWithoutDiscount = Plan.Price;
+                                        var PirceWithoutDiscount = (int)Plan.Price;
                                         if (Wallet >= Price)
                                         {
                                             var Link = await tbLinksRepository.FirstOrDefaultAsync(p => p.tbL_Email == AccountName);

@@ -415,7 +415,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         if (user.tbUsers2 != null)
                                         {
                                             var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.User_ID);
-                                            user.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser);
+                                            user.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + ((int)plan.device_limit * linkGroupUser.PriceForUser);
                                         }
                                         else
                                         {
@@ -435,7 +435,7 @@ namespace V2boardApi.Areas.App.Controllers
                                             {
                                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
 
-                                                user.tbUsers2.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser); ;
+                                                user.tbUsers2.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + ((int)plan.device_limit * linkGroupUser.PriceForUser); ;
                                             }
                                         }
                                         else
@@ -458,7 +458,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     Disc3.Add("@expired", exp);
                                     Disc3.Add("@create", create);
                                     Disc3.Add("@guid", Guid.NewGuid());
-                                    var vol = Utility.ConvertGBToByte(plan.PlanVolume.Value);
+                                    var vol = Utility.ConvertGBToByte(plan.PlanVolume);
                                     Disc3.Add("@tran", vol);
                                     Disc3.Add("@grid", group.V2_Group_Id);
                                     Disc3.Add("@planid", planid);
@@ -492,7 +492,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     await mySql.CloseAsync();
                                     linkUserAndPlansRepository.Save();
                                     usersRepository.Save();
-                                    AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name, plan.PlanVolume.Value, plan.PlanMonth.Value);
+                                    AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth);
                                     logger.Info("اشتراک جدید توسط نماینده ایجاد گردید");
                                     return Toaster.Success("موفق", "اشتراک با موفقیت ایجاد گردید");
                                 }
@@ -785,7 +785,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.User_ID);
 
-                                user.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + (Plan.device_limit * linkGroupUser.PriceForUser);
+                                user.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + ((int)Plan.device_limit * linkGroupUser.PriceForUser);
                             }
                             else
                             {
@@ -804,7 +804,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                 {
                                     var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
-                                    user.tbUsers2.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + (Plan.device_limit * linkGroupUser.PriceForUser);
+                                    user.tbUsers2.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + ((int)Plan.device_limit * linkGroupUser.PriceForUser);
                                 }
                             }
                             else
@@ -853,7 +853,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 user.Wallet += link.tbPlans.Price;
                             }
 
-                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume.Value, Plan.PlanMonth.Value);
+                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume, Plan.PlanMonth);
                         }
                         reader2.Close();
 
@@ -968,7 +968,7 @@ namespace V2boardApi.Areas.App.Controllers
                             //چک می کنیم اگر نماینده مبلغ تعرفه رو به کیف پولش برمیگردونیم
                             if (userAccount.Role == 2)
                             {
-                                var price = log.SalePrice;
+                                var price = (int)log.SalePrice;
 
                                 userAccount.Wallet -= price;
                             }
@@ -982,12 +982,12 @@ namespace V2boardApi.Areas.App.Controllers
                                     var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.User_ID);
                                     if (log.PlanVolume != null)
                                     {
-                                        var s = (log.PlanVolume * (linkGroupUser.PriceForGig)) + (log.PlanMonth * linkGroupUser.PriceForMonth) + (log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
+                                        var s = ((int)log.PlanVolume * (linkGroupUser.PriceForGig)) + ((int)log.PlanMonth * linkGroupUser.PriceForMonth) + ((int)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
                                         userAccount.Wallet -= s;
                                     }
                                     else
                                     {
-                                        userAccount.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth) + (log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
+                                        userAccount.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth) + ((int)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
                                     }
                                 }
                                 else
@@ -1006,11 +1006,11 @@ namespace V2boardApi.Areas.App.Controllers
                                         var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.tbUsers2.User_ID);
                                         if (log.PlanVolume != null)
                                         {
-                                            userAccount.tbUsers2.Wallet -= (log.PlanVolume * (linkGroupUser.PriceForGig)) + (log.PlanMonth * linkGroupUser.PriceForMonth);
+                                            userAccount.tbUsers2.Wallet -= ((int)log.PlanVolume * (linkGroupUser.PriceForGig)) + ((int)log.PlanMonth * linkGroupUser.PriceForMonth);
                                         }
                                         else
                                         {
-                                            userAccount.tbUsers2.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth) + (log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
+                                            userAccount.tbUsers2.Wallet -= ((int)log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth) + ((int)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
                                         }
                                     }
                                 }

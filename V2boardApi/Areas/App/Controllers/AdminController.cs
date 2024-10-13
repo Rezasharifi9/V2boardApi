@@ -147,8 +147,8 @@ namespace V2boardApi.Areas.App.Controllers
                     user.profile = item.Profile_Filename;
                     user.username = item.Username;
                     user.status = 1;
-                    user.sumSellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => s.SalePrice.Value).Sum().ConvertToMony() + " تومان";
-                    user.sellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => s.SalePrice.Value).Count();
+                    user.sumSellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => (int)s.SalePrice).Sum().ConvertToMony() + " تومان";
+                    user.sellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => (int)s.SalePrice).Count();
                     if (item.Wallet >= item.Limit)
                     {
                         user.status = 3;
@@ -162,7 +162,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         user.status = 4;
                     }
-                    user.used = item.Wallet.Value.ConvertToMony() + " تومان";
+                    user.used = item.Wallet.ConvertToMony() + " تومان";
                     user.limit = item.Limit.Value.ConvertToMony() + " تومان";
                     user.RobotStatus = 0;
 
@@ -1190,12 +1190,12 @@ namespace V2boardApi.Areas.App.Controllers
                             userPerUser += item.PriceForUser;
                         }
 
-                        return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth, pricePerUser = userPerUser } }, JsonRequestBehavior.AllowGet);
+                        return Json(new { status = "success", data = new { debt = user.Wallet.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth, pricePerUser = userPerUser } }, JsonRequestBehavior.AllowGet);
 
                     }
                     else
                     {
-                        return Json(new { status = "success", data = new { debt = user.Wallet.Value.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+                        return Json(new { status = "success", data = new { debt = user.Wallet.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony() } }, JsonRequestBehavior.AllowGet);
 
                     }
                 }
