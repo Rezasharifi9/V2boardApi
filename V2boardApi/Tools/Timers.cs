@@ -328,6 +328,14 @@ public class TimerService
                                         Disc1.Add("@expired_at", exp);
                                         Disc1.Add("@email", item.AccountName);
 
+                                        var reader2 = await mySql.GetDataAsync("select group_id from v2_plan where id ="+item.V2_Plan_ID);
+                                        while (await reader2.ReadAsync())
+                                        {
+                                            var grid = reader2.GetInt32("group_id");
+
+                                            Disc1.Add("@group_id", grid);
+                                        }
+
                                         var DeviceLimit_Structur = "";
                                         var DeviceLimit_data = "";
                                         var planId = item.tbTelegramUsers.tbUsers.tbBotSettings.First().FK_Plan_ID;
@@ -337,8 +345,9 @@ public class TimerService
                                             DeviceLimit_Structur = ",device_limit=" + Plan.device_limit+1;
                                             //Disc1.Add("@device_limit", Plan.device_limit);
                                         }
+                                        
 
-                                        var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id"+ DeviceLimit_Structur + ",transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";
+                                        var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id"+ DeviceLimit_Structur + ",group_id=@group_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";
 
                                         var reader = await mySql.GetDataAsync(Query, Disc1);
                                         var result = reader.ReadAsync();

@@ -931,7 +931,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str2.AppendLine("<b>2- 🥈 اشتراک نقره ای :</b>");
                                         str2.AppendLine("🔄 حجم نامحدود");
                                         str2.AppendLine("⚠️ ممکن است در برخی شرایط با نوسانات مواجه شود.");
-                                        str2.AppendLine("📱 مناسب برای دستگاه‌های پیشرفته‌تر و " + "<b>" + "اینترنت ایرانسل" + "</b>" + ".");
+                                        str2.AppendLine("📱 مناسب برای دستگاه‌های پیشرفته‌تر و اینترنت پر سرعت.");
                                         str2.AppendLine("");
                                         str2.AppendLine("❗️ نکته : حتما قبلا از خرید اشتراک تست را فعال نموده و از عملکرد سرور ها با شرایط اینترنتان مطمئن شوید");
                                         str2.AppendLine("");
@@ -2064,13 +2064,15 @@ namespace V2boardApi.Areas.api.Controllers
                                                 Disc3.Add("@transfer_enable", t);
                                                 Disc3.Add("@exp", exp);
                                                 Disc3.Add("@email", Link.tbL_Email);
+                                                Disc3.Add("@group_id", BotSettings.tbPlans.Group_Id);
                                                 var DeviceLimit_Structur = "";
                                                 if (BotSettings.tbPlans.device_limit != null)
                                                 {
                                                     Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
+                                                    
                                                 }
 
-                                                var Query = "update v2_user set u=0,d=0,t=0,plan_id=@DefaultPlanIdInV2board,transfer_enable=@transfer_enable,expired_at=@exp,device_limit=@device_limit where email=@email";
+                                                var Query = "update v2_user set u=0,d=0,t=0,plan_id=@DefaultPlanIdInV2board,transfer_enable=@transfer_enable,expired_at=@exp,device_limit=@device_limit,group_id=@group_id where email=@email";
                                                 var reader = await mySql.GetDataAsync(Query, Disc3);
                                                 var result = await reader.ReadAsync();
                                                 reader.Close();
@@ -2748,7 +2750,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                     order.PriceWithOutDiscount = PirceWithoutDiscount;
                                                     order.V2_Plan_ID = Plan.Plan_ID_V2;
                                                     order.FK_Tel_UserID = UserAcc.Tel_UserID;
-
+                                                    order.FK_Plan_ID = Plan.Plan_ID;
                                                     var UserAc = await tbTelegramUserRepository.FirstOrDefaultAsync(p => p.Tel_UserID == UserAcc.Tel_UserID && p.tbUsers.Username == botName);
                                                     UserAc.Tel_Wallet -= Price;
                                                     order.Order_Price = Price;
@@ -2818,7 +2820,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 Order.FK_Tel_UserID = UserAcc.Tel_UserID;
                                                 Order.Order_Price = Price;
                                                 Order.PriceWithOutDiscount = PirceWithoutDiscount;
-
+                                                Order.FK_Plan_ID = Plan.Plan_ID;
                                                 string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
 
                                                 var FullName = Order.AccountName;
@@ -2831,9 +2833,10 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await mySql.OpenAsync();
                                                 var Disc1 = new Dictionary<string, object>();
                                                 Disc1.Add("@V2board", Plan.Plan_ID_V2);
-                                                var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =@V2board", Disc1);
+                                                
                                                 long tran = 0;
                                                 int grid = 0;
+                                                var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =@V2board", Disc1);
                                                 while (await reader.ReadAsync())
                                                 {
                                                     tran = Utility.ConvertGBToByte(Convert.ToInt64(Order.Traffic));
