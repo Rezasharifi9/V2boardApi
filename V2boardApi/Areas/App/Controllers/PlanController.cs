@@ -70,7 +70,7 @@ namespace V2boardApi.Areas.App.Controllers
                         Plan.PlanName = item.Plan_Name;
                         if (item.PlanMonth != null)
                         {
-                            Plan.DayesCount = item.PlanMonth.Value;
+                            Plan.DayesCount = item.PlanMonth;
                         }
                         else
                         {
@@ -84,8 +84,8 @@ namespace V2boardApi.Areas.App.Controllers
                         {
                             Plan.SpeedLimit = item.Speed_limit.Value.ToString();
                         }
-                        Plan.Traffic = item.PlanVolume.Value;
-                        Plan.Price = item.Price.Value.ConvertToMony();
+                        Plan.Traffic = item.PlanVolume;
+                        Plan.Price = item.Price.ConvertToMony();
                         Plan.Status = Convert.ToInt32(item.Status.Value);
                         Plans.Add(Plan);
                     }
@@ -208,7 +208,7 @@ namespace V2boardApi.Areas.App.Controllers
                             }
                             else
                             {
-                                plan.PlanMonth = model.planTime;
+                                plan.PlanMonth = (int)model.planTime;
                             }
 
                             plan.Price = OrgPrice;
@@ -267,9 +267,9 @@ namespace V2boardApi.Areas.App.Controllers
                 RequestPlanViewModel requestPlan = new RequestPlanViewModel();
                 requestPlan.id = id;
                 requestPlan.planName = plan.Plan_Name;
-                requestPlan.planTraffic = plan.PlanVolume.Value;
+                requestPlan.planTraffic = plan.PlanVolume;
                 requestPlan.planGroup = plan.Group_Id;
-                requestPlan.planPrice = plan.Price.Value.ConvertToMony();
+                requestPlan.planPrice = plan.Price.ConvertToMony();
                 requestPlan.planTime = plan.PlanMonth;
                 requestPlan.planSpeed = plan.Speed_limit;
                 requestPlan.UnlimitedPlan = plan.IsRobotPlan;

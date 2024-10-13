@@ -204,9 +204,9 @@
           <Property Name="Plan_Des" Type="varchar" MaxLength="200" />
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="Status" Type="bit" />
-          <Property Name="PlanMonth" Type="int" />
-          <Property Name="PlanVolume" Type="int" />
-          <Property Name="Price" Type="int" />
+          <Property Name="PlanMonth" Type="int" Nullable="false" />
+          <Property Name="PlanVolume" Type="int" Nullable="false" />
+          <Property Name="Price" Type="int" Nullable="false" />
           <Property Name="Group_Id" Type="int" />
           <Property Name="Group_Name" Type="varchar" MaxLength="50" />
           <Property Name="Speed_limit" Type="smallint" />
@@ -332,7 +332,7 @@
           <Property Name="FK_Server_ID" Type="int" />
           <Property Name="Token" Type="varchar(max)" />
           <Property Name="Limit" Type="int" />
-          <Property Name="Wallet" Type="int" />
+          <Property Name="Wallet" Type="int" Nullable="false" />
           <Property Name="Role" Type="int" />
           <Property Name="TelegramID" Type="varchar" MaxLength="250" />
           <Property Name="BussinesTitle" Type="nvarchar" MaxLength="350" />
@@ -345,7 +345,7 @@
           <Property Name="Register_Date" Type="datetime" />
         </EntityType>
         <!--Errors Found During Generation:
-warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+warning 6002: The table/view 'V2boardNew.dbo.vi_MajorSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="vi_MajorSales">
           <Key>
             <PropertyRef Name="log_ID" />
@@ -680,6 +680,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        
+        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
@@ -1024,11 +1026,11 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="FK_Plan_ID" Type="Int32" />
           <Property Name="AdminUsername" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Is_ActiveChangeLimitUser" Type="Boolean" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
           <Property Name="InvitePercent" Type="Double" />
           <Property Name="GroupId_test" Type="Int32" />
           <Property Name="GroupId_testUnlimited" Type="Int32" />
+          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1102,9 +1104,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="FK_User_Id" Type="Int32" />
           <Property Name="PriceForGig" Type="Int32" Nullable="false" />
           <Property Name="PriceForMonth" Type="Int32" Nullable="false" />
+          <Property Name="PriceForUser" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbServerGroups" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbLinkServerGroupWithUsers" ToRole="tbServerGroups" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbLinkServerGroupWithUsers" ToRole="tbUsers" />
-          <Property Name="PriceForUser" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
@@ -1166,20 +1168,20 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="Plan_Des" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="Status" Type="Boolean" />
-          <Property Name="PlanMonth" Type="Int32" />
-          <Property Name="PlanVolume" Type="Int32" />
-          <Property Name="Price" Type="Int32" />
+          <Property Name="PlanMonth" Type="Int32" Nullable="false" />
+          <Property Name="PlanVolume" Type="Int32" Nullable="false" />
+          <Property Name="Price" Type="Int32" Nullable="false" />
           <Property Name="Group_Id" Type="Int32" />
           <Property Name="Group_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Speed_limit" Type="Int16" />
           <Property Name="device_limit" Type="Int16" />
+          <Property Name="IsRobotPlan" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbPlans" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbPlans" ToRole="tbUsers" />
-          <Property Name="IsRobotPlan" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="tbServerGroups">
           <Key>
@@ -1252,6 +1254,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="FK_User_ID" Type="Int32" />
           <Property Name="Tel_RegisterDate" Type="DateTime" Precision="3" />
           <Property Name="Tel_Status" Type="Int32" Nullable="false" />
+          <Property Name="Tel_GetedTestAccountUnlimited" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
           <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbOrders" />
@@ -1259,7 +1262,6 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <NavigationProperty Name="tbTelegramUsers2" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
-          <Property Name="Tel_GetedTestAccountUnlimited" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -1316,7 +1318,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="Limit" Type="Int32" />
-          <Property Name="Wallet" Type="Int32" />
+          <Property Name="Wallet" Type="Int32" Nullable="false" />
           <Property Name="Role" Type="Int32" />
           <Property Name="TelegramID" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="BussinesTitle" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
@@ -1400,7 +1402,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbDepositWallet_Log_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbDepositWallet_Log" Role="tbDepositWallet_Log" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
@@ -1450,7 +1454,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
@@ -1538,7 +1544,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
