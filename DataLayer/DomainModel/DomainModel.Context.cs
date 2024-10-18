@@ -37,6 +37,8 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbLinkServerGroupWithUsers> tbLinkServerGroupWithUsers { get; set; }
         public virtual DbSet<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
         public virtual DbSet<tbLogs> tbLogs { get; set; }
+        public virtual DbSet<tbNotifications> tbNotifications { get; set; }
+        public virtual DbSet<tbNotificationUser> tbNotificationUser { get; set; }
         public virtual DbSet<tbOrders> tbOrders { get; set; }
         public virtual DbSet<tbPlans> tbPlans { get; set; }
         public virtual DbSet<tbRedisInfo> tbRedisInfo { get; set; }

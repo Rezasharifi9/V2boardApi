@@ -88,6 +88,10 @@ namespace V2boardApi.Tools
         {
             return dt.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.GetCultureInfo("fa-IR")); ;
         }
+        public static string ConvertDateTimeToShamsi3(this DateTime dt)
+        {
+            return dt.ToString("yyyy-MM-dd", CultureInfo.GetCultureInfo("fa-IR")); ;
+        }
         public static string GetMonthName(DateTime date)
         {
             PersianCalendar pc = new PersianCalendar();
@@ -424,6 +428,41 @@ namespace V2boardApi.Tools
         {
             // Check if the text contains any Persian characters
             return input.Any(c => (c >= '\u0600' && c <= '\u06FF') || (c >= '\u0750' && c <= '\u077F') || (c >= '\uFB50' && c <= '\uFDFF') || (c >= '\uFE70' && c <= '\uFEFF'));
+        }
+
+        public static string GetTimeDifference(DateTime startDate, DateTime endDate)
+        {
+            TimeSpan timeDifference = endDate - startDate;
+
+            if (timeDifference.TotalMinutes < 1)
+            {
+                return "الان";
+            }
+            else if (timeDifference.TotalMinutes < 60)
+            {
+                int minutes = (int)timeDifference.TotalMinutes;
+                return $"{minutes} دقیقه قبل";
+            }
+            else if (timeDifference.TotalHours < 24)
+            {
+                int hours = (int)timeDifference.TotalHours;
+                return $"{hours} ساعت قبل";
+            }
+            else if (timeDifference.TotalDays < 30)
+            {
+                int days = (int)timeDifference.TotalDays;
+                return $"{days} روز قبل";
+            }
+            else if (timeDifference.TotalDays < 365)
+            {
+                int months = (int)(timeDifference.TotalDays / 30);
+                return $"{months} ماه قبل";
+            }
+            else
+            {
+                int years = (int)(timeDifference.TotalDays / 365);
+                return "خیلی وقت پیش";
+            }
         }
     }
 }

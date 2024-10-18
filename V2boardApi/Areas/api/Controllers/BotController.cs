@@ -127,6 +127,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var tbOrdersRepository = new Repository<tbOrders>(db);
                         var RepositoryLinkUserAndPlan = new Repository<tbLinkUserAndPlans>(db);
                         var tbDepositLogRepo = new Repository<tbDepositWallet_Log>(db);
+                        var tbServerGroupsRepo = new Repository<tbServerGroups>(db);
                         var V2boardPlanId = BotSettings.tbPlans.Plan_ID_V2;
                         long chatid = 0;
                         tbTelegramUsers UserAcc = new tbTelegramUsers();
@@ -2064,7 +2065,8 @@ namespace V2boardApi.Areas.api.Controllers
                                                 Disc3.Add("@transfer_enable", t);
                                                 Disc3.Add("@exp", exp);
                                                 Disc3.Add("@email", Link.tbL_Email);
-                                                Disc3.Add("@group_id", BotSettings.tbPlans.Group_Id);
+                                                var group = tbServerGroupsRepo.Where(s => s.Group_Id == BotSettings.tbPlans.Group_Id).First();
+                                                Disc3.Add("@group_id", group.V2_Group_Id);
                                                 var DeviceLimit_Structur = "";
                                                 if (BotSettings.tbPlans.device_limit != null)
                                                 {
@@ -2163,7 +2165,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 }
                                                 else
                                                 {
-                                                    var acc = UserAcc.tbLinks.Count;
+                                                    var acc = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).Count();
                                                     acc += 1;
 
                                                     AccountName += User.Tel_Username + acc;
@@ -2592,10 +2594,11 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("💵 قیمت نهایی :" + Plan.Price.ConvertToMony() + " تومان");
                                         }
                                         str.AppendLine("");
-                                        str.AppendLine("🔗 شما با خرید این اشتراک میتوانید با اینترنت ایرانسل متصل شوید.");
+                                        str.AppendLine("🔗 شما با خرید این اشتراک میتوانید با همه اینترنت ها متصل شوید.");
                                         str.AppendLine("");
                                         str.AppendLine("⚠️ نکته : هر لینک حاوی چندین سرور است اگر سروری با اختلال مواجه شد به دیگری متصل شوید");
-                                        str.AppendLine("⭐️ شما میتوانید به مراحل قبل برگردید و اشتراک را تغییر دهید یا از همین مرحله خرید خود را تایید کنید.");
+                                        str.AppendLine("");
+                                        str.AppendLine("🚫 مهم : دوستانی که تمدید می کنند حتما باید بعد از تمدید لینکشون رو بروزرسانی کنند در غیر اینصورت متصل نخواهند شد");
                                         str.AppendLine("");
                                         str.AppendLine("");
 
@@ -2791,7 +2794,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 }
                                                 else
                                                 {
-                                                    var acc = UserAcc.tbLinks.Count;
+                                                    var acc = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).Count();
                                                     acc += 1;
 
                                                     AccountName += User.Tel_Username + acc;

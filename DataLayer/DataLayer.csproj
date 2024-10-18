@@ -164,6 +164,12 @@
     <Compile Include="DomainModel\tbLogs.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbNotifications.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbNotificationUser.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbOrders.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

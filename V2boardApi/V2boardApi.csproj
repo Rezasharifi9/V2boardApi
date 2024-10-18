@@ -330,6 +330,7 @@
     <Compile Include="Areas\App\Controllers\SettingsController.cs" />
     <Compile Include="Areas\App\Controllers\SubscriptionsController.cs" />
     <Compile Include="Areas\App\Controllers\TelegramUsersController.cs" />
+    <Compile Include="Areas\App\Controllers\UserNotificationsController.cs" />
     <Compile Include="Areas\App\Data\BotFactoresViewModels\BotFactoresResponseModel.cs" />
     <Compile Include="Areas\App\Data\BotViewModel\UseageViewModel.cs" />
     <Compile Include="Areas\App\Data\CountAccountCreatedFromMajorModel.cs" />
@@ -344,6 +345,7 @@
     <Compile Include="Areas\App\Data\SubscriptionsViewModels\ActivityStatusViewModel.cs" />
     <Compile Include="Areas\App\Data\SubscriptionsViewModels\GetUserDataModel.cs" />
     <Compile Include="Areas\App\Data\TelegramUsersViewModel\TelegramUsersResponseViewModel.cs" />
+    <Compile Include="Areas\App\Data\UsersViewModels\SelectUserViewModel.cs" />
     <Compile Include="Areas\App\Data\UsersViewModels\UserViewModel.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -359,6 +361,7 @@
     <Compile Include="Models\OrdersModel\OrdersViewModel.cs" />
     <Compile Include="Models\ServerGroups\List_Model.cs" />
     <Compile Include="Models\ServerGroups\UserGroupsViewModel.cs" />
+    <Compile Include="Models\tbUserNotificationList_ViewModel.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
     <Compile Include="Tools\BotManager.cs" />
     <Compile Include="Tools\BotMessages.cs" />
@@ -860,6 +863,7 @@
     <Content Include="assets\js\ui-navbar.js" />
     <Content Include="assets\js\ui-popover.js" />
     <Content Include="assets\js\ui-toasts.js" />
+    <Content Include="assets\js\userNotifications.js" />
     <Content Include="assets\js\wizard-ex-checkout.js" />
     <Content Include="assets\js\wizard-ex-create-deal.js" />
     <Content Include="assets\js\wizard-ex-property-listing.js" />
@@ -1763,6 +1767,8 @@
     <Content Include="Areas\App\Views\Admin\_GetBotSetting.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetBankNumbers.cshtml" />
     <Content Include="Areas\App\Views\Dashboard\_WeeklyDataReport.cshtml" />
+    <Content Include="Areas\App\Views\UserNotifications\Index.cshtml" />
+    <Content Include="Areas\App\Views\Admin\GetNotifications.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

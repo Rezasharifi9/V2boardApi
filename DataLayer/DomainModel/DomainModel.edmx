@@ -173,6 +173,28 @@
           <Property Name="PlanVolume" Type="int" />
           <Property Name="PlanMonth" Type="int" />
         </EntityType>
+        <EntityType Name="tbNotifications">
+          <Key>
+            <PropertyRef Name="tbNoti_ID" />
+          </Key>
+          <Property Name="tbNoti_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tbNoti_FK_User_ID" Type="int" Nullable="false" />
+          <Property Name="tbNoti_Title" Type="nvarchar" MaxLength="30" Nullable="false" />
+          <Property Name="tbNoti_Text" Type="nvarchar" MaxLength="150" Nullable="false" />
+          <Property Name="tbNoti_RegisterDate" Type="datetime" Nullable="false" />
+          <Property Name="tbNoti_Status" Type="int" Nullable="false" />
+          <Property Name="tbNoti_EndDate" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbNotificationUser">
+          <Key>
+            <PropertyRef Name="tbNotiUser_ID" />
+          </Key>
+          <Property Name="tbNotiUser_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tbNoti_FK_Noti_ID" Type="int" Nullable="false" />
+          <Property Name="tbNotiUser_FK_User_ID" Type="int" Nullable="false" />
+          <Property Name="tbNotiUser_Seen" Type="bit" Nullable="false" />
+          <Property Name="tbNotiUser_DateSeen" Type="datetime" />
+        </EntityType>
         <EntityType Name="tbOrders">
           <Key>
             <PropertyRef Name="Order_ID" />
@@ -541,6 +563,46 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbNotifications_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbNotifications" Type="Self.tbNotifications" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbNotifications">
+              <PropertyRef Name="tbNoti_FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbNotificationUser_tbNotifications">
+          <End Role="tbNotifications" Type="Self.tbNotifications" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tbNotificationUser" Type="Self.tbNotificationUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbNotifications">
+              <PropertyRef Name="tbNoti_ID" />
+            </Principal>
+            <Dependent Role="tbNotificationUser">
+              <PropertyRef Name="tbNoti_FK_Noti_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbNotificationUser_tbUsers1">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tbNotificationUser" Type="Self.tbNotificationUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbNotificationUser">
+              <PropertyRef Name="tbNotiUser_FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbOrders_tbPlans">
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
@@ -689,23 +751,6 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         <EntityContainer Name="V2boardSiteModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
@@ -719,6 +764,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="Self.tbLinkServerGroupWithUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLogs" EntityType="Self.tbLogs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbNotifications" EntityType="Self.tbNotifications" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbNotificationUser" EntityType="Self.tbNotificationUser" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbRedisInfo" EntityType="Self.tbRedisInfo" Schema="dbo" store:Type="Tables" />
@@ -795,6 +842,18 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
             <End Role="tbLogs" EntitySet="tbLogs" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbNotifications_tbUsers" Association="Self.FK_tbNotifications_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbNotifications" EntitySet="tbNotifications" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbNotificationUser_tbNotifications" Association="Self.FK_tbNotificationUser_tbNotifications">
+            <End Role="tbNotifications" EntitySet="tbNotifications" />
+            <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbNotificationUser_tbUsers1" Association="Self.FK_tbNotificationUser_tbUsers1">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbOrders_tbPlans" Association="Self.FK_tbOrders_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
             <End Role="tbOrders" EntitySet="tbOrders" />
@@ -861,6 +920,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="V2boardSiteModel.tbLinkServerGroupWithUsers" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="V2boardSiteModel.tbLinkUserAndPlans" />
           <EntitySet Name="tbLogs" EntityType="V2boardSiteModel.tbLogs" />
+          <EntitySet Name="tbNotifications" EntityType="V2boardSiteModel.tbNotifications" />
+          <EntitySet Name="tbNotificationUser" EntityType="V2boardSiteModel.tbNotificationUser" />
           <EntitySet Name="tbOrders" EntityType="V2boardSiteModel.tbOrders" />
           <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
           <EntitySet Name="tbRedisInfo" EntityType="V2boardSiteModel.tbRedisInfo" />
@@ -928,6 +989,18 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans">
             <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
             <End Role="tbLogs" EntitySet="tbLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbNotifications_tbUsers" Association="V2boardSiteModel.FK_tbNotifications_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbNotifications" EntitySet="tbNotifications" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbNotificationUser_tbNotifications" Association="V2boardSiteModel.FK_tbNotificationUser_tbNotifications">
+            <End Role="tbNotifications" EntitySet="tbNotifications" />
+            <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbNotificationUser_tbUsers1" Association="V2boardSiteModel.FK_tbNotificationUser_tbUsers1">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
           </AssociationSet>
           <AssociationSet Name="FK_tbOrders_tbPlans" Association="V2boardSiteModel.FK_tbOrders_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
@@ -1161,6 +1234,32 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="PlanMonth" Type="Int32" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
         </EntityType>
+        <EntityType Name="tbNotifications">
+          <Key>
+            <PropertyRef Name="tbNoti_ID" />
+          </Key>
+          <Property Name="tbNoti_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbNoti_FK_User_ID" Type="Int32" Nullable="false" />
+          <Property Name="tbNoti_Title" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="true" />
+          <Property Name="tbNoti_Text" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="tbNoti_RegisterDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="tbNoti_Status" Type="Int32" Nullable="false" />
+          <Property Name="tbNoti_EndDate" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbNotifications_tbUsers" FromRole="tbNotifications" ToRole="tbUsers" />
+          <NavigationProperty Name="tbNotificationUser" Relationship="V2boardSiteModel.FK_tbNotificationUser_tbNotifications" FromRole="tbNotifications" ToRole="tbNotificationUser" />
+        </EntityType>
+        <EntityType Name="tbNotificationUser">
+          <Key>
+            <PropertyRef Name="tbNotiUser_ID" />
+          </Key>
+          <Property Name="tbNotiUser_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbNoti_FK_Noti_ID" Type="Int32" Nullable="false" />
+          <Property Name="tbNotiUser_FK_User_ID" Type="Int32" Nullable="false" />
+          <Property Name="tbNotiUser_Seen" Type="Boolean" Nullable="false" />
+          <Property Name="tbNotiUser_DateSeen" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbNotifications" Relationship="V2boardSiteModel.FK_tbNotificationUser_tbNotifications" FromRole="tbNotificationUser" ToRole="tbNotifications" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbNotificationUser_tbUsers1" FromRole="tbNotificationUser" ToRole="tbUsers" />
+        </EntityType>
         <EntityType Name="tbOrders">
           <Key>
             <PropertyRef Name="Order_ID" />
@@ -1370,6 +1469,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <NavigationProperty Name="tbExpLog" Relationship="V2boardSiteModel.FK_tbExpLog_tbUsers" FromRole="tbUsers" ToRole="tbExpLog" />
           <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbUsers" ToRole="tbLinkServerGroupWithUsers" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbNotifications" Relationship="V2boardSiteModel.FK_tbNotifications_tbUsers" FromRole="tbUsers" ToRole="tbNotifications" />
+          <NavigationProperty Name="tbNotificationUser" Relationship="V2boardSiteModel.FK_tbNotificationUser_tbUsers1" FromRole="tbUsers" ToRole="tbNotificationUser" />
           <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbUsers" ToRole="tbPlans" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
@@ -1561,6 +1662,46 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Principal>
             <Dependent Role="tbLogs">
               <PropertyRef Name="FK_Link_User_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbNotifications_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="V2boardSiteModel.tbNotifications" Role="tbNotifications" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbNotifications">
+              <PropertyRef Name="tbNoti_FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbNotificationUser_tbNotifications">
+          <End Type="V2boardSiteModel.tbNotifications" Role="tbNotifications" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="V2boardSiteModel.tbNotificationUser" Role="tbNotificationUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbNotifications">
+              <PropertyRef Name="tbNoti_ID" />
+            </Principal>
+            <Dependent Role="tbNotificationUser">
+              <PropertyRef Name="tbNoti_FK_Noti_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbNotificationUser_tbUsers1">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="V2boardSiteModel.tbNotificationUser" Role="tbNotificationUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbNotificationUser">
+              <PropertyRef Name="tbNotiUser_FK_User_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1895,6 +2036,30 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
                 <ScalarProperty Name="Action" ColumnName="Action" />
                 <ScalarProperty Name="FK_Link_User_Plan_ID" ColumnName="FK_Link_User_Plan_ID" />
                 <ScalarProperty Name="log_ID" ColumnName="log_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbNotifications">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbNotifications">
+              <MappingFragment StoreEntitySet="tbNotifications">
+                <ScalarProperty Name="tbNoti_EndDate" ColumnName="tbNoti_EndDate" />
+                <ScalarProperty Name="tbNoti_Status" ColumnName="tbNoti_Status" />
+                <ScalarProperty Name="tbNoti_RegisterDate" ColumnName="tbNoti_RegisterDate" />
+                <ScalarProperty Name="tbNoti_Text" ColumnName="tbNoti_Text" />
+                <ScalarProperty Name="tbNoti_Title" ColumnName="tbNoti_Title" />
+                <ScalarProperty Name="tbNoti_FK_User_ID" ColumnName="tbNoti_FK_User_ID" />
+                <ScalarProperty Name="tbNoti_ID" ColumnName="tbNoti_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbNotificationUser">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbNotificationUser">
+              <MappingFragment StoreEntitySet="tbNotificationUser">
+                <ScalarProperty Name="tbNotiUser_DateSeen" ColumnName="tbNotiUser_DateSeen" />
+                <ScalarProperty Name="tbNotiUser_Seen" ColumnName="tbNotiUser_Seen" />
+                <ScalarProperty Name="tbNotiUser_FK_User_ID" ColumnName="tbNotiUser_FK_User_ID" />
+                <ScalarProperty Name="tbNoti_FK_Noti_ID" ColumnName="tbNoti_FK_Noti_ID" />
+                <ScalarProperty Name="tbNotiUser_ID" ColumnName="tbNotiUser_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

@@ -1,0 +1,260 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+}
+
+@section vendorStyle {
+
+    <!-- Vendors CSS -->
+    <link href="../../assets/vendor/libs/node-waves/node-waves.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/typeahead-js/typeahead.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/select2/select2.css" />
+    <link href="../../assets/libs/flatpickr/flatpickr.css" rel="stylesheet" />
+    <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
+    <link href="../../assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
+
+}
+<style>
+    .dt-responsive {
+        text-align: center;
+    }
+
+        .dt-responsive th {
+            text-align: center !important;
+        }
+</style>
+
+<!-- Responsive Datatable -->
+<div class="card">
+    <h5 class="card-header">مدیریت اطلاعیه ها</h5>
+    <div class="card-datatable table-responsive">
+        <button style="z-index:1; float: left; margin-top: 16px; margin-left: 17px;" class="btn btn-secondary add-new btn-primary waves-effect waves-light" tabindex="0" data-bs-target="#modalCenter" data-bs-toggle="modal" type="button"><span><i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">افزودن اطلاعیه</span></span></button>
+        <table class="dt-responsive table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>عنوان</th>
+                    <th>متن</th>
+                    <th>تاریخ</th>
+                    <th>کاربران</th>
+                    <th>دیده شده</th>
+                    <th>وضعیت</th>
+                    <th>تاریخ پایان</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<!--/ Responsive Datatable -->
+<!-- افزودن اطلاعیه جدید -->
+<div aria-hidden="true" class="modal fade" id="modalCenter" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content section-block">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">افزودن اطلاعیه جدید</h5>
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <form class="add-new-user pt-0" id="addNewUserNotiForm">
+                <input type="hidden" value="" id="Noti_ID" name="Noti_ID" />
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 message-text">
+                            <label class="form-label" for="Noti_Title">عنوان<span class="text-danger"> * </span></label>
+                            <input type="text" id="Noti_Title" class="form-control" placeholder="تغییر تعرفه ها" aria-label="amir"
+                                   name="Noti_Title" />
+                        </div>
+                        <div class="col-md-6 message-text">
+                            <label class="form-label" for="endDate"> تاریخ انقضا <span data-bs-toggle='tooltip' title="بعد از این تاریخ اطلاعیه برای نماینده نمایش داده نمی شود"><i class="ti ti-help" style="font-size: 15px;"></i></span><span class="text-danger"> * </span></label>
+                            <input type="text" id="endDate" class="form-control" placeholder="تاریخ انقضا" aria-label=""
+                                   name="endDate" />
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-10 message-text">
+                            <label class="form-label" for="userPlan">نمایندگان <span data-bs-toggle='tooltip' title="نمایندگانی که می خواهید این اطلاعیه برایشان ارسال شود"><i class="ti ti-help" style="font-size: 15px;"></i></span><span class="text-danger"> * </span></label>
+                            <select id="usersSelect" class="select2 form-select" autocomplete="off" name="usersSelect" multiple>
+                                <option value="">در حال بارگزاری</option>
+                            </select>
+
+                        </div>
+                        <div class="col-md-2 message-text">
+                            <label class="form-label" for="userPlan">&nbsp;</label>
+                            <button class="btn btn-outline-info btn-sm" id="selectAllUsers" type="button">انتخاب همه</button>
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-12 message-text">
+                            <label class="form-label" for="Noti_Text">متن اطلاعیه<span class="text-danger"> * </span></label>
+                            <input class="form-control bootstrap-maxlength-example" placeholder="جهت اطلاع نمایندگان عزیز از ماه آینده شاهد افزایش قیمت چشم گیری خواهیم بود" name="Noti_Text" id="Noti_Text" maxlength="150" type="text" />
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-label-secondary" data-bs-dismiss="modal" type="button"> بستن</button>
+                    <button class="btn btn-primary" type="submit">ذخیره</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- ویرایش اطلاعیه  -->
+@*<div aria-hidden="true" class="modal fade" id="modalEditCenter" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content section-block">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">افزودن اطلاعیه جدید</h5>
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <form class="add-new-user pt-0" id="EditUserNotiForm">
+                <input type="hidden" value="" id="Noti_ID" name="Noti_ID" />
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 message-text">
+                            <label class="form-label" for="Noti_Title">عنوان<span class="text-danger"> * </span></label>
+                            <input type="text" id="Noti_Title" class="form-control" placeholder="عنوان اطلاعیه" aria-label="amir"
+                                   name="Noti_Title" />
+                        </div>
+                        <div class="col-md-6 message-text">
+                            <label class="form-label" for="endDate"> تاریخ انقضا <span data-bs-toggle='tooltip' title="بعد از این تاریخ اطلاعیه برای نماینده نمایش داده نمی شود"><i class="ti ti-help" style="font-size: 15px;"></i></span><span class="text-danger"> * </span></label>
+                            <input type="text" id="endDate" class="form-control" placeholder="تاریخ انقضا اطلاعیه" aria-label=""
+                                   name="endDate" />
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-10 message-text">
+                            <label class="form-label" for="userPlan">نمایندگان <span data-bs-toggle='tooltip' title="نمایندگانی که می خواهید این اطلاعیه برایشان ارسال شود"><i class="ti ti-help" style="font-size: 15px;"></i></span><span class="text-danger"> * </span></label>
+                            <select id="usersSelect_edit" class="select2 form-select" autocomplete="off" name="usersSelect" multiple>
+                                <option value="">در حال بارگزاری</option>
+                            </select>
+
+                        </div>
+                        <div class="col-md-2 message-text">
+                            <label class="form-label" for="userPlan">&nbsp;</label>
+                            <button class="btn btn-outline-info btn-sm" id="selectAllUsers" type="button">انتخاب همه</button>
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-12 message-text">
+                            <label class="form-label" for="Noti_Text">متن اطلاعیه<span class="text-danger"> * </span></label>
+                            <input class="form-control bootstrap-maxlength-example" name="Noti_Text" id="Noti_Text" maxlength="150" type="text" />
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-label-secondary" data-bs-dismiss="modal" type="button"> بستن</button>
+                    <button class="btn btn-primary" type="submit">ذخیره</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>*@
+
+@section vendorScripts {
+
+    <!-- Vendors JS -->
+    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
+
+}
+
+@section customScripts {
+
+    <!-- Flat Picker -->
+    <script src="../../assets/vendor/libs/moment/moment.js"></script>
+    <script src="../../assets/libs/jdate/jdate.js"></script>
+    <script src="../../assets/libs/flatpickr/flatpickr-jalali.js"></script>
+    <script src="../../assets/libs/flatpickr/l10n/fa.js"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+    <script src="../../assets/vendor/libs/select2/select2.js"></script>
+    <script src="../../assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js"></script>
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+    <!-- Page JS -->
+    <script src="../../assets/js/userNotifications.js"></script>
+
+    <script>
+
+        $(function () {
+
+            var myModal = document.getElementById('modalCenter');
+            myModal.addEventListener('hidden.bs.modal', function () {
+                document.getElementById('addNewUserNotiForm').reset();
+                $('#usersSelect').val(null).trigger('change');
+            });
+
+        });
+
+        var flatpickrDate = document.querySelector('#endDate');
+        if (flatpickrDate) {
+            flatpickrDate.flatpickr({
+                disableMobile: "false",
+                monthSelectorType: 'static',
+                locale: 'fa',
+                altFormat: 'Y/m/d',
+            });
+        }
+
+        function SelectUser(selectId, Ids) {
+            console.log("select shod");
+            $(selectId).val(Ids).trigger('change');
+        }
+
+        function GetUsersSelect(selectId) {
+            var $select = $(selectId);
+            $.ajax({
+                url: "/App/Admin/GetUsersSelect",
+                type: "get",
+                dataType: "json",
+                async: true,
+                success: function (res) {
+                    console.log(res);
+                    // پاک کردن گزینه‌های قبلی
+                    $select.empty();
+
+                    // افزودن گزینه‌های جدید
+                    $.each(res.data, function (index, item) {
+                        var newOption = new Option(item.username, item.id, false, false);
+                        $select.append(newOption);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("An error occurred: " + status + " " + error);
+                }
+            });
+
+        }
+
+        $('#selectAllUsers').on('click', function () {
+            var allOptions = [];
+            $('#usersSelect option').each(function () {
+                allOptions.push($(this).val());
+            });
+            $('#usersSelect').val(allOptions).trigger('change');
+        });
+
+
+
+    </script>
+}
+

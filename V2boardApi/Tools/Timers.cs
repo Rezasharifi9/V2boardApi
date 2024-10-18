@@ -284,93 +284,111 @@ public class TimerService
                         {
                             var Disc = new Dictionary<string, object>();
                             Disc.Add("@email", item.AccountName);
-                            var Reader = await mySql.GetDataAsync("select * from v2_user where email like @email", Disc);
-                            var Read = await Reader.ReadAsync();
-                            if (Read)
+                            using (var Reader = await mySql.GetDataAsync("select * from v2_user where email like @email", Disc))
                             {
-                                var d = Reader.GetDouble("d");
-                                var u = Reader.GetDouble("u");
-                                var totalUsed = Reader.GetDouble("transfer_enable");
-
-                                var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
-                                var exp2 = Reader.GetBodyDefinition("expired_at");
-                                var Ended = false;
-                                if (!string.IsNullOrWhiteSpace(exp2))
+                                var Read = await Reader.ReadAsync();
+                                if (Read)
                                 {
-                                    var expireTime = DateTime.Now;
-                                    var ExpireDate = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp2)).AddHours(-3);
-                                    if (ExpireDate <= expireTime)
+                                    var d = Reader.GetDouble("d");
+                                    var u = Reader.GetDouble("u");
+                                    var totalUsed = Reader.GetDouble("transfer_enable");
+
+                                    var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
+                                    var exp2 = Reader.GetBodyDefinition("expired_at");
+                                    var Ended = false;
+                                    if (!string.IsNullOrWhiteSpace(exp2))
+                                    {
+                                        var expireTime = DateTime.Now;
+                                        var ExpireDate = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp2)).AddHours(-3);
+                                        if (ExpireDate <= expireTime)
+                                        {
+                                            Ended = true;
+                                        }
+                                    }
+                                    if (total <= 0.2)
                                     {
                                         Ended = true;
                                     }
-                                }
-                                if (total <= 0.2)
-                                {
-                                    Ended = true;
-                                }
-                                Reader.Close();
-                                if (Ended)
-                                {
-
-
-                                    var Link = item.tbTelegramUsers.tbLinks.Where(p => p.tbL_Email == item.AccountName).FirstOrDefault();
-                                    if (Link != null)
+                                    Reader.Close();
+                                    if (Ended)
                                     {
-                                        var t = Utility.ConvertGBToByte(Convert.ToInt64(item.Traffic));
-
-                                        string exp = DateTime.Now.AddDays((int)item.Month * 30).ConvertDatetimeToSecond().ToString();
-                                        Link.tbL_Warning = false;
 
 
-                                        var Disc1 = new Dictionary<string, object>();
-                                        Disc1.Add("@plan_id", item.V2_Plan_ID);
-                                        Disc1.Add("@transfer_enable", t);
-                                        Disc1.Add("@expired_at", exp);
-                                        Disc1.Add("@email", item.AccountName);
-
-                                        var reader2 = await mySql.GetDataAsync("select group_id from v2_plan where id ="+item.V2_Plan_ID);
-                                        while (await reader2.ReadAsync())
+                                        var Link = item.tbTelegramUsers.tbLinks.Where(p => p.tbL_Email == item.AccountName).FirstOrDefault();
+                                        if (Link != null)
                                         {
-                                            var grid = reader2.GetInt32("group_id");
+                                            var t = Utility.ConvertGBToByte(Convert.ToInt64(item.Traffic));
 
-                                            Disc1.Add("@group_id", grid);
+                                            string exp = DateTime.Now.AddDays((int)item.Month * 30).ConvertDatetimeToSecond().ToString();
+                                            Link.tbL_Warning = false;
+
+
+                                            var Disc1 = new Dictionary<string, object>();
+                                            Disc1.Add("@plan_id", item.V2_Plan_ID);
+                                            Disc1.Add("@transfer_enable", t);
+                                            Disc1.Add("@expired_at", exp);
+                                            Disc1.Add("@email", item.AccountName);
+
+                                            var reader2 = await mySql.GetDataAsync("select group_id from v2_plan where id =" + item.V2_Plan_ID);
+                                            while (await reader2.ReadAsync())
+                                            {
+                                                var grid = reader2.GetInt32("group_id");
+
+                                                Disc1.Add("@group_id", grid);
+                                            }
+                                            reader2.Close();
+
+                                            var DeviceLimit_Structur = "";
+                                            var DeviceLimit_data = "";
+                                            
+
+                                            if (item.tbPlans != null)
+                                            {
+                                                var Plan = item.tbPlans;
+                                                if (Plan.device_limit != null)
+                                                {
+                                                    DeviceLimit_Structur = ",device_limit=" + (Plan.device_limit + 1);
+                                                    //Disc1.Add("@device_limit", Plan.device_limit);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                var planId = item.tbTelegramUsers.tbUsers.tbBotSettings.First().FK_Plan_ID;
+                                                var Plan = tbPlanRepository.Where(s => s.Plan_ID == planId).FirstOrDefault();
+                                                if (Plan.device_limit != null)
+                                                {
+                                                    DeviceLimit_Structur = ",device_limit=" + (Plan.device_limit + 1);
+                                                    //Disc1.Add("@device_limit", Plan.device_limit);
+                                                }
+                                            }
+
+
+                                            var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id" + DeviceLimit_Structur + ",group_id=@group_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";
+
+                                            var reader = await mySql.GetDataAsync(Query, Disc1);
+                                            var result = reader.ReadAsync();
+                                            reader.Close();
+
+
+
+                                            await bot.Client.SendTextMessageAsync(Link.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت تمدید شد از بخش سرویس ها جزئیات اکانت را می توانید مشاهده کنید");
+                                            var InlineKeyboardMarkup = Keyboards.GetHomeButton();
+                                            Link.tbL_Warning = false;
+                                            Link.tb_AutoRenew = false;
+                                            item.OrderStatus = "FINISH";
+                                            item.Tel_RenewedDate = DateTime.Now;
+                                            await tbLinksRepository.SaveChangesAsync();
+                                            await tbUsersRepository.SaveChangesAsync();
+                                            await tbOrdersRepository.SaveChangesAsync();
+                                            await tbTelegramUserRepository.SaveChangesAsync();
+
                                         }
-
-                                        var DeviceLimit_Structur = "";
-                                        var DeviceLimit_data = "";
-                                        var planId = item.tbTelegramUsers.tbUsers.tbBotSettings.First().FK_Plan_ID;
-                                        var Plan = tbPlanRepository.Where(s => s.Plan_ID == planId).FirstOrDefault();
-                                        if (Plan.device_limit != null)
-                                        {
-                                            DeviceLimit_Structur = ",device_limit=" + Plan.device_limit+1;
-                                            //Disc1.Add("@device_limit", Plan.device_limit);
-                                        }
-                                        
-
-                                        var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id"+ DeviceLimit_Structur + ",group_id=@group_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";
-
-                                        var reader = await mySql.GetDataAsync(Query, Disc1);
-                                        var result = reader.ReadAsync();
-                                        reader.Close();
-
-
-
-                                        await bot.Client.SendTextMessageAsync(Link.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت تمدید شد از بخش سرویس ها جزئیات اکانت را می توانید مشاهده کنید");
-                                        var InlineKeyboardMarkup = Keyboards.GetHomeButton();
-                                        Link.tbL_Warning = false;
-                                        Link.tb_AutoRenew = false;
-                                        item.OrderStatus = "FINISH";
-                                        item.Tel_RenewedDate = DateTime.Now;
-                                        await tbLinksRepository.SaveChangesAsync();
-                                        await tbUsersRepository.SaveChangesAsync();
-                                        await tbOrdersRepository.SaveChangesAsync();
-                                        await tbTelegramUserRepository.SaveChangesAsync();
-
                                     }
                                 }
+                                Reader.Close();
                             }
 
-                            Reader.Close();
+                            
                         }
 
                     }

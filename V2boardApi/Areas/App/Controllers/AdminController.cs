@@ -591,6 +591,98 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+        #region دریافت اعلانات کاربر
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "3,2,4")]
+        public ActionResult GetNotifications()
+        {
+
+            var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            if (user != null)
+            {
+                var List = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now && s.tbNotiUser_Seen == false).ToList();
+                return PartialView(List);
+            }
+            else
+            {
+                return PartialView(new List<tbNotificationUser>());
+            }
+        }
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "3,2,4")]
+        public ActionResult GetCountNotification()
+        {
+            var user =  RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            if (user != null)
+            {
+                var Count = user.tbNotificationUser.Where(s=> s.tbNotifications.tbNoti_EndDate >= DateTime.Now && s.tbNotiUser_Seen == false).Count();
+                return Content(Count.ToString());
+            }
+            else
+            {
+                return Content("0");
+            }
+        }
+
+
+        #endregion
+
+        #region سین اطلاعیه کاربر
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "3,2,4")]
+        public ActionResult DeleteUserNotif(int NotiUser_ID)
+        {
+            var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            if (user != null)
+            {
+                var Noti = user.tbNotificationUser.Where(s => s.tbNotiUser_ID == NotiUser_ID).FirstOrDefault();
+                if (Noti != null)
+                {
+                    Noti.tbNotiUser_Seen = true;
+                    Noti.tbNotiUser_DateSeen = DateTime.Now;
+                }
+
+                RepositoryUser.Save();
+                logger.Info("اطلاعیه سین شد");
+                return Content("Ok");
+            }
+            else
+            {
+                return Content("Error");
+            }
+        }
+
+        #endregion
+
+        #region سین تمام اطلاعیه های کاربر
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "3,2,4")]
+        public ActionResult DeleteAllUserNotif()
+        {
+            var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            if (user != null)
+            {
+                var Noties = user.tbNotificationUser.ToList();
+                foreach(var Noti in Noties)
+                {
+                    Noti.tbNotiUser_Seen = true;
+                    Noti.tbNotiUser_DateSeen = DateTime.Now;
+                }
+
+                RepositoryUser.Save();
+                logger.Info("تمام اطلاعیه ها سین شد");
+                return Content("Ok");
+            }
+            else
+            {
+                return Content("Error");
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ورود
@@ -621,8 +713,8 @@ namespace V2boardApi.Areas.App.Controllers
                 //var key = redis.GetValue(100);
                 //var s = new Serializer();
                 //var d = (System.Collections.Hashtable)s.Deserialize(key); 
-               
-                
+
+
 
                 var Sha = userPassword.ToSha256();
                 tbUsers User = RepositoryUser.table.Where(p => p.Username == userUsername && p.Password == Sha).FirstOrDefault();
@@ -1736,6 +1828,43 @@ namespace V2boardApi.Areas.App.Controllers
                 return MessageBox.Error("خطا", "خطا در حذف کارت");
             }
 
+        }
+
+        #endregion
+
+        #region دریافت لیست نمایندگان در قالب Select2
+
+        [System.Web.Http.HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> GetUsersSelect()
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                if (user != null)
+                {
+                    var Users = user.tbUsers1.Where(s => s.Status == true).ToList();
+                    List<SelectUserViewModel> SelectUsers = new List<SelectUserViewModel>();
+                    foreach (var User in Users)
+                    {
+                        SelectUserViewModel userselect = new SelectUserViewModel();
+                        userselect.id = User.User_ID;
+                        userselect.username = User.Username;
+                        SelectUsers.Add(userselect);
+                    }
+
+                    return Json(new { data = SelectUsers }, JsonRequestBehavior.AllowGet);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex, "خطا در دریافت لیست نمایندگان در قالب select");
+                return null;
+            }
         }
 
         #endregion
