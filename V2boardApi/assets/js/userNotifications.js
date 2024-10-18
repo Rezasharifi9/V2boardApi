@@ -227,7 +227,7 @@ $(function () {
                                 flatpickrDate = document.querySelector('#addNewUserNotiForm #endDate');
 
                                 flatpickrDate.flatpickr({
-                                    disableMobile: "false",
+                                    disableMobile: "true",
                                     monthSelectorType: 'static',
                                     locale: 'fa',
                                     altFormat: 'Y/m/d',
