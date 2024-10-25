@@ -95,7 +95,10 @@
                     <div class="row">
                         <div class="col-md-12 message-text">
                             <label class="form-label" for="Noti_Text">متن اطلاعیه<span class="text-danger"> * </span></label>
-                            <input class="form-control bootstrap-maxlength-example" placeholder="جهت اطلاع نمایندگان عزیز از ماه آینده شاهد افزایش قیمت چشم گیری خواهیم بود" name="Noti_Text" id="Noti_Text" maxlength="150" type="text" />
+
+                            <textarea class="form-control bootstrap-maxlength-example" name="Noti_Text" id="Noti_Text" maxlength="200" rows="5">
+
+</textarea>
 
                         </div>
                     </div>
@@ -201,6 +204,7 @@
             myModal.addEventListener('hidden.bs.modal', function () {
                 document.getElementById('addNewUserNotiForm').reset();
                 $('#usersSelect').val(null).trigger('change');
+                $('#Noti_ID').val(0);
             });
 
         });
@@ -244,6 +248,8 @@
             });
 
         }
+
+        
 
         $('#selectAllUsers').on('click', function () {
             var allOptions = [];

@@ -180,7 +180,7 @@
           <Property Name="tbNoti_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="tbNoti_FK_User_ID" Type="int" Nullable="false" />
           <Property Name="tbNoti_Title" Type="nvarchar" MaxLength="30" Nullable="false" />
-          <Property Name="tbNoti_Text" Type="nvarchar" MaxLength="150" Nullable="false" />
+          <Property Name="tbNoti_Text" Type="nvarchar" MaxLength="200" Nullable="false" />
           <Property Name="tbNoti_RegisterDate" Type="datetime" Nullable="false" />
           <Property Name="tbNoti_Status" Type="int" Nullable="false" />
           <Property Name="tbNoti_EndDate" Type="datetime" Nullable="false" />
@@ -1241,7 +1241,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="tbNoti_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="tbNoti_FK_User_ID" Type="Int32" Nullable="false" />
           <Property Name="tbNoti_Title" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="true" />
-          <Property Name="tbNoti_Text" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="tbNoti_Text" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
           <Property Name="tbNoti_RegisterDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="tbNoti_Status" Type="Int32" Nullable="false" />
           <Property Name="tbNoti_EndDate" Type="DateTime" Nullable="false" Precision="3" />

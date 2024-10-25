@@ -222,7 +222,9 @@ $(function () {
                     for (var key in data) {
                         if (data.hasOwnProperty(key)) {
                             var input = $('#addNewUserNotiForm input[name=' + key + ']');
-
+                            if (key == "Noti_Text") {
+                                input = $('#addNewUserNotiForm textarea[name=' + key + ']');
+                            }
                             if (key == "endDate") {
                                 flatpickrDate = document.querySelector('#addNewUserNotiForm #endDate');
 

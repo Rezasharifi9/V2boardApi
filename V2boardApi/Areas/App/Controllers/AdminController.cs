@@ -591,7 +591,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region دریافت اعلانات کاربر
+        #region دریافت اطلاعیه های کاربر
 
         [System.Web.Mvc.HttpGet]
         [AuthorizeApp(Roles = "3,2,4")]
@@ -601,7 +601,7 @@ namespace V2boardApi.Areas.App.Controllers
             var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
-                var List = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now && s.tbNotiUser_Seen == false).ToList();
+                var List = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now).OrderByDescending(s=> s.tbNotifications.tbNoti_RegisterDate).ToList();
                 return PartialView(List);
             }
             else
@@ -617,7 +617,23 @@ namespace V2boardApi.Areas.App.Controllers
             var user =  RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
-                var Count = user.tbNotificationUser.Where(s=> s.tbNotifications.tbNoti_EndDate >= DateTime.Now && s.tbNotiUser_Seen == false).Count();
+                var Count = user.tbNotificationUser.Where(s=> s.tbNotifications.tbNoti_EndDate >= DateTime.Now).Count();
+                return Content(Count.ToString());
+            }
+            else
+            {
+                return Content("0");
+            }
+        }
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "3,2,4")]
+        public ActionResult GetCountNotSeenNotification()
+        {
+            var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            if (user != null)
+            {
+                var Count = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now && s.tbNotiUser_Seen == false).Count();
                 return Content(Count.ToString());
             }
             else
@@ -632,16 +648,16 @@ namespace V2boardApi.Areas.App.Controllers
         #region سین اطلاعیه کاربر
         [System.Web.Mvc.HttpGet]
         [AuthorizeApp(Roles = "3,2,4")]
-        public ActionResult DeleteUserNotif(int NotiUser_ID)
+        public ActionResult SeenUserNotif()
         {
             var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
-                var Noti = user.tbNotificationUser.Where(s => s.tbNotiUser_ID == NotiUser_ID).FirstOrDefault();
-                if (Noti != null)
+                var Noti = user.tbNotificationUser.Where(s=> s.tbNotiUser_Seen == false).ToList();
+                foreach(var item in Noti)
                 {
-                    Noti.tbNotiUser_Seen = true;
-                    Noti.tbNotiUser_DateSeen = DateTime.Now;
+                    item.tbNotiUser_Seen = true;
+                    item.tbNotiUser_DateSeen = DateTime.Now;
                 }
 
                 RepositoryUser.Save();

@@ -82,7 +82,7 @@ namespace V2boardApi.Areas.App.Controllers
                 // دریافت نقش کاربر
                 var userRole = user.Role.Value; // فرض می‌کنیم نقش کاربر در user.Role ذخیره شده است
 
-                string baseQuery = "SELECT v2.id, v2.email, t, u, d, v2.transfer_enable, banned, token, expired_at, pl.name " +
+                string baseQuery = "SELECT v2.id, v2.email, t, u, d, v2.transfer_enable, banned, token, expired_at, plan_id,pl.name " +
                                    "FROM `v2_user` AS v2 JOIN v2_plan AS pl ON plan_id = pl.id WHERE 1=1 ";
                 string searchQuery = "";
 
@@ -230,13 +230,22 @@ namespace V2boardApi.Areas.App.Controllers
                                     id = reader.GetInt32(reader.GetOrdinal("id")),
 
                                     TotalVolume = Utility.ConvertByteToGB(reader.GetInt64(reader.GetOrdinal("transfer_enable"))).ToString(),
-                                    PlanName = reader.GetString(reader.GetOrdinal("name")),
                                     IsBanned = Convert.ToBoolean(reader.GetSByte(reader.GetOrdinal("banned"))),
                                     Name = reader.GetString(reader.GetOrdinal("email")),
                                     IsActive = 1,
                                     SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}"
                                 };
 
+                                var PlanId = reader.GetInt64(reader.GetOrdinal("plan_id"));
+                                var Plan = await plansRepository.FirstOrDefaultAsync(s => s.Plan_ID_V2 == PlanId);
+                                if(Plan == null)
+                                {
+                                    getuserData.PlanName = reader.GetString(reader.GetOrdinal("name"));
+                                }
+                                else
+                                {
+                                    getuserData.PlanName = Plan.Plan_Name;
+                                }
                                 var exp = reader["expired_at"].ToString();
                                 if (!string.IsNullOrEmpty(exp))
                                 {
