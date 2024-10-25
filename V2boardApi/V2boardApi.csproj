@@ -313,6 +313,7 @@
     <Compile Include="Areas\api\Controllers\BotController.cs" />
     <Compile Include="Areas\api\Controllers\ClientController.cs" />
     <Compile Include="Areas\api\Controllers\UserController.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\AddFirebaseTokenModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AccountHistoryViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AddAccountWithOutPlanInputModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\GetFactorsViewModel.cs" />

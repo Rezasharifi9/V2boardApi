@@ -51,5 +51,6 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbUserFactors> tbUserFactors { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
         public virtual DbSet<vi_MajorSales> vi_MajorSales { get; set; }
+        public virtual DbSet<tbFirebaseMobileTokens> tbFirebaseMobileTokens { get; set; }
     }
 }

@@ -501,7 +501,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     await mySql.CloseAsync();
                                     linkUserAndPlansRepository.Save();
                                     usersRepository.Save();
-                                    AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth);
+                                    AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, token);
                                     logger.Info("اشتراک جدید توسط نماینده ایجاد گردید");
                                     return Toaster.Success("موفق", "اشتراک با موفقیت ایجاد گردید");
                                 }
@@ -555,7 +555,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #region افزودن لاگ تمدید یا ساخت کاربر
-        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, int planVolume, int planMonth)
+        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, int planVolume, int planMonth,string subToken=null)
         {
             try
             {
@@ -568,6 +568,7 @@ namespace V2boardApi.Areas.App.Controllers
                 tbLogs.PlanName = planName;
                 tbLogs.PlanVolume = planVolume;
                 tbLogs.PlanMonth = planMonth;
+                tbLogs.SubToken = subToken; 
                 logsRepository.Insert(tbLogs);
                 logger.Info("لاگ ساخت اشتراک اضافه شد");
                 return logsRepository.Save();
@@ -850,7 +851,7 @@ namespace V2boardApi.Areas.App.Controllers
                         reader.Read();
                         reader.Close();
 
-                        var Query2 = "SELECT email FROM `v2_user` WHERE id=" + user_id;
+                        var Query2 = "SELECT email,token FROM `v2_user` WHERE id=" + user_id;
 
                         var reader2 = await mySql.GetDataAsync(Query2);
                         if (await reader2.ReadAsync())
@@ -862,7 +863,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 user.Wallet += link.tbPlans.Price;
                             }
 
-                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume, Plan.PlanMonth);
+                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume, Plan.PlanMonth, reader2.GetBodyDefinition("token"));
                         }
                         reader2.Close();
 
@@ -919,10 +920,25 @@ namespace V2boardApi.Areas.App.Controllers
 
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                 await mySql.OpenAsync();
+
+                var reader1 = await mySql.GetDataAsync("select token from v2_user where id="+user_id);
+                var OldToken = "";
+                if(await reader1.ReadAsync())
+                {
+                    OldToken = reader1.GetBodyDefinition("token");
+                }
+                reader1.Close();
+
                 string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
                 var query = "update v2_user set token = '" + token + "',uuid='" + Guid.NewGuid() + "' where id=" + user_id;
-                var reader = mySql.GetDataAsync(query);
-
+                var reader = await mySql.GetDataAsync(query);
+                reader.Close();
+                var Logs = await logsRepository.WhereAsync(s => s.SubToken == OldToken);
+                foreach(var item in Logs)
+                {
+                    item.SubToken = token;
+                }
+                await logsRepository.SaveChangesAsync();
                 logger.Info("لینک اشتراک با موفقیت تغییر یافت");
                 await mySql.CloseAsync();
                 return Toaster.Success("موفق", "لینک با موفقیت تغییر کرد");

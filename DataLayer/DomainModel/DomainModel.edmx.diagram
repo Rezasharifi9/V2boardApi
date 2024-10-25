@@ -60,6 +60,8 @@
         <AssociationConnector Association="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbUserFactors_tbUsers" />
         <AssociationConnector Association="V2boardSiteModel.FK_tbUsers_tbUsers" />
+        <EntityTypeShape EntityType="V2boardSiteModel.tbFirebaseMobileTokens" Width="1.5" PointX="8.25" PointY="12.25" />
+        <AssociationConnector Association="V2boardSiteModel.FK_tbFirebaseMobileTokens_tbUsers" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

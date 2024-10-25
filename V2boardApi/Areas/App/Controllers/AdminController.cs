@@ -601,7 +601,7 @@ namespace V2boardApi.Areas.App.Controllers
             var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
-                var List = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now).OrderByDescending(s=> s.tbNotifications.tbNoti_RegisterDate).ToList();
+                var List = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now).OrderByDescending(s => s.tbNotifications.tbNoti_RegisterDate).ToList();
                 return PartialView(List);
             }
             else
@@ -614,10 +614,10 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "3,2,4")]
         public ActionResult GetCountNotification()
         {
-            var user =  RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
-                var Count = user.tbNotificationUser.Where(s=> s.tbNotifications.tbNoti_EndDate >= DateTime.Now).Count();
+                var Count = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now).Count();
                 return Content(Count.ToString());
             }
             else
@@ -653,8 +653,8 @@ namespace V2boardApi.Areas.App.Controllers
             var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
-                var Noti = user.tbNotificationUser.Where(s=> s.tbNotiUser_Seen == false).ToList();
-                foreach(var item in Noti)
+                var Noti = user.tbNotificationUser.Where(s => s.tbNotiUser_Seen == false).ToList();
+                foreach (var item in Noti)
                 {
                     item.tbNotiUser_Seen = true;
                     item.tbNotiUser_DateSeen = DateTime.Now;
@@ -681,7 +681,7 @@ namespace V2boardApi.Areas.App.Controllers
             if (user != null)
             {
                 var Noties = user.tbNotificationUser.ToList();
-                foreach(var Noti in Noties)
+                foreach (var Noti in Noties)
                 {
                     Noti.tbNotiUser_Seen = true;
                     Noti.tbNotiUser_DateSeen = DateTime.Now;
@@ -839,6 +839,49 @@ namespace V2boardApi.Areas.App.Controllers
                 //                var reader3 = await mysql.GetDataAsync(updateQuery);
                 //                reader3.Close();
                 //            }
+
+                //            await mysql.CloseAsync();
+                //        }
+                //        return MessageBox.Warning("هشدار", "تمام");
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        logger.Error(ex, "خطا در درست کردن");
+                //        return MessageBox.Warning("هشدار", "خطا");
+                //    }
+                //}
+
+
+                //if (User.Username == "darkbaz" || User.Username == "markazi")
+                //{
+                //    try
+                //    {
+                //        using (MySqlEntities mysql = new MySqlEntities(User.tbServers.ConnectionString))
+                //        {
+                //            await mysql.OpenAsync();
+
+                //            // لیست برای ذخیره‌سازی داده‌های خوانده‌شده
+                //            var userList = new List<UserData>();
+
+
+                //            var logs = await RepositoryLogs.GetAllAsync();
+                //            foreach (var item in logs)
+                //            {
+                //                if (item.tbLinkUserAndPlans.tbUsers != null)
+                //                {
+                //                    var email = item.FK_NameUser_ID + "@" + item.tbLinkUserAndPlans.tbUsers.Username;
+                //                    var reader = await mysql.GetDataAsync("SELECT token FROM `v2_user` where v2_user.email = '" + email + "'");
+                //                    while (await reader.ReadAsync())
+                //                    {
+                //                        item.SubToken = reader.GetBodyDefinition("token");
+                //                    }
+                //                    reader.Close();
+                //                }
+
+
+
+                //            }
+                //            await RepositoryLogs.SaveChangesAsync();
 
                 //            await mysql.CloseAsync();
                 //        }
@@ -1876,7 +1919,7 @@ namespace V2boardApi.Areas.App.Controllers
                     return null;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex, "خطا در دریافت لیست نمایندگان در قالب select");
                 return null;

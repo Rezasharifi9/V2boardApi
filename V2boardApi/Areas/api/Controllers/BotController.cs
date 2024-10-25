@@ -128,6 +128,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var RepositoryLinkUserAndPlan = new Repository<tbLinkUserAndPlans>(db);
                         var tbDepositLogRepo = new Repository<tbDepositWallet_Log>(db);
                         var tbServerGroupsRepo = new Repository<tbServerGroups>(db);
+                        var firebaseRepo = new Repository<tbFirebaseMobileTokens> (db);
                         var V2boardPlanId = BotSettings.tbPlans.Plan_ID_V2;
                         long chatid = 0;
                         tbTelegramUsers UserAcc = new tbTelegramUsers();
@@ -1504,9 +1505,16 @@ namespace V2boardApi.Areas.api.Controllers
                                             row1.Add(InlineKeyboardButton.WithCallbackData("⬅️ برگشت به منو اصلی", "back"));
                                             inlineKeyboards.Add(row1);
 
+                                            var firebaseInfo = await firebaseRepo.FirstOrDefaultAsync(s => s.tbFireBase_SubToken == Link.tbL_Token);
+                                            if(firebaseInfo != null)
+                                            {
+                                                firebaseInfo.tbFireBase_SubToken = token;
+                                            }
+
+
                                             Link.tbL_Token = token;
                                             await tbLinksRepository.SaveChangesAsync();
-
+                                            await firebaseRepo.SaveChangesAsync();
                                             await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
                                             var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
                                             reader.Close();
@@ -2404,8 +2412,18 @@ namespace V2boardApi.Areas.api.Controllers
                                         var Link = User.tbLinks.Where(p => p.tbL_Email == callback[1]).FirstOrDefault();
                                         if (Link != null)
                                         {
+                                            
+
+                                            var firebaseInfo = await firebaseRepo.FirstOrDefaultAsync(s=> s.tbFireBase_SubToken == Link.tbL_Token);
+                                            if(firebaseInfo != null)
+                                            {
+                                                firebaseRepo.Delete(firebaseInfo);
+                                                firebaseRepo.SaveChangesAsync();
+                                            }
+
                                             tbLinksRepository.Delete(Link);
                                             await tbLinksRepository.SaveChangesAsync();
+
                                             MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
                                             await mySql.OpenAsync();
                                             await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "✅ اشتراک با موفقیت حذف شد", true);

@@ -152,6 +152,9 @@
     <Compile Include="DomainModel\tbFailureServers.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbFirebaseMobileTokens.cs">
+      <DependentUpon>DomainModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbLinks.cs">
       <DependentUpon>DomainModel.tt</DependentUpon>
     </Compile>

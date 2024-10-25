@@ -122,6 +122,15 @@
           <Property Name="tbFa_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="tbFa_v2_ServerID" Type="int" />
         </EntityType>
+        <EntityType Name="tbFirebaseMobileTokens">
+          <Key>
+            <PropertyRef Name="tbFirebase_ID" />
+          </Key>
+          <Property Name="tbFirebase_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tbFirebase_Token" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="tbFireBase_SubToken" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="tbFireBase_FK_User_ID" Type="int" Nullable="false" />
+        </EntityType>
         <EntityType Name="tbLinks">
           <Key>
             <PropertyRef Name="tbLink_ID" />
@@ -168,6 +177,7 @@
           <Property Name="Action" Type="nvarchar(max)" />
           <Property Name="CreateDatetime" Type="datetime" />
           <Property Name="FK_NameUser_ID" Type="nvarchar(max)" />
+          <Property Name="SubToken" Type="varchar" MaxLength="50" />
           <Property Name="SalePrice" Type="int" />
           <Property Name="PlanName" Type="nvarchar" MaxLength="150" />
           <Property Name="PlanVolume" Type="int" />
@@ -458,6 +468,18 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Principal>
             <Dependent Role="tbExpLog">
               <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbFirebaseMobileTokens_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbFirebaseMobileTokens" Type="Self.tbFirebaseMobileTokens" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbFirebaseMobileTokens">
+              <PropertyRef Name="tbFireBase_FK_User_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -760,6 +782,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySet Name="tbDepositWallet_Log" EntityType="Self.tbDepositWallet_Log" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbExpLog" EntityType="Self.tbExpLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbFailureServers" EntityType="Self.tbFailureServers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbFirebaseMobileTokens" EntityType="Self.tbFirebaseMobileTokens" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinks" EntityType="Self.tbLinks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="Self.tbLinkServerGroupWithUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" Schema="dbo" store:Type="Tables" />
@@ -809,6 +832,10 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <AssociationSet Name="FK_tbExpLog_tbUsers" Association="Self.FK_tbExpLog_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbExpLog" EntitySet="tbExpLog" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbFirebaseMobileTokens_tbUsers" Association="Self.FK_tbFirebaseMobileTokens_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbFirebaseMobileTokens" EntitySet="tbFirebaseMobileTokens" />
           </AssociationSet>
           <AssociationSet Name="FK_tbLinks_tbPlans" Association="Self.FK_tbLinks_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
@@ -1050,6 +1077,11 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
+          <EntitySet Name="tbFirebaseMobileTokens" EntityType="V2boardSiteModel.tbFirebaseMobileTokens" />
+          <AssociationSet Name="FK_tbFirebaseMobileTokens_tbUsers" Association="V2boardSiteModel.FK_tbFirebaseMobileTokens_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbFirebaseMobileTokens" EntitySet="tbFirebaseMobileTokens" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="NLog">
           <Key>
@@ -1233,6 +1265,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="PlanMonth" Type="Int32" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
+          <Property Name="SubToken" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbNotifications">
           <Key>
@@ -1478,6 +1511,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
+          <NavigationProperty Name="tbFirebaseMobileTokens" Relationship="V2boardSiteModel.FK_tbFirebaseMobileTokens_tbUsers" FromRole="tbUsers" ToRole="tbFirebaseMobileTokens" />
         </EntityType>
         <EntityType Name="vi_MajorSales">
           <Key>
@@ -1853,6 +1887,28 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="tbFirebaseMobileTokens">
+          <Key>
+            <PropertyRef Name="tbFirebase_ID" />
+          </Key>
+          <Property Name="tbFirebase_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbFirebase_Token" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="tbFireBase_SubToken" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="tbFireBase_FK_User_ID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbFirebaseMobileTokens_tbUsers" FromRole="tbFirebaseMobileTokens" ToRole="tbUsers" />
+        </EntityType>
+        <Association Name="FK_tbFirebaseMobileTokens_tbUsers">
+          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="V2boardSiteModel.tbFirebaseMobileTokens" Role="tbFirebaseMobileTokens" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbFirebaseMobileTokens">
+              <PropertyRef Name="tbFireBase_FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2027,6 +2083,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySetMapping Name="tbLogs">
             <EntityTypeMapping TypeName="V2boardSiteModel.tbLogs">
               <MappingFragment StoreEntitySet="tbLogs">
+                <ScalarProperty Name="SubToken" ColumnName="SubToken" />
                 <ScalarProperty Name="PlanMonth" ColumnName="PlanMonth" />
                 <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
                 <ScalarProperty Name="PlanName" ColumnName="PlanName" />
@@ -2262,6 +2319,16 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="log_ID" ColumnName="log_ID" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbFirebaseMobileTokens">
+            <EntityTypeMapping TypeName="V2boardSiteModel.tbFirebaseMobileTokens">
+              <MappingFragment StoreEntitySet="tbFirebaseMobileTokens">
+                <ScalarProperty Name="tbFireBase_FK_User_ID" ColumnName="tbFireBase_FK_User_ID" />
+                <ScalarProperty Name="tbFireBase_SubToken" ColumnName="tbFireBase_SubToken" />
+                <ScalarProperty Name="tbFirebase_Token" ColumnName="tbFirebase_Token" />
+                <ScalarProperty Name="tbFirebase_ID" ColumnName="tbFirebase_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

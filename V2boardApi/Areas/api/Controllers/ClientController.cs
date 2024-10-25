@@ -22,6 +22,10 @@ using System.Web.Http.Cors;
 using System.Runtime.Remoting.Messaging;
 using V2boardApi.Areas.App.Data.SubscriptionsViewModels;
 using System.Threading.Tasks;
+using Mysqlx.Expr;
+using System.Windows.Forms;
+using System.Buffers.Text;
+using static System.Windows.Forms.LinkLabel;
 
 namespace V2boardApi.Areas.api.Controllers
 {
@@ -60,7 +64,7 @@ namespace V2boardApi.Areas.api.Controllers
                     host = "panel.darkbaz.com";
                 }
                 var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(host)).FirstOrDefault();
-                if (UserAgent.StartsWith("hiddify") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn"))
+                if (UserAgent.StartsWith("hiddify") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn") || UserAgent.StartsWith("safenet"))
                 {
                     if (server != null)
                     {
@@ -89,6 +93,114 @@ namespace V2boardApi.Areas.api.Controllers
                                     Response.Headers.Add("profile-title", "base64:" + base64);
 
                                 }
+                                reader.Close();
+                            }
+
+                            if (UserAgent.StartsWith("safenet"))
+                            {
+
+                                var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
+                                var reader = await sqlEntities.GetDataAsync(query);
+                                var IsGetSub = false;
+                                while (await reader.ReadAsync())
+                                {
+                                    IsGetSub = true;
+                                    var name = reader.GetString("email").Split('@')[0];
+                                    var base64 = Utility.Base64Encode(name.Split('$')[0]);
+                                   
+
+                                    int Status = 1;
+                                    var VolumeRemaning = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
+                                    if (VolumeRemaning <= 0)
+                                    {
+                                        VolumeRemaning = 0;
+                                        Status = 2;
+                                    }
+                                    Response.Headers.Add("remaining-volume", Utility.ConvertByteToGB(VolumeRemaning).ToString());
+                                    var n = reader.GetString("email");
+                                    var Log = RepositoryLogs.Where(s => s.FK_NameUser_ID == n || s.SubToken == token).OrderByDescending(s => s.CreateDatetime).ToList().FirstOrDefault();
+                                    if (Log != null)
+                                    {
+                                        if (Log.tbLinkUserAndPlans.tbUsers.BussinesTitle != null)
+                                        {
+                                            Response.Headers.Add("bussines-title", Utility.Base64Encode(Log.tbLinkUserAndPlans.tbUsers.BussinesTitle));
+                                        }
+                                        else
+                                        {
+                                            Response.Headers.Add("bussines-title", "");
+                                        }
+
+                                        if (Log.tbLinkUserAndPlans.tbUsers.TelegramID != null)
+                                        {
+                                            Response.Headers.Add("telegram-agent", Log.tbLinkUserAndPlans.tbUsers.TelegramID);
+                                        }
+                                        else
+                                        {
+                                            Response.Headers.Add("telegram-agent", "");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var link = await RepositoryLinks.FirstOrDefaultAsync(s => s.tbL_Token == token);
+                                        if(link != null)
+                                        {
+                                            if (link.tbTelegramUsers?.tbUsers?.BussinesTitle != null)
+                                            {
+                                                Response.Headers.Add("bussines-title", Utility.Base64Encode(link.tbTelegramUsers.tbUsers.BussinesTitle));
+                                            }
+                                            else
+                                            {
+                                                Response.Headers.Add("bussines-title", "");
+                                            }
+
+                                            if (link.tbTelegramUsers?.tbUsers?.TelegramID != null)
+                                            {
+                                                Response.Headers.Add("telegram-agent", link.tbTelegramUsers.tbUsers.TelegramID);
+                                            }
+                                            else
+                                            {
+                                                Response.Headers.Add("telegram-agent", "");
+                                            }
+                                        }
+                                    }
+                                    var exipre = reader.GetBodyDefinition("expired_at");
+                                    if (exipre != null)
+                                    {
+                                        var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exipre));
+                                        var day = Utility.CalculateLeftDayes(ex);
+                                        if(day <= 0)
+                                        {
+                                            Status = 3;
+                                        }
+                                        if (day <= 0 && Status == 2)
+                                        {
+                                            Status = 4;
+                                        }
+                                        Response.Headers.Add("remaining-day", day.ToString());
+                                        Response.Headers.Add("expire-date", Utility.ConvertDateTimeToShamsi2(ex));
+                                        
+                                    }
+                                    else
+                                    {
+                                        Response.Headers.Add("remaining-day", "-1");
+                                        Response.Headers.Add("expire-date", "-1");
+                                    }
+                                    Response.Headers.Add("profile-title", Utility.Base64Encode(name.Split('$')[0]));
+
+                                    var Banned = reader.GetBoolean("banned");
+                                    if (Banned)
+                                    {
+                                        Status = 5;
+                                    }
+
+                                    Response.Headers.Add("sub-status", Status.ToString());
+                                }
+
+                                if(IsGetSub == false)
+                                {
+                                    return HttpNotFound();
+                                }
+
                                 reader.Close();
                             }
 

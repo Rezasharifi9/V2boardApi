@@ -23,6 +23,7 @@ namespace DataLayer.DomainModel
         public string PlanName { get; set; }
         public Nullable<int> PlanVolume { get; set; }
         public Nullable<int> PlanMonth { get; set; }
+        public string SubToken { get; set; }
     
         public virtual tbLinkUserAndPlans tbLinkUserAndPlans { get; set; }
     }
