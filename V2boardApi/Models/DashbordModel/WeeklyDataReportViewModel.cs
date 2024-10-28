@@ -35,12 +35,8 @@ namespace V2boardApi.Models.DashbordModel
         public double ProfitUseage { get; set; }
 
         /// <summary>
-        /// مقدار اشتراک حفظ شده
+        /// میانگین فروش
         /// </summary>
-        public int MaintainSubscription { get; set;}
-        /// <summary>
-        /// درصد حفظ اشتراک
-        /// </summary>
-        public double ProfitMaintainSub { get;set;}
+        public double SellAvg { get; set;}
     }
 }

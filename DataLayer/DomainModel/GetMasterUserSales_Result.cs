@@ -10,14 +10,12 @@
 namespace DataLayer.DomainModel
 {
     using System;
-    using System.Collections.Generic;
     
-    public partial class vi_MajorSales
+    public partial class GetMasterUserSales_Result
     {
         public Nullable<long> Id { get; set; }
-        public int log_ID { get; set; }
         public string Username { get; set; }
         public Nullable<int> SalePrice { get; set; }
-        public Nullable<System.DateTime> CreateDatetime { get; set; }
+        public Nullable<System.DateTime> CreateDate { get; set; }
     }
 }

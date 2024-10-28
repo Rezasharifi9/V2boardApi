@@ -14,6 +14,7 @@ using NLog;
 using Antlr.Runtime.Misc;
 using System.Threading.Tasks;
 using V2boardApi.Models.DashbordModel;
+using DataLayer.Models.DashboardModel;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -27,6 +28,7 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbServers> RepositoryServer { get; set; }
         private Repository<tbTelegramUsers> RepositoryTelegramUsers { get; set; }
+        private ViewRepository<vi_BotSales> BotSales_ViewRepository { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public DashboardController()
         {
@@ -84,18 +86,28 @@ namespace V2boardApi.Areas.App.Controllers
 
             WeeklyDataReportViewModel wkData = new WeeklyDataReportViewModel();
 
-            var ThisWeekSale = db.vi_MajorSales.Where(s => s.CreateDatetime >= startOfThisWeek).Sum(s => s.SalePrice);
-            if(ThisWeekSale == null)
-            {
-                ThisWeekSale = 0;
-            }
-            var OldWeekSale = db.vi_MajorSales.Where(s => s.CreateDatetime >= startOfLastWeek && s.CreateDatetime <= endOfLastWeek).Sum(s => s.SalePrice);
-            if(OldWeekSale == null)
-            {
-                OldWeekSale = 0;
-            }
+
+            
+
+            var ThisWeekSale = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= startOfThisWeek).Sum(s => s.SalePrice);
+            ThisWeekSale+=db.GetUserSales().Where(s=> s.CreateDate >= startOfThisWeek).Sum(s => s.SalePrice);
+            ThisWeekSale+=db.GetMasterUserSales().Where(s=> s.CreateDate >= startOfThisWeek).Sum(s => s.SalePrice);
+
+
+            var OldWeekSale = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= endOfLastWeek && Convert.ToDateTime(s.OrderDate) <= startOfThisWeek).Sum(s => s.SalePrice);
+            OldWeekSale += db.GetUserSales().Where(s => s.CreateDate >= endOfLastWeek && s.CreateDate <= startOfThisWeek).Sum(s => s.SalePrice);
+            OldWeekSale += db.GetMasterUserSales().Where(s => s.CreateDate >= endOfLastWeek && s.CreateDate <= startOfThisWeek).Sum(s => s.SalePrice);
+
+
             wkData.Sale = (long)ThisWeekSale;
             wkData.ProfitSale = Math.Round((double)(((double)(ThisWeekSale - OldWeekSale) / OldWeekSale) * 100), 2);
+
+            DayOfWeek startOfWeek = persianCalendar.GetDayOfWeek(startOfThisWeek);
+            int daysSinceStartOfWeek = (today.DayOfWeek - startOfWeek + 7) % 7;
+
+            wkData.SellAvg = ThisWeekSale.Value / daysSinceStartOfWeek;
+
+
 
             using (MySqlEntities mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString))
             {
@@ -143,40 +155,6 @@ namespace V2boardApi.Areas.App.Controllers
 
                 wkData.ProfitUseage = Math.Round(((double)(ThisUseageWeek - OldUseageWeek) / OldUseageWeek) * 100,2);
                 wkData.SubscriptionUseage = Math.Round(Utility.ConvertByteToGB(ThisUseageWeek),2);
-
-                var DateNow = Utility.ConvertDatetimeToSecond(DateTime.Now);
-
-                //کاربران پایان دوره
-                var Query_UsersForThisPeriod = "select COUNT(id) as CountUser from v2_user where transfer_enable>= (u+d) and expired_at >=" + DateNow;
-                // کاربران ابتدای دوره
-                var Query_UsersForFirstPeriod = "SELECT COUNT(id) as CountUser from v2_user where transfer_enable>= (u+d) and expired_at >= " + DateNow + " and v2_user.created_at <=" + ThisWeekUnix;
-                // کاربران جدید
-                var Query_UsersForLastPeriod = "SELECT COUNT(id) as CountUser from v2_user where transfer_enable>= (u+d) and expired_at >= " + DateNow + " and v2_user.created_at >=" + ThisWeekUnix;
-
-
-
-                thisReader = await mySqlEntities.GetDataAsync(Query_UsersForThisPeriod);
-                await thisReader.ReadAsync();
-                //کاربران پایان دوره
-                var UsersForThisPeriod = thisReader.GetInt32("CountUser");
-                thisReader.Close();
-
-                OldReader = await mySqlEntities.GetDataAsync(Query_UsersForFirstPeriod);
-                await OldReader.ReadAsync();
-                // کاربران ابتدای دوره
-                var UsersForFirstPeriod = OldReader.GetInt32("CountUser");
-                OldReader.Close();
-
-                OldReader = await mySqlEntities.GetDataAsync(Query_UsersForLastPeriod);
-                await OldReader.ReadAsync();
-                // کاربران جدید
-                var UsersForLastPeriod = OldReader.GetInt32("CountUser");
-                OldReader.Close();
-
-
-                wkData.ProfitMaintainSub = Math.Round(((double)(UsersForThisPeriod - UsersForLastPeriod) / UsersForFirstPeriod) * 100, 2);
-                wkData.MaintainSubscription = UsersForFirstPeriod;
-
 
                 await mySqlEntities.CloseAsync();
             }

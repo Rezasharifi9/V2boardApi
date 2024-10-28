@@ -97,5 +97,10 @@ namespace DataLayer.Repository
         {
             db.Dispose();
         }
+
+        public List<T> ToList()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

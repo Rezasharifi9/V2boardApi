@@ -112,116 +112,127 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DomainModel\DomainModel.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>DomainModel.Context.tt</DependentUpon>
+    <Compile Include="DomainModel\GetBotSales_Result.cs">
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
-    <Compile Include="DomainModel\DomainModel.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>DomainModel.tt</DependentUpon>
+    <Compile Include="DomainModel\GetFullSales_Result.cs">
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
-    <Compile Include="DomainModel\DomainModel.Designer.cs">
+    <Compile Include="DomainModel\GetMasterUserSales_Result.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\GetUserSales_Result.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\Model.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>DomainModel.edmx</DependentUpon>
+      <DependentUpon>Model.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\Model.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\Model.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model.edmx</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\MySqlEntities.cs" />
     <Compile Include="DomainModel\NLog.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\sysdiagrams.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbBankCardNumbers.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbBotSettings.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbConnectionHelp.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbDepositWallet_Log.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbExpLog.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbFailureServers.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbFirebaseMobileTokens.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbLinks.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbLinkServerGroupWithUsers.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbLinkUserAndPlans.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbLogs.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbNotifications.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbNotificationUser.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbOrders.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbPlans.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbRedisInfo.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbServerGroups.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbServers.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbSocks5.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbTelegramUsers.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbUpdateLogs.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbUseages.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbUserFactors.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbUsers.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DomainModel\vi_MajorSales.cs">
-      <DependentUpon>DomainModel.tt</DependentUpon>
+      <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Interface\Interface.cs" />
+    <Compile Include="Models\DashboardModel\vi_BotSales.cs" />
     <Compile Include="Models\MetaData\tbServersMetaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\Repository.cs" />
+    <Compile Include="Repository\ViewRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.Config" />
-    <EntityDeploy Include="DomainModel\DomainModel.edmx">
+    <EntityDeploy Include="DomainModel\Model.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>DomainModel.Designer.cs</LastGenOutput>
+      <LastGenOutput>Model.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <None Include="DomainModel\DomainModel.edmx.diagram">
-      <DependentUpon>DomainModel.edmx</DependentUpon>
+    <None Include="DomainModel\Model.edmx.diagram">
+      <DependentUpon>Model.edmx</DependentUpon>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
@@ -229,15 +240,15 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DomainModel\DomainModel.Context.tt">
+    <Content Include="DomainModel\Model.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>DomainModel.edmx</DependentUpon>
-      <LastGenOutput>DomainModel.Context.cs</LastGenOutput>
+      <DependentUpon>Model.edmx</DependentUpon>
+      <LastGenOutput>Model.Context.cs</LastGenOutput>
     </Content>
-    <Content Include="DomainModel\DomainModel.tt">
+    <Content Include="DomainModel\Model.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>DomainModel.edmx</DependentUpon>
-      <LastGenOutput>DomainModel.cs</LastGenOutput>
+      <DependentUpon>Model.edmx</DependentUpon>
+      <LastGenOutput>Model.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

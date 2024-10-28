@@ -74,15 +74,13 @@
                         <i class="ti ti-clock ti-md"></i>
                     </span>
                 </div>
-                <h4 class="ms-1 mb-0">@Model.MaintainSubscription</h4>
+                <h4 class="ms-1 mb-0">@V2boardApi.Tools.Utility.ConvertToMony(Model.SellAvg)</h4>
             </div>
-            <p class="mb-1">مقدار حفظ مشترک</p>
+            <p class="mb-1">میانگین فروش روزانه</p>
             <p class="mb-0">
                 <span class="fw-medium me-1">
-                    <bdi>@Model.ProfitMaintainSub</bdi>
-                    درصد
+                    <bdi> </bdi>
                 </span>
-                <small class="text-muted">نسبت به هفته گذشته</small>
             </p>
         </div>
     </div>

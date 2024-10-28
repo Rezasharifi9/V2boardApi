@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema Namespace="V2boardSiteModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+      <Schema Namespace="SafeNetDBModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="NLog">
           <Key>
             <PropertyRef Name="ID" />
@@ -385,18 +385,6 @@
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
           <Property Name="Register_Date" Type="datetime" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
-        <EntityType Name="vi_MajorSales">
-          <Key>
-            <PropertyRef Name="log_ID" />
-          </Key>
-          <Property Name="Id" Type="bigint" />
-          <Property Name="log_ID" Type="int" Nullable="false" />
-          <Property Name="Username" Type="varchar" MaxLength="150" />
-          <Property Name="SalePrice" Type="int" />
-          <Property Name="CreateDatetime" Type="datetime" />
-        </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
           <End Role="tbBankCardNumbers" Type="Self.tbBankCardNumbers" Multiplicity="*" />
@@ -773,7 +761,45 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityContainer Name="V2boardSiteModelStoreContainer">
+        <Function Name="fn_diagramobjects" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="true" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" ReturnType="int" />
+        <Function Name="GetBotSales" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="GetFullSales" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="GetMasterUserSales" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="GetUserSales" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="GregorianToPersian" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="true" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" ReturnType="nvarchar">
+          <Parameter Name="GregorianDate" Type="datetime" Mode="In" />
+        </Function>
+        <Function Name="NLog_AddEntry_p" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="machineName" Type="nvarchar" Mode="In" />
+          <Parameter Name="logged" Type="datetime" Mode="In" />
+          <Parameter Name="level" Type="nvarchar" Mode="In" />
+          <Parameter Name="message" Type="nvarchar(max)" Mode="In" />
+          <Parameter Name="logger" Type="nvarchar" Mode="In" />
+          <Parameter Name="properties" Type="nvarchar(max)" Mode="In" />
+          <Parameter Name="exception" Type="nvarchar(max)" Mode="In" />
+          <Parameter Name="ipAddress" Type="nvarchar" Mode="In" />
+          <Parameter Name="requestData" Type="nvarchar(max)" Mode="In" />
+          <Parameter Name="responseData" Type="nvarchar(max)" Mode="In" />
+          <Parameter Name="userId" Type="nvarchar" Mode="In" />
+          <Parameter Name="userName" Type="nvarchar" Mode="In" />
+          <Parameter Name="userRole" Type="nvarchar" Mode="In" />
+          <Parameter Name="requestUrl" Type="nvarchar(max)" Mode="In" />
+          <Parameter Name="httpMethod" Type="nvarchar" Mode="In" />
+          <Parameter Name="requestHeaders" Type="nvarchar(max)" Mode="In" />
+          <Parameter Name="userAgent" Type="nvarchar(max)" Mode="In" />
+          <Parameter Name="executionTime" Type="nvarchar" Mode="In" />
+          <Parameter Name="sessionId" Type="nvarchar" Mode="In" />
+          <Parameter Name="actionName" Type="nvarchar" Mode="In" />
+          <Parameter Name="controllerName" Type="nvarchar" Mode="In" />
+          <Parameter Name="customData" Type="nvarchar(max)" Mode="In" />
+        </Function>
+        <Function Name="SqlQueryNotificationStoredProcedure_2d2da058_e278_4966_9e25_793e672ed0fe" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" StoreFunctionName="SqlQueryNotificationStoredProcedure-2d2da058-e278-4966-9e25-793e672ed0fe" />
+        <Function Name="SqlQueryNotificationStoredProcedure_4ffd34bb_37a2_4227_8286_fc1e19e68f11" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" StoreFunctionName="SqlQueryNotificationStoredProcedure-4ffd34bb-37a2-4227-8286-fc1e19e68f11" />
+        <Function Name="SqlQueryNotificationStoredProcedure_90a52481_b600_46ad_a1e7_d3a4b4f41c26" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" StoreFunctionName="SqlQueryNotificationStoredProcedure-90a52481-b600-46ad-a1e7-d3a4b4f41c26" />
+        <Function Name="SqlQueryNotificationStoredProcedure_a18aa4bb_45b7_493a_9d09_f78f1462150b" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" StoreFunctionName="SqlQueryNotificationStoredProcedure-a18aa4bb-45b7-493a-9d09-f78f1462150b" />
+        <Function Name="SqlQueryNotificationStoredProcedure_a28a156b_096d_4328_a3f8_bff243f47f1b" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" StoreFunctionName="SqlQueryNotificationStoredProcedure-a28a156b-096d-4328-a3f8-bff243f47f1b" />
+        <Function Name="SqlQueryNotificationStoredProcedure_e1259852_46ea_4433_b261_181d7c332764" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" StoreFunctionName="SqlQueryNotificationStoredProcedure-e1259852-46ea-4433-b261-181d7c332764" />
+        <EntityContainer Name="SafeNetDBModelStoreContainer">
           <EntitySet Name="NLog" EntityType="Self.NLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
@@ -800,15 +826,6 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="vi_MajorSales" EntityType="Self.vi_MajorSales" store:Type="Views" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [vi_MajorSales].[Id] AS [Id], 
-    [vi_MajorSales].[log_ID] AS [log_ID], 
-    [vi_MajorSales].[Username] AS [Username], 
-    [vi_MajorSales].[SalePrice] AS [SalePrice], 
-    [vi_MajorSales].[CreateDatetime] AS [CreateDatetime]
-    FROM [dbo].[vi_MajorSales] AS [vi_MajorSales]</DefiningQuery>
-          </EntitySet>
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="Self.FK_tbBankCardNumbers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
@@ -930,159 +947,11 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
         </EntityContainer>
-      </Schema></edmx:StorageModels>
+      </Schema>
+    </edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
-      <Schema Namespace="V2boardSiteModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="NLog" EntityType="V2boardSiteModel.NLog" />
-          <EntitySet Name="sysdiagrams" EntityType="V2boardSiteModel.sysdiagrams" />
-          <EntitySet Name="tbBankCardNumbers" EntityType="V2boardSiteModel.tbBankCardNumbers" />
-          <EntitySet Name="tbBotSettings" EntityType="V2boardSiteModel.tbBotSettings" />
-          <EntitySet Name="tbConnectionHelp" EntityType="V2boardSiteModel.tbConnectionHelp" />
-          <EntitySet Name="tbDepositWallet_Log" EntityType="V2boardSiteModel.tbDepositWallet_Log" />
-          <EntitySet Name="tbExpLog" EntityType="V2boardSiteModel.tbExpLog" />
-          <EntitySet Name="tbFailureServers" EntityType="V2boardSiteModel.tbFailureServers" />
-          <EntitySet Name="tbLinks" EntityType="V2boardSiteModel.tbLinks" />
-          <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="V2boardSiteModel.tbLinkServerGroupWithUsers" />
-          <EntitySet Name="tbLinkUserAndPlans" EntityType="V2boardSiteModel.tbLinkUserAndPlans" />
-          <EntitySet Name="tbLogs" EntityType="V2boardSiteModel.tbLogs" />
-          <EntitySet Name="tbNotifications" EntityType="V2boardSiteModel.tbNotifications" />
-          <EntitySet Name="tbNotificationUser" EntityType="V2boardSiteModel.tbNotificationUser" />
-          <EntitySet Name="tbOrders" EntityType="V2boardSiteModel.tbOrders" />
-          <EntitySet Name="tbPlans" EntityType="V2boardSiteModel.tbPlans" />
-          <EntitySet Name="tbRedisInfo" EntityType="V2boardSiteModel.tbRedisInfo" />
-          <EntitySet Name="tbServerGroups" EntityType="V2boardSiteModel.tbServerGroups" />
-          <EntitySet Name="tbServers" EntityType="V2boardSiteModel.tbServers" />
-          <EntitySet Name="tbSocks5" EntityType="V2boardSiteModel.tbSocks5" />
-          <EntitySet Name="tbTelegramUsers" EntityType="V2boardSiteModel.tbTelegramUsers" />
-          <EntitySet Name="tbUpdateLogs" EntityType="V2boardSiteModel.tbUpdateLogs" />
-          <EntitySet Name="tbUseages" EntityType="V2boardSiteModel.tbUseages" />
-          <EntitySet Name="tbUserFactors" EntityType="V2boardSiteModel.tbUserFactors" />
-          <EntitySet Name="tbUsers" EntityType="V2boardSiteModel.tbUsers" />
-          <EntitySet Name="vi_MajorSales" EntityType="V2boardSiteModel.vi_MajorSales" />
-          <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbBotSettings_tbPlans" Association="V2boardSiteModel.FK_tbBotSettings_tbPlans">
-            <End Role="tbPlans" EntitySet="tbPlans" />
-            <End Role="tbBotSettings" EntitySet="tbBotSettings" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbBotSettings_tbUsers" Association="V2boardSiteModel.FK_tbBotSettings_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbBotSettings" EntitySet="tbBotSettings" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbConnectionHelp_tbUsers" Association="V2boardSiteModel.FK_tbConnectionHelp_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbDepositWallet_Log_tbTelegramUsers" Association="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbExpLog_tbUsers" Association="V2boardSiteModel.FK_tbExpLog_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbExpLog" EntitySet="tbExpLog" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinks_tbPlans" Association="V2boardSiteModel.FK_tbLinks_tbPlans">
-            <End Role="tbPlans" EntitySet="tbPlans" />
-            <End Role="tbLinks" EntitySet="tbLinks" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinks_tbServers" Association="V2boardSiteModel.FK_tbLinks_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbLinks" EntitySet="tbLinks" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinks_tbTelegramUsers" Association="V2boardSiteModel.FK_tbLinks_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbLinks" EntitySet="tbLinks" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbServerGroups" Association="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups">
-            <End Role="tbServerGroups" EntitySet="tbServerGroups" />
-            <End Role="tbLinkServerGroupWithUsers" EntitySet="tbLinkServerGroupWithUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbUsers" Association="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbLinkServerGroupWithUsers" EntitySet="tbLinkServerGroupWithUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans">
-            <End Role="tbPlans" EntitySet="tbPlans" />
-            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLinkUserAndPlans_tbUsers" Association="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans">
-            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
-            <End Role="tbLogs" EntitySet="tbLogs" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbNotifications_tbUsers" Association="V2boardSiteModel.FK_tbNotifications_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbNotifications" EntitySet="tbNotifications" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbNotificationUser_tbNotifications" Association="V2boardSiteModel.FK_tbNotificationUser_tbNotifications">
-            <End Role="tbNotifications" EntitySet="tbNotifications" />
-            <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbNotificationUser_tbUsers1" Association="V2boardSiteModel.FK_tbNotificationUser_tbUsers1">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbOrders_tbPlans" Association="V2boardSiteModel.FK_tbOrders_tbPlans">
-            <End Role="tbPlans" EntitySet="tbPlans" />
-            <End Role="tbOrders" EntitySet="tbOrders" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbOrders_tbTelegramUsers" Association="V2boardSiteModel.FK_tbOrders_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbOrders" EntitySet="tbOrders" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbPlans_tbServers" Association="V2boardSiteModel.FK_tbPlans_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbPlans" EntitySet="tbPlans" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbPlans_tbUsers" Association="V2boardSiteModel.FK_tbPlans_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbPlans" EntitySet="tbPlans" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUpdateLogs_tbServers" Association="V2boardSiteModel.FK_tbUpdateLogs_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbUpdateLogs" EntitySet="tbUpdateLogs" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUseages_tbServers" Association="V2boardSiteModel.FK_tbUseages_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbUseages" EntitySet="tbUseages" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUsers_tbServers" Association="V2boardSiteModel.FK_tbUsers_tbServers">
-            <End Role="tbServers" EntitySet="tbServers" />
-            <End Role="tbUsers" EntitySet="tbUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbTelegramUsers_tbTelegramUsers" Association="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbTelegramUsers1" EntitySet="tbTelegramUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbTelegramUsers_tbUsers" Association="V2boardSiteModel.FK_tbTelegramUsers_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUsers_tbTelegramUsers" Association="V2boardSiteModel.FK_tbUsers_tbTelegramUsers">
-            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
-            <End Role="tbUsers" EntitySet="tbUsers" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUserFactors_tbUsers" Association="V2boardSiteModel.FK_tbUserFactors_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbUserFactors" EntitySet="tbUserFactors" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbUsers_tbUsers" Association="V2boardSiteModel.FK_tbUsers_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbUsers1" EntitySet="tbUsers" />
-          </AssociationSet>
-          <EntitySet Name="tbFirebaseMobileTokens" EntityType="V2boardSiteModel.tbFirebaseMobileTokens" />
-          <AssociationSet Name="FK_tbFirebaseMobileTokens_tbUsers" Association="V2boardSiteModel.FK_tbFirebaseMobileTokens_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbFirebaseMobileTokens" EntitySet="tbFirebaseMobileTokens" />
-          </AssociationSet>
-        </EntityContainer>
+      <Schema Namespace="SafeNetDBModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityType Name="NLog">
           <Key>
             <PropertyRef Name="ID" />
@@ -1090,8 +959,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MachineName" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
           <Property Name="Logged" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="Level" Type="String" Nullable="false" MaxLength="5" FixedLength="false" Unicode="false" />
-          <Property Name="Message" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Level" Type="String" MaxLength="5" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Message" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="ipAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="userName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="httpMethod" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
@@ -1115,7 +984,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Key>
             <PropertyRef Name="diagram_id" />
           </Key>
-          <Property Name="name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="principal_id" Type="Int32" Nullable="false" />
           <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="version" Type="Int32" />
@@ -1126,21 +995,21 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             <PropertyRef Name="CardNumber_ID" />
           </Key>
           <Property Name="CardNumber_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="CardNumber" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="CardNumber" Type="String" MaxLength="30" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="BankSmsNumber" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
           <Property Name="Active" Type="Boolean" Nullable="false" />
-          <Property Name="InTheNameOf" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="InTheNameOf" Type="String" MaxLength="150" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="phoneNumber" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
           <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbBankCardNumbers" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbBankCardNumbers_tbUsers" FromRole="tbBankCardNumbers" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbBotSettings">
           <Key>
             <PropertyRef Name="botSettingID" />
           </Key>
           <Property Name="botSettingID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Bot_Token" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="false" />
-          <Property Name="Bot_ID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Bot_Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Bot_ID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="AdminBot_ID" Type="Int64" Nullable="false" />
           <Property Name="Active" Type="Boolean" Nullable="false" />
           <Property Name="RequiredJoinChannel" Type="Boolean" Nullable="false" />
@@ -1160,8 +1029,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="InvitePercent" Type="Double" />
           <Property Name="GroupId_test" Type="Int32" />
           <Property Name="GroupId_testUnlimited" Type="Int32" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1172,7 +1041,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="ch_Link" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FK_User_ID" Type="Int32" />
           <Property Name="ch_Type" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbConnectionHelp" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbConnectionHelp_tbUsers" FromRole="tbConnectionHelp" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbDepositWallet_Log">
           <Key>
@@ -1185,7 +1054,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="dw_CreateDatetime" Type="DateTime" Precision="3" />
           <Property Name="dw_payment_id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="dw_message_id" Type="Int32" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="Self.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -1197,7 +1066,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="exl_MethodName" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="FK_User_ID" Type="Int32" />
           <Property Name="exl_CreateDatetime" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbExpLog_tbUsers" FromRole="tbExpLog" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbExpLog_tbUsers" FromRole="tbExpLog" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbFailureServers">
           <Key>
@@ -1205,6 +1074,16 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </Key>
           <Property Name="tbFa_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="tbFa_v2_ServerID" Type="Int32" />
+        </EntityType>
+        <EntityType Name="tbFirebaseMobileTokens">
+          <Key>
+            <PropertyRef Name="tbFirebase_ID" />
+          </Key>
+          <Property Name="tbFirebase_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbFirebase_Token" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="tbFireBase_SubToken" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="tbFireBase_FK_User_ID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbFirebaseMobileTokens_tbUsers" FromRole="tbFirebaseMobileTokens" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbLinks">
           <Key>
@@ -1222,9 +1101,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="tb_ChargeLinkedTime" Type="DateTime" Precision="3" />
           <Property Name="tb_ChargePlan_ID" Type="Int32" />
           <Property Name="tb_status" Type="Boolean" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbLinks" ToRole="tbPlans" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbLinks_tbPlans" FromRole="tbLinks" ToRole="tbPlans" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="Self.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbLinkServerGroupWithUsers">
           <Key>
@@ -1236,8 +1115,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="PriceForGig" Type="Int32" Nullable="false" />
           <Property Name="PriceForMonth" Type="Int32" Nullable="false" />
           <Property Name="PriceForUser" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="tbServerGroups" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbLinkServerGroupWithUsers" ToRole="tbServerGroups" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbLinkServerGroupWithUsers" ToRole="tbUsers" />
+          <NavigationProperty Name="tbServerGroups" Relationship="Self.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbLinkServerGroupWithUsers" ToRole="tbServerGroups" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbLinkServerGroupWithUsers" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbLinkUserAndPlans">
           <Key>
@@ -1247,9 +1126,9 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="L_FK_U_ID" Type="Int32" />
           <Property Name="L_FK_P_ID" Type="Int32" />
           <Property Name="L_Status" Type="Boolean" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbLinkUserAndPlans" ToRole="tbPlans" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbLinkUserAndPlans" ToRole="tbUsers" />
-          <NavigationProperty Name="tbLogs" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbLogs" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbLinkUserAndPlans" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbLinkUserAndPlans" ToRole="tbUsers" />
+          <NavigationProperty Name="tbLogs" Relationship="Self.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbLogs" />
         </EntityType>
         <EntityType Name="tbLogs">
           <Key>
@@ -1260,12 +1139,12 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="Action" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="CreateDatetime" Type="DateTime" Precision="3" />
           <Property Name="FK_NameUser_ID" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SubToken" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="SalePrice" Type="Int32" />
           <Property Name="PlanName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="PlanVolume" Type="Int32" />
           <Property Name="PlanMonth" Type="Int32" />
-          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
-          <Property Name="SubToken" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="Self.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
         </EntityType>
         <EntityType Name="tbNotifications">
           <Key>
@@ -1273,13 +1152,13 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </Key>
           <Property Name="tbNoti_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="tbNoti_FK_User_ID" Type="Int32" Nullable="false" />
-          <Property Name="tbNoti_Title" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="true" />
-          <Property Name="tbNoti_Text" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="tbNoti_Title" Type="String" MaxLength="30" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="tbNoti_Text" Type="String" MaxLength="200" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="tbNoti_RegisterDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="tbNoti_Status" Type="Int32" Nullable="false" />
           <Property Name="tbNoti_EndDate" Type="DateTime" Nullable="false" Precision="3" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbNotifications_tbUsers" FromRole="tbNotifications" ToRole="tbUsers" />
-          <NavigationProperty Name="tbNotificationUser" Relationship="V2boardSiteModel.FK_tbNotificationUser_tbNotifications" FromRole="tbNotifications" ToRole="tbNotificationUser" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbNotifications_tbUsers" FromRole="tbNotifications" ToRole="tbUsers" />
+          <NavigationProperty Name="tbNotificationUser" Relationship="Self.FK_tbNotificationUser_tbNotifications" FromRole="tbNotifications" ToRole="tbNotificationUser" />
         </EntityType>
         <EntityType Name="tbNotificationUser">
           <Key>
@@ -1290,8 +1169,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="tbNotiUser_FK_User_ID" Type="Int32" Nullable="false" />
           <Property Name="tbNotiUser_Seen" Type="Boolean" Nullable="false" />
           <Property Name="tbNotiUser_DateSeen" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="tbNotifications" Relationship="V2boardSiteModel.FK_tbNotificationUser_tbNotifications" FromRole="tbNotificationUser" ToRole="tbNotifications" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbNotificationUser_tbUsers1" FromRole="tbNotificationUser" ToRole="tbUsers" />
+          <NavigationProperty Name="tbNotifications" Relationship="Self.FK_tbNotificationUser_tbNotifications" FromRole="tbNotificationUser" ToRole="tbNotifications" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbNotificationUser_tbUsers1" FromRole="tbNotificationUser" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbOrders">
           <Key>
@@ -1312,8 +1191,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="Traffic" Type="Int32" />
           <Property Name="Month" Type="Int32" />
           <Property Name="Tel_RenewedDate" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="Self.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbPlans">
           <Key>
@@ -1334,19 +1213,19 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="Speed_limit" Type="Int16" />
           <Property Name="device_limit" Type="Int16" />
           <Property Name="IsRobotPlan" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbPlans" FromRole="tbPlans" ToRole="tbBotSettings" />
-          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
-          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
-          <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbPlans" ToRole="tbUsers" />
+          <NavigationProperty Name="tbBotSettings" Relationship="Self.FK_tbBotSettings_tbPlans" FromRole="tbPlans" ToRole="tbBotSettings" />
+          <NavigationProperty Name="tbLinks" Relationship="Self.FK_tbLinks_tbPlans" FromRole="tbPlans" ToRole="tbLinks" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="Self.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbPlans" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbOrders" Relationship="Self.FK_tbOrders_tbPlans" FromRole="tbPlans" ToRole="tbOrders" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbPlans_tbServers" FromRole="tbPlans" ToRole="tbServers" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbPlans_tbUsers" FromRole="tbPlans" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbRedisInfo">
           <Key>
             <PropertyRef Name="Redis_ID" />
           </Key>
           <Property Name="Redis_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Redis_addr" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Redis_addr" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Redis_Port" Type="Int32" Nullable="false" />
           <Property Name="Redis_Password" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
@@ -1358,7 +1237,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="V2_Group_Id" Type="Int32" />
           <Property Name="Group_Name" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
           <Property Name="Status" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbServerGroups" ToRole="tbLinkServerGroupWithUsers" />
+          <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="Self.FK_tbLinkServerGroupWithUsers_tbServerGroups" FromRole="tbServerGroups" ToRole="tbLinkServerGroupWithUsers" />
         </EntityType>
         <EntityType Name="tbServers">
           <Key>
@@ -1383,20 +1262,20 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="PricePerGig" Type="Int32" />
           <Property Name="PricePerMonth" Type="Int32" />
           <Property Name="BotbaseAddress" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbServers" FromRole="tbServers" ToRole="tbLinks" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
-          <NavigationProperty Name="tbUpdateLogs" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
-          <NavigationProperty Name="tbUseages" Relationship="V2boardSiteModel.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+          <NavigationProperty Name="tbLinks" Relationship="Self.FK_tbLinks_tbServers" FromRole="tbServers" ToRole="tbLinks" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUpdateLogs" Relationship="Self.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
+          <NavigationProperty Name="tbUseages" Relationship="Self.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbSocks5">
           <Key>
             <PropertyRef Name="Socks5_ID" />
           </Key>
           <Property Name="Socks5_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="HostName" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Username" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Password" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="HostName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Username" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Password" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Port" Type="Int32" Nullable="false" />
           <Property Name="Active" Type="Boolean" Nullable="false" />
         </EntityType>
@@ -1422,13 +1301,13 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="Tel_RegisterDate" Type="DateTime" Precision="3" />
           <Property Name="Tel_Status" Type="Int32" Nullable="false" />
           <Property Name="Tel_GetedTestAccountUnlimited" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
-          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteModel.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
-          <NavigationProperty Name="tbOrders" Relationship="V2boardSiteModel.FK_tbOrders_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbOrders" />
-          <NavigationProperty Name="tbTelegramUsers1" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbTelegramUsers1" />
-          <NavigationProperty Name="tbTelegramUsers2" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
-          <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
+          <NavigationProperty Name="tbDepositWallet_Log" Relationship="Self.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbDepositWallet_Log" />
+          <NavigationProperty Name="tbLinks" Relationship="Self.FK_tbLinks_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbLinks" />
+          <NavigationProperty Name="tbOrders" Relationship="Self.FK_tbOrders_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbOrders" />
+          <NavigationProperty Name="tbTelegramUsers1" Relationship="Self.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbTelegramUsers1" />
+          <NavigationProperty Name="tbTelegramUsers2" Relationship="Self.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbTelegramUsers_tbUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers1" Relationship="Self.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbUpdateLogs">
           <Key>
@@ -1442,7 +1321,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="upl_CreateTime" Type="DateTime" Precision="3" />
           <Property Name="upl_AccountToken" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
           <Property Name="upl_FK_Server_ID" Type="Int32" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUpdateLogs_tbServers" FromRole="tbUpdateLogs" ToRole="tbServers" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbUpdateLogs_tbServers" FromRole="tbUpdateLogs" ToRole="tbServers" />
         </EntityType>
         <EntityType Name="tbUseages">
           <Key>
@@ -1455,7 +1334,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="FK_Server_ID" Type="Int32" />
           <Property Name="v2_User_ID" Type="Int32" />
           <Property Name="Date" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUseages_tbServers" FromRole="tbUseages" ToRole="tbServers" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbUseages_tbServers" FromRole="tbUseages" ToRole="tbServers" />
         </EntityType>
         <EntityType Name="tbUserFactors">
           <Key>
@@ -1466,7 +1345,7 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="tbUf_CreateTime" Type="DateTime" Precision="3" />
           <Property Name="FK_User_ID" Type="Int32" />
           <Property Name="IsPayed" Type="Boolean" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUserFactors" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbUserFactors_tbUsers" FromRole="tbUserFactors" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbUsers">
           <Key>
@@ -1496,36 +1375,26 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
           <Property Name="Register_Date" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
-          <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
-          <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
-          <NavigationProperty Name="tbExpLog" Relationship="V2boardSiteModel.FK_tbExpLog_tbUsers" FromRole="tbUsers" ToRole="tbExpLog" />
-          <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="V2boardSiteModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbUsers" ToRole="tbLinkServerGroupWithUsers" />
-          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
-          <NavigationProperty Name="tbNotifications" Relationship="V2boardSiteModel.FK_tbNotifications_tbUsers" FromRole="tbUsers" ToRole="tbNotifications" />
-          <NavigationProperty Name="tbNotificationUser" Relationship="V2boardSiteModel.FK_tbNotificationUser_tbUsers1" FromRole="tbUsers" ToRole="tbNotificationUser" />
-          <NavigationProperty Name="tbPlans" Relationship="V2boardSiteModel.FK_tbPlans_tbUsers" FromRole="tbUsers" ToRole="tbPlans" />
-          <NavigationProperty Name="tbServers" Relationship="V2boardSiteModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteModel.FK_tbTelegramUsers_tbUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
-          <NavigationProperty Name="tbTelegramUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
-          <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
-          <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
-          <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
-          <NavigationProperty Name="tbFirebaseMobileTokens" Relationship="V2boardSiteModel.FK_tbFirebaseMobileTokens_tbUsers" FromRole="tbUsers" ToRole="tbFirebaseMobileTokens" />
-        </EntityType>
-        <EntityType Name="vi_MajorSales">
-          <Key>
-            <PropertyRef Name="log_ID" />
-          </Key>
-          <Property Name="Id" Type="Int64" />
-          <Property Name="log_ID" Type="Int32" Nullable="false" />
-          <Property Name="Username" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
-          <Property Name="SalePrice" Type="Int32" />
-          <Property Name="CreateDatetime" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbBankCardNumbers" Relationship="Self.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
+          <NavigationProperty Name="tbBotSettings" Relationship="Self.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
+          <NavigationProperty Name="tbConnectionHelp" Relationship="Self.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
+          <NavigationProperty Name="tbExpLog" Relationship="Self.FK_tbExpLog_tbUsers" FromRole="tbUsers" ToRole="tbExpLog" />
+          <NavigationProperty Name="tbFirebaseMobileTokens" Relationship="Self.FK_tbFirebaseMobileTokens_tbUsers" FromRole="tbUsers" ToRole="tbFirebaseMobileTokens" />
+          <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="Self.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbUsers" ToRole="tbLinkServerGroupWithUsers" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="Self.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
+          <NavigationProperty Name="tbNotifications" Relationship="Self.FK_tbNotifications_tbUsers" FromRole="tbUsers" ToRole="tbNotifications" />
+          <NavigationProperty Name="tbNotificationUser" Relationship="Self.FK_tbNotificationUser_tbUsers1" FromRole="tbUsers" ToRole="tbNotificationUser" />
+          <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbPlans_tbUsers" FromRole="tbUsers" ToRole="tbPlans" />
+          <NavigationProperty Name="tbServers" Relationship="Self.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="Self.FK_tbTelegramUsers_tbUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbTelegramUsers1" Relationship="Self.FK_tbUsers_tbTelegramUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbUserFactors" Relationship="Self.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
+          <NavigationProperty Name="tbUsers1" Relationship="Self.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
+          <NavigationProperty Name="tbUsers2" Relationship="Self.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
-          <End Type="V2boardSiteModel.tbBankCardNumbers" Role="tbBankCardNumbers" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbBankCardNumbers" Type="Self.tbBankCardNumbers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1536,8 +1405,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbBotSettings_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbBotSettings" Role="tbBotSettings" Multiplicity="*" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbBotSettings" Type="Self.tbBotSettings" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
               <PropertyRef Name="Plan_ID" />
@@ -1548,8 +1417,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbBotSettings_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
-          <End Type="V2boardSiteModel.tbBotSettings" Role="tbBotSettings" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbBotSettings" Type="Self.tbBotSettings" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1560,8 +1429,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbConnectionHelp_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbConnectionHelp" Role="tbConnectionHelp" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbConnectionHelp" Type="Self.tbConnectionHelp" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1572,10 +1441,10 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbDepositWallet_Log_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1">
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
-          <End Type="V2boardSiteModel.tbDepositWallet_Log" Role="tbDepositWallet_Log" Multiplicity="*" />
+          <End Role="tbDepositWallet_Log" Type="Self.tbDepositWallet_Log" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -1586,8 +1455,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbExpLog_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbExpLog" Role="tbExpLog" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbExpLog" Type="Self.tbExpLog" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1597,11 +1466,23 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbFirebaseMobileTokens_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbFirebaseMobileTokens" Type="Self.tbFirebaseMobileTokens" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbFirebaseMobileTokens">
+              <PropertyRef Name="tbFireBase_FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbLinks_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1">
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
-          <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
               <PropertyRef Name="Plan_ID" />
@@ -1612,8 +1493,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -1624,10 +1505,10 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinks_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1">
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
-          <End Type="V2boardSiteModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -1638,8 +1519,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinkServerGroupWithUsers_tbServerGroups">
-          <End Type="V2boardSiteModel.tbServerGroups" Role="tbServerGroups" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinkServerGroupWithUsers" Role="tbLinkServerGroupWithUsers" Multiplicity="*" />
+          <End Role="tbServerGroups" Type="Self.tbServerGroups" Multiplicity="0..1" />
+          <End Role="tbLinkServerGroupWithUsers" Type="Self.tbLinkServerGroupWithUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServerGroups">
               <PropertyRef Name="Group_Id" />
@@ -1650,8 +1531,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinkServerGroupWithUsers_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinkServerGroupWithUsers" Role="tbLinkServerGroupWithUsers" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbLinkServerGroupWithUsers" Type="Self.tbLinkServerGroupWithUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1662,8 +1543,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinkUserAndPlans_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="*" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
               <PropertyRef Name="Plan_ID" />
@@ -1674,8 +1555,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLinkUserAndPlans_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1686,10 +1567,10 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbLogs_tbLinkUserAndPlans">
-          <End Type="V2boardSiteModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1">
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
-          <End Type="V2boardSiteModel.tbLogs" Role="tbLogs" Multiplicity="*" />
+          <End Role="tbLogs" Type="Self.tbLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbLinkUserAndPlans">
               <PropertyRef Name="Link_PU_ID" />
@@ -1700,8 +1581,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbNotifications_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
-          <End Type="V2boardSiteModel.tbNotifications" Role="tbNotifications" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbNotifications" Type="Self.tbNotifications" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1712,10 +1593,10 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbNotificationUser_tbNotifications">
-          <End Type="V2boardSiteModel.tbNotifications" Role="tbNotifications" Multiplicity="1">
+          <End Role="tbNotifications" Type="Self.tbNotifications" Multiplicity="1">
             <OnDelete Action="Cascade" />
           </End>
-          <End Type="V2boardSiteModel.tbNotificationUser" Role="tbNotificationUser" Multiplicity="*" />
+          <End Role="tbNotificationUser" Type="Self.tbNotificationUser" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbNotifications">
               <PropertyRef Name="tbNoti_ID" />
@@ -1726,10 +1607,10 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbNotificationUser_tbUsers1">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1">
             <OnDelete Action="Cascade" />
           </End>
-          <End Type="V2boardSiteModel.tbNotificationUser" Role="tbNotificationUser" Multiplicity="*" />
+          <End Role="tbNotificationUser" Type="Self.tbNotificationUser" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1740,10 +1621,10 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbPlans">
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="0..1">
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
-          <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbPlans">
               <PropertyRef Name="Plan_ID" />
@@ -1754,10 +1635,10 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbOrders_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1">
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
-          <End Type="V2boardSiteModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -1768,8 +1649,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbPlans_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -1780,8 +1661,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbPlans_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbPlans" Role="tbPlans" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1792,8 +1673,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUpdateLogs_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUpdateLogs" Role="tbUpdateLogs" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbUpdateLogs" Type="Self.tbUpdateLogs" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -1804,8 +1685,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUseages_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUseages" Role="tbUseages" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbUseages" Type="Self.tbUseages" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -1816,8 +1697,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbServers">
-          <End Type="V2boardSiteModel.tbServers" Role="tbServers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="*" />
+          <End Role="tbServers" Type="Self.tbServers" Multiplicity="0..1" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbServers">
               <PropertyRef Name="ServerID" />
@@ -1828,8 +1709,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbTelegramUsers_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers1" Multiplicity="*" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbTelegramUsers1" Type="Self.tbTelegramUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -1840,8 +1721,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbTelegramUsers_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1852,8 +1733,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbTelegramUsers">
-          <End Type="V2boardSiteModel.tbTelegramUsers" Role="tbTelegramUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="*" />
+          <End Role="tbTelegramUsers" Type="Self.tbTelegramUsers" Multiplicity="0..1" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbTelegramUsers">
               <PropertyRef Name="Tel_UserID" />
@@ -1864,8 +1745,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUserFactors_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUserFactors" Role="tbUserFactors" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbUserFactors" Type="Self.tbUserFactors" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1876,8 +1757,8 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_tbUsers_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers1" Multiplicity="*" />
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbUsers1" Type="Self.tbUsers" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="tbUsers">
               <PropertyRef Name="User_ID" />
@@ -1887,451 +1768,673 @@ warning 6002: The table/view 'SafeNetDB.dbo.vi_MajorSales' does not have a prima
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="tbFirebaseMobileTokens">
-          <Key>
-            <PropertyRef Name="tbFirebase_ID" />
-          </Key>
-          <Property Name="tbFirebase_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="tbFirebase_Token" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="tbFireBase_SubToken" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="tbFireBase_FK_User_ID" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteModel.FK_tbFirebaseMobileTokens_tbUsers" FromRole="tbFirebaseMobileTokens" ToRole="tbUsers" />
-        </EntityType>
-        <Association Name="FK_tbFirebaseMobileTokens_tbUsers">
-          <End Type="V2boardSiteModel.tbUsers" Role="tbUsers" Multiplicity="1" />
-          <End Type="V2boardSiteModel.tbFirebaseMobileTokens" Role="tbFirebaseMobileTokens" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="tbUsers">
-              <PropertyRef Name="User_ID" />
-            </Principal>
-            <Dependent Role="tbFirebaseMobileTokens">
-              <PropertyRef Name="tbFireBase_FK_User_ID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        </Schema>
+        <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="NLog" EntityType="Self.NLog" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" />
+          <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" />
+          <EntitySet Name="tbBotSettings" EntityType="Self.tbBotSettings" />
+          <EntitySet Name="tbConnectionHelp" EntityType="Self.tbConnectionHelp" />
+          <EntitySet Name="tbDepositWallet_Log" EntityType="Self.tbDepositWallet_Log" />
+          <EntitySet Name="tbExpLog" EntityType="Self.tbExpLog" />
+          <EntitySet Name="tbFailureServers" EntityType="Self.tbFailureServers" />
+          <EntitySet Name="tbFirebaseMobileTokens" EntityType="Self.tbFirebaseMobileTokens" />
+          <EntitySet Name="tbLinks" EntityType="Self.tbLinks" />
+          <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="Self.tbLinkServerGroupWithUsers" />
+          <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" />
+          <EntitySet Name="tbLogs" EntityType="Self.tbLogs" />
+          <EntitySet Name="tbNotifications" EntityType="Self.tbNotifications" />
+          <EntitySet Name="tbNotificationUser" EntityType="Self.tbNotificationUser" />
+          <EntitySet Name="tbOrders" EntityType="Self.tbOrders" />
+          <EntitySet Name="tbPlans" EntityType="Self.tbPlans" />
+          <EntitySet Name="tbRedisInfo" EntityType="Self.tbRedisInfo" />
+          <EntitySet Name="tbServerGroups" EntityType="Self.tbServerGroups" />
+          <EntitySet Name="tbServers" EntityType="Self.tbServers" />
+          <EntitySet Name="tbSocks5" EntityType="Self.tbSocks5" />
+          <EntitySet Name="tbTelegramUsers" EntityType="Self.tbTelegramUsers" />
+          <EntitySet Name="tbUpdateLogs" EntityType="Self.tbUpdateLogs" />
+          <EntitySet Name="tbUseages" EntityType="Self.tbUseages" />
+          <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" />
+          <EntitySet Name="tbUsers" EntityType="Self.tbUsers" />
+          <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="Self.FK_tbBankCardNumbers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbBankCardNumbers" EntitySet="tbBankCardNumbers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbBotSettings_tbPlans" Association="Self.FK_tbBotSettings_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbBotSettings" EntitySet="tbBotSettings" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbBotSettings_tbUsers" Association="Self.FK_tbBotSettings_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbBotSettings" EntitySet="tbBotSettings" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbConnectionHelp_tbUsers" Association="Self.FK_tbConnectionHelp_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbDepositWallet_Log_tbTelegramUsers" Association="Self.FK_tbDepositWallet_Log_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbExpLog_tbUsers" Association="Self.FK_tbExpLog_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbExpLog" EntitySet="tbExpLog" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbFirebaseMobileTokens_tbUsers" Association="Self.FK_tbFirebaseMobileTokens_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbFirebaseMobileTokens" EntitySet="tbFirebaseMobileTokens" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbPlans" Association="Self.FK_tbLinks_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbServers" Association="Self.FK_tbLinks_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbTelegramUsers" Association="Self.FK_tbLinks_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbServerGroups" Association="Self.FK_tbLinkServerGroupWithUsers_tbServerGroups">
+            <End Role="tbServerGroups" EntitySet="tbServerGroups" />
+            <End Role="tbLinkServerGroupWithUsers" EntitySet="tbLinkServerGroupWithUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbUsers" Association="Self.FK_tbLinkServerGroupWithUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbLinkServerGroupWithUsers" EntitySet="tbLinkServerGroupWithUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkUserAndPlans_tbPlans" Association="Self.FK_tbLinkUserAndPlans_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinkUserAndPlans_tbUsers" Association="Self.FK_tbLinkUserAndPlans_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="Self.FK_tbLogs_tbLinkUserAndPlans">
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+            <End Role="tbLogs" EntitySet="tbLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbNotifications_tbUsers" Association="Self.FK_tbNotifications_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbNotifications" EntitySet="tbNotifications" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbNotificationUser_tbNotifications" Association="Self.FK_tbNotificationUser_tbNotifications">
+            <End Role="tbNotifications" EntitySet="tbNotifications" />
+            <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbNotificationUser_tbUsers1" Association="Self.FK_tbNotificationUser_tbUsers1">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbPlans" Association="Self.FK_tbOrders_tbPlans">
+            <End Role="tbPlans" EntitySet="tbPlans" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbTelegramUsers" Association="Self.FK_tbOrders_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPlans_tbServers" Association="Self.FK_tbPlans_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbPlans" EntitySet="tbPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPlans_tbUsers" Association="Self.FK_tbPlans_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbPlans" EntitySet="tbPlans" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUpdateLogs_tbServers" Association="Self.FK_tbUpdateLogs_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUpdateLogs" EntitySet="tbUpdateLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUseages_tbServers" Association="Self.FK_tbUseages_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUseages" EntitySet="tbUseages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbServers" Association="Self.FK_tbUsers_tbServers">
+            <End Role="tbServers" EntitySet="tbServers" />
+            <End Role="tbUsers" EntitySet="tbUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbTelegramUsers_tbTelegramUsers" Association="Self.FK_tbTelegramUsers_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbTelegramUsers1" EntitySet="tbTelegramUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbTelegramUsers_tbUsers" Association="Self.FK_tbTelegramUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbTelegramUsers" Association="Self.FK_tbUsers_tbTelegramUsers">
+            <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbUsers" EntitySet="tbUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUserFactors_tbUsers" Association="Self.FK_tbUserFactors_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUserFactors" EntitySet="tbUserFactors" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbUsers_tbUsers" Association="Self.FK_tbUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbUsers1" EntitySet="tbUsers" />
+          </AssociationSet>
+          <FunctionImport Name="GetBotSales" ReturnType="Collection(SafeNetDBModel.GetBotSales_Result)" />
+          <FunctionImport Name="GetFullSales" ReturnType="Collection(SafeNetDBModel.GetFullSales_Result)" />
+          <FunctionImport Name="GetMasterUserSales" ReturnType="Collection(SafeNetDBModel.GetMasterUserSales_Result)" />
+          <FunctionImport Name="GetUserSales" ReturnType="Collection(SafeNetDBModel.GetUserSales_Result)" />
+          <FunctionImport Name="NLog_AddEntry_p">
+            <Parameter Name="machineName" Mode="In" Type="String" />
+            <Parameter Name="logged" Mode="In" Type="DateTime" />
+            <Parameter Name="level" Mode="In" Type="String" />
+            <Parameter Name="message" Mode="In" Type="String" />
+            <Parameter Name="logger" Mode="In" Type="String" />
+            <Parameter Name="properties" Mode="In" Type="String" />
+            <Parameter Name="exception" Mode="In" Type="String" />
+            <Parameter Name="ipAddress" Mode="In" Type="String" />
+            <Parameter Name="requestData" Mode="In" Type="String" />
+            <Parameter Name="responseData" Mode="In" Type="String" />
+            <Parameter Name="userId" Mode="In" Type="String" />
+            <Parameter Name="userName" Mode="In" Type="String" />
+            <Parameter Name="userRole" Mode="In" Type="String" />
+            <Parameter Name="requestUrl" Mode="In" Type="String" />
+            <Parameter Name="httpMethod" Mode="In" Type="String" />
+            <Parameter Name="requestHeaders" Mode="In" Type="String" />
+            <Parameter Name="userAgent" Mode="In" Type="String" />
+            <Parameter Name="executionTime" Mode="In" Type="String" />
+            <Parameter Name="sessionId" Mode="In" Type="String" />
+            <Parameter Name="actionName" Mode="In" Type="String" />
+            <Parameter Name="controllerName" Mode="In" Type="String" />
+            <Parameter Name="customData" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SqlQueryNotificationStoredProcedure_2d2da058_e278_4966_9e25_793e672ed0fe" />
+          <FunctionImport Name="SqlQueryNotificationStoredProcedure_4ffd34bb_37a2_4227_8286_fc1e19e68f11" />
+          <FunctionImport Name="SqlQueryNotificationStoredProcedure_90a52481_b600_46ad_a1e7_d3a4b4f41c26" />
+          <FunctionImport Name="SqlQueryNotificationStoredProcedure_a18aa4bb_45b7_493a_9d09_f78f1462150b" />
+          <FunctionImport Name="SqlQueryNotificationStoredProcedure_a28a156b_096d_4328_a3f8_bff243f47f1b" />
+          <FunctionImport Name="SqlQueryNotificationStoredProcedure_e1259852_46ea_4433_b261_181d7c332764" />
+        </EntityContainer>
+        <ComplexType Name="GetBotSales_Result">
+          <Property Type="String" Name="OrderDate" Nullable="true" MaxLength="10" />
+          <Property Type="String" Name="Username" Nullable="true" MaxLength="150" />
+          <Property Type="Int32" Name="SalePrice" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="GetFullSales_Result">
+          <Property Type="String" Name="Username" Nullable="true" MaxLength="150" />
+          <Property Type="DateTime" Name="OrderDate" Nullable="true" />
+          <Property Type="Int32" Name="PerYear" Nullable="true" />
+          <Property Type="Int32" Name="PerMonth" Nullable="true" />
+          <Property Type="Int32" Name="PerDay" Nullable="true" />
+          <Property Type="Int32" Name="Sales" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="GetMasterUserSales_Result">
+          <Property Type="Int64" Name="Id" Nullable="true" />
+          <Property Type="String" Name="Username" Nullable="true" MaxLength="150" />
+          <Property Type="Int32" Name="SalePrice" Nullable="true" />
+          <Property Type="DateTime" Name="CreateDate" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="GetUserSales_Result">
+          <Property Type="Int64" Name="Id" Nullable="true" />
+          <Property Type="String" Name="Username" Nullable="true" MaxLength="150" />
+          <Property Type="Int32" Name="SalePrice" Nullable="true" />
+          <Property Type="DateTime" Name="CreateDate" Nullable="true" />
+        </ComplexType>
+      </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="V2boardSiteModelStoreContainer" CdmEntityContainer="Entities">
+        <EntityContainerMapping StorageEntityContainer="SafeNetDBModelStoreContainer" CdmEntityContainer="Entities">
           <EntitySetMapping Name="NLog">
-            <EntityTypeMapping TypeName="V2boardSiteModel.NLog">
+            <EntityTypeMapping TypeName="SafeNetDBModel.NLog">
               <MappingFragment StoreEntitySet="NLog">
-                <ScalarProperty Name="customData" ColumnName="customData" />
-                <ScalarProperty Name="Logger" ColumnName="Logger" />
-                <ScalarProperty Name="sessionId" ColumnName="sessionId" />
-                <ScalarProperty Name="executionTime" ColumnName="executionTime" />
-                <ScalarProperty Name="userAgent" ColumnName="userAgent" />
-                <ScalarProperty Name="requestHeaders" ColumnName="requestHeaders" />
-                <ScalarProperty Name="requestUrl" ColumnName="requestUrl" />
-                <ScalarProperty Name="userRole" ColumnName="userRole" />
-                <ScalarProperty Name="userId" ColumnName="userId" />
-                <ScalarProperty Name="responseData" ColumnName="responseData" />
-                <ScalarProperty Name="Exception" ColumnName="Exception" />
-                <ScalarProperty Name="Properties" ColumnName="Properties" />
-                <ScalarProperty Name="controllerName" ColumnName="controllerName" />
-                <ScalarProperty Name="actionName" ColumnName="actionName" />
-                <ScalarProperty Name="requestData" ColumnName="requestData" />
-                <ScalarProperty Name="httpMethod" ColumnName="httpMethod" />
-                <ScalarProperty Name="userName" ColumnName="userName" />
-                <ScalarProperty Name="ipAddress" ColumnName="ipAddress" />
-                <ScalarProperty Name="Message" ColumnName="Message" />
-                <ScalarProperty Name="Level" ColumnName="Level" />
-                <ScalarProperty Name="Logged" ColumnName="Logged" />
-                <ScalarProperty Name="MachineName" ColumnName="MachineName" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="MachineName" ColumnName="MachineName" />
+                <ScalarProperty Name="Logged" ColumnName="Logged" />
+                <ScalarProperty Name="Level" ColumnName="Level" />
+                <ScalarProperty Name="Message" ColumnName="Message" />
+                <ScalarProperty Name="ipAddress" ColumnName="ipAddress" />
+                <ScalarProperty Name="userName" ColumnName="userName" />
+                <ScalarProperty Name="httpMethod" ColumnName="httpMethod" />
+                <ScalarProperty Name="requestData" ColumnName="requestData" />
+                <ScalarProperty Name="actionName" ColumnName="actionName" />
+                <ScalarProperty Name="controllerName" ColumnName="controllerName" />
+                <ScalarProperty Name="Properties" ColumnName="Properties" />
+                <ScalarProperty Name="Exception" ColumnName="Exception" />
+                <ScalarProperty Name="responseData" ColumnName="responseData" />
+                <ScalarProperty Name="userId" ColumnName="userId" />
+                <ScalarProperty Name="userRole" ColumnName="userRole" />
+                <ScalarProperty Name="requestUrl" ColumnName="requestUrl" />
+                <ScalarProperty Name="requestHeaders" ColumnName="requestHeaders" />
+                <ScalarProperty Name="userAgent" ColumnName="userAgent" />
+                <ScalarProperty Name="executionTime" ColumnName="executionTime" />
+                <ScalarProperty Name="sessionId" ColumnName="sessionId" />
+                <ScalarProperty Name="Logger" ColumnName="Logger" />
+                <ScalarProperty Name="customData" ColumnName="customData" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="sysdiagrams">
-            <EntityTypeMapping TypeName="V2boardSiteModel.sysdiagrams">
+            <EntityTypeMapping TypeName="SafeNetDBModel.sysdiagrams">
               <MappingFragment StoreEntitySet="sysdiagrams">
-                <ScalarProperty Name="definition" ColumnName="definition" />
-                <ScalarProperty Name="version" ColumnName="version" />
-                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
-                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
                 <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="definition" ColumnName="definition" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbBankCardNumbers">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbBankCardNumbers">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbBankCardNumbers">
               <MappingFragment StoreEntitySet="tbBankCardNumbers">
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="phoneNumber" ColumnName="phoneNumber" />
-                <ScalarProperty Name="InTheNameOf" ColumnName="InTheNameOf" />
-                <ScalarProperty Name="Active" ColumnName="Active" />
-                <ScalarProperty Name="BankSmsNumber" ColumnName="BankSmsNumber" />
-                <ScalarProperty Name="CardNumber" ColumnName="CardNumber" />
                 <ScalarProperty Name="CardNumber_ID" ColumnName="CardNumber_ID" />
+                <ScalarProperty Name="CardNumber" ColumnName="CardNumber" />
+                <ScalarProperty Name="BankSmsNumber" ColumnName="BankSmsNumber" />
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="InTheNameOf" ColumnName="InTheNameOf" />
+                <ScalarProperty Name="phoneNumber" ColumnName="phoneNumber" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbBotSettings">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbBotSettings">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
-                <ScalarProperty Name="GroupId_testUnlimited" ColumnName="GroupId_testUnlimited" />
-                <ScalarProperty Name="GroupId_test" ColumnName="GroupId_test" />
-                <ScalarProperty Name="InvitePercent" ColumnName="InvitePercent" />
-                <ScalarProperty Name="Is_ActiveChangeLimitUser" ColumnName="Is_ActiveChangeLimitUser" />
-                <ScalarProperty Name="AdminUsername" ColumnName="AdminUsername" />
-                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
-                <ScalarProperty Name="Enabled" ColumnName="Enabled" />
-                <ScalarProperty Name="IsActiveCardToCard" ColumnName="IsActiveCardToCard" />
-                <ScalarProperty Name="IsActiveSendReceipt" ColumnName="IsActiveSendReceipt" />
-                <ScalarProperty Name="Present_Discount" ColumnName="Present_Discount" />
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="PricePerMonth_Major" ColumnName="PricePerMonth_Major" />
-                <ScalarProperty Name="PricePerGig_Major" ColumnName="PricePerGig_Major" />
-                <ScalarProperty Name="PricePerMonth_Admin" ColumnName="PricePerMonth_Admin" />
-                <ScalarProperty Name="PricePerGig_Admin" ColumnName="PricePerGig_Admin" />
-                <ScalarProperty Name="ChannelID" ColumnName="ChannelID" />
-                <ScalarProperty Name="RequiredJoinChannel" ColumnName="RequiredJoinChannel" />
-                <ScalarProperty Name="Active" ColumnName="Active" />
-                <ScalarProperty Name="AdminBot_ID" ColumnName="AdminBot_ID" />
-                <ScalarProperty Name="Bot_ID" ColumnName="Bot_ID" />
-                <ScalarProperty Name="Bot_Token" ColumnName="Bot_Token" />
                 <ScalarProperty Name="botSettingID" ColumnName="botSettingID" />
+                <ScalarProperty Name="Bot_Token" ColumnName="Bot_Token" />
+                <ScalarProperty Name="Bot_ID" ColumnName="Bot_ID" />
+                <ScalarProperty Name="AdminBot_ID" ColumnName="AdminBot_ID" />
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="RequiredJoinChannel" ColumnName="RequiredJoinChannel" />
+                <ScalarProperty Name="ChannelID" ColumnName="ChannelID" />
+                <ScalarProperty Name="PricePerGig_Admin" ColumnName="PricePerGig_Admin" />
+                <ScalarProperty Name="PricePerMonth_Admin" ColumnName="PricePerMonth_Admin" />
+                <ScalarProperty Name="PricePerGig_Major" ColumnName="PricePerGig_Major" />
+                <ScalarProperty Name="PricePerMonth_Major" ColumnName="PricePerMonth_Major" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="Present_Discount" ColumnName="Present_Discount" />
+                <ScalarProperty Name="IsActiveSendReceipt" ColumnName="IsActiveSendReceipt" />
+                <ScalarProperty Name="IsActiveCardToCard" ColumnName="IsActiveCardToCard" />
+                <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
+                <ScalarProperty Name="AdminUsername" ColumnName="AdminUsername" />
+                <ScalarProperty Name="Is_ActiveChangeLimitUser" ColumnName="Is_ActiveChangeLimitUser" />
+                <ScalarProperty Name="InvitePercent" ColumnName="InvitePercent" />
+                <ScalarProperty Name="GroupId_test" ColumnName="GroupId_test" />
+                <ScalarProperty Name="GroupId_testUnlimited" ColumnName="GroupId_testUnlimited" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbConnectionHelp">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbConnectionHelp">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbConnectionHelp">
               <MappingFragment StoreEntitySet="tbConnectionHelp">
-                <ScalarProperty Name="ch_Type" ColumnName="ch_Type" />
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="ch_Link" ColumnName="ch_Link" />
-                <ScalarProperty Name="ch_Title" ColumnName="ch_Title" />
                 <ScalarProperty Name="ch_ID" ColumnName="ch_ID" />
+                <ScalarProperty Name="ch_Title" ColumnName="ch_Title" />
+                <ScalarProperty Name="ch_Link" ColumnName="ch_Link" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="ch_Type" ColumnName="ch_Type" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbDepositWallet_Log">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbDepositWallet_Log">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
-                <ScalarProperty Name="dw_message_id" ColumnName="dw_message_id" />
-                <ScalarProperty Name="dw_payment_id" ColumnName="dw_payment_id" />
-                <ScalarProperty Name="dw_CreateDatetime" ColumnName="dw_CreateDatetime" />
-                <ScalarProperty Name="dw_Status" ColumnName="dw_Status" />
-                <ScalarProperty Name="dw_Price" ColumnName="dw_Price" />
-                <ScalarProperty Name="FK_TelegramUser_ID" ColumnName="FK_TelegramUser_ID" />
                 <ScalarProperty Name="dw_ID" ColumnName="dw_ID" />
+                <ScalarProperty Name="FK_TelegramUser_ID" ColumnName="FK_TelegramUser_ID" />
+                <ScalarProperty Name="dw_Price" ColumnName="dw_Price" />
+                <ScalarProperty Name="dw_Status" ColumnName="dw_Status" />
+                <ScalarProperty Name="dw_CreateDatetime" ColumnName="dw_CreateDatetime" />
+                <ScalarProperty Name="dw_payment_id" ColumnName="dw_payment_id" />
+                <ScalarProperty Name="dw_message_id" ColumnName="dw_message_id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbExpLog">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbExpLog">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbExpLog">
               <MappingFragment StoreEntitySet="tbExpLog">
-                <ScalarProperty Name="exl_CreateDatetime" ColumnName="exl_CreateDatetime" />
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="exl_MethodName" ColumnName="exl_MethodName" />
-                <ScalarProperty Name="exl_Description" ColumnName="exl_Description" />
-                <ScalarProperty Name="exl_Message" ColumnName="exl_Message" />
                 <ScalarProperty Name="exl_ID" ColumnName="exl_ID" />
+                <ScalarProperty Name="exl_Message" ColumnName="exl_Message" />
+                <ScalarProperty Name="exl_Description" ColumnName="exl_Description" />
+                <ScalarProperty Name="exl_MethodName" ColumnName="exl_MethodName" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="exl_CreateDatetime" ColumnName="exl_CreateDatetime" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbFailureServers">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbFailureServers">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbFailureServers">
               <MappingFragment StoreEntitySet="tbFailureServers">
-                <ScalarProperty Name="tbFa_v2_ServerID" ColumnName="tbFa_v2_ServerID" />
                 <ScalarProperty Name="tbFa_ID" ColumnName="tbFa_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbLinks">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbLinks">
-              <MappingFragment StoreEntitySet="tbLinks">
-                <ScalarProperty Name="tb_status" ColumnName="tb_status" />
-                <ScalarProperty Name="tb_ChargePlan_ID" ColumnName="tb_ChargePlan_ID" />
-                <ScalarProperty Name="tb_ChargeLinkedTime" ColumnName="tb_ChargeLinkedTime" />
-                <ScalarProperty Name="tb_ChargeLink_ID" ColumnName="tb_ChargeLink_ID" />
-                <ScalarProperty Name="tb_AutoRenew_V2Plan_ID" ColumnName="tb_AutoRenew_V2Plan_ID" />
-                <ScalarProperty Name="tb_AutoRenew" ColumnName="tb_AutoRenew" />
-                <ScalarProperty Name="tbL_Warning" ColumnName="tbL_Warning" />
-                <ScalarProperty Name="tbL_Email" ColumnName="tbL_Email" />
-                <ScalarProperty Name="tbL_Token" ColumnName="tbL_Token" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="FK_TelegramUserID" ColumnName="FK_TelegramUserID" />
-                <ScalarProperty Name="tbLink_ID" ColumnName="tbLink_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbLinkServerGroupWithUsers">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkServerGroupWithUsers">
-              <MappingFragment StoreEntitySet="tbLinkServerGroupWithUsers">
-                <ScalarProperty Name="PriceForUser" ColumnName="PriceForUser" />
-                <ScalarProperty Name="PriceForMonth" ColumnName="PriceForMonth" />
-                <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
-                <ScalarProperty Name="FK_User_Id" ColumnName="FK_User_Id" />
-                <ScalarProperty Name="FK_Group_Id" ColumnName="FK_Group_Id" />
-                <ScalarProperty Name="GroupUserLink_ID" ColumnName="GroupUserLink_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbLinkUserAndPlans">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbLinkUserAndPlans">
-              <MappingFragment StoreEntitySet="tbLinkUserAndPlans">
-                <ScalarProperty Name="L_Status" ColumnName="L_Status" />
-                <ScalarProperty Name="L_FK_P_ID" ColumnName="L_FK_P_ID" />
-                <ScalarProperty Name="L_FK_U_ID" ColumnName="L_FK_U_ID" />
-                <ScalarProperty Name="Link_PU_ID" ColumnName="Link_PU_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbLogs">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbLogs">
-              <MappingFragment StoreEntitySet="tbLogs">
-                <ScalarProperty Name="SubToken" ColumnName="SubToken" />
-                <ScalarProperty Name="PlanMonth" ColumnName="PlanMonth" />
-                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
-                <ScalarProperty Name="PlanName" ColumnName="PlanName" />
-                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
-                <ScalarProperty Name="FK_NameUser_ID" ColumnName="FK_NameUser_ID" />
-                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
-                <ScalarProperty Name="Action" ColumnName="Action" />
-                <ScalarProperty Name="FK_Link_User_Plan_ID" ColumnName="FK_Link_User_Plan_ID" />
-                <ScalarProperty Name="log_ID" ColumnName="log_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbNotifications">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbNotifications">
-              <MappingFragment StoreEntitySet="tbNotifications">
-                <ScalarProperty Name="tbNoti_EndDate" ColumnName="tbNoti_EndDate" />
-                <ScalarProperty Name="tbNoti_Status" ColumnName="tbNoti_Status" />
-                <ScalarProperty Name="tbNoti_RegisterDate" ColumnName="tbNoti_RegisterDate" />
-                <ScalarProperty Name="tbNoti_Text" ColumnName="tbNoti_Text" />
-                <ScalarProperty Name="tbNoti_Title" ColumnName="tbNoti_Title" />
-                <ScalarProperty Name="tbNoti_FK_User_ID" ColumnName="tbNoti_FK_User_ID" />
-                <ScalarProperty Name="tbNoti_ID" ColumnName="tbNoti_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbNotificationUser">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbNotificationUser">
-              <MappingFragment StoreEntitySet="tbNotificationUser">
-                <ScalarProperty Name="tbNotiUser_DateSeen" ColumnName="tbNotiUser_DateSeen" />
-                <ScalarProperty Name="tbNotiUser_Seen" ColumnName="tbNotiUser_Seen" />
-                <ScalarProperty Name="tbNotiUser_FK_User_ID" ColumnName="tbNotiUser_FK_User_ID" />
-                <ScalarProperty Name="tbNoti_FK_Noti_ID" ColumnName="tbNoti_FK_Noti_ID" />
-                <ScalarProperty Name="tbNotiUser_ID" ColumnName="tbNotiUser_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbOrders">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbOrders">
-              <MappingFragment StoreEntitySet="tbOrders">
-                <ScalarProperty Name="Tel_RenewedDate" ColumnName="Tel_RenewedDate" />
-                <ScalarProperty Name="Month" ColumnName="Month" />
-                <ScalarProperty Name="Traffic" ColumnName="Traffic" />
-                <ScalarProperty Name="payment_id" ColumnName="payment_id" />
-                <ScalarProperty Name="FK_Tel_UserID" ColumnName="FK_Tel_UserID" />
-                <ScalarProperty Name="PriceWithOutDiscount" ColumnName="PriceWithOutDiscount" />
-                <ScalarProperty Name="Order_Price" ColumnName="Order_Price" />
-                <ScalarProperty Name="Order_Guid" ColumnName="Order_Guid" />
-                <ScalarProperty Name="OrderType" ColumnName="OrderType" />
-                <ScalarProperty Name="OrderStatus" ColumnName="OrderStatus" />
-                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
-                <ScalarProperty Name="AccountName" ColumnName="AccountName" />
-                <ScalarProperty Name="V2_Plan_ID" ColumnName="V2_Plan_ID" />
-                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
-                <ScalarProperty Name="Order_ID" ColumnName="Order_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbPlans">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbPlans">
-              <MappingFragment StoreEntitySet="tbPlans">
-                <ScalarProperty Name="IsRobotPlan" ColumnName="IsRobotPlan" />
-                <ScalarProperty Name="device_limit" ColumnName="device_limit" />
-                <ScalarProperty Name="Speed_limit" ColumnName="Speed_limit" />
-                <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
-                <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
-                <ScalarProperty Name="Price" ColumnName="Price" />
-                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
-                <ScalarProperty Name="PlanMonth" ColumnName="PlanMonth" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
-                <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
-                <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbRedisInfo">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbRedisInfo">
-              <MappingFragment StoreEntitySet="tbRedisInfo">
-                <ScalarProperty Name="Redis_Password" ColumnName="Redis_Password" />
-                <ScalarProperty Name="Redis_Port" ColumnName="Redis_Port" />
-                <ScalarProperty Name="Redis_addr" ColumnName="Redis_addr" />
-                <ScalarProperty Name="Redis_ID" ColumnName="Redis_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbServerGroups">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbServerGroups">
-              <MappingFragment StoreEntitySet="tbServerGroups">
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
-                <ScalarProperty Name="V2_Group_Id" ColumnName="V2_Group_Id" />
-                <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbServers">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbServers">
-              <MappingFragment StoreEntitySet="tbServers">
-                <ScalarProperty Name="BotbaseAddress" ColumnName="BotbaseAddress" />
-                <ScalarProperty Name="PricePerMonth" ColumnName="PricePerMonth" />
-                <ScalarProperty Name="PricePerGig" ColumnName="PricePerGig" />
-                <ScalarProperty Name="FreeCredit" ColumnName="FreeCredit" />
-                <ScalarProperty Name="Channel_ID" ColumnName="Channel_ID" />
-                <ScalarProperty Name="AdminTelegramUniqID" ColumnName="AdminTelegramUniqID" />
-                <ScalarProperty Name="Discount_Percent" ColumnName="Discount_Percent" />
-                <ScalarProperty Name="NowPayment_API_KEY" ColumnName="NowPayment_API_KEY" />
-                <ScalarProperty Name="Robot_Token" ColumnName="Robot_Token" />
-                <ScalarProperty Name="Robot_ID" ColumnName="Robot_ID" />
-                <ScalarProperty Name="BotID" ColumnName="BotID" />
-                <ScalarProperty Name="SubAddress" ColumnName="SubAddress" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="DataBaseName" ColumnName="DataBaseName" />
-                <ScalarProperty Name="Password" ColumnName="Password" />
-                <ScalarProperty Name="Username" ColumnName="Username" />
-                <ScalarProperty Name="ServerIP" ColumnName="ServerIP" />
-                <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
-                <ScalarProperty Name="ServerID" ColumnName="ServerID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbSocks5">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbSocks5">
-              <MappingFragment StoreEntitySet="tbSocks5">
-                <ScalarProperty Name="Active" ColumnName="Active" />
-                <ScalarProperty Name="Port" ColumnName="Port" />
-                <ScalarProperty Name="Password" ColumnName="Password" />
-                <ScalarProperty Name="Username" ColumnName="Username" />
-                <ScalarProperty Name="HostName" ColumnName="HostName" />
-                <ScalarProperty Name="Socks5_ID" ColumnName="Socks5_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbTelegramUsers">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbTelegramUsers">
-              <MappingFragment StoreEntitySet="tbTelegramUsers">
-                <ScalarProperty Name="Tel_GetedTestAccountUnlimited" ColumnName="Tel_GetedTestAccountUnlimited" />
-                <ScalarProperty Name="Tel_Status" ColumnName="Tel_Status" />
-                <ScalarProperty Name="Tel_RegisterDate" ColumnName="Tel_RegisterDate" />
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="Tel_GetedTestAccount" ColumnName="Tel_GetedTestAccount" />
-                <ScalarProperty Name="Tel_UpdateMessage" ColumnName="Tel_UpdateMessage" />
-                <ScalarProperty Name="Tel_Traffic" ColumnName="Tel_Traffic" />
-                <ScalarProperty Name="Tel_Monthes" ColumnName="Tel_Monthes" />
-                <ScalarProperty Name="Tel_Parent_ID" ColumnName="Tel_Parent_ID" />
-                <ScalarProperty Name="Tel_Wallet" ColumnName="Tel_Wallet" />
-                <ScalarProperty Name="Tel_RobotID" ColumnName="Tel_RobotID" />
-                <ScalarProperty Name="Tel_LastName" ColumnName="Tel_LastName" />
-                <ScalarProperty Name="Tel_FirstName" ColumnName="Tel_FirstName" />
-                <ScalarProperty Name="Tel_Username" ColumnName="Tel_Username" />
-                <ScalarProperty Name="Tel_Data" ColumnName="Tel_Data" />
-                <ScalarProperty Name="Tel_Step" ColumnName="Tel_Step" />
-                <ScalarProperty Name="Tel_UniqUserID" ColumnName="Tel_UniqUserID" />
-                <ScalarProperty Name="Tel_UserID" ColumnName="Tel_UserID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbUpdateLogs">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbUpdateLogs">
-              <MappingFragment StoreEntitySet="tbUpdateLogs">
-                <ScalarProperty Name="upl_FK_Server_ID" ColumnName="upl_FK_Server_ID" />
-                <ScalarProperty Name="upl_AccountToken" ColumnName="upl_AccountToken" />
-                <ScalarProperty Name="upl_CreateTime" ColumnName="upl_CreateTime" />
-                <ScalarProperty Name="upl_UserAgent" ColumnName="upl_UserAgent" />
-                <ScalarProperty Name="upl_IPv6" ColumnName="upl_IPv6" />
-                <ScalarProperty Name="upl_IPv4" ColumnName="upl_IPv4" />
-                <ScalarProperty Name="upl_HostName" ColumnName="upl_HostName" />
-                <ScalarProperty Name="upl_ID" ColumnName="upl_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbUseages">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbUseages">
-              <MappingFragment StoreEntitySet="tbUseages">
-                <ScalarProperty Name="Date" ColumnName="Date" />
-                <ScalarProperty Name="v2_User_ID" ColumnName="v2_User_ID" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="Server_Record" ColumnName="Server_Record" />
-                <ScalarProperty Name="Upload" ColumnName="Upload" />
-                <ScalarProperty Name="Download" ColumnName="Download" />
-                <ScalarProperty Name="tbUse_ID" ColumnName="tbUse_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbUserFactors">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbUserFactors">
-              <MappingFragment StoreEntitySet="tbUserFactors">
-                <ScalarProperty Name="IsPayed" ColumnName="IsPayed" />
-                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="tbUf_CreateTime" ColumnName="tbUf_CreateTime" />
-                <ScalarProperty Name="tbUf_Value" ColumnName="tbUf_Value" />
-                <ScalarProperty Name="tbUf_ID" ColumnName="tbUf_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbUsers">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbUsers">
-              <MappingFragment StoreEntitySet="tbUsers">
-                <ScalarProperty Name="Register_Date" ColumnName="Register_Date" />
-                <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
-                <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
-                <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
-                <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
-                <ScalarProperty Name="IsRenew" ColumnName="IsRenew" />
-                <ScalarProperty Name="Card_Number" ColumnName="Card Number" />
-                <ScalarProperty Name="BussinesTitle" ColumnName="BussinesTitle" />
-                <ScalarProperty Name="TelegramID" ColumnName="TelegramID" />
-                <ScalarProperty Name="Role" ColumnName="Role" />
-                <ScalarProperty Name="Wallet" ColumnName="Wallet" />
-                <ScalarProperty Name="Limit" ColumnName="Limit" />
-                <ScalarProperty Name="Token" ColumnName="Token" />
-                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
-                <ScalarProperty Name="Email" ColumnName="Email" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
-                <ScalarProperty Name="LastName" ColumnName="LastName" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-                <ScalarProperty Name="FullName" ColumnName="FullName" />
-                <ScalarProperty Name="Password" ColumnName="Password" />
-                <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
-                <ScalarProperty Name="Username" ColumnName="Username" />
-                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="vi_MajorSales">
-            <EntityTypeMapping TypeName="V2boardSiteModel.vi_MajorSales">
-              <MappingFragment StoreEntitySet="vi_MajorSales">
-                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
-                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
-                <ScalarProperty Name="Username" ColumnName="Username" />
-                <ScalarProperty Name="log_ID" ColumnName="log_ID" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="tbFa_v2_ServerID" ColumnName="tbFa_v2_ServerID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="tbFirebaseMobileTokens">
-            <EntityTypeMapping TypeName="V2boardSiteModel.tbFirebaseMobileTokens">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbFirebaseMobileTokens">
               <MappingFragment StoreEntitySet="tbFirebaseMobileTokens">
-                <ScalarProperty Name="tbFireBase_FK_User_ID" ColumnName="tbFireBase_FK_User_ID" />
-                <ScalarProperty Name="tbFireBase_SubToken" ColumnName="tbFireBase_SubToken" />
-                <ScalarProperty Name="tbFirebase_Token" ColumnName="tbFirebase_Token" />
                 <ScalarProperty Name="tbFirebase_ID" ColumnName="tbFirebase_ID" />
+                <ScalarProperty Name="tbFirebase_Token" ColumnName="tbFirebase_Token" />
+                <ScalarProperty Name="tbFireBase_SubToken" ColumnName="tbFireBase_SubToken" />
+                <ScalarProperty Name="tbFireBase_FK_User_ID" ColumnName="tbFireBase_FK_User_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="tbLinks">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbLinks">
+              <MappingFragment StoreEntitySet="tbLinks">
+                <ScalarProperty Name="tbLink_ID" ColumnName="tbLink_ID" />
+                <ScalarProperty Name="FK_TelegramUserID" ColumnName="FK_TelegramUserID" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="tbL_Token" ColumnName="tbL_Token" />
+                <ScalarProperty Name="tbL_Email" ColumnName="tbL_Email" />
+                <ScalarProperty Name="tbL_Warning" ColumnName="tbL_Warning" />
+                <ScalarProperty Name="tb_AutoRenew" ColumnName="tb_AutoRenew" />
+                <ScalarProperty Name="tb_AutoRenew_V2Plan_ID" ColumnName="tb_AutoRenew_V2Plan_ID" />
+                <ScalarProperty Name="tb_ChargeLink_ID" ColumnName="tb_ChargeLink_ID" />
+                <ScalarProperty Name="tb_ChargeLinkedTime" ColumnName="tb_ChargeLinkedTime" />
+                <ScalarProperty Name="tb_ChargePlan_ID" ColumnName="tb_ChargePlan_ID" />
+                <ScalarProperty Name="tb_status" ColumnName="tb_status" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbLinkServerGroupWithUsers">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbLinkServerGroupWithUsers">
+              <MappingFragment StoreEntitySet="tbLinkServerGroupWithUsers">
+                <ScalarProperty Name="GroupUserLink_ID" ColumnName="GroupUserLink_ID" />
+                <ScalarProperty Name="FK_Group_Id" ColumnName="FK_Group_Id" />
+                <ScalarProperty Name="FK_User_Id" ColumnName="FK_User_Id" />
+                <ScalarProperty Name="PriceForGig" ColumnName="PriceForGig" />
+                <ScalarProperty Name="PriceForMonth" ColumnName="PriceForMonth" />
+                <ScalarProperty Name="PriceForUser" ColumnName="PriceForUser" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbLinkUserAndPlans">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbLinkUserAndPlans">
+              <MappingFragment StoreEntitySet="tbLinkUserAndPlans">
+                <ScalarProperty Name="Link_PU_ID" ColumnName="Link_PU_ID" />
+                <ScalarProperty Name="L_FK_U_ID" ColumnName="L_FK_U_ID" />
+                <ScalarProperty Name="L_FK_P_ID" ColumnName="L_FK_P_ID" />
+                <ScalarProperty Name="L_Status" ColumnName="L_Status" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbLogs">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbLogs">
+              <MappingFragment StoreEntitySet="tbLogs">
+                <ScalarProperty Name="log_ID" ColumnName="log_ID" />
+                <ScalarProperty Name="FK_Link_User_Plan_ID" ColumnName="FK_Link_User_Plan_ID" />
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="CreateDatetime" ColumnName="CreateDatetime" />
+                <ScalarProperty Name="FK_NameUser_ID" ColumnName="FK_NameUser_ID" />
+                <ScalarProperty Name="SubToken" ColumnName="SubToken" />
+                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
+                <ScalarProperty Name="PlanName" ColumnName="PlanName" />
+                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
+                <ScalarProperty Name="PlanMonth" ColumnName="PlanMonth" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbNotifications">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbNotifications">
+              <MappingFragment StoreEntitySet="tbNotifications">
+                <ScalarProperty Name="tbNoti_ID" ColumnName="tbNoti_ID" />
+                <ScalarProperty Name="tbNoti_FK_User_ID" ColumnName="tbNoti_FK_User_ID" />
+                <ScalarProperty Name="tbNoti_Title" ColumnName="tbNoti_Title" />
+                <ScalarProperty Name="tbNoti_Text" ColumnName="tbNoti_Text" />
+                <ScalarProperty Name="tbNoti_RegisterDate" ColumnName="tbNoti_RegisterDate" />
+                <ScalarProperty Name="tbNoti_Status" ColumnName="tbNoti_Status" />
+                <ScalarProperty Name="tbNoti_EndDate" ColumnName="tbNoti_EndDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbNotificationUser">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbNotificationUser">
+              <MappingFragment StoreEntitySet="tbNotificationUser">
+                <ScalarProperty Name="tbNotiUser_ID" ColumnName="tbNotiUser_ID" />
+                <ScalarProperty Name="tbNoti_FK_Noti_ID" ColumnName="tbNoti_FK_Noti_ID" />
+                <ScalarProperty Name="tbNotiUser_FK_User_ID" ColumnName="tbNotiUser_FK_User_ID" />
+                <ScalarProperty Name="tbNotiUser_Seen" ColumnName="tbNotiUser_Seen" />
+                <ScalarProperty Name="tbNotiUser_DateSeen" ColumnName="tbNotiUser_DateSeen" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbOrders">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbOrders">
+              <MappingFragment StoreEntitySet="tbOrders">
+                <ScalarProperty Name="Order_ID" ColumnName="Order_ID" />
+                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
+                <ScalarProperty Name="V2_Plan_ID" ColumnName="V2_Plan_ID" />
+                <ScalarProperty Name="AccountName" ColumnName="AccountName" />
+                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
+                <ScalarProperty Name="OrderStatus" ColumnName="OrderStatus" />
+                <ScalarProperty Name="OrderType" ColumnName="OrderType" />
+                <ScalarProperty Name="Order_Guid" ColumnName="Order_Guid" />
+                <ScalarProperty Name="Order_Price" ColumnName="Order_Price" />
+                <ScalarProperty Name="PriceWithOutDiscount" ColumnName="PriceWithOutDiscount" />
+                <ScalarProperty Name="FK_Tel_UserID" ColumnName="FK_Tel_UserID" />
+                <ScalarProperty Name="payment_id" ColumnName="payment_id" />
+                <ScalarProperty Name="Traffic" ColumnName="Traffic" />
+                <ScalarProperty Name="Month" ColumnName="Month" />
+                <ScalarProperty Name="Tel_RenewedDate" ColumnName="Tel_RenewedDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbPlans">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbPlans">
+              <MappingFragment StoreEntitySet="tbPlans">
+                <ScalarProperty Name="Plan_ID" ColumnName="Plan_ID" />
+                <ScalarProperty Name="Plan_ID_V2" ColumnName="Plan_ID_V2" />
+                <ScalarProperty Name="Plan_Name" ColumnName="Plan_Name" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="Plan_Des" ColumnName="Plan_Des" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="PlanMonth" ColumnName="PlanMonth" />
+                <ScalarProperty Name="PlanVolume" ColumnName="PlanVolume" />
+                <ScalarProperty Name="Price" ColumnName="Price" />
+                <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
+                <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
+                <ScalarProperty Name="Speed_limit" ColumnName="Speed_limit" />
+                <ScalarProperty Name="device_limit" ColumnName="device_limit" />
+                <ScalarProperty Name="IsRobotPlan" ColumnName="IsRobotPlan" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbRedisInfo">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbRedisInfo">
+              <MappingFragment StoreEntitySet="tbRedisInfo">
+                <ScalarProperty Name="Redis_ID" ColumnName="Redis_ID" />
+                <ScalarProperty Name="Redis_addr" ColumnName="Redis_addr" />
+                <ScalarProperty Name="Redis_Port" ColumnName="Redis_Port" />
+                <ScalarProperty Name="Redis_Password" ColumnName="Redis_Password" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbServerGroups">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbServerGroups">
+              <MappingFragment StoreEntitySet="tbServerGroups">
+                <ScalarProperty Name="Group_Id" ColumnName="Group_Id" />
+                <ScalarProperty Name="V2_Group_Id" ColumnName="V2_Group_Id" />
+                <ScalarProperty Name="Group_Name" ColumnName="Group_Name" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbServers">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbServers">
+              <MappingFragment StoreEntitySet="tbServers">
+                <ScalarProperty Name="ServerID" ColumnName="ServerID" />
+                <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
+                <ScalarProperty Name="ServerIP" ColumnName="ServerIP" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="DataBaseName" ColumnName="DataBaseName" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="SubAddress" ColumnName="SubAddress" />
+                <ScalarProperty Name="BotID" ColumnName="BotID" />
+                <ScalarProperty Name="Robot_ID" ColumnName="Robot_ID" />
+                <ScalarProperty Name="Robot_Token" ColumnName="Robot_Token" />
+                <ScalarProperty Name="NowPayment_API_KEY" ColumnName="NowPayment_API_KEY" />
+                <ScalarProperty Name="Discount_Percent" ColumnName="Discount_Percent" />
+                <ScalarProperty Name="AdminTelegramUniqID" ColumnName="AdminTelegramUniqID" />
+                <ScalarProperty Name="Channel_ID" ColumnName="Channel_ID" />
+                <ScalarProperty Name="FreeCredit" ColumnName="FreeCredit" />
+                <ScalarProperty Name="PricePerGig" ColumnName="PricePerGig" />
+                <ScalarProperty Name="PricePerMonth" ColumnName="PricePerMonth" />
+                <ScalarProperty Name="BotbaseAddress" ColumnName="BotbaseAddress" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbSocks5">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbSocks5">
+              <MappingFragment StoreEntitySet="tbSocks5">
+                <ScalarProperty Name="Socks5_ID" ColumnName="Socks5_ID" />
+                <ScalarProperty Name="HostName" ColumnName="HostName" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="Port" ColumnName="Port" />
+                <ScalarProperty Name="Active" ColumnName="Active" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbTelegramUsers">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbTelegramUsers">
+              <MappingFragment StoreEntitySet="tbTelegramUsers">
+                <ScalarProperty Name="Tel_UserID" ColumnName="Tel_UserID" />
+                <ScalarProperty Name="Tel_UniqUserID" ColumnName="Tel_UniqUserID" />
+                <ScalarProperty Name="Tel_Step" ColumnName="Tel_Step" />
+                <ScalarProperty Name="Tel_Data" ColumnName="Tel_Data" />
+                <ScalarProperty Name="Tel_Username" ColumnName="Tel_Username" />
+                <ScalarProperty Name="Tel_FirstName" ColumnName="Tel_FirstName" />
+                <ScalarProperty Name="Tel_LastName" ColumnName="Tel_LastName" />
+                <ScalarProperty Name="Tel_RobotID" ColumnName="Tel_RobotID" />
+                <ScalarProperty Name="Tel_Wallet" ColumnName="Tel_Wallet" />
+                <ScalarProperty Name="Tel_Parent_ID" ColumnName="Tel_Parent_ID" />
+                <ScalarProperty Name="Tel_Monthes" ColumnName="Tel_Monthes" />
+                <ScalarProperty Name="Tel_Traffic" ColumnName="Tel_Traffic" />
+                <ScalarProperty Name="Tel_UpdateMessage" ColumnName="Tel_UpdateMessage" />
+                <ScalarProperty Name="Tel_GetedTestAccount" ColumnName="Tel_GetedTestAccount" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="Tel_RegisterDate" ColumnName="Tel_RegisterDate" />
+                <ScalarProperty Name="Tel_Status" ColumnName="Tel_Status" />
+                <ScalarProperty Name="Tel_GetedTestAccountUnlimited" ColumnName="Tel_GetedTestAccountUnlimited" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbUpdateLogs">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbUpdateLogs">
+              <MappingFragment StoreEntitySet="tbUpdateLogs">
+                <ScalarProperty Name="upl_ID" ColumnName="upl_ID" />
+                <ScalarProperty Name="upl_HostName" ColumnName="upl_HostName" />
+                <ScalarProperty Name="upl_IPv4" ColumnName="upl_IPv4" />
+                <ScalarProperty Name="upl_IPv6" ColumnName="upl_IPv6" />
+                <ScalarProperty Name="upl_UserAgent" ColumnName="upl_UserAgent" />
+                <ScalarProperty Name="upl_CreateTime" ColumnName="upl_CreateTime" />
+                <ScalarProperty Name="upl_AccountToken" ColumnName="upl_AccountToken" />
+                <ScalarProperty Name="upl_FK_Server_ID" ColumnName="upl_FK_Server_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbUseages">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbUseages">
+              <MappingFragment StoreEntitySet="tbUseages">
+                <ScalarProperty Name="tbUse_ID" ColumnName="tbUse_ID" />
+                <ScalarProperty Name="Download" ColumnName="Download" />
+                <ScalarProperty Name="Upload" ColumnName="Upload" />
+                <ScalarProperty Name="Server_Record" ColumnName="Server_Record" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="v2_User_ID" ColumnName="v2_User_ID" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbUserFactors">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbUserFactors">
+              <MappingFragment StoreEntitySet="tbUserFactors">
+                <ScalarProperty Name="tbUf_ID" ColumnName="tbUf_ID" />
+                <ScalarProperty Name="tbUf_Value" ColumnName="tbUf_Value" />
+                <ScalarProperty Name="tbUf_CreateTime" ColumnName="tbUf_CreateTime" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="IsPayed" ColumnName="IsPayed" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbUsers">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbUsers">
+              <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="FullName" ColumnName="FullName" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
+                <ScalarProperty Name="Token" ColumnName="Token" />
+                <ScalarProperty Name="Limit" ColumnName="Limit" />
+                <ScalarProperty Name="Wallet" ColumnName="Wallet" />
+                <ScalarProperty Name="Role" ColumnName="Role" />
+                <ScalarProperty Name="TelegramID" ColumnName="TelegramID" />
+                <ScalarProperty Name="BussinesTitle" ColumnName="BussinesTitle" />
+                <ScalarProperty Name="Card_Number" ColumnName="Card Number" />
+                <ScalarProperty Name="IsRenew" ColumnName="IsRenew" />
+                <ScalarProperty Name="ExpireTimeToken" ColumnName="ExpireTimeToken" />
+                <ScalarProperty Name="Admin_Telegram_ID" ColumnName="Admin_Telegram_ID" />
+                <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />
+                <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
+                <ScalarProperty Name="Register_Date" ColumnName="Register_Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="GetBotSales" FunctionName="SafeNetDBModel.Store.GetBotSales">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SafeNetDBModel.GetBotSales_Result">
+                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetFullSales" FunctionName="SafeNetDBModel.Store.GetFullSales">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SafeNetDBModel.GetFullSales_Result">
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
+                <ScalarProperty Name="PerYear" ColumnName="PerYear" />
+                <ScalarProperty Name="PerMonth" ColumnName="PerMonth" />
+                <ScalarProperty Name="PerDay" ColumnName="PerDay" />
+                <ScalarProperty Name="Sales" ColumnName="Sales" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetMasterUserSales" FunctionName="SafeNetDBModel.Store.GetMasterUserSales">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SafeNetDBModel.GetMasterUserSales_Result">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="GetUserSales" FunctionName="SafeNetDBModel.Store.GetUserSales">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SafeNetDBModel.GetUserSales_Result">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="NLog_AddEntry_p" FunctionName="SafeNetDBModel.Store.NLog_AddEntry_p" />
+          <FunctionImportMapping FunctionImportName="SqlQueryNotificationStoredProcedure_2d2da058_e278_4966_9e25_793e672ed0fe" FunctionName="SafeNetDBModel.Store.SqlQueryNotificationStoredProcedure_2d2da058_e278_4966_9e25_793e672ed0fe" />
+          <FunctionImportMapping FunctionImportName="SqlQueryNotificationStoredProcedure_4ffd34bb_37a2_4227_8286_fc1e19e68f11" FunctionName="SafeNetDBModel.Store.SqlQueryNotificationStoredProcedure_4ffd34bb_37a2_4227_8286_fc1e19e68f11" />
+          <FunctionImportMapping FunctionImportName="SqlQueryNotificationStoredProcedure_90a52481_b600_46ad_a1e7_d3a4b4f41c26" FunctionName="SafeNetDBModel.Store.SqlQueryNotificationStoredProcedure_90a52481_b600_46ad_a1e7_d3a4b4f41c26" />
+          <FunctionImportMapping FunctionImportName="SqlQueryNotificationStoredProcedure_a18aa4bb_45b7_493a_9d09_f78f1462150b" FunctionName="SafeNetDBModel.Store.SqlQueryNotificationStoredProcedure_a18aa4bb_45b7_493a_9d09_f78f1462150b" />
+          <FunctionImportMapping FunctionImportName="SqlQueryNotificationStoredProcedure_a28a156b_096d_4328_a3f8_bff243f47f1b" FunctionName="SafeNetDBModel.Store.SqlQueryNotificationStoredProcedure_a28a156b_096d_4328_a3f8_bff243f47f1b" />
+          <FunctionImportMapping FunctionImportName="SqlQueryNotificationStoredProcedure_e1259852_46ea_4433_b261_181d7c332764" FunctionName="SafeNetDBModel.Store.SqlQueryNotificationStoredProcedure_e1259852_46ea_4433_b261_181d7c332764" />
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

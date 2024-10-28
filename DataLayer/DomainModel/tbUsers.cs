@@ -21,6 +21,7 @@ namespace DataLayer.DomainModel
             this.tbBotSettings = new HashSet<tbBotSettings>();
             this.tbConnectionHelp = new HashSet<tbConnectionHelp>();
             this.tbExpLog = new HashSet<tbExpLog>();
+            this.tbFirebaseMobileTokens = new HashSet<tbFirebaseMobileTokens>();
             this.tbLinkServerGroupWithUsers = new HashSet<tbLinkServerGroupWithUsers>();
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
             this.tbNotifications = new HashSet<tbNotifications>();
@@ -29,7 +30,6 @@ namespace DataLayer.DomainModel
             this.tbTelegramUsers = new HashSet<tbTelegramUsers>();
             this.tbUserFactors = new HashSet<tbUserFactors>();
             this.tbUsers1 = new HashSet<tbUsers>();
-            this.tbFirebaseMobileTokens = new HashSet<tbFirebaseMobileTokens>();
         }
     
         public int User_ID { get; set; }
@@ -66,6 +66,8 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbExpLog> tbExpLog { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbFirebaseMobileTokens> tbFirebaseMobileTokens { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkServerGroupWithUsers> tbLinkServerGroupWithUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
@@ -84,7 +86,5 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUsers> tbUsers1 { get; set; }
         public virtual tbUsers tbUsers2 { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbFirebaseMobileTokens> tbFirebaseMobileTokens { get; set; }
     }
 }
