@@ -13,7 +13,15 @@
             <p class="mb-1">فروش</p>
             <p class="mb-0">
                 <span class="fw-medium me-1">
-                    <bdi>@Model.ProfitSale</bdi>
+
+                    @if (Model.ProfitSale > 0)
+                    {
+                        <bdi>+@Model.ProfitSale</bdi>
+                    }
+                    else
+                    {
+                        <bdi>@Model.ProfitSale</bdi>
+                    }
                     درصد
                 </span>
                 <small class="text-muted">نسبت به هفته گذشته</small>
@@ -35,7 +43,14 @@
             <p class="mb-1">مشتریان جدید</p>
             <p class="mb-0">
                 <span class="fw-medium me-1">
-                    <bdi>@Model.ProfitSub</bdi>
+                    @if (Model.ProfitSub > 0)
+                    {
+                        <bdi>+@Model.ProfitSub</bdi>
+                    }
+                    else
+                    {
+                        <bdi>@Model.ProfitSub</bdi>
+                    }
                     درصد
                 </span>
                 <small class="text-muted">نسبت به هفته گذشته</small>
@@ -57,7 +72,14 @@
             <p class="mb-1">مقدار ترافیک مصرف شده</p>
             <p class="mb-0">
                 <span class="fw-medium me-1">
-                    <bdi>@Model.ProfitUseage</bdi>
+                    @if (Model.ProfitUseage > 0)
+                    {
+                        <bdi>+@Model.ProfitUseage</bdi>
+                    }
+                    else
+                    {
+                        <bdi>@Model.ProfitUseage</bdi>
+                    }
                     درصد
                 </span>
                 <small class="text-muted">نسبت به هفته گذشته</small>

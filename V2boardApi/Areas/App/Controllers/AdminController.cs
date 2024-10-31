@@ -943,7 +943,7 @@ namespace V2boardApi.Areas.App.Controllers
                     RepositoryUser.Save();
                     if (User.Role == 1)
                     {
-                        var URL = Url.Action("Index", "Admin");
+                        var URL = Url.Action("Index", "Dashboard");
                         return Json(new { status = "success", redirectURL = URL });
 
                     }

@@ -219,7 +219,6 @@
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Interface\Interface.cs" />
-    <Compile Include="Models\DashboardModel\vi_BotSales.cs" />
     <Compile Include="Models\MetaData\tbServersMetaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\Repository.cs" />

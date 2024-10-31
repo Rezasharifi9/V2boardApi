@@ -4,53 +4,82 @@
 
 </div>
 
-
+<div class="row">
+    <!-- Vehicles overview -->
+    <div class="col-md-6 mb-4 order-3">
+        <div class="card" style="height:100%;">
+            <div class="card-header">
+                <div class="card-title mb-0">
+                    <h5 class="m-0">عملکرد سیستم در ماه جاری</h5>
+                </div>
+            </div>
+            <div class="card-body section-loading-PerformanceSys" id="_PerformanceSys">
+                
+            </div>
+        </div>
+    </div>
+    <!--/ Vehicles overview -->
+    <!-- Shipment statistics-->
+    <div class="col-md-6 mb-4 order-3">
+        <div class="card" style="height:100%;">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-title mb-0">
+                    <h5 class="m-0 me-2">آمار ترافیک مصرفی در هفته اخیر</h5>
+                </div>
+            </div>
+            <div class="card-body" >
+                <div class="my-1" id="shipmentStatisticsChart"></div>
+            </div>
+        </div>
+    </div>
+    <!--/ Shipment statistics -->
+</div>
 <div class="row">
     <!-- Earning Reports Tabs-->
-    <div class="col-12 col-xl-8 mb-4">
+    <div class="col-12 col-xl-12 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between">
                 <div class="card-title mb-0">
-                    <h5 class="mb-0">گزارشات سود</h5>
-                    <small class="text-muted">بررسی مختصر درآمد سالانه</small>
+                    <h5 class="mb-0">گزارشات فروش ماه جاری</h5>
+                    <small class="text-muted" id="textBoxSell">بررسی مختصر فروش سیستم به تفکیک روز</small>
                 </div>
-                <div class="dropdown">
-                    <button aria-expanded="false" aria-haspopup="true" class="btn p-0" data-bs-toggle="dropdown" id="earningReportsTabsId" type="button">
-                        <i class="ti ti-dots-vertical ti-sm text-muted"></i>
-                    </button>
-                    <div aria-labelledby="earningReportsTabsId" class="dropdown-menu dropdown-menu-end">
-                        <a class="dropdown-item" href="javascript:void(0);">موارد بیشتر</a>
-                        <a class="dropdown-item" href="javascript:void(0);">حذف</a>
-                    </div>
+                <div class="card-title mb-0" id="kol-sum">
+                    <h5 class="mb-0"> جمع : <span id="sum-kol">1,820</span></h5>
+                </div>
+                <div class="card-title mb-0" id="agent-sum" style="display:none;">
+                    <h5 class="mb-0"> جمع : <span id="sum-agent">1,820</span></h5>
+                </div>
+                <div class="card-title mb-0" id="bot-sum" style="display:none;">
+                    <h5 class="mb-0"> جمع : <span id="sum-bot">1,820</span></h5>
                 </div>
             </div>
             <div class="card-body">
                 <ul class="nav nav-tabs widget-nav-tabs pb-3 gap-4 mx-1 d-flex flex-nowrap" role="tablist">
-                    <li class="nav-item">
+                    <li class="nav-item setTitle" id="click-kol" title="بررسی مختصر فروش سیستم به تفکیک روز">
                         <a aria-controls="navs-orders-id" aria-selected="true" class="nav-link btn active d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-orders-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
                             <div class="badge bg-label-secondary rounded p-2">
-                                <i class="ti ti-shopping-cart ti-sm"></i>
+                                <i class="ti ti-report ti-sm"></i>
                             </div>
-                            <h6 class="tab-widget-title mb-0 mt-2">سفارشات</h6>
+                            <h6 class="tab-widget-title mb-0 mt-2">کل</h6>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item setTitle" id="click-agent" title="12 نماینده برتر در ماه جاری">
                         <a aria-controls="navs-sales-id" aria-selected="false" class="nav-link btn d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-sales-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
                             <div class="badge bg-label-secondary rounded p-2">
-                                <i class="ti ti-chart-bar ti-sm"></i>
+                                <i class="ti ti-users-group ti-sm"></i>
                             </div>
-                            <h6 class="tab-widget-title mb-0 mt-2">فروش</h6>
+                            <h6 class="tab-widget-title mb-0 mt-2">نمایندگان</h6>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item setTitle" id="click-bot" title="بررسی مختصر فروش ربات به تفکیک روز">
                         <a aria-controls="navs-profit-id" aria-selected="false" class="nav-link btn d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-profit-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
                             <div class="badge bg-label-secondary rounded p-2">
-                                <i class="ti ti-currency-dollar ti-sm"></i>
+                                <i class="ti ti-robot ti-sm"></i>
                             </div>
-                            <h6 class="tab-widget-title mb-0 mt-2">سود</h6>
+                            <h6 class="tab-widget-title mb-0 mt-2">ربات</h6>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    @*<li class="nav-item">
                         <a aria-controls="navs-income-id" aria-selected="false" class="nav-link btn d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-income-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
                             <div class="badge bg-label-secondary rounded p-2">
                                 <i class="ti ti-chart-pie-2 ti-sm"></i>
@@ -64,7 +93,7 @@
                                 <i class="ti ti-plus ti-sm"></i>
                             </div>
                         </a>
-                    </li>
+                    </li>*@
                 </ul>
                 <div class="tab-content p-0 ms-0 ms-sm-2">
                     <div class="tab-pane fade show active" id="navs-orders-id" role="tabpanel">
@@ -76,15 +105,15 @@
                     <div class="tab-pane fade" id="navs-profit-id" role="tabpanel">
                         <div id="earningReportsTabsProfit"></div>
                     </div>
-                    <div class="tab-pane fade" id="navs-income-id" role="tabpanel">
+                    @*<div class="tab-pane fade" id="navs-income-id" role="tabpanel">
                         <div id="earningReportsTabsIncome"></div>
-                    </div>
+                    </div>*@
                 </div>
             </div>
         </div>
     </div>
     <!-- Sales last 6 months -->
-    <div class="col-md-6 col-xl-4 mb-4">
+    @*<div class="col-md-6 col-xl-4 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between">
                 <div class="card-title mb-0">
@@ -105,62 +134,9 @@
                 <div id="salesLastMonth"></div>
             </div>
         </div>
-    </div>
+    </div>*@
 
-    <div class="col-xl-12 col-md-12 mb-4">
-        <div class="card">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <div class="card-title mb-0">
-                    <h5 class="m-0 me-2">آمار حمل و نقل</h5>
-                    <small class="text-muted">تعداد کل تحویل 23.8 </small>
-                </div>
-                <div class="dropdown">
-                    <button aria-expanded="false" class="btn btn-label-primary dropdown-toggle" data-bs-toggle="dropdown" type="button"> فروردین</button>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">فروردین</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">اردیبهشت</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">خرداد</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">تیر</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">مرداد</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">شهریور</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">مهر</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">آبان</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">آذر</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">دی</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">بهمن</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">اسفند</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="my-1" id="shipmentStatisticsChart"></div>
-            </div>
-        </div>
-    </div>
+    
 
 </div>
 
@@ -181,6 +157,41 @@
 
     <script>
 
+
+        $(".setTitle").click(function () {
+
+            var text = $(this).attr("title");
+
+            $("#textBoxSell").text(text);
+
+        });
+
+
+        $("#click-kol").click(function () {
+
+            $("#kol-sum").css("display", "block");
+            $("#agent-sum").css("display", "none");
+            $("#bot-sum").css("display", "none");
+        });
+
+        $("#click-agent").click(function () {
+
+            $("#agent-sum").css("display", "block");
+            $("#kol-sum").css("display", "none");
+            $("#bot-sum").css("display", "none");
+
+        });
+
+        $("#click-bot").click(function () {
+
+            $("#bot-sum").css("display", "block");
+
+            $("#kol-sum").css("display", "none");
+            $("#agent-sum").css("display", "none");
+
+        });
+
+
         $(function () {
 
             $.ajax({
@@ -193,6 +204,21 @@
                 success: function (res) {
                     UnblockUI(".section-loading");
                     $("#WeeklyDataReport").html(res);
+                }
+            });
+
+
+            $.ajax({
+                url: "@Url.Action("_GetPerformanceSystemReport", "Dashboard",new {area="App"})",
+                type: "get",
+                dataType: "html",
+                async:true,
+                beforeSend: function () {
+                    blockUI(".section-loading-PerformanceSys");
+                },
+                success: function (res) {
+                    UnblockUI(".section-loading-PerformanceSys");
+                    $("#_PerformanceSys").html(res);
                 }
             });
 

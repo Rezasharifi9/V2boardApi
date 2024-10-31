@@ -437,164 +437,169 @@
     revenueGrowth.render();
   }
 
-  // Earning Reports Tabs Function
-  function EarningReportsBarChart(arrayData, highlightData) {
-    const basicColor = config.colors_label.primary,
-      highlightColor = config.colors.primary;
-    var colorArr = [];
+    function EarningReportsUserBarChart(arrayData, highlightData,arryXdata,sumId) {
+        const basicColor = config.colors_label.primary,
+            highlightColor = config.colors.primary;
+        var colorArr = [];
 
-    for (let i = 0; i < arrayData.length; i++) {
-      if (i === highlightData) {
-        colorArr.push(highlightColor);
-      } else {
-        colorArr.push(basicColor);
-      }
-    }
+        const sum = arrayData.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
-    const earningReportBarChartOpt = {
-      chart: {
-        height: 258,
-        parentHeightOffset: 0,
-        type: 'bar',
-        toolbar: {
-          show: false
-        }
-      },
-      plotOptions: {
-        bar: {
-          columnWidth: '32%',
-          startingShape: 'rounded',
-          borderRadius: 7,
-          distributed: true,
-          dataLabels: {
-            position: 'top'
-          }
-        }
-      },
-      grid: {
-        show: false,
-        padding: {
-          top: 0,
-          bottom: 0,
-          left: -10,
-          right: -10
-        }
-      },
-      colors: colorArr,
-      dataLabels: {
-        enabled: true,
-        formatter: function (val) {
-          return val + 'k';
-        },
-        offsetY: -20,
-        style: {
-          fontSize: '15px',
-          colors: [legendColor],
-          fontWeight: '500',
-          fontFamily: 'font-primary'
-        }
-      },
-      series: [
-        {
-          data: arrayData
-        }
-      ],
-      legend: {
-        show: false
-      },
-      tooltip: {
-        enabled: false
-      },
-      xaxis: {
-        categories: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر'],
-        axisBorder: {
-          show: true,
-          color: borderColor
-        },
-        axisTicks: {
-          show: false
-        },
-        labels: {
-          style: {
-            colors: labelColor,
-            fontSize: '13px',
-            fontFamily: 'font-primary'
-          }
-        }
-      },
-      yaxis: {
-        labels: {
-          offsetX: -15,
-          formatter: function (val) {
-            return parseInt(val / 1) + 'k';
-          },
-          style: {
-            fontSize: '13px',
-            colors: labelColor,
-            fontFamily: 'font-primary'
-          },
-          min: 0,
-          max: 60000,
-          tickAmount: 6
-        }
-      },
-      responsive: [
-        {
-          breakpoint: 1441,
-          options: {
-            plotOptions: {
-              bar: {
-                columnWidth: '41%'
-              }
+        $(sumId).text(sum.toLocaleString());
+
+        for (let i = 0; i < arrayData.length; i++) {
+            if (i === highlightData) {
+                colorArr.push(highlightColor);
+            } else {
+                colorArr.push(basicColor);
             }
-          }
-        },
-        {
-          breakpoint: 590,
-          options: {
-            plotOptions: {
-              bar: {
-                columnWidth: '61%',
-                borderRadius: 5
-              }
+        }
+
+        const earningReportBarChartOpt = {
+            chart: {
+                height: 258,
+                parentHeightOffset: 0,
+                type: 'bar',
+                toolbar: {
+                    show: false
+                }
             },
-            yaxis: {
-              labels: {
-                show: false
-              }
+            plotOptions: {
+                bar: {
+                    columnWidth: '32%',
+                    startingShape: 'rounded',
+                    borderRadius: 7,
+                    distributed: true,
+                    dataLabels: {
+                        position: 'top'
+                    }
+                }
             },
             grid: {
-              padding: {
-                right: 0,
-                left: -20
-              }
+                show: false,
+                padding: {
+                    top: 0,
+                    bottom: 0,
+                    left: -10,
+                    right: -10
+                }
             },
+            colors: colorArr,
             dataLabels: {
-              style: {
-                fontSize: '12px',
-                fontWeight: '400'
-              }
-            }
-          }
-        }
-      ]
-    };
-    return earningReportBarChartOpt;
-  }
+                enabled: true,
+                formatter: function (val) {
+                    return val + 'k';
+                },
+                offsetY: -20,
+                style: {
+                    fontSize: '15px',
+                    colors: [legendColor],
+                    fontWeight: '500',
+                    fontFamily: 'font-primary'
+                }
+            },
+            series: [
+                {
+                    data: arrayData
+                }
+            ],
+            legend: {
+                show: false
+            },
+            tooltip: {
+                enabled: false
+            },
+            xaxis: {
+                categories: arryXdata,
+                axisBorder: {
+                    show: true,
+                    color: borderColor
+                },
+                axisTicks: {
+                    show: false
+                },
+                labels: {
+                    style: {
+                        colors: labelColor,
+                        fontSize: '13px',
+                        fontFamily: 'font-primary'
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    offsetX: -15,
+                    formatter: function (val) {
+                        return parseInt(val / 1) + 'k';
+                    },
+                    style: {
+                        fontSize: '13px',
+                        colors: labelColor,
+                        fontFamily: 'font-primary'
+                    },
+                    min: 0,
+                    max: 60000,
+                    tickAmount: 6
+                }
+            },
+            responsive: [
+                {
+                    breakpoint: 1441,
+                    options: {
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '41%'
+                            }
+                        }
+                    }
+                },
+                {
+                    breakpoint: 590,
+                    options: {
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '61%',
+                                borderRadius: 5
+                            }
+                        },
+                        yaxis: {
+                            labels: {
+                                show: false
+                            }
+                        },
+                        grid: {
+                            padding: {
+                                right: 0,
+                                left: -20
+                            }
+                        },
+                        dataLabels: {
+                            style: {
+                                fontSize: '12px',
+                                fontWeight: '400'
+                            }
+                        }
+                    }
+                }
+            ]
+        };
+        return earningReportBarChartOpt;
+    }
   var chartJson = 'earning-reports-charts.json';
   // Earning Chart JSON data
   var earningReportsChart = $.ajax({
-    url: assetsPath + 'json/' + chartJson, //? Use your own search api instead
-    dataType: 'json',
-    async: false
+      url: '/App/Dashboard/GetNowMonthSellReport', //? Use your own search api instead
+      dataType: 'json',
+      async: false
   }).responseJSON;
 
   // Earning Reports Tabs Orders
   // --------------------------------------------------------------------
   const earningReportsTabsOrdersEl = document.querySelector('#earningReportsTabsOrders'),
-    earningReportsTabsOrdersConfig = EarningReportsBarChart(
+      earningReportsTabsOrdersConfig = EarningReportsUserBarChart(
       earningReportsChart['data'][0]['chart_data'],
-      earningReportsChart['data'][0]['active_option']
+      earningReportsChart['data'][0]['active_option'],
+          earningReportsChart['data'][0]['chart_xData'],
+      "#sum-kol"
     );
   if (typeof earningReportsTabsOrdersEl !== undefined && earningReportsTabsOrdersEl !== null) {
     const earningReportsTabsOrders = new ApexCharts(earningReportsTabsOrdersEl, earningReportsTabsOrdersConfig);
@@ -603,9 +608,11 @@
   // Earning Reports Tabs Sales
   // --------------------------------------------------------------------
   const earningReportsTabsSalesEl = document.querySelector('#earningReportsTabsSales'),
-    earningReportsTabsSalesConfig = EarningReportsBarChart(
+      earningReportsTabsSalesConfig = EarningReportsUserBarChart(
       earningReportsChart['data'][1]['chart_data'],
-      earningReportsChart['data'][1]['active_option']
+      earningReportsChart['data'][1]['active_option'],
+          earningReportsChart['data'][1]['chart_xData'],
+      "#sum-agent"
     );
   if (typeof earningReportsTabsSalesEl !== undefined && earningReportsTabsSalesEl !== null) {
     const earningReportsTabsSales = new ApexCharts(earningReportsTabsSalesEl, earningReportsTabsSalesConfig);
@@ -614,9 +621,12 @@
   // Earning Reports Tabs Profit
   // --------------------------------------------------------------------
   const earningReportsTabsProfitEl = document.querySelector('#earningReportsTabsProfit'),
-    earningReportsTabsProfitConfig = EarningReportsBarChart(
+      earningReportsTabsProfitConfig = EarningReportsUserBarChart(
       earningReportsChart['data'][2]['chart_data'],
-      earningReportsChart['data'][2]['active_option']
+      earningReportsChart['data'][2]['active_option'],
+          earningReportsChart['data'][2]['chart_xData'],
+      "#sum-bot"
+
     );
   if (typeof earningReportsTabsProfitEl !== undefined && earningReportsTabsProfitEl !== null) {
     const earningReportsTabsProfit = new ApexCharts(earningReportsTabsProfitEl, earningReportsTabsProfitConfig);
@@ -624,11 +634,11 @@
   }
   // Earning Reports Tabs Income
   // --------------------------------------------------------------------
-  const earningReportsTabsIncomeEl = document.querySelector('#earningReportsTabsIncome'),
-    earningReportsTabsIncomeConfig = EarningReportsBarChart(
-      earningReportsChart['data'][3]['chart_data'],
-      earningReportsChart['data'][3]['active_option']
-    );
+  //const earningReportsTabsIncomeEl = document.querySelector('#earningReportsTabsIncome'),
+  //  earningReportsTabsIncomeConfig = EarningReportsBarChart(
+  //    earningReportsChart['data'][3]['chart_data'],
+  //    earningReportsChart['data'][3]['active_option']
+  //  );
   if (typeof earningReportsTabsIncomeEl !== undefined && earningReportsTabsIncomeEl !== null) {
     const earningReportsTabsIncome = new ApexCharts(earningReportsTabsIncomeEl, earningReportsTabsIncomeConfig);
     earningReportsTabsIncome.render();
@@ -856,4 +866,7 @@
     const projectStatus = new ApexCharts(projectStatusEl, projectStatusConfig);
     projectStatus.render();
   }
+
+
+
 })();

@@ -1,0 +1,73 @@
+﻿@{ 
+    Layout = null;
+}
+
+
+@model V2boardApi.Areas.App.Data.Dashboard._PerformanceSystemViewModel
+<div class="d-none d-lg-flex vehicles-progress-labels mb-2">
+    <div class="vehicles-progress-label unloading-text" style="width: @Model.Precent_Agent%">نمایندگان</div>
+    <div class="vehicles-progress-label loading-text" style="width: @Model.Precent_bot%">ربات</div>
+
+</div>
+<div class="vehicles-overview-progress progress rounded-4 mb-4" style="height: 46px">
+    <div aria-valuemax="100" aria-valuemin="0" aria-valuenow="@Model.Precent_Agent" class="progress-bar fw-medium text-start bg-primary px-3" role="progressbar" style="width: @Model.Precent_Agent%"> @Model.Precent_Agent%</div>
+    <div aria-valuemax="100" aria-valuemin="0" aria-valuenow="@Model.Precent_bot" class="progress-bar fw-medium text-start text-bg-info px-3" role="progressbar" style="width: @Model.Precent_bot% "> @Model.Precent_bot%</div>
+</div>
+<div class="table-responsive">
+    <table class="table card-table">
+        <tbody class="table-border-bottom-0">
+            <tr>
+                <td class="w-50 ps-0">
+                    <div class="d-flex justify-content-start align-items-center">
+                        <div class="me-2">
+                            <i class="ti ti-users mt-n1"></i>
+                        </div>
+                        <h6 class="mb-0 fw-normal">کاربران فعال</h6>
+                    </div>
+                </td>
+                <td class="text-end pe-0 text-nowrap">
+                    <h6 class="mb-0">@Model.Active_Sub</h6>
+                </td>
+            </tr>
+            <tr>
+                <td class="w-50 ps-0">
+                    <div class="d-flex justify-content-start align-items-center">
+                        <div class="me-2">
+                            <i class="ti ti-user-plus mt-n1"></i>
+                        </div>
+                        <h6 class="mb-0 fw-normal">کاربران جدید</h6>
+                    </div>
+                </td>
+                <td class="text-end pe-0 text-nowrap">
+                    <h6 class="mb-0">@Model.New_Sub</h6>
+                </td>
+            </tr>
+            <tr>
+                <td class="w-50 ps-0">
+                    <div class="d-flex justify-content-start align-items-center">
+                        <div class="me-2">
+                            <i class="ti ti-circle-arrow-down mt-n1"></i>
+                        </div>
+                        <h6 class="mb-0 fw-normal">ترافیک (دانلود)</h6>
+                    </div>
+                </td>
+                <td class="text-end pe-0 text-nowrap">
+                    <h6 class="mb-0">@Model.Traffic_down</h6>
+                </td>
+            </tr>
+            <tr>
+                <td class="w-50 ps-0">
+                    <div class="d-flex justify-content-start align-items-center">
+                        <div class="me-2">
+                            <i class="ti ti-circle-arrow-up mt-n1"></i>
+                        </div>
+                        <h6 class="mb-0 fw-normal">ترافیک (اپلود)</h6>
+                    </div>
+                </td>
+                <td class="text-end pe-0 text-nowrap">
+                    <h6 class="mb-0">@Model.Traffic_up</h6>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

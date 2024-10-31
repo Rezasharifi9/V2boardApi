@@ -336,6 +336,9 @@
     <Compile Include="Areas\App\Data\BotViewModel\UseageViewModel.cs" />
     <Compile Include="Areas\App\Data\CountAccountCreatedFromMajorModel.cs" />
     <Compile Include="Areas\App\Data\DashboardViewModel.cs" />
+    <Compile Include="Areas\App\Data\Dashboard\_PerformanceSystemViewModel.cs" />
+    <Compile Include="Areas\App\Data\Dashboard\_PerformanceSysViewModel.cs" />
+    <Compile Include="Areas\App\Data\Dashboard\_TrafficUseage.cs" />
     <Compile Include="Areas\App\Data\OrdersViewModels\OrderResponseViewModel.cs" />
     <Compile Include="Areas\App\Data\PlanViewModels\PermissionsViewModel.cs" />
     <Compile Include="Areas\App\Data\PlanViewModels\RequestPlanViewModel.cs" />
@@ -1770,6 +1773,7 @@
     <Content Include="Areas\App\Views\Dashboard\_WeeklyDataReport.cshtml" />
     <Content Include="Areas\App\Views\UserNotifications\Index.cshtml" />
     <Content Include="Areas\App\Views\Admin\GetNotifications.cshtml" />
+    <Content Include="Areas\App\Views\Dashboard\_GetPerformanceSystemReport.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />
