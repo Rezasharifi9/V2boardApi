@@ -745,7 +745,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
 
 
-                                    var Plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true).Select(s => s.tbPlans).ToList();
+                                    var Plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.Status == true).Select(s => s.tbPlans).ToList();
                                     if (Plans.Count() >= 1)
                                     {
                                         if (BotSettings.Present_Discount != null)
@@ -2556,7 +2556,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (callbackQuery.Data == "premium")
                                 {
-                                    var plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true).Select(s => s.tbPlans).ToList();
+                                    var plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.Status == true).Select(s => s.tbPlans).ToList();
                                     if (plans.Count > 0)
                                     {
                                         var mess = BotMessages.SendSelectMonth(BotSettings, plans);

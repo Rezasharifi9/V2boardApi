@@ -66,8 +66,8 @@ namespace V2boardApi.Areas.App.Controllers
             DayOfWeek dayOfWeek = persianCalendar.GetDayOfWeek(today);
 
             // محاسبه شروع هفته جاری (شنبه این هفته)
-            int daysToSubtract = (int)dayOfWeek + 1; // تعداد روزهایی که باید از امروز کم کنیم
-            DateTime startOfThisWeek = today.AddDays(-daysToSubtract);
+            int dayOfWeekInPersian = (int)today.DayOfWeek == 6 ? 0 : (int)today.DayOfWeek + 1;
+            DateTime startOfThisWeek = today.AddDays(-dayOfWeekInPersian);
 
             // محاسبه شروع هفته گذشته
             DateTime startOfLastWeek = startOfThisWeek.AddDays(-7); // 7 روز قبل از شروع این هفته
@@ -105,7 +105,10 @@ namespace V2boardApi.Areas.App.Controllers
 
             DayOfWeek startOfWeek = persianCalendar.GetDayOfWeek(startOfThisWeek);
             int daysSinceStartOfWeek = (today.DayOfWeek - startOfWeek + 7) % 7;
-
+            if(daysSinceStartOfWeek == 0)
+            {
+                daysSinceStartOfWeek = 1;
+            }
             wkData.SellAvg = ThisWeekSale.Value / daysSinceStartOfWeek;
 
 
