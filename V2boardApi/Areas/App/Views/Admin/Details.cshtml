@@ -19,7 +19,7 @@
     <link href="../../assets/vendor/css/pages/page-user-view.css" rel="stylesheet" />
 }
 @{
-    var Role = Request.Cookies["Role"];
+    var Role = V2boardApi.Tools.JwtToken.GetUserRole();
 }
 <h4 class="py-3 mb-4">
     <span class="text-muted fw-light">مشاهده کاربر/</span>
@@ -70,7 +70,7 @@
                     </a>
                 }
             </li>
-            @if (Role.Value == "1")
+            @if (Role == "1")
             {
                 <li class="nav-item">
                     @if (ViewBag.Type == "Settings")

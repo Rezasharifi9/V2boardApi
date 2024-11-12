@@ -95,9 +95,9 @@ namespace V2boardApi.Areas.App.Controllers
             ThisWeekSale += db.GetMasterUserSales().Where(s => s.CreateDate >= startOfThisWeek).Sum(s => s.SalePrice);
 
 
-            var OldWeekSale = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= endOfLastWeek && Convert.ToDateTime(s.OrderDate) <= startOfThisWeek).Sum(s => s.SalePrice);
-            OldWeekSale += db.GetUserSales().Where(s => s.CreateDate >= endOfLastWeek && s.CreateDate <= startOfThisWeek).Sum(s => s.SalePrice);
-            OldWeekSale += db.GetMasterUserSales().Where(s => s.CreateDate >= endOfLastWeek && s.CreateDate <= startOfThisWeek).Sum(s => s.SalePrice);
+            var OldWeekSale = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= startOfLastWeek && Convert.ToDateTime(s.OrderDate) <= startOfThisWeek).Sum(s => s.SalePrice);
+            OldWeekSale += db.GetUserSales().Where(s => s.CreateDate >= startOfLastWeek && s.CreateDate <= endOfLastWeek).Sum(s => s.SalePrice);
+            OldWeekSale += db.GetMasterUserSales().Where(s => s.CreateDate >= startOfLastWeek && s.CreateDate <= endOfLastWeek).Sum(s => s.SalePrice);
 
 
             wkData.Sale = (long)ThisWeekSale;
@@ -105,10 +105,9 @@ namespace V2boardApi.Areas.App.Controllers
 
             DayOfWeek startOfWeek = persianCalendar.GetDayOfWeek(startOfThisWeek);
             int daysSinceStartOfWeek = (today.DayOfWeek - startOfWeek + 7) % 7;
-            if(daysSinceStartOfWeek == 0)
-            {
-                daysSinceStartOfWeek = 1;
-            }
+            daysSinceStartOfWeek++;
+
+
             wkData.SellAvg = ThisWeekSale.Value / daysSinceStartOfWeek;
 
 

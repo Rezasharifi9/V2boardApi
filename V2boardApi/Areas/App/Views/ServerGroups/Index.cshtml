@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
 }
 @{
-    var Role = Request.Cookies["Role"].Value;
+    var Role = V2boardApi.Tools.JwtToken.GetUserRole();
 }
 
 <!-- DataTable with Buttons -->

@@ -14,7 +14,7 @@
 
 }
 @{
-    var Role = Request.Cookies["Role"].Value;
+    var Role = V2boardApi.Tools.JwtToken.GetUserRole();
 }
 
 <!-- DataTable with Buttons -->

@@ -322,13 +322,8 @@ namespace V2boardApi.Areas.App.Controllers
                         tbUser.Email = user.userEmail;
                         if (user.userPassword != null)
                         {
-                            if (User.Identity.Name == tbUser.Username)
-                            {
-                                return MessageBox.Warning("هشدار", "شما مجوز تغییر رمز عبور خود را ندارید");
-                            }
                             tbUser.Password = user.userPassword.ToSha256();
                             tbUser.Token = (user.userUsername + user.userPassword).ToSha256();
-
                         }
                         try
                         {
@@ -903,39 +898,26 @@ namespace V2boardApi.Areas.App.Controllers
                         return MessageBox.Warning("هشدار", "حساب کاربری شما غیرفعال شده است");
                     }
                     User.Token = (userUsername + userPassword).ToSha256();
-                    if (Request.Cookies["Role"] != null)
-                    {
-                        Response.Cookies["Role"].Value = User.Role.Value.ToString();
-                    }
-                    else
-                    {
-                        HttpCookie cookie = new HttpCookie("Role");
-                        cookie.Value = User.Role.Value.ToString();
-                        if (userRemember)
-                        {
-                            cookie.Expires = DateTime.Now.AddDays(7);
-                        }
 
-                        Response.Cookies.Add(cookie);
-                    }
+                    var token = JwtToken.GenerateToken(userUsername, User.Role.ToString(), JwtToken.GetSecretKey(),1440);
 
-                    if (Request.Cookies["Token"] != null)
-                    {
-                        Response.Cookies["Token"].Value = User.Token;
-                    }
-                    else
-                    {
-                        HttpCookie Token = new HttpCookie("Token");
 
-                        Token.Value = User.Token;
-                        if (userRemember)
-                        {
-                            Token.Expires = DateTime.Now.AddDays(7);
-                        }
+                    HttpCookie Role = new HttpCookie("Role");
+                    Role.Expires = DateTime.Now.AddDays(1);
+                    Role.Value = User.Role.ToString();
+                    Role.SameSite = SameSiteMode.Strict;
+                    Response.Cookies.Remove("Role");
+                    Response.Cookies.Add(Role);
 
-                        Response.Cookies.Add(Token);
-                    }
 
+                    HttpCookie Token = new HttpCookie("Token");
+                    Token.Expires = DateTime.Now.AddDays(1);
+                    Token.Value = token;
+                    Token.Secure = false;
+                    Token.HttpOnly = true;
+                    Token.SameSite = SameSiteMode.Strict;
+                    Response.Cookies.Remove("Token");
+                    Response.Cookies.Add(Token);
 
                     FormsAuthentication.SetAuthCookie(User.Username, userRemember);
 
@@ -973,8 +955,11 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.Authorize]
         public ActionResult LogOut()
         {
+            
+            Response.Cookies.Remove("Token");
+            Response.Cookies.Remove("Role");
+            
             FormsAuthentication.SignOut();
-            Response.Cookies.Clear();
             logger.Info("خروج موفق");
             return RedirectToAction("Login", "Admin");
         }

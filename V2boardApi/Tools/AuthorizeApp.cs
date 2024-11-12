@@ -9,7 +9,7 @@ using Telegram.Bot.Types;
 
 namespace V2boardApi.Tools
 {
-    public class AuthorizeApp: AuthorizeAttribute
+    public class AuthorizeApp : AuthorizeAttribute
     {
         private static readonly char[] _splitParameter = new char[1] { ',' };
 
@@ -104,12 +104,7 @@ namespace V2boardApi.Tools
                 return false;
             }
 
-            var Role = httpContext.Request.Cookies["Role"];
-            if (Role == null)
-            {
-                httpContext.Response.Redirect("~/App/Admin/Login");
-                return false;
-            }
+
             var Token = httpContext.Request.Cookies["Token"];
             if (Token == null)
             {
@@ -117,29 +112,26 @@ namespace V2boardApi.Tools
                 return false;
             }
 
-            using (var db = new Entities())
+
+            var User = JwtToken.ValidateToken(Token.Value, JwtToken.GetSecretKey());
+            if (User != null)
             {
-                var Use = db.tbUsers.Where(p => p.Username == user.Identity.Name && p.Status == true).FirstOrDefault();
-                if(Use != null)
+                var Role = JwtToken.GetUserRole(User);
+                var RoleView = httpContext.Request.Cookies["Role"];
+                if (RoleView==null)
                 {
-                    if(Token.Value != Use.Token)
-                    {
-                        httpContext.Response.Redirect("~/App/Admin/Login");
-                        return false;
-                    }
-
-                    foreach(var item in _rolesSplit)
-                    {
-                        if (item == httpContext.Request.Cookies["Role"].Value && Use.Role.Value.ToString() == item)
-                        {
-                            return true;
-                        }
-                    }
-                    httpContext.Response.Redirect("~/App/Error/Error401");
+                    httpContext.Response.Redirect("~/App/Admin/Login");
+                    return false;
                 }
+                foreach (var item in _rolesSplit)
+                {
+                    if (item == Role && RoleView.Value == Role)
+                    {
+                        return true;
+                    }
+                }
+                httpContext.Response.Redirect("~/App/Admin/Login");
             }
-
-            
             return false;
         }
 
