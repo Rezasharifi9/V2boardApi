@@ -710,6 +710,21 @@
             });
         }
 
+        function AjaxPost(url) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: url,
+                    type: 'Post',
+                    success: function (response) {
+                        resolve(response);
+                    },
+                    error: function (xhr, status, error) {
+                        reject({ xhr: xhr, status: status, error: error });
+                    }
+                });
+            });
+        }
+
 
         function AjaxFormPost(url, form) {
             return new Promise(function (resolve, reject) {

@@ -18,6 +18,16 @@ $(function () {
                 { data: 'Price' },
                 { data: '' }
             ],
+            initComplete: function (setting, json) {
+
+                //تولتیپ کردن بعد از لود دیتا
+                $('[data-bs-toggle="popover"]').tooltip();
+            },
+            drawCallback: function (settings) {
+                //تولتیپ کردن بعد از تغییر صفحه یا سرچ
+                $('[data-bs-toggle="popover"]').tooltip();
+
+            },
             columnDefs: [
                 {
                     // For Responsive
@@ -65,7 +75,7 @@ $(function () {
                         };
 
                         var $row_output = "<span class='badge " + statusObj[$Traffic].class + "'>" + statusObj[$Traffic].title + "</span>";
-                        
+
                         return $row_output;
                     }
                 },
@@ -76,7 +86,7 @@ $(function () {
                     render: function (data, type, full, meta) {
                         var $Price = full['Price'];
                         // Creates full output for row
-                        var $row_output = "<span>" + $Price + ' ءتء' + "</span>";
+                        var $row_output = "<span>" + $Price + ' ریال' + "</span>";
                         return $row_output;
                     }
                 },
@@ -88,16 +98,7 @@ $(function () {
                     searchable: false,
                     render: function (data, type, full, meta) {
                         return (
-                            '<div class="d-inline-block">' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="text-primary ti ti-dots-vertical"></i></a>' +
-                            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
-                            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
-                            '<div class="dropdown-divider"></div>' +
-                            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
-                            '</ul>' +
-                            '</div>' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'
+                            '<a data-bs-toggle="popover" title="تائید فاکتور" data-id=' + full["Id"] + ' data-id-price=' + full["Price"] + ' class="btn btn-sm btn-icon item-accpet"><i class="text-primary ti ti-checklist"></i></a>'
                         );
                     }
                 }
@@ -140,6 +141,52 @@ $(function () {
         });
         $('div.head-label').html('<h5 class="card-title mb-0">فاکتور ها</h5>');
     }
+
+    $('body').on('click', '.item-accpet', function () {
+
+        //تائید تراکنش
+
+        var factor_id = $(this).attr("data-id");
+        var data_price = $(this).attr("data-id-price");
+
+        Swal.fire({
+            title: 'هشدار',
+            text: "مطمئنی میخای فاکتور به مبلغ " + data_price + " را تائید کنی ؟؟",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+
+                BodyBlockUI();
+
+
+
+                AjaxPost("/App/BotFactors/Accept?factor_id=" + factor_id).then(res => {
+
+                    BodyUnblockUI();
+                    eval(res.data);
+                    if (res.status == "success") {
+
+                        dt_basic.ajax.reload(null, false);
+                    }
+
+
+                });
+
+            }
+        });
+
+
+
+    });
+
 
     // Filter form control to default size
     // ? setTimeout used for multilingual table initialization

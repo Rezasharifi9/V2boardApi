@@ -22,6 +22,17 @@ namespace V2boardBot.Functions
             res.Tel_Step = Step;
             await db.SaveChangesAsync();
         }
+        public static bool SetUserStepWithoutAsync(string UserUniq, string Step, Entities db, string botName, string Data = null)
+        {
+            var res = db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).FirstOrDefault();
+            if (Data != null)
+            {
+                res.Tel_Data += Data;
+            }
+            res.Tel_Step = Step;
+            db.SaveChanges();
+            return true;
+        }
         public static async Task  SetEmptyState(string UserUniq, Entities db, string botName)
         {
             var res = await db.tbTelegramUsers.Where(p => p.Tel_UniqUserID == UserUniq && p.tbUsers.Username == botName).FirstAsync();

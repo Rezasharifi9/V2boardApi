@@ -12,14 +12,14 @@ namespace V2boardApi.Tools
 {
     public static class JwtToken
     {
-        public static string GenerateToken(string username, string role, string secretKey, int expireMinutes = 30)
+        public static string GenerateToken(string user_id, string role, string secretKey, int expireMinutes = 30)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(secretKey);
 
             var claims = new[]
             {
-            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Name, user_id),
             new Claim(ClaimTypes.Role, role) // اضافه کردن نقش کاربر به توکن
              };
 
@@ -69,6 +69,13 @@ namespace V2boardApi.Tools
 
             var principal = ValidateToken(Token, GetSecretKey());
             return principal?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+        }
+        public static string GetUser_ID()
+        {
+            var Token = HttpContext.Current.Request.Cookies["Token"].Value;
+
+            var principal = ValidateToken(Token, GetSecretKey());
+            return principal?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
         }
 
         public static string GetSecretKey()

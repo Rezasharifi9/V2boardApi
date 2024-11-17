@@ -899,7 +899,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     User.Token = (userUsername + userPassword).ToSha256();
 
-                    var token = JwtToken.GenerateToken(userUsername, User.Role.ToString(), JwtToken.GetSecretKey(),1440);
+                    var token = JwtToken.GenerateToken(User.User_ID.ToString(), User.Role.ToString(), JwtToken.GetSecretKey(),1440);
 
 
                     HttpCookie Role = new HttpCookie("Role");
