@@ -1,0 +1,146 @@
+﻿
+@model Dictionary<string, string>
+@{
+    Layout = "~/Areas/api/Views/Shared/_LayoutSubPage.cshtml";
+    ViewBag.Title = "لینوکس";
+}
+
+@section Style{
+    <link href="~/assets/SubPage/Linux/css2.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/assets/SubPage/Linux/index-7a16ca74.css">
+
+}
+
+<div class="max-w-[450px] mx-auto py-4 px-4 bg-white dark:bg-neutral-900 h-full flex-grow w-full">
+    <div class="py-8">
+        <a href="@Model["link"]">
+            <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                     stroke="currentColor" aria-hidden="true" width="20px">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                </svg><span>برگشت</span>
+            </button>
+        </a>
+        <span class="flex text-black dark:text-slate-200 gap-2 items-center font-semibold pt-2">
+            <svg width="25px"
+                 height="61" viewBox="0 0 60 61" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-primary">
+                <g clip-path="url(#clip0_5_499)">
+                    <path d="M54.0321 48.9709C52.2726 48.2503 51.52 47.294 51.5928 45.8672C51.6677 44.2018 50.7228 42.9819 50.2741 42.4999C50.5452 41.4644 51.3374 37.882 50.2749 34.7705C49.1331 31.44 45.6472 26.3533 42.0503 21.3532C40.5779 19.2998 40.5082 17.0678 40.4278 14.4833C40.3506 12.0181 40.2637 9.22389 38.889 6.11764C37.3943 2.73539 34.3951 0.795898 30.6599 0.795898C28.4379 0.795898 26.1571 1.49033 24.402 2.70096C20.8078 5.18144 21.2829 10.5895 21.5973 14.1681C21.6404 14.6582 21.6809 15.121 21.7045 15.5163C21.9138 19.0211 21.7234 20.8683 21.4743 21.4297C21.3132 21.7966 20.52 22.8408 19.6806 23.9464C18.8125 25.0898 17.8283 26.3858 17.0215 27.5934C16.0589 29.0466 15.2819 31.2678 14.5304 33.4158C13.9806 34.9877 13.4612 36.4723 12.9556 37.3595C11.9974 39.0663 12.2358 40.6578 12.4349 41.3933C12.0722 41.6453 11.5481 42.1415 11.1057 43.0767C10.571 44.2177 9.48605 44.8309 7.23004 45.2646C6.19331 45.4767 5.47842 45.9127 5.10465 46.5603C4.56071 47.5028 4.85697 48.687 5.12727 49.4963C5.52662 50.6861 5.27776 51.4392 4.8253 52.8064C4.72104 53.1219 4.60281 53.4792 4.483 53.8732C4.29434 54.4951 4.36241 55.0604 4.68484 55.5536C5.53684 56.8561 8.02303 57.3155 10.5824 57.6176C12.1105 57.799 13.7831 58.4102 15.4007 59.0016C16.9857 59.5807 18.6246 60.1798 20.1144 60.3615C20.3408 60.3901 20.5651 60.4044 20.7813 60.4044C23.0306 60.4044 24.0469 58.9119 24.3691 58.2987C25.177 58.1338 27.9636 57.6058 30.8356 57.535C33.703 57.4532 36.4774 58.0193 37.2633 58.1954C37.5104 58.6683 38.1617 59.7485 39.2 60.3051C39.7707 60.6171 40.5649 60.7959 41.3783 60.7959H41.3785C42.2472 60.7959 43.8999 60.5905 45.2079 59.2144C46.5126 57.8319 49.7723 56.0669 52.1526 54.7781C52.6838 54.4905 53.1807 54.2214 53.6164 53.9785C54.9536 53.2372 55.6832 52.1781 55.6181 51.0727C55.5638 50.1546 54.9561 49.3492 54.0321 48.9709ZM24.4313 48.7047C24.2648 47.5323 22.7566 46.3694 21.0099 45.0231C19.5817 43.922 17.9628 42.6742 17.5169 41.6174C16.5952 39.4373 17.3217 35.604 18.5884 33.6301C19.2144 32.6417 19.7257 31.1429 20.2202 29.6935C20.7541 28.1283 21.3063 26.5101 21.9238 25.8017C22.9017 24.6957 23.8055 22.5438 23.9656 20.8478C24.8814 21.7221 26.3019 22.8314 27.6142 22.8314C27.8163 22.8314 28.0124 22.805 28.1999 22.7521C29.0977 22.4928 30.4183 21.7297 31.6954 20.992C32.7965 20.3558 34.1543 19.5713 34.6652 19.4999C35.5412 20.7577 40.6314 32.0223 41.1515 35.6398C41.563 38.5021 41.1283 40.8683 40.9097 41.795C40.7339 41.771 40.5242 41.7516 40.3038 41.7516C38.886 41.7516 38.5107 42.5255 38.4129 42.9876C38.1615 44.1882 38.135 48.0272 38.1322 48.8898C37.6195 49.5412 35.0269 52.6085 31.3048 53.1599C29.7886 53.3802 28.3728 53.492 27.0969 53.492C26.0062 53.492 25.3102 53.4078 25.0212 53.3639L23.1508 51.2238C23.8883 50.8596 24.6256 50.0912 24.4313 48.7047ZM26.8047 13.4155C26.7463 13.4406 26.6889 13.4676 26.6324 13.4963C26.6267 13.3696 26.6135 13.2412 26.5932 13.1123C26.389 11.9369 25.6096 11.0837 24.7403 11.0837C24.676 11.0837 24.6113 11.0886 24.5402 11.0994C24.0231 11.1856 23.6174 11.5741 23.3951 12.125C23.5901 10.9163 24.2749 10.0214 25.0873 10.0214C26.0414 10.0214 26.8474 11.3072 26.8474 12.829C26.8474 13.0208 26.8334 13.2117 26.8047 13.4155ZM34.2184 14.3218C34.3058 14.0436 34.353 13.7426 34.353 13.4302C34.353 12.0504 33.4776 10.9694 32.36 10.9694C31.2678 10.9694 30.3792 12.0732 30.3792 13.4302C30.3792 13.5227 30.3837 13.6153 30.3924 13.7078C30.3345 13.6856 30.2781 13.6639 30.223 13.6431C30.0973 13.2624 30.0337 12.8652 30.0337 12.4598C30.0337 10.8099 31.0882 9.46743 32.3846 9.46743C33.6808 9.46743 34.7354 10.8099 34.7354 12.4598C34.7354 13.1461 34.546 13.8012 34.2184 14.3218ZM33.2625 17.5331C33.2438 17.6165 33.2041 17.6535 32.7646 17.882C32.5427 17.9975 32.2665 18.1413 31.9209 18.3518L31.6899 18.4917C30.7618 19.0543 28.5886 20.3722 27.9986 20.4495C27.5979 20.5034 27.35 20.348 26.7927 19.9693C26.667 19.8837 26.5332 19.7928 26.3906 19.7013C25.386 19.0421 24.7397 18.316 24.6667 18.0321C24.9943 17.779 25.8062 17.1453 26.2218 16.7702C27.0656 15.9856 27.9146 15.4584 28.3348 15.4584C28.3571 15.4584 28.3771 15.46 28.398 15.4639C28.8918 15.5511 30.1097 16.0372 30.9992 16.3921C31.4104 16.5561 31.7655 16.6978 32.0153 16.7875C32.8024 17.0578 33.2128 17.4036 33.2625 17.5331ZM40.3341 54.1962C40.7781 52.1934 41.2896 49.4688 41.2068 47.8626C41.1877 47.4976 41.1554 47.1005 41.1242 46.7165C41.0657 45.9984 40.979 44.9312 41.0685 44.6147C41.0862 44.6064 41.1059 44.5993 41.1277 44.5932C41.1314 45.5115 41.3309 47.3432 42.7957 47.982C43.2322 48.1724 43.7311 48.2688 44.2784 48.2688C45.7458 48.2688 47.3738 47.549 48.0407 46.8821C48.4334 46.4894 48.7637 46.009 48.995 45.6286C49.0456 45.7767 49.0767 45.9703 49.0603 46.2197C48.9732 47.5742 49.6314 49.371 50.8842 50.0332L51.0665 50.129C51.5127 50.3631 52.6977 50.9853 52.7168 51.2804C52.7168 51.2804 52.7068 51.3152 52.6407 51.3766C52.3438 51.6479 51.299 52.1814 50.2887 52.6974C48.4963 53.6126 46.4648 54.6499 45.5524 55.6095C44.2678 56.9614 42.8148 57.8694 41.9374 57.8694C41.8318 57.8694 41.7356 57.8561 41.65 57.8289C40.6971 57.5319 39.9127 56.157 40.3341 54.1962ZM7.85306 49.0868C7.75588 48.6319 7.67915 48.2729 7.76158 47.9251C7.82138 47.6674 9.09359 47.3912 9.63694 47.2734C10.4008 47.1075 11.1908 46.9362 11.7074 46.6226C12.406 46.1995 12.7843 45.4191 13.1179 44.7305C13.3595 44.2326 13.609 43.7178 13.9058 43.5488C13.9225 43.539 13.9481 43.5276 13.9969 43.5276C14.553 43.5276 15.72 44.6967 16.3924 45.7431C16.5629 46.0069 16.8789 46.5355 17.2444 47.1475C18.3376 48.9766 19.8344 51.4819 20.6162 52.3215C21.3207 53.0763 22.4611 54.5275 22.1806 55.7722C21.9752 56.7379 20.8818 57.5232 20.6239 57.6969C20.5303 57.7182 20.4144 57.729 20.2781 57.729C18.7818 57.729 15.8199 56.4841 14.2286 55.8153L13.9932 55.7163C13.1046 55.3437 11.6539 55.109 10.2511 54.882C9.1349 54.7012 7.60637 54.4539 7.35299 54.2305C7.14761 54.0001 7.38584 53.2512 7.59594 52.5904C7.74722 52.1155 7.90342 51.6245 7.98899 51.1105C8.11037 50.2905 7.96755 49.623 7.85306 49.0868Z"
+                          fill="currentColor"></path>
+                </g>
+                <defs>
+                    <clippath id="clip0_5_499">
+                        <rect width="60" height="60" fill="white" transform="translate(0 0.795898)"></rect>
+                    </clippath>
+                </defs>
+            </svg><span class="text-[18px]">راهنما راه‌اندازی دستگاه های لینوکس</span>
+        </span>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای راه‌اندازی برای روی دستگاه‌های لینوکس لطفا
+            مرحله زیر را دقیقا مطابق با توضیحات انجام دهید. در صورت بروز هر نوع مشکل، با پشتیبانی در تماس قرار بگیرید.
+        </p>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">1</span>
+            </div> نصب آخرین ورژن نرم افزار Clash Meta
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای دانلود آخرین ورژن نرم افزار از لینک زیر
+            استفاده کنید و سپس نرم‌افزار را نصب کنید.
+        </p>
+        <div class="flex justify-center">
+            <a href="https://github.com/clash-verge-rev/clash-verge-rev/releases/download/v1.7.5/clash-verge_1.7.5_amd64.deb"
+               target="_blank" class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                         stroke="currentColor" aria-hidden="true" width="20px">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3">
+                        </path>
+                    </svg><span>دانلود نرم افزار Clash Meta</span>
+                </button>
+            </a>
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">2</span>
+            </div> وارد کردن آدرس کانکشن هوشمند
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            بعد از نصب نرم افزار Clash Meta با استفاده از
+            دکمه زیر، لینک را وارد نرم‌افزار کنید. این فرآیند به صورت اتوماتیک انجام ‌می‌شود. سپس برای ادامه
+            مراحل به این صفحه برگردید.
+        </p>
+        <div class="flex justify-center">
+            <a href="clash://install-config?url=@Model["link"];name=اشتراک من"
+               target="_blank" class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                         stroke="currentColor" aria-hidden="true" width="20px">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                    </svg><span>نصب کانکشن هوشمند</span>
+                </button>
+            </a>
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">3</span>
+            </div> فعال سازی کانکشن
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            از منو پروفایل، اشتراک اضافه شده را انتخاب کنید.
+        </p>
+        <div class="flex items-center flex-col">
+            <img src="~/assets/SubPage/Linux/linux1.jpg"
+                 class="mb-2 w-fit rounded-md">
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">4</span>
+            </div> یک کشور را انتخاب کنید
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            از بخش Proxies، حالت Global را فعال کنید و سپس
+            یکی از کشور ها را انتخاب کنید. (به عنوان مثال: انگلیس)
+        </p>
+        <div class="flex items-center flex-col mb-2">
+            <img src="~/assets/SubPage/Linux/linux2.jpg"
+                 class="mb-2 w-fit rounded-md">
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">6</span>
+            </div> روشن کردن VPN
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            از تسک بار، روی آیکون Clash Meta راست کلیک کنید و
+            گزینه TUN Mode را فعال کنید. با فعال بودن این گزینه VPN روشن و با کلیک کردن مجدد روی این گزینه VPN خاموش
+            میشود.
+        </p>
+        <div class="flex items-center flex-col mb-2">
+            <img src="~/assets/SubPage/Linux/linux3.jpg"
+                 class="mb-2 w-fit rounded-md">
+        </div>
+
+        <div class="py-4"></div>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            در صورت بروز هر نوع مشکلی، به پشتیبانی پیام دهید
+        </p>
+        <div class="flex justify-center">
+            <a href="@Model["link"]"
+               class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <span>
+                        برگشت
+                        به صفحه اصلی
+                    </span>
+                </button>
+            </a>
+        </div>
+    </div>
+</div>

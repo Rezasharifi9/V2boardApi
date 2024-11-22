@@ -371,7 +371,7 @@ public class TimerService
 
 
 
-                                            await bot.Client.SendTextMessageAsync(Link.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت تمدید شد از بخش سرویس ها جزئیات اکانت را می توانید مشاهده کنید");
+                                            await bot.Client.SendTextMessageAsync(Link.tbTelegramUsers.Tel_UniqUserID, "✅ اشتراک شما با موفقیت تمدید شد از بخش مدیریت اشتراک ها جزئیات اشتراک را می توانید مشاهده کنید");
                                             var InlineKeyboardMarkup = Keyboards.GetHomeButton();
                                             Link.tbL_Warning = false;
                                             Link.tb_AutoRenew = false;

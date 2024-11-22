@@ -34,7 +34,7 @@ namespace V2boardBot.Models
             using (Entities db = new Entities())
             {
                 
-                var learn = db.tbConnectionHelp.Where(s => s.ch_Type.Contains("buy")).FirstOrDefault();
+                var learn = db.tbConnectionHelp.Where(s => s.ch_Type.Contains("buy_sub")).FirstOrDefault();
                 if (learn != null)
                 {
                     keyboard = new ReplyKeyboardMarkup(new[]

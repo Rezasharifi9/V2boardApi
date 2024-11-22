@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -92,6 +93,10 @@ namespace V2boardApi.Tools
         {
             return dt.ToString("yyyy-MM-dd", CultureInfo.GetCultureInfo("fa-IR")); ;
         }
+        public static string ConvertDateTimeToShamsi4(this DateTime dt)
+        {
+            return dt.ToString("yyyy/MM/dd", CultureInfo.GetCultureInfo("fa-IR")); ;
+        }
         public static string GetMonthName(DateTime date)
         {
             PersianCalendar pc = new PersianCalendar();
@@ -153,7 +158,7 @@ namespace V2boardApi.Tools
 
         public static double ConvertByteToGB(double Byte)
         {
-            
+
             var result = ((Byte / 1024) / 1024) / 1024;
 
             return result;
@@ -411,17 +416,13 @@ namespace V2boardApi.Tools
             }
         }
 
-        public static bool ContainsPersianText(string input)
+        public static bool IsEnglishText(string input)
         {
-            foreach (char c in input)
-            {
-                // محدوده کد Unicode برای حروف فارسی
-                if (c >= 0x0600 && c <= 0x06FF)
-                {
-                    return true;
-                }
-            }
-            return false;
+            // الگوی منظم که فقط حروف انگلیسی، اعداد، فاصله و برخی کاراکترهای خاص را می‌پذیرد و از پذیرش @ جلوگیری می‌کند
+            string pattern = @"^[a-zA-Z0-9\s.,?!]*$";
+
+            // بررسی اینکه آیا ورودی مطابق با الگو هست یا نه
+            return Regex.IsMatch(input, pattern);
         }
 
         public static bool IsPersian(string input)

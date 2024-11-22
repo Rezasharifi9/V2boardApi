@@ -1,0 +1,138 @@
+﻿@model Dictionary<string,string>
+@{
+    Layout = "~/Areas/api/Views/Shared/_LayoutSubPage.cshtml";
+    ViewBag.Title = "اندروید";
+}
+
+@section Style{
+    <link href="~/assets/SubPage/Android/css2.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/assets/SubPage/Android/index-7a16ca74.css">
+
+}
+<div class="max-w-[450px] mx-auto py-4 px-4 bg-white dark:bg-neutral-900 h-full flex-grow w-full">
+    <div class="py-8">
+        <a href="@Model["link"]">
+            <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                     stroke="currentColor" aria-hidden="true" width="20px">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                </svg><span>برگشت</span>
+            </button>
+        </a>
+        <span class="flex text-black dark:text-slate-200 gap-2 items-center font-semibold pt-2">
+            <svg width="25px"
+                 height="60" viewBox="0 0 48 60" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-primary">
+                <path d="M12 0.462646C11.6587 0.462646 11.3173 0.593271 11.0573 0.853271C10.5373 1.37327 10.5373 2.21869 11.0573 2.73869L14.5521 6.23348C10.5843 9.1451 8 13.83 8 19.1293H40C40 13.83 37.4157 9.1451 33.4479 6.23348L36.9427 2.73869C37.4627 2.21602 37.4627 1.37594 36.9427 0.853271C36.4227 0.333271 35.5773 0.333271 35.0573 0.853271L31.1042 4.8064C28.9616 3.74147 26.5552 3.12931 24 3.12931C21.4448 3.12931 19.0384 3.74147 16.8958 4.8064L12.9427 0.853271C12.6827 0.593271 12.3413 0.462646 12 0.462646ZM16 11.1293H18.6667V13.796H16V11.1293ZM29.3333 11.1293H32V13.796H29.3333V11.1293ZM2.66667 21.796C1.19467 21.796 0 22.9906 0 24.4626V40.4626C0 41.9346 1.19467 43.1293 2.66667 43.1293C4.13867 43.1293 5.33333 41.9346 5.33333 40.4626V24.4626C5.33333 22.9906 4.13867 21.796 2.66667 21.796ZM8 21.796V43.1293C8 44.6013 9.19467 45.796 10.6667 45.796H13.3333V55.1293C13.3333 57.3373 15.1253 59.1293 17.3333 59.1293C19.5413 59.1293 21.3333 57.3373 21.3333 55.1293V45.796H26.6667V55.1293C26.6667 57.3373 28.4587 59.1293 30.6667 59.1293C32.8747 59.1293 34.6667 57.3373 34.6667 55.1293V45.796H37.3333C38.8053 45.796 40 44.6013 40 43.1293V21.796H8ZM45.3333 21.796C43.8613 21.796 42.6667 22.9906 42.6667 24.4626V40.4626C42.6667 41.9346 43.8613 43.1293 45.3333 43.1293C46.8053 43.1293 48 41.9346 48 40.4626V24.4626C48 22.9906 46.8053 21.796 45.3333 21.796Z"
+                      fill="currentColor"></path>
+            </svg><span class="text-[18px]">راهنما راه‌اندازی دستگاه های اندروید</span>
+        </span>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای راه‌اندازی برای روی دستگاه‌های اندرویدی لطفا
+            مرحله زیر را دقیقا مطابق با توضیحات انجام دهید. در صورت بروز هر نوع مشکل، با پشتیبانی در تماس قرار بگیرید.
+        </p>
+        <div class="py-4"></div>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            🔴 توجه: ساعت موبایل شما نباید به صورت دستی تنظیم
+            شده باشد. حتما تنظیمات ساعت دستگاه را روی حالت اتوماتیک قرار دهید. با قرار دادن ساعت موبایل روی حالت اتوماتیک
+            ممکن است ساعت یک ساعت جلوتر نمایش داده
+            شود. این کار برای استفاده از فیلترشکن الزامی است.
+        </p>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">1</span>
+            </div> نصب آخرین ورژن نرم افزار V2rayNG
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای دانلود آخرین ورژن نرم افزار از لینک زیر
+            استفاده کنید و سپس نرم‌افزار را نصب کنید.
+        </p>
+        <div class="flex justify-center">
+            <a href="https://github.com/2dust/v2rayNG/releases/download/1.9.16/v2rayNG_1.9.16_universal.apk" target="_blank"
+               class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                         stroke="currentColor" aria-hidden="true" width="20px">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3">
+                        </path>
+                    </svg><span>دانلود نرم افزار V2rayNG</span>
+                </button>
+            </a>
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">2</span>
+            </div> اضافه کردن لینک اشتراک
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            بعد از نصب نرم افزار V2rayNG با استفاده از دکمه
+            زیر، لینک اشتراک را وارد نرم‌افزار کنید. این فرآیند به صورت اتوماتیک انجام ‌می‌شود. سپس برای ادامه مراحل به
+            این صفحه برگردید.
+        </p>
+        <div class="flex justify-center">
+            <a href="v2rayng://install-config?url=@Model["link"]"
+               target="_blank" class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                         stroke="currentColor" aria-hidden="true" width="20px">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                    </svg><span>افزودن لینک</span>
+                </button>
+            </a>
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">3</span>
+            </div> دریافت لیست سرور
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای دریافت سرور‌ها، منو (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                             aria-hidden="true" width="24px" class="inline">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z">
+                </path>
+            </svg>) را که در نوار بالایی نرم‌افزار است باز کنید و گزینه “<strong>بروزرسانی اشتراک</strong>” یا
+            <strong>Update Subscription</strong> را انتخاب
+            کنید.
+        </p>
+        <div class="flex items-center flex-col">
+            <img src="~/assets/SubPage/Android/v2rayng-menu.png"
+                 class="mb-2 w-fit rounded-md"><img src="~/assets/SubPage/Android/v2rayng-update.png" class="w-fit">
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">4</span>
+            </div> انتخاب سرور و اتصال
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            بعد از بروزرسانی اشتراک، یکی از سرور ها را
+            انتخاب کنید و دکمه که در پایین صفحه است را انتخاب کنید تا نرم افزار
+            فعال شود.
+        </p>
+        <div class="flex items-center flex-col mb-2">
+            <img src="~/assets/SubPage/Android/v2rayng-run.jpg"
+                 class="mb-2 w-fit rounded-md">
+        </div>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">بعد از فعال شدن این دکمه به رنگ نارنجی درمی‌آید.</p>
+
+        <div class="py-4"></div>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            در صورت بروز هر نوع مشکلی، به پشتیبانی پیام دهید
+        </p>
+        <div class="flex justify-center">
+            <a href="@Model["link"]"
+               class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <span>
+                        برگشت
+                        به صفحه اصلی
+                    </span>
+                </button>
+            </a>
+        </div>
+    </div>
+</div>

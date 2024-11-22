@@ -432,8 +432,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\audio\Water_Lily.mp3" />
-    <Content Include="assets\css\demo.css" />
-    <Content Include="assets\css\rtl.css" />
     <Content Include="assets\fonts\farsi-fonts\font.css" />
     <Content Include="assets\img\avatars\10.png" />
     <Content Include="assets\img\avatars\11.png" />
@@ -923,6 +921,27 @@
     <Content Include="assets\libs\jalali-datepicker\jalalidatepicker.js" />
     <Content Include="assets\libs\jdate\jdate.js" />
     <Content Include="assets\libs\qrcode\qrcode.min.js" />
+    <Content Include="assets\SubPage\Android\css2.css" />
+    <Content Include="assets\SubPage\Android\index-7a16ca74.css" />
+    <Content Include="assets\SubPage\Android\v2rayng-menu.png" />
+    <Content Include="assets\SubPage\Android\v2rayng-run.jpg" />
+    <Content Include="assets\SubPage\Android\v2rayng-update.png" />
+    <Content Include="assets\SubPage\Home\css2.css" />
+    <Content Include="assets\SubPage\Home\index-7a16ca74.css" />
+    <Content Include="assets\SubPage\Home\index-f07f14aa.js" />
+    <Content Include="assets\SubPage\IOS\css2.css" />
+    <Content Include="assets\SubPage\IOS\index-7a16ca74.css" />
+    <Content Include="assets\SubPage\IOS\streisand-turn-on.png" />
+    <Content Include="assets\SubPage\Linux\css2.css" />
+    <Content Include="assets\SubPage\Linux\index-7a16ca74.css" />
+    <Content Include="assets\SubPage\Linux\linux1.jpg" />
+    <Content Include="assets\SubPage\Linux\linux2.jpg" />
+    <Content Include="assets\SubPage\Linux\linux3.jpg" />
+    <Content Include="assets\SubPage\Windows\css2.css" />
+    <Content Include="assets\SubPage\Windows\index-7a16ca74.css" />
+    <Content Include="assets\SubPage\Windows\Win1.png" />
+    <Content Include="assets\SubPage\Windows\Win2.png" />
+    <Content Include="assets\SubPage\Windows\Win3.png" />
     <Content Include="assets\svg\flags\au.svg" />
     <Content Include="assets\svg\flags\br.svg" />
     <Content Include="assets\svg\flags\cn.svg" />
@@ -1792,7 +1811,6 @@
     <Content Include="Areas\App\Views\Error\Error401.cshtml" />
     <Content Include="Areas\App\Views\Error\Error500.cshtml" />
     <Content Include="Areas\api\Views\Client\subscribe.cshtml" />
-    <Content Include="Areas\api\Views\Client\UpdateAccount.cshtml" />
     <Content Include="Areas\api\Views\web.config" />
     <Content Include="Areas\App\Views\Admin\_GetSetting.cshtml" />
     <Content Include="Areas\App\Views\ServerGroups\Index.cshtml" />
@@ -1802,6 +1820,11 @@
     <Content Include="Areas\App\Views\UserNotifications\Index.cshtml" />
     <Content Include="Areas\App\Views\Admin\GetNotifications.cshtml" />
     <Content Include="Areas\App\Views\Dashboard\_GetPerformanceSystemReport.cshtml" />
+    <Content Include="Areas\api\Views\Shared\_LayoutSubPage.cshtml" />
+    <Content Include="Areas\api\Views\Client\android.cshtml" />
+    <Content Include="Areas\api\Views\Client\ios.cshtml" />
+    <Content Include="Areas\api\Views\Client\windows.cshtml" />
+    <Content Include="Areas\api\Views\Client\linux.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />
@@ -1911,7 +1934,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50997</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:4480/</IISUrl>
+          <IISUrl>http://localhost:4480</IISUrl>
           <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
           <IISAppRootUrl>http://localhost:4480/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>

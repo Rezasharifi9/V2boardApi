@@ -1,0 +1,128 @@
+﻿@model Dictionary<string, string>
+@{
+    Layout = "~/Areas/api/Views/Shared/_LayoutSubPage.cshtml";
+    ViewBag.Title = "ویندوز";
+}
+
+@section Style{
+    <link href="~/assets/SubPage/IOS/css2.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/assets/SubPage/IOS/index-7a16ca74.css">
+
+}
+
+<div class="max-w-[450px] mx-auto py-4 px-4 bg-white dark:bg-neutral-900 h-full flex-grow w-full">
+    <div class="py-8">
+        <a href="@Model["link"]">
+            <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                     stroke="currentColor" aria-hidden="true" width="20px">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                </svg><span>برگشت</span>
+            </button>
+        </a>
+        <span class="flex text-black dark:text-slate-200 gap-2 items-center font-semibold pt-2">
+            <svg width="25px"
+                 height="52" viewBox="0 0 53 52" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-primary">
+                <path d="M20.2203 5.26433L1.9203 8.00933C1.3225 8.09961 0.880859 8.61201 0.880859 9.21591V23.8559C0.880859 24.5306 1.42742 25.0759 2.10086 25.0759H20.4009C21.0743 25.0759 21.6209 24.5306 21.6209 23.8559V6.47091C21.6209 6.11589 21.4659 5.77917 21.1963 5.54615C20.9279 5.31557 20.5704 5.21553 20.2203 5.26433ZM51.6963 0.971148C51.4279 0.740568 51.0717 0.640528 50.7191 0.689328L25.0991 4.53233C24.5025 4.62261 24.0609 5.13501 24.0609 5.73891V23.8559C24.0609 24.5306 24.6074 25.0759 25.2809 25.0759H50.9009C51.5743 25.0759 52.1209 24.5306 52.1209 23.8559V1.89591C52.1209 1.54089 51.9659 1.20417 51.6963 0.971148ZM20.4009 27.5159H2.10086C1.42742 27.5159 0.880859 28.0612 0.880859 28.7359V43.3759C0.880859 43.9798 1.3225 44.4922 1.9203 44.5825L20.2203 47.3275C20.2813 47.336 20.3411 47.3409 20.4009 47.3409C20.6912 47.3409 20.9743 47.2372 21.1963 47.0457C21.4659 46.8126 21.6209 46.4759 21.6209 46.1209V28.7359C21.6209 28.0612 21.0743 27.5159 20.4009 27.5159ZM50.9009 27.5159H25.2809C24.6074 27.5159 24.0609 28.0612 24.0609 28.7359V46.8529C24.0609 47.4568 24.5025 47.9692 25.1003 48.0595L50.7203 51.9025C50.7801 51.911 50.8411 51.9159 50.9009 51.9159C51.1912 51.9159 51.4743 51.8122 51.6963 51.6207C51.9659 51.3876 52.1209 51.0509 52.1209 50.6959V28.7359C52.1209 28.0612 51.5743 27.5159 50.9009 27.5159Z"
+                      fill="currentColor"></path>
+            </svg><span class="text-[18px]">راهنما راه‌اندازی دستگاه های ویندوز</span>
+        </span>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای راه‌اندازی برای روی دستگاه‌های ویندوز لطفا
+            مرحله زیر را دقیقا مطابق با توضیحات انجام دهید. در صورت بروز هر نوع مشکل، با پشتیبانی در تماس قرار بگیرید.
+        </p>
+        <div class="py-4"></div>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            🔴 توجه: ساعت دستگاه شما نباید به صورت دستی تنظیم
+            شده باشد. حتما تنظیمات ساعت دستگاه را روی حالت اتوماتیک قرار دهید. با قرار دادن ساعت دستگاه روی حالت اتوماتیک
+            ممکن است ساعت یک ساعت جلوتر نمایش داده
+            شود. این کار برای استفاده از فیلترشکن الزامی است.
+        </p>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">1</span>
+            </div> نصب آخرین ورژن نرم افزار Hiddify
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای دانلود آخرین ورژن نرم افزار از لینک زیر
+            استفاده کنید و سپس نرم‌افزار را نصب کنید.
+        </p>
+        <div class="flex justify-center">
+            <a href="https://github.com/hiddify/hiddify-app/releases/download/v2.0.5/Hiddify-Windows-Setup-x64.exe"
+               target="_blank" class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                         stroke="currentColor" aria-hidden="true" width="20px">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3">
+                        </path>
+                    </svg><span>دانلود نرم افزار Hiddify</span>
+                </button>
+            </a>
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">2</span>
+            </div> افزودن لینک
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            بعد از نصب نرم افزار Hiddify با استفاده از
+            دکمه زیر، لینک را وارد نرم‌افزار کنید. این فرآیند به صورت اتوماتیک انجام ‌می‌شود. سپس برای ادامه
+            مراحل به این صفحه برگردید.
+        </p>
+        <div class="flex justify-center">
+            <a href="Hiddify://install-config?url=@Model["link"]"
+               target="_blank" class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                         stroke="currentColor" aria-hidden="true" width="20px">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                    </svg><span>اضافه کردن لینک</span>
+                </button>
+            </a>
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">3</span>
+            </div> تنظیم Service Mode
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            وارد بخش Config Options بشوید و Service Mode را روی VPN (Experimental) بگذارید
+        </p>
+        <div class="flex items-center flex-col">
+            <img src="~/assets/SubPage/Windows/Win1.png"
+                 class="mb-2 w-fit rounded-md">
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">4</span>
+            </div> روشن کردن VPN
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            از بخش سمت چپ وارد Home شوید و VPN را روشن کنید و بهره ببرید
+        </p>
+        <div class="flex items-center flex-col mb-2">
+            <img src="~/assets/SubPage/Windows/Win3.png"
+                 class="mb-2 w-fit rounded-md">
+        </div>
+        <div class="py-4"></div>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            در صورت بروز هر نوع مشکلی، به پشتیبانی پیام دهید
+        </p>
+        <div class="flex justify-center">
+            <a href="@Model["link"]"
+               class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <span>
+                        برگشت
+                        به صفحه اصلی
+                    </span>
+                </button>
+            </a>
+        </div>
+    </div>
+</div>

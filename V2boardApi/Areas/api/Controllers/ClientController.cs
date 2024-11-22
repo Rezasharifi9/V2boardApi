@@ -291,7 +291,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     getUserData.IsOnline = true;
                                 }
                                 getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
-                                getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi(ex);
+                                getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi4(ex);
                                 getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
 
                                 if (ex <= DateTime.Now)
@@ -304,6 +304,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 }
 
                             }
+                            
                             if (getUserData.IsBanned)
                             {
                                 getUserData.IsActive = 4;
@@ -361,6 +362,31 @@ namespace V2boardApi.Areas.api.Controllers
                 return HttpNotFound();
             }
 
+        }
+
+        public ActionResult android(string token)
+        {
+            Dictionary<string, string> key = new Dictionary<string, string>();
+            key.Add("link", token);
+            return View(key);
+        }
+        public ActionResult ios(string token)
+        {
+            Dictionary<string, string> key = new Dictionary<string, string>();
+            key.Add("link", token);
+            return View(key);
+        }
+        public ActionResult windows(string token)
+        {
+            Dictionary<string, string> key = new Dictionary<string, string>();
+            key.Add("link", token);
+            return View(key);
+        }
+        public ActionResult linux(string token)
+        {
+            Dictionary<string, string> key = new Dictionary<string, string>();
+            key.Add("link", token);
+            return View(key);
         }
     }
 }

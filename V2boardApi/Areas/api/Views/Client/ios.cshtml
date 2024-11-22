@@ -1,0 +1,114 @@
+﻿@model Dictionary<string, string>
+@{
+    Layout = "~/Areas/api/Views/Shared/_LayoutSubPage.cshtml";
+    ViewBag.Title = "آیفون";
+}
+
+@section Style{
+    <link href="~/assets/SubPage/IOS/css2.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/assets/SubPage/IOS/index-7a16ca74.css">
+
+}
+
+<div class="max-w-[450px] mx-auto py-4 px-4 bg-white dark:bg-neutral-900 h-full flex-grow w-full">
+    <div class="py-8">
+        <a href="@Model["link"]">
+            <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                     stroke="currentColor" aria-hidden="true" width="20px">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                </svg><span>برگشت</span>
+            </button>
+        </a>
+        <span class="flex text-black dark:text-slate-200 gap-2 items-center font-semibold pt-2">
+            <svg width="25px"
+                 height="65" viewBox="0 0 64 65" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-primary">
+                <path d="M56.9951 45.2759C55.6151 48.3409 54.9501 49.7109 53.1751 52.4159C50.6901 56.1959 47.1851 60.9159 42.8551 60.9459C39.0001 60.9809 38.0051 58.4309 32.7701 58.4759C27.5401 58.5009 26.4501 60.9959 22.5901 60.9559C18.2551 60.9159 14.9401 56.6659 12.4551 52.8909C5.50505 42.3059 4.77005 29.8959 9.06505 23.2959C12.1051 18.6159 16.9101 15.8659 21.4251 15.8659C26.0251 15.8659 28.9151 18.3909 32.7151 18.3909C36.4051 18.3909 38.6501 15.8609 43.9701 15.8609C47.9901 15.8609 52.2401 18.0509 55.2801 21.8309C45.3401 27.2809 46.9551 41.4759 56.9951 45.2759ZM39.9301 11.6359C41.8651 9.15093 43.3351 5.64593 42.8001 2.07593C39.6451 2.29093 35.9551 4.30593 33.8001 6.91593C31.8451 9.29593 30.2251 12.8259 30.8551 16.2409C34.3001 16.3509 37.8651 14.2959 39.9301 11.6359Z"
+                      fill="currentColor"></path>
+            </svg><span class="text-[18px]">راهنما راه‌اندازی دستگاه های اپل (آیفون / مک)</span>
+        </span>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای راه‌اندازی برای روی دستگاه‌های آیفون لطفا
+            مرحله زیر را دقیقا مطابق با توضیحات انجام دهید. در صورت بروز هر نوع مشکل، با پشتیبانی در تماس قرار بگیرید.
+        </p>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">1</span>
+            </div> نصب آخرین ورژن نرم افزار Streisand
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            برای دانلود آخرین ورژن نرم افزار از لینک زیر
+            استفاده کنید و سپس نرم‌افزار را نصب کنید.
+        </p>
+        <div class="flex justify-center">
+            <a href="https://apps.apple.com/us/app/streisand/id6450534064" target="_blank"
+               class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                         stroke="currentColor" aria-hidden="true" width="20px">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3">
+                        </path>
+                    </svg><span>دانلود نرم افزار Streisand</span>
+                </button>
+            </a>
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">2</span>
+            </div> اضافه کردن لینک اشتراک
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            بعد از نصب نرم افزار Streisand با استفاده از دکمه
+            زیر، لینک را وارد نرم‌افزار کنید. این فرآیند به صورت اتوماتیک انجام ‌می‌شود. بعد از انجام این مرحله،
+            تمام سرور ها به صورت
+            اتوماتیک به نرم‌افزار اضافه خواهند شد.
+        </p>
+        <div class="flex justify-center">
+            <a href="streisand://import/@Model["link"]#mySub"
+               target="_blank" class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2px"
+                         stroke="currentColor" aria-hidden="true" width="20px">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                    </svg><span>افزودن لینک</span>
+                </button>
+            </a>
+        </div>
+        <div class="py-4"></div>
+        <h1 class="text-primary dark:text-primary-dark py-2 font-semibold">
+            <div class="bg dark:bg-primary border-4 border-[#f9a29f] p-1 border-solid text-slate-900 light:text-slate-900 rounded-full aspect-square w-7 h-7 inline-flex justify-center items-center ml-1">
+                <span class="pt-1">3</span>
+            </div> انتخاب سرور و اتصال
+        </h1>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            در این مرحله، یکی از سرور ها را انتخاب کنید و دکمه روشن شدن را که در بالای صفحه است را انتخاب کنید تا نرم افزار
+            فعال شود. در سمت چپ کانفیگی که انتخاب شده یک
+            نقطه زرد نمایش داده می‌شود.
+        </p>
+        <div class="flex items-center flex-col mb-2">
+            <img src="~/assets/SubPage/IOS/streisand-turn-on.png"
+                 class="mb-2 w-fit rounded-md">
+        </div>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">بعد از فعال شدن این دکمه به رنگ سبز درمی‌آید.</p>
+
+        <div class="py-4"></div>
+        <p class="pb-4 leading-relaxed dark:text-slate-200 text-black">
+            در صورت بروز هر نوع مشکلی، به پشتیبانی پیام دهید
+            
+        </p>
+        <div class="flex justify-center">
+            <a href="@Model["link"]"
+               class="inline-block">
+                <button class="border-2 border-primary dark:border-primary-dark border-solid text-sm rounded-md font-semibold flex gap-2 mx-auto bg-transparent text-primary dark:text-primary-dark px-5 py-2">
+                    <span>
+                        برگشت
+                        به صفحه اصلی
+                    </span>
+                </button>
+            </a>
+        </div>
+    </div>
+</div>

@@ -128,7 +128,7 @@ namespace V2boardApi.Areas.api.Controllers
                         var RepositoryLinkUserAndPlan = new Repository<tbLinkUserAndPlans>(db);
                         var tbDepositLogRepo = new Repository<tbDepositWallet_Log>(db);
                         var tbServerGroupsRepo = new Repository<tbServerGroups>(db);
-                        var firebaseRepo = new Repository<tbFirebaseMobileTokens> (db);
+                        var firebaseRepo = new Repository<tbFirebaseMobileTokens>(db);
                         var V2boardPlanId = BotSettings.tbPlans.Plan_ID_V2;
                         long chatid = 0;
                         tbTelegramUsers UserAcc = new tbTelegramUsers();
@@ -468,31 +468,59 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region بخش چک کردن برای اینکه کاربر نام اکانت جدید خودش را وارد کند
                                 else
-                                if (UserAcc.Tel_Step == "WaitForEnterName")
+                                if (UserAcc.Tel_Step == "WaitForName")
                                 {
-                                    if (mess.Length < 15)
+                                    if (mess.Length <= 20 && mess.Length >=4)
                                     {
-                                        if (CheckExistsAccountInBot(mess, BotSettings))
+                                        if (Utility.IsEnglishText(mess))
                                         {
-                                            await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName, mess, Tel_Step: User.Tel_Step);
+                                            var OldName = UserAcc.Tel_Data;
+                                            var LastName = UserAcc.Tel_Data.Split('$')[1];
+                                            var NewName = mess;
+
+
+                                            var Link = tbLinksRepository.Where(s => s.tbL_Email == OldName).First();
+
+                                            Link.tbL_Email = NewName + "$" + LastName;
+
+                                            using (MySqlEntities mySql = new MySqlEntities(UserAcc.tbUsers.tbServers.ConnectionString))
+                                            {
+                                                await mySql.OpenAsync();
+                                                var reader = await mySql.GetDataAsync("update v2_user set email = '" + Link.tbL_Email + "'" + " where email ='" + OldName + "'");
+                                                await reader.ReadAsync();
+                                                reader.Close();
+                                                await mySql.CloseAsync();
+                                            }
+
+                                            await tbLinksRepository.SaveChangesAsync();
+
+                                            StringBuilder str = new StringBuilder();
+                                            str.AppendLine("✅ نام اشتراک شما با موفقیت تغییر یافت");
+                                            str.AppendLine("");
+                                            str.AppendLine("❗️ برای نمایش جزئیات مجدد وارد بخش مدیریت اشتراک ها بشید");
+                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(),parseMode:ParseMode.Html);
+                                            await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID,db,botName);
+                                            return;
                                         }
                                         else
                                         {
-                                            StringBuilder str = new StringBuilder();
-                                            str.AppendLine("❌ این نام قبلا در سیستم وجود دارد لطفا نام دیگری وارد کنید");
-                                            var backkey = Keyboards.GetBackButton();
-                                            await bot.Client.SendTextMessageAsync(message.From.Id, str.ToString(), replyMarkup: backkey, replyToMessageId: message.MessageId);
-                                        }
+                                            StringBuilder str1 = new StringBuilder();
+                                            str1.AppendLine("❗️نام اشتراک شما باید انگلیسی باشد");
+                                            str1.AppendLine("");
+                                            str1.AppendLine("📝 لطفا نام جدید مورد نظر خود مجدد را وارد نمائید");
 
+                                            await bot.Client.SendTextMessageAsync(message.From.Id, str1.ToString(), replyToMessageId: message.MessageId);
+                                        }
                                     }
                                     else
                                     {
                                         StringBuilder str1 = new StringBuilder();
-                                        str1.AppendLine("تعداد کاراکتر های نام شما باید کمتر از 15 باشد");
+                                        str1.AppendLine("⚠️ نام اشتراک باید حداقل 4 حرف و حداکثر 20 حرف باشد");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("📝 لطفا نام جدید مورد نظر خود مجدد را وارد نمائید");
 
-                                        var backkey = Keyboards.GetBackButton();
-                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForEnterName", db, botName);
-                                        await bot.Client.SendTextMessageAsync(message.From.Id, str1.ToString(), replyMarkup: backkey, replyToMessageId: message.MessageId);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForName", db, botName);
+                                        await bot.Client.SendTextMessageAsync(message.From.Id, str1.ToString(), replyToMessageId: message.MessageId);
                                     }
                                 }
 
@@ -506,9 +534,10 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
-                                    var me = BotMessages.SendAccpetPolicySub(BotSettings);
+                                    await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName);
+                                    //var me = BotMessages.SendAccpetPolicySub(BotSettings);
 
-                                    await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                                    //await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
                                     //await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
                                     return;
@@ -560,29 +589,11 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     StringBuilder str2 = new StringBuilder();
                                     str2.AppendLine("");
-                                    str2.AppendLine("<b>1- 🥇 اشتراک طلایی :</b>");
-                                    str2.AppendLine("📊 حجم مشخص و پایدار");
-                                    str2.AppendLine("🔒 اتصال پایدار در تمامی شرایط حتی اینترنت ملی");
-                                    str2.AppendLine("✅ مناسب برای کاربرانی که به کیفیت بالا و ثبات اتصال اهمیت می‌دهند");
-                                    str2.AppendLine("");
-                                    str2.AppendLine("");
-                                    str2.AppendLine("<b>2- 🥈 اشتراک نقره ای :</b>");
-                                    str2.AppendLine("🔄 حجم نامحدود");
-                                    str2.AppendLine("🌐 سرعت متوسط");
-                                    str2.AppendLine("📱 مناسب برای دستگاه‌های پیشرفته‌تر و اینترنت پر سرعت.");
-                                    str2.AppendLine("📱 مناسب دستگاه های اندروید و آیفون");
-                                    str2.AppendLine("");
-                                    str2.AppendLine("");
-                                    str2.AppendLine("❗️ نکته : حتما قبلا از خرید اشتراک تست را فعال نموده و از عملکرد سرور ها با شرایط اینترنتان مطمئن شوید");
-                                    str2.AppendLine("");
-                                    str2.AppendLine("🌟 انتخاب اشتراک مناسب با توجه به نیازهای شما، بهترین تجربه را فراهم می‌کند");
-                                    str2.AppendLine("");
-                                    str2.AppendLine("");
                                     str2.AppendLine("♨️  لطفا اشتراک مورد نظر را انتخاب کنید");
                                     str2.AppendLine("〰️〰️〰️〰️〰️");
                                     str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
-                                    var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyMarkup: keyboard, replyToMessageId: message.MessageId,parseMode:ParseMode.Html);
+                                    var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyMarkup: keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
                                     return;
                                     #endregion
 
@@ -718,6 +729,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
+
+
                                 #region نمایش تعرفه ها
 
                                 if (mess == "📊 تعرفه‌ها")
@@ -730,47 +743,15 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     if (BotSettings.Present_Discount != null)
                                     {
-                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی ( با تخفیف ) ( حجمی )</b>");
-                                        str.AppendLine("");
-                                        str.AppendLine("💸 قیمت هر گیگ : " + "<s> " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان" + " </s>" + " 👈 " + (BotSettings.PricePerGig_Major - (BotSettings.PricePerGig_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
-                                        str.AppendLine("⏳ قیمت هر ماه : " + "<s>" + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (BotSettings.PricePerMonth_Major - (BotSettings.PricePerMonth_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                        str.AppendLine("💸 به ازای هر گیگ : " + "<s> " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان" + " </s>" + " 👈 " + (BotSettings.PricePerGig_Major - (BotSettings.PricePerGig_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                        str.AppendLine("⏳ به ازای هر ماه : " + "<s>" + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (BotSettings.PricePerMonth_Major - (BotSettings.PricePerMonth_Major * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
                                         str.AppendLine("");
                                     }
                                     else
                                     {
-                                        str.AppendLine("<b>1- 🥇 اشتراک طلایی ( حجمی )</b>");
+                                        str.AppendLine("💸 به ازای هر گیگ : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
+                                        str.AppendLine("⏳ به ازای هر ماه : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
                                         str.AppendLine("");
-                                        str.AppendLine("💸 قیمت هر گیگ : " + BotSettings.PricePerGig_Major.ConvertToMony() + " تومان");
-                                        str.AppendLine("⏳ قیمت هر ماه : " + BotSettings.PricePerMonth_Major.ConvertToMony() + " تومان");
-                                        str.AppendLine("");
-                                    }
-
-
-                                    var Plans = BotSettings.tbUsers.tbLinkUserAndPlans.Where(s => s.tbPlans.IsRobotPlan == true && s.tbPlans.Status == true).Select(s => s.tbPlans).ToList();
-                                    if (Plans.Count() >= 1)
-                                    {
-                                        if (BotSettings.Present_Discount != null)
-                                        {
-                                            str.AppendLine("<b>2-  🥈 اشتراک نقره ای ( باتخفیف ) ( نامحدود )</b>");
-                                            str.AppendLine("");
-                                            var counter = 1;
-                                            foreach (var item in Plans)
-                                            {
-                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit) + " کاربر" + " | " + "<s>" + item.Price.ConvertToMony() + " تومان" + "</s>" + " 👈 " + (item.Price - (item.Price * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
-                                                counter++;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            str.AppendLine("<b>2- 🥈 اشتراک نقره ای ( نامحدود )</b>");
-                                            str.AppendLine("");
-                                            var counter = 1;
-                                            foreach (var item in Plans)
-                                            {
-                                                str.AppendLine(counter + " - " + item.PlanMonth + " ماهه" + " | " + (item.device_limit) + " کاربر" + " | " + item.Price.ConvertToMony() + " تومان");
-                                                counter++;
-                                            }
-                                        }
                                     }
 
                                     str.AppendLine("");
@@ -899,14 +880,98 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (mess == "🎁 اشتراک تست")
                                 {
-                                    await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
+                                    if (UserAcc.Tel_GetedTestAccount == false || UserAcc.Tel_GetedTestAccount == null)
+                                    {
 
-                                    var me = BotMessages.SendSelectSubTypeTest(BotSettings);
+                                        MySqlEntities mySql = new MySqlEntities(BotSettings.tbUsers.tbServers.ConnectionString);
+                                        await mySql.OpenAsync();
+                                        var Disc1 = new Dictionary<string, object>();
+                                        Disc1.Add("@v2board_id", V2boardPlanId);
+                                        long tran = Utility.ConvertGBToByte(0.5);
+                                        int grid = BotSettings.GroupId_test.Value;
+                                        string create = DateTime.Now.ConvertDatetimeToSecond().ToString();
+                                        string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
+                                        string exp = DateTime.Now.AddDays(1).ConvertDatetimeToSecond().ToString();
+                                        var isExists = true;
+                                        var FullName = "";
+                                        while (isExists)
+                                        {
+                                            Random ran = new Random();
+                                            FullName = BotSettings.Bot_ID + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
+                                            var Disc2 = new Dictionary<string, object>();
+                                            Disc2.Add("@FullName", FullName);
+                                            var reader2 = await mySql.GetDataAsync("select * from v2_user where email=@FullName", Disc2);
+                                            if (!reader2.Read())
+                                            {
+                                                isExists = false;
+                                            }
+                                            reader2.Close();
+                                        }
 
-                                    await bot.Client.SendTextMessageAsync(message.From.Id, me.text, replyMarkup: me.keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                                        var Disc3 = new Dictionary<string, object>();
+                                        Disc3.Add("@FullName", FullName);
+                                        Disc3.Add("@expired", exp);
+                                        Disc3.Add("@create", create);
+                                        Disc3.Add("@guid", Guid.NewGuid());
+                                        Disc3.Add("@tran", tran);
+                                        Disc3.Add("@grid", grid);
+                                        Disc3.Add("@V2boardId", V2boardPlanId);
+                                        Disc3.Add("@token", token);
+                                        Disc3.Add("@passwrd", Guid.NewGuid());
 
-                                    //await SendTrafficCalculator(UserAcc, message.MessageId, BotSettings, bot.Client, botName);
-                                    return;
+
+                                        var DeviceLimit_Structur = "";
+                                        var DeviceLimit_data = "";
+
+                                        if (BotSettings.tbPlans.device_limit != null)
+                                        {
+                                            DeviceLimit_Structur = ",device_limit";
+                                            Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
+                                            DeviceLimit_data = ",@device_limit";
+                                        }
+
+                                        string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at" + DeviceLimit_Structur + ") VALUES (@FullName, @expired, @create, @guid, 0, 0, 0, @tran, 0, @grid, @V2boardId, @token,@passwrd,@create" + DeviceLimit_data + ")";
+
+
+                                        var reader = await mySql.GetDataAsync(Query, Disc3);
+                                        reader.Close();
+
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست شما با موفقیت ساخته شد❕");
+                                        str.AppendLine("");
+                                        str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
+                                        str.AppendLine("");
+                                        str.AppendLine("🚦 حجم کل : 500 مگابایت");
+                                        str.AppendLine("⏳ مدت زمان : یک روز");
+                                        str.AppendLine("");
+                                        str.AppendLine("🔗 لینک اتصال: ");
+                                        str.AppendLine("👇👇👇👇👇👇👇");
+                                        str.AppendLine("");
+                                        var SubLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + token;
+                                        str.AppendLine("<code>" + SubLink + "</code>");
+                                        str.AppendLine("");
+                                        str.AppendLine("⁉️ برای دریافت راهنما به بخش \"📘 آموزش اتصال\" بروید.");
+                                        await mySql.CloseAsync();
+
+                                        str.AppendLine("");
+                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+
+                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == User.Tel_UniqUserID && s.tbUsers.Username == botName).FirstOrDefault();
+                                        if (tbTelegram != null)
+                                        {
+                                            tbTelegram.Tel_GetedTestAccount = true;
+                                        }
+                                        tbTelegramUserRepository.Save();
+                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                    }
+                                    else
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("❌ شما قبلا اشتراک تست دریافت کرده اید");
+                                        str.AppendLine("");
+                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
+                                    }
                                 }
                                 #endregion
 
@@ -914,41 +979,16 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (mess == "📲 آموزش خرید")
                                 {
-                                    var HomeKey = Keyboards.GetHomeButton();
-                                    var any = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type.Contains("buy")).FirstOrDefault();
-                                    if (any!=null)
+                                    var learn = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type == "buy_sub").FirstOrDefault();
+                                    if (learn != null)
                                     {
-
-                                        var keys = Keyboards.GetSubTypeKeyForLearn();
-                                        StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("");
-                                        str2.AppendLine("✨ <b> دو نوع آموزش خرید اشتراک برای کاربران عزیز داریم </b> ✨");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("<b>1- 🥇 اشتراک طلایی :</b>");
-                                        str2.AppendLine("📊 حجم مشخص و پایدار");
-                                        str2.AppendLine("🔒 اتصال پایدار در تمامی شرایط حتی اینترنت ملی");
-                                        str2.AppendLine("✅ مناسب برای کاربرانی که به کیفیت بالا و ثبات اتصال اهمیت می‌دهند");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("<b>2- 🥈 اشتراک نقره ای :</b>");
-                                        str2.AppendLine("🔄 حجم نامحدود");
-                                        str2.AppendLine("⚠️ ممکن است در برخی شرایط با نوسانات مواجه شود.");
-                                        str2.AppendLine("📱 مناسب برای دستگاه‌های پیشرفته‌تر و اینترنت پر سرعت.");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("❗️ نکته : حتما قبلا از خرید اشتراک تست را فعال نموده و از عملکرد سرور ها با شرایط اینترنتان مطمئن شوید");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("<b>" + "💻 لطفا آموزش مربوط به نوع اشتراک خود را انتخاب کنید" + "</b>");
-                                        str2.AppendLine("〰️〰️〰️〰️〰️");
-                                        str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
-
-                                        await bot.Client.SendTextMessageAsync(chatid, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: keys);
+                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, learn.ch_Link, disableWebPagePreview: false);
                                     }
                                     else
                                     {
-                                        await bot.Client.SendTextMessageAsync(chatid, "بازگشت به منو اصلی", parseMode: ParseMode.Html, replyMarkup: HomeKey);
+                                        var keys = Keyboards.GetHomeButton();
+                                        await bot.Client.SendTextMessageAsync(chatid, "بازگشت به منو اصلی", parseMode: ParseMode.Html, replyMarkup: keys);
                                     }
-
                                 }
 
                                 #endregion
@@ -1169,16 +1209,20 @@ namespace V2boardApi.Areas.api.Controllers
                                 }
                                 else
                                 {
-                                    var joined = await bot.Client.GetChatMemberAsync("@" + BotSettings.ChannelID, Convert.ToInt64(UserAcc.Tel_UniqUserID));
-                                    if (joined != null && (joined.Status == ChatMemberStatus.Member || joined.Status == ChatMemberStatus.Administrator || joined.Status == ChatMemberStatus.Creator))
+                                    if (BotSettings.ChannelID != null)
                                     {
+                                        var joined = await bot.Client.GetChatMemberAsync("@" + BotSettings.ChannelID, Convert.ToInt64(UserAcc.Tel_UniqUserID));
+                                        if (joined != null && (joined.Status == ChatMemberStatus.Member || joined.Status == ChatMemberStatus.Administrator || joined.Status == ChatMemberStatus.Creator))
+                                        {
 
+                                        }
+                                        else
+                                        {
+                                            await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ با عرض پوزش : کاربر گرامی برای استفاده از خدمات ما باید در کانال ما عضو باشید", true);
+                                            return;
+                                        }
                                     }
-                                    else
-                                    {
-                                        await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ با عرض پوزش : کاربر گرامی برای استفاده از خدمات ما باید در کانال ما عضو باشید", true);
-                                        return;
-                                    }
+
                                 }
                             }
 
@@ -1423,14 +1467,22 @@ namespace V2boardApi.Areas.api.Controllers
                                             row1.Add(InlineKeyboardButton.WithCallbackData("📈 نمایش ریز مصرف", "Usage%" + Link.tbL_Email));
                                             inlineKeyboards.Add(row1);
 
+
                                             List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-                                            row2.Add(InlineKeyboardButton.WithCallbackData("حذف اشتراک 🗑", "DeleteAcc%" + Link.tbL_Email));
+                                            row2.Add(InlineKeyboardButton.WithCallbackData("تغییرنام اشتراک ✏️", "Rename%" + Link.tbL_Email));
                                             inlineKeyboards.Add(row2);
+
+
                                             InlineKeyboardButton inlineKeyboard = new InlineKeyboardButton("🔗 اتصال به اشتراک");
                                             WebAppInfo appInfo = new WebAppInfo();
                                             appInfo.Url = SubLink;
                                             inlineKeyboard.WebApp = appInfo;
                                             row2.Add(inlineKeyboard);
+
+
+                                            List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
+                                            row3.Add(InlineKeyboardButton.WithCallbackData("حذف اشتراک 🗑", "DeleteAcc%" + Link.tbL_Email));
+                                            inlineKeyboards.Add(row3);
 
                                             //List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
                                             //row3.Add(InlineKeyboardButton.WithCallbackData("تمدید خودکار ⏳", "AutoRenew%" + Link.tb_RandomEmail));
@@ -1507,7 +1559,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             inlineKeyboards.Add(row1);
 
                                             var firebaseInfo = await firebaseRepo.FirstOrDefaultAsync(s => s.tbFireBase_SubToken == Link.tbL_Token);
-                                            if(firebaseInfo != null)
+                                            if (firebaseInfo != null)
                                             {
                                                 firebaseInfo.tbFireBase_SubToken = token;
                                             }
@@ -1636,6 +1688,29 @@ namespace V2boardApi.Areas.api.Controllers
 
 
 
+                                    }
+                                }
+
+                                #endregion
+
+                                #region تغییر نام اشتراک
+
+                                if (callback.Length == 2)
+                                {
+                                    if (callback[0] == "Rename")
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("♨️ تغییر نام اشتراک : " + callback[1].Split('@')[0].Split('$')[0]);
+                                        str.AppendLine("");
+                                        str.AppendLine("📝 لطفا نام جدید مورد نظر خود را وارد نمائید");
+                                        str.AppendLine("");
+                                        str.AppendLine("⚠️ نکته : نام اشتراک باید انگلیسی باشد");
+                                        str.AppendLine("⚠️ نام اشتراک باید حداقل 4 حرف و حداکثر 20 حرف باشد");
+
+                                        await bot.Client.DeleteMessageAsync(UserAcc.Tel_UniqUserID, callbackQuery.Message.MessageId);
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, text: str.ToString(), parseMode: ParseMode.Html);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForName", db, bot.Name, callback[1]);
+                                        return;
                                     }
                                 }
 
@@ -2080,7 +2155,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 if (BotSettings.tbPlans.device_limit != null)
                                                 {
                                                     Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
-                                                    
+
                                                 }
 
                                                 var Query = "update v2_user set u=0,d=0,t=0,plan_id=@DefaultPlanIdInV2board,transfer_enable=@transfer_enable,expired_at=@exp,device_limit=@device_limit,group_id=@group_id where email=@email";
@@ -2103,7 +2178,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 StringBuilder str2 = new StringBuilder();
                                                 str2.AppendLine("✅ بسته شما با موفقیت تمدید شد");
                                                 str2.AppendLine("");
-                                                str2.AppendLine("♨️ می توانید برای مشاهده اطلاعات اکانت و بسته به بخش مدیریت اشتراک ها مراجعه کنید");
+                                                str2.AppendLine("♨️ می توانید برای مشاهده اطلاعات اشتراک و بسته به بخش مدیریت اشتراک ها مراجعه کنید");
                                                 await RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
                                                 var kyes = Keyboards.GetHomeButton();
                                                 await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
@@ -2140,7 +2215,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 StringBuilder str = new StringBuilder();
                                                 str.AppendLine("✅ بسته شما با موفقیت رزرو شد");
                                                 str.AppendLine("");
-                                                str.AppendLine("⚠️ بعد از اتمام حجم بسته یا زمان بسته فعلی اکانت شما به صورت خودکار تمدید می شود");
+                                                str.AppendLine("⚠️ بعد از اتمام حجم بسته یا زمان بسته فعلی اشتراک شما به صورت خودکار تمدید می شود");
                                                 str.AppendLine("");
                                                 await RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
                                                 await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
@@ -2160,7 +2235,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             Order.Order_Guid = Guid.NewGuid();
 
 
-                                            bool IsExists = true;
+
                                             var s = Guid.NewGuid();
                                             if (string.IsNullOrEmpty(User.Tel_Username))
                                             {
@@ -2168,26 +2243,16 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                             else
                                             {
-                                                if (string.IsNullOrEmpty(AccountName))
-                                                {
-                                                    AccountName += User.Tel_Username;
-                                                }
-                                                else
-                                                {
-                                                    var acc = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).Count();
-                                                    acc += 1;
+                                                var acc = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).Count();
+                                                acc++;
 
-                                                    AccountName += User.Tel_Username + acc;
-                                                }
+                                                AccountName += User.Tel_Username + acc;
                                             }
 
-                                            if (Utility.IsPersian(AccountName))
-                                            {
-                                                AccountName = s.ToString().Split('-')[ran.Next(0, 3)];
-                                            }
 
 
                                             Order.AccountName = AccountName + "$" + s.ToString().Split('-')[ran.Next(0, 3)] + "@" + BotSettings.tbUsers.Username;
+                                            bool IsExists = true;
                                             while (IsExists)
                                             {
                                                 var Links = tbLinksRepository.Where(p => p.tbL_Email == Order.AccountName).Any();
@@ -2356,11 +2421,11 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (User.Tel_Step == "WaitForSelectAccount")
                                 {
                                     await RealUser.SetUserStep(User.Tel_UniqUserID, "WaitForCalulate", db, botName, callbackQuery.Data);
-                                    var type = BotMessages.SendSelectSubType(BotSettings);
+                                    //var type = BotMessages.SendSelectSubType(BotSettings);
 
-                                    await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectSubType", db, botName);
+                                    //await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectSubType", db, botName);
 
-                                    await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, type.text, parseMode: ParseMode.Html, replyMarkup: type.keyboard);
+                                    await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
                                     //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
 
@@ -2413,10 +2478,10 @@ namespace V2boardApi.Areas.api.Controllers
                                         var Link = User.tbLinks.Where(p => p.tbL_Email == callback[1]).FirstOrDefault();
                                         if (Link != null)
                                         {
-                                            
 
-                                            var firebaseInfo = await firebaseRepo.FirstOrDefaultAsync(s=> s.tbFireBase_SubToken == Link.tbL_Token);
-                                            if(firebaseInfo != null)
+
+                                            var firebaseInfo = await firebaseRepo.FirstOrDefaultAsync(s => s.tbFireBase_SubToken == Link.tbL_Token);
+                                            if (firebaseInfo != null)
                                             {
                                                 firebaseRepo.Delete(firebaseInfo);
                                                 firebaseRepo.SaveChangesAsync();
@@ -2540,15 +2605,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, type.text, parseMode: ParseMode.Html, replyMarkup: type.keyboard);
 
-                                }
-
-                                #endregion
-
-                                #region اشتراک گُلد
-
-                                if (callbackQuery.Data == "gold")
-                                {
-                                    await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName);
                                 }
 
                                 #endregion
@@ -2855,7 +2911,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await mySql.OpenAsync();
                                                 var Disc1 = new Dictionary<string, object>();
                                                 Disc1.Add("@V2board", Plan.Plan_ID_V2);
-                                                
+
                                                 long tran = 0;
                                                 int grid = 0;
                                                 var reader = await mySql.GetDataAsync("select group_id,transfer_enable from v2_plan where id =@V2board", Disc1);
@@ -2991,244 +3047,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
-                                #region ایجاد اشتراک تست
 
-                                #region نقره ای
-
-                                if (callbackQuery.Data == "premium_test")
-                                {
-                                    if (UserAcc.Tel_GetedTestAccountUnlimited == false || UserAcc.Tel_GetedTestAccountUnlimited == null)
-                                    {
-
-                                        MySqlEntities mySql = new MySqlEntities(BotSettings.tbUsers.tbServers.ConnectionString);
-                                        await mySql.OpenAsync();
-                                        var Disc1 = new Dictionary<string, object>();
-                                        Disc1.Add("@v2board_id", V2boardPlanId);
-                                        long tran = Utility.ConvertGBToByte(500);
-                                        int grid = BotSettings.GroupId_testUnlimited.Value;
-
-                                        string create = DateTime.Now.ConvertDatetimeToSecond().ToString();
-                                        string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
-                                        string exp = DateTime.Now.AddHours(2).ConvertDatetimeToSecond().ToString();
-
-                                        var isExists = true;
-                                        var FullName = "";
-                                        while (isExists)
-                                        {
-                                            Random ran = new Random();
-                                            FullName = BotSettings.Bot_ID + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
-                                            var Disc2 = new Dictionary<string, object>();
-                                            Disc2.Add("@FullName", FullName);
-                                            var reader2 = await mySql.GetDataAsync("select * from v2_user where email=@FullName", Disc2);
-                                            if (!reader2.Read())
-                                            {
-                                                isExists = false;
-                                            }
-                                            reader2.Close();
-                                        }
-
-                                        var Disc3 = new Dictionary<string, object>();
-                                        Disc3.Add("@FullName", FullName);
-                                        Disc3.Add("@expired", exp);
-                                        Disc3.Add("@create", create);
-                                        Disc3.Add("@guid", Guid.NewGuid());
-                                        Disc3.Add("@tran", tran);
-                                        Disc3.Add("@grid", grid);
-                                        Disc3.Add("@V2boardId", V2boardPlanId);
-                                        Disc3.Add("@token", token);
-                                        Disc3.Add("@passwrd", Guid.NewGuid());
-
-
-                                        var DeviceLimit_Structur = "";
-                                        var DeviceLimit_data = "";
-
-                                        if (BotSettings.tbPlans.device_limit != null)
-                                        {
-                                            DeviceLimit_Structur = ",device_limit";
-                                            Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
-                                            DeviceLimit_data = ",@device_limit";
-                                        }
-
-                                        string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at" + DeviceLimit_Structur + ") VALUES (@FullName, @expired, @create, @guid, 0, 0, 0, @tran, 0, @grid, @V2boardId, @token,@passwrd,@create" + DeviceLimit_data + ")";
-
-
-                                        var reader = await mySql.GetDataAsync(Query, Disc3);
-                                        reader.Close();
-
-                                        StringBuilder str = new StringBuilder();
-                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست نقره ای شما با موفقیت ساخته شد❕");
-                                        str.AppendLine("");
-                                        str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
-                                        str.AppendLine("");
-                                        str.AppendLine("🚦 حجم کل : 500 گیگ (مصرف منصفانه )");
-                                        str.AppendLine("⏳ مدت زمان : 2 ساعت");
-                                        str.AppendLine("");
-                                        str.AppendLine("🔗 لینک اتصال: ");
-                                        str.AppendLine("👇👇👇👇👇👇👇");
-                                        str.AppendLine("");
-                                        var SubLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + token;
-                                        str.AppendLine("<code>" + SubLink + "</code>");
-                                        str.AppendLine("");
-                                        str.AppendLine("⁉️ برای دریافت راهنما به بخش \"📘 آموزش اتصال\" بروید.");
-                                        await mySql.CloseAsync();
-
-                                        str.AppendLine("");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-
-                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == User.Tel_UniqUserID && s.tbUsers.Username == botName).FirstOrDefault();
-                                        if (tbTelegram != null)
-                                        {
-                                            tbTelegram.Tel_GetedTestAccountUnlimited = true;
-                                        }
-                                        tbTelegramUserRepository.Save();
-
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-                                    }
-                                    else
-                                    {
-                                        StringBuilder str = new StringBuilder();
-                                        str.AppendLine("❌ شما قبلا اشتراک تست نقره ای دریافت کرده اید");
-                                        str.AppendLine("");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
-                                    }
-                                }
-
-                                #endregion
-
-                                #region طلایی
-
-                                if (callbackQuery.Data == "gold_test")
-                                {
-                                    if (UserAcc.Tel_GetedTestAccount == false || UserAcc.Tel_GetedTestAccount == null)
-                                    {
-
-                                        MySqlEntities mySql = new MySqlEntities(BotSettings.tbUsers.tbServers.ConnectionString);
-                                        await mySql.OpenAsync();
-                                        var Disc1 = new Dictionary<string, object>();
-                                        Disc1.Add("@v2board_id", V2boardPlanId);
-                                        long tran = Utility.ConvertGBToByte(0.5);
-                                        int grid = BotSettings.GroupId_test.Value;
-                                        string create = DateTime.Now.ConvertDatetimeToSecond().ToString();
-                                        string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
-                                        string exp = DateTime.Now.AddDays(1).ConvertDatetimeToSecond().ToString();
-                                        var isExists = true;
-                                        var FullName = "";
-                                        while (isExists)
-                                        {
-                                            Random ran = new Random();
-                                            FullName = BotSettings.Bot_ID + "$" + ran.Next(999) + "@" + BotSettings.tbUsers.Username;
-                                            var Disc2 = new Dictionary<string, object>();
-                                            Disc2.Add("@FullName", FullName);
-                                            var reader2 = await mySql.GetDataAsync("select * from v2_user where email=@FullName", Disc2);
-                                            if (!reader2.Read())
-                                            {
-                                                isExists = false;
-                                            }
-                                            reader2.Close();
-                                        }
-
-                                        var Disc3 = new Dictionary<string, object>();
-                                        Disc3.Add("@FullName", FullName);
-                                        Disc3.Add("@expired", exp);
-                                        Disc3.Add("@create", create);
-                                        Disc3.Add("@guid", Guid.NewGuid());
-                                        Disc3.Add("@tran", tran);
-                                        Disc3.Add("@grid", grid);
-                                        Disc3.Add("@V2boardId", V2boardPlanId);
-                                        Disc3.Add("@token", token);
-                                        Disc3.Add("@passwrd", Guid.NewGuid());
-
-
-                                        var DeviceLimit_Structur = "";
-                                        var DeviceLimit_data = "";
-
-                                        if (BotSettings.tbPlans.device_limit != null)
-                                        {
-                                            DeviceLimit_Structur = ",device_limit";
-                                            Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
-                                            DeviceLimit_data = ",@device_limit";
-                                        }
-
-                                        string Query = "insert into v2_user (email,expired_at,created_at,uuid,t,u,d,transfer_enable,banned,group_id,plan_id,token,password,updated_at" + DeviceLimit_Structur + ") VALUES (@FullName, @expired, @create, @guid, 0, 0, 0, @tran, 0, @grid, @V2boardId, @token,@passwrd,@create" + DeviceLimit_data + ")";
-
-
-                                        var reader = await mySql.GetDataAsync(Query, Disc3);
-                                        reader.Close();
-
-                                        StringBuilder str = new StringBuilder();
-                                        str.AppendLine("🌿 کاربر عزیز اشتراک تست طلایی شما با موفقیت ساخته شد❕");
-                                        str.AppendLine("");
-                                        str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
-                                        str.AppendLine("");
-                                        str.AppendLine("🚦 حجم کل : 500 مگابایت");
-                                        str.AppendLine("⏳ مدت زمان : یک روز");
-                                        str.AppendLine("");
-                                        str.AppendLine("🔗 لینک اتصال: ");
-                                        str.AppendLine("👇👇👇👇👇👇👇");
-                                        str.AppendLine("");
-                                        var SubLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + token;
-                                        str.AppendLine("<code>" + SubLink + "</code>");
-                                        str.AppendLine("");
-                                        str.AppendLine("⁉️ برای دریافت راهنما به بخش \"📘 آموزش اتصال\" بروید.");
-                                        await mySql.CloseAsync();
-
-                                        str.AppendLine("");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-
-                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == User.Tel_UniqUserID && s.tbUsers.Username == botName).FirstOrDefault();
-                                        if (tbTelegram != null)
-                                        {
-                                            tbTelegram.Tel_GetedTestAccount = true;
-                                        }
-                                        tbTelegramUserRepository.Save();
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-                                    }
-                                    else
-                                    {
-                                        StringBuilder str = new StringBuilder();
-                                        str.AppendLine("❌ شما قبلا اشتراک تست طلایی دریافت کرده اید");
-                                        str.AppendLine("");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
-                                    }
-                                }
-
-                                #endregion
-
-                                #endregion
-
-                                #region آموزش خرید
-
-                                #region اشتراک طلایی
-
-                                if (callbackQuery.Data == "goldLearn")
-                                {
-                                    var learn = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type == "buy_goldLearn").FirstOrDefault();
-                                    if (learn!=null)
-                                    {
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, learn.ch_Link, disableWebPagePreview: false);
-                                    }
-                                }
-
-
-                                #endregion
-
-                                #region اشتراک نقره ای
-
-                                if (callbackQuery.Data == "silverLearn")
-                                {
-                                    var learn = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type == "buy_silverLearn").FirstOrDefault();
-                                    if (learn != null)
-                                    {
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, learn.ch_Link, disableWebPagePreview: false);
-                                    }
-                                }
-
-
-                                #endregion
-
-                                #endregion
 
                             }
                             else
@@ -3325,7 +3144,7 @@ namespace V2boardApi.Areas.api.Controllers
             return false;
         }
 
-        private async Task SendTrafficCalculator(tbTelegramUsers User, int MessageId, tbBotSettings BotSetting, TelegramBotClient bot, string botName, string Data = null, string Tel_Step = null)
+        private async Task SendTrafficCalculator(tbTelegramUsers User, tbBotSettings BotSetting, TelegramBotClient bot, string botName, string Data = null, string Tel_Step = null, int messageId = 0)
         {
 
             CustomTrafficKeyboard keyboard = new CustomTrafficKeyboard(BotSetting, User.Tel_Traffic, User.Tel_Monthes);
@@ -3338,7 +3157,15 @@ namespace V2boardApi.Areas.api.Controllers
             str.AppendLine("");
             str.AppendLine("⏳ هر ماه : " + BotSetting.PricePerMonth_Major.ConvertToMony() + " تومان");
 
-            await bot.EditMessageTextAsync(chatId: User.Tel_UniqUserID, messageId: MessageId, str.ToString(), replyMarkup: key);
+            if (messageId == 0)
+            {
+                await bot.SendTextMessageAsync(chatId: User.Tel_UniqUserID, str.ToString(), replyMarkup: key);
+            }
+            else
+            {
+                await bot.EditMessageTextAsync(chatId: User.Tel_UniqUserID, messageId, str.ToString(), replyMarkup: key);
+            }
+
         }
 
         public async Task<bool> SaveUserProfilePicture(long userId, TelegramBotClient bot, string token, string path)
