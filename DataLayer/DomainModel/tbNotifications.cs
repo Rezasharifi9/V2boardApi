@@ -28,7 +28,6 @@ namespace DataLayer.DomainModel
         public int tbNoti_Status { get; set; }
         public System.DateTime tbNoti_EndDate { get; set; }
     
-        public virtual tbUsers tbUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbNotificationUser> tbNotificationUser { get; set; }
     }

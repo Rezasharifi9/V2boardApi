@@ -77,6 +77,15 @@
                             <div>اشتراک ها</div>
                         </a>
                     </li>
+                    @if (Role == "2" || Role == "3" || Role == "4")
+                    {
+                        <li class="menu-item" style="">
+                            <a class="menu-link" href="@Url.Action("UserAgent","UserFactors",new {area="App"})">
+                                <i class="menu-icon tf-icons ti ti-report-money"></i>
+                                <div>پرداخت ها</div>
+                            </a>
+                        </li>
+                    }
 
                     @if (Role != null)
                     {
@@ -104,6 +113,12 @@
                                     <div>اطلاعیه ها</div>
                                 </a>
                             </li>
+                            <li class="menu-item" style="">
+                                <a class="menu-link" href="@Url.Action("Index","UserFactors",new {area="App"})">
+                                    <i class="menu-icon tf-icons ti ti-report-money"></i>
+                                    <div>پرداخت ها</div>
+                                </a>
+                            </li>
                         }
                         if (Role == "1")
                         {
@@ -113,6 +128,8 @@
                                     <div>دسته بندی ها</div>
                                 </a>
                             </li>
+
+
                         }
                     }
 
@@ -741,6 +758,39 @@
                 });
             });
         }
+
+        function AjaxFormPostWithFiles(url, formId, fileInputName) {
+            // انتخاب فرم
+            var form = document.getElementById(formId);
+
+            // ایجاد FormData
+            var formData = new FormData(form);
+
+            // اضافه کردن تمام فایل‌های انتخاب شده
+            var fileInput = form.querySelector(`input[name="${fileInputName}"]`);
+            if (fileInput && fileInput.files.length > 0) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append(fileInputName, fileInput.files[i]);
+                }
+            }
+
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    processData: false, // جلوگیری از پردازش داده‌ها
+                    contentType: false, // جلوگیری از تنظیم نوع محتوا
+                    success: function (response) {
+                        resolve(response);
+                    },
+                    error: function (xhr, status, error) {
+                        reject({ xhr: xhr, status: status, error: error });
+                    }
+                });
+            });
+        }
+
 
     </script>
     <!-- endbuild -->

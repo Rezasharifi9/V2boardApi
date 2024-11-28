@@ -144,20 +144,12 @@ namespace V2boardApi.Areas.api.Controllers
                     if (User != null)
                     {
                         int pr = int.Parse(SMSMessageText, NumberStyles.Currency);
+                        
 
-
-                        var tbUserFactor = await RepositoryFactor.FirstOrDefaultAsync(p => p.tbUf_Value == pr && p.IsPayed == false);
-                        if (tbUserFactor != null)
-                        {
-                            tbUserFactor.IsPayed = true;
-                            transaction.Commit();
-                            RepositoryFactor.Save();
-                            return Ok();
-                        }
 
                         var date2 = DateTime.Now.AddDays(-2);
                         var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2);
-
+                        var botSetting = User.tbBotSettings.FirstOrDefault();
                         foreach (var item in tbDepositLog)
                         {
                             item.dw_Status = "FINISH";
@@ -175,7 +167,7 @@ namespace V2boardApi.Areas.api.Controllers
                             await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
 
 
-                            var botSetting = User.tbBotSettings.FirstOrDefault();
+                            
                             if (botSetting != null)
                             {
                                 TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
@@ -209,9 +201,85 @@ namespace V2boardApi.Areas.api.Controllers
 
 
                         }
+                        var NewPrice = pr / 10;
+                        var DayAgo = DateTime.Now.AddHours(-24);
+                        var tbUserFactor = await RepositoryFactor.FirstOrDefaultAsync(p => p.tbUf_Value == NewPrice && p.tbUf_CreateTime.Value >= DayAgo && p.tbUf_Status == 1);
+                        if (tbUserFactor != null)
+                        {
+                            tbUserFactor.tbUf_Status = 2;
+                            RepositoryFactor.Save();
+
+                            var UserAgent = tbUserFactor.tbUsers;
+                            var PayedFactores = await RepositoryFactor.WhereAsync(s => s.tbUf_Status == 2 && s.FK_User_ID == UserAgent.User_ID);
+
+                            var SumPayFactores = PayedFactores.Sum(s => s.tbUf_Value);
+                            var SumPay2Factor = SumPayFactores;
+                            var res = SumPayFactores * 0.02;
+                            SumPay2Factor += (int)res;
+                            StringBuilder str = new StringBuilder();
+                            str.AppendLine("✅ نماینده گرامی رسید شما با موفقیت از سمت بانک تائید شد");
+                            str.AppendLine("");
+                            if (SumPay2Factor >= UserAgent.Wallet)
+                            {
+                                var Remainder = SumPayFactores - UserAgent.Wallet;
+
+                                if (SumPayFactores >= UserAgent.Wallet)
+                                {
+                                    UserAgent.Wallet = 0;
+                                    if (Remainder > 0)
+                                    {
+                                        UserAgent.Wallet -= (int)Remainder;
+                                        str.AppendLine("♨️ هزینه مازاد پرداختی به حالت بستانکار در کیف پول شما لحاظ شد");
+                                    }
+                                    else
+                                    {
+                                        str.AppendLine("♨️ بدهی شما صفر شد");
+                                    }
+                                }
+                                else
+                                {
+                                    str.AppendLine("♨️ رسید های شما از بدهی شما کسر و 2 درصد بدهی در کیف پول شما درج گردید");
+                                    UserAgent.Wallet = Math.Abs((int)Remainder);
+                                }
 
 
-                        return BadRequest("NOT FOUND ORDER");
+                                foreach (var item in PayedFactores)
+                                {
+                                    item.tbUf_Status = 3;
+                                }
+                                
+
+                            }
+                            else
+                            {
+                                str.AppendLine("♨️ رسید شما در سیستم ذخیره می شود بعد پرداخت کامل از بدهی شما کسر خواهد شد");
+                            }
+
+                            var TelegramUser = await RepositoryTelegramUser.FirstOrDefaultAsync(s => s.Tel_Username == UserAgent.TelegramID);
+                            if (TelegramUser != null)
+                            {
+                                str.AppendLine("");
+                                str.AppendLine("");
+                                str.AppendLine("🆔 @" + botSetting.Bot_ID);
+                                TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
+                                await botClient.SendTextMessageAsync(TelegramUser.Tel_UniqUserID, str.ToString());
+                            }
+                            RepositoryFactor.Save();
+                            transaction.Commit();
+                            return BadRequest("Add");
+                        }
+                        else
+                        {
+                            tbUserFactors factor = new tbUserFactors();
+                            factor.tbUf_Value = NewPrice;
+                            factor.tbUf_CreateTime = DateTime.Now;
+                            RepositoryFactor.Insert(factor);
+                            await RepositoryFactor.SaveChangesAsync();
+                            transaction.Commit();
+                            return BadRequest("Add");
+
+                        }
+
 
                     }
                     else
@@ -281,8 +349,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                 if (User != null)
                 {
-                    var firbase = await tbFirebaseMobileTokens.FirstOrDefaultAsync(s=> s.tbFireBase_SubToken == tokenModel.sub_Token && s.tbFirebase_Token == tokenModel.firebase_token);
-                    if(firbase != null)
+                    var firbase = await tbFirebaseMobileTokens.FirstOrDefaultAsync(s => s.tbFireBase_SubToken == tokenModel.sub_Token && s.tbFirebase_Token == tokenModel.firebase_token);
+                    if (firbase != null)
                     {
                         return Content(System.Net.HttpStatusCode.Conflict, "این توکن از قبل ثبت شده است");
                     }
@@ -292,7 +360,7 @@ namespace V2boardApi.Areas.api.Controllers
                     tbFirebaseMobile.tbFireBase_SubToken = tokenModel.sub_Token;
                     tbFirebaseMobileTokens.Insert(tbFirebaseMobile);
                     await tbFirebaseMobileTokens.SaveChangesAsync();
-                    logger.Info("توکن فایربیس نماینده "+ User.Username +" برای توکن "+ tokenModel.sub_Token + " اضافه گردید");
+                    logger.Info("توکن فایربیس نماینده " + User.Username + " برای توکن " + tokenModel.sub_Token + " اضافه گردید");
                     return Ok();
                 }
                 else
@@ -302,7 +370,7 @@ namespace V2boardApi.Areas.api.Controllers
             }
             catch (Exception ex)
             {
-                logger.Error(ex,"ثبت توکن فایبر بیس با خطا مواجه شد");
+                logger.Error(ex, "ثبت توکن فایبر بیس با خطا مواجه شد");
                 return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در پردازش اطلاعات");
             }
         }

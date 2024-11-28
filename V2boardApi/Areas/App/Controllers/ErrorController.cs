@@ -24,5 +24,10 @@ namespace V2boardApi.Areas.App.Controllers
         {
             return View();
         }
+
+        public ActionResult ErrorNotFoundFile()
+        {
+            return View();
+        }
     }
 }

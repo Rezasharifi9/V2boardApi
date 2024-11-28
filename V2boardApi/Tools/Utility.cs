@@ -95,7 +95,7 @@ namespace V2boardApi.Tools
         }
         public static string ConvertDateTimeToShamsi4(this DateTime dt)
         {
-            return dt.ToString("yyyy/MM/dd", CultureInfo.GetCultureInfo("fa-IR")); ;
+            return dt.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.GetCultureInfo("fa-IR")); ;
         }
         public static string GetMonthName(DateTime date)
         {

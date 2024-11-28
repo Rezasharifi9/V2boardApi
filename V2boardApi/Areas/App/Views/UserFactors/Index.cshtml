@@ -1,0 +1,209 @@
+﻿
+
+@section vendorStyle {
+
+    <link href="~/assets/vendor/libs/node-waves/node-waves.css" rel="stylesheet" />
+    <link href="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" />
+    <link href="~/assets/vendor/libs/typeahead-js/typeahead.css" rel="stylesheet" />
+    <link href="~/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" rel="stylesheet" />
+    <link href="~/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" rel="stylesheet" />
+    <link href="~/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" rel="stylesheet" />
+
+
+    <link rel="stylesheet" href="../../assets/vendor/libs/select2/select2.css" />
+    <link href="../../assets/libs/flatpickr/flatpickr.css" rel="stylesheet" />
+    <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
+    <link href="../../assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
+}
+<style>
+    .dataTables_filter {
+        margin-left: 10px !important;
+    }
+</style>
+
+<h4 class="py-3 mb-4">
+    پرداخت ها
+</h4>
+<h6>
+    در این صفحه می توانید پرداخت های نمایندگان را مدیریت کنید
+</h6>
+<!-- Invoice List Widget -->
+@Html.Action("_GeneralInfoPayment", "UserFactors", new { area = "App" })
+<!-- Invoice List Table -->
+<div class="card">
+    <div class="card-datatable table-responsive">
+        <table class="invoice-list-table table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>شناسه</th>
+                    <th>نماینده</th>
+                    <th>تاریخ</th>
+                    <th>مبلغ</th>
+                    <th>وضعیت</th>
+                    <th>عملیات</th>
+
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!--افزودن رسید-->
+<div aria-hidden="true" class="modal fade" id="modalAddFactor" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content section-block">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">اطلاعات پرداخت</h5>
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <form class="add-new-user pt-0" id="factorForm" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" value="" id="factor_id" name="factor_id" />
+                    <div class="row">
+                        <div class="col-md-6 message-text">
+                            <label class="form-label" for="usersSelect">نماینده<span class="text-danger"> * </span></label>
+                            <select id="usersSelect" class="select2 form-select" name="usersSelect">
+                                <option value="0">در حال بارگزاری ...</option>
+                            </select>
+
+                        </div>
+                        <div class="col-md-6 message-text">
+                            <label class="form-label" for="factorDate">تاریخ<span class="text-danger"> * </span></label>
+                            <input type="text" id="factorDate" class="form-control" placeholder="1403/02/01" aria-label="1403/02/01"
+                                   name="factorDate" />
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-6 message-text">
+                            <label class="form-label" for="factorPrice">مبلغ<span class="text-danger"> * </span></label>
+                            <div class="input-group">
+
+                                <input aria-label="(به نزدیکترین ءتء)" id="factorPrice" class="form-control" placeholder="500,000" type="text" onkeyup="separateDigits(this)" name="factorPrice">
+                                <span class="input-group-text">ءتء</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 message-text">
+                            <label class="form-label" for="factorFile">فایل رسید</label>
+                            <input class="form-control" id="factorFile" placeholder="رسید پرداخت را انتخاب کنید" type="file" name="factorFile" />
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-12 message-text">
+                            <label class="form-label" for="factorDescription"> توضیحات  </label>
+                            <textarea class="form-control bootstrap-maxlength-example form-repeater" name="factorDescription" id="factorDescription" maxlength="200" rows="5">
+</textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 message-text">
+                            <div class="form-check form-check-flat form-check-success" style="margin-bottom: 41px; margin-top: 10px;">
+                                <label class="form-check-label">
+                                    از بدهی کسر شود ؟ <span data-bs-toggle='tooltip' title="این گزینه زمانی فعال شود که می خواهید همین فاکتور از بدهی کسر شود"><i class="ti ti-help" style="font-size: 15px;"></i></span><i class="input-helper"></i> <input type="checkbox" class="form-check-input" id="factorDebt" name="factorDebt">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-label-secondary" data-bs-dismiss="modal" type="button"> بستن</button>
+                    <button class="btn btn-primary" type="submit">ثبت</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@*نمایش رسید*@
+<div aria-hidden="true" class="modal fade" id="modalFactorImg" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" id="#modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="justify-content:center;">
+                <h5 class="modal-title" id="exampleModalLabel2">رسید بانک</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body" id="#modal-body">
+                <div id="img_factor">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section vendorScripts {
+
+
+    <!-- Vendors JS -->
+    <script src="~/assets/vendor/libs/moment/moment.js"></script>
+    <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="~/assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
+
+}
+@section customScripts {
+
+
+
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
+    <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
+    <script src="../../assets/libs/jdate/jdate.js"></script>
+    <script src="../../assets/libs/flatpickr/flatpickr-jalali.js"></script>
+    <script src="../../assets/libs/flatpickr/l10n/fa.js"></script>
+    <script src="../../assets/vendor/libs/select2/select2.js"></script>
+    <script src="../../assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js"></script>
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+    <!-- Page JS -->
+    <script src="~/assets/js/app-invoice-list.js"></script>
+
+
+}
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script>
+
+
+    $(function () {
+
+        var flatpickrDate = document.querySelector('#factorDate');
+        if (flatpickrDate) {
+            flatpickrDate.flatpickr({
+                enableTime: true,
+                monthSelectorType: 'static',
+                locale: 'fa',
+                altFormat: 'Y/m/d',
+            });
+        }
+
+    });
+
+    function GetUsersSelect(selectId) {
+        var $select = $(selectId);
+        $.ajax({
+            url: "/App/Admin/GetUsersSelect",
+            type: "get",
+            dataType: "json",
+            async: true,
+            success: function (res) {
+                console.log(res);
+                // پاک کردن گزینه‌های قبلی
+                $select.empty();
+
+                // افزودن گزینه‌های جدید
+                $.each(res.data, function (index, item) {
+                    var newOption = new Option(item.username, item.id, false, false);
+                    $select.append(newOption);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("An error occurred: " + status + " " + error);
+            }
+        });
+
+    }
+
+</script>

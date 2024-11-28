@@ -4,63 +4,61 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="2fd8a31305a944bc858d2e92b419085f" Name="Diagram1">
-        <EntityTypeShape EntityType="SafeNetDBModel.NLog" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.sysdiagrams" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbBankCardNumbers" Width="1.5" PointX="11.25" PointY="18.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbBotSettings" Width="1.5" PointX="14.25" PointY="27.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbConnectionHelp" Width="1.5" PointX="11.25" PointY="21.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbDepositWallet_Log" Width="1.5" PointX="13.5" PointY="39.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbExpLog" Width="1.5" PointX="11.25" PointY="24.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbFailureServers" Width="1.5" PointX="2.75" PointY="3.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbFirebaseMobileTokens" Width="1.5" PointX="11.25" PointY="27.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbLinks" Width="1.5" PointX="3" PointY="28.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="14.25" PointY="34.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbLinkUserAndPlans" Width="1.5" PointX="14.25" PointY="24.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbLogs" Width="1.5" PointX="16.5" PointY="24.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbNotifications" Width="1.5" PointX="11.25" PointY="34" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbNotificationUser" Width="1.5" PointX="16.5" PointY="30.375" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbOrders" Width="1.5" PointX="16.5" PointY="33.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbPlans" Width="1.5" PointX="6" PointY="28.25" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbRedisInfo" Width="1.5" PointX="4.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbServerGroups" Width="1.5" PointX="12" PointY="30.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbServers" Width="1.5" PointX="0.75" PointY="27.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbSocks5" Width="1.5" PointX="4.75" PointY="3.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbTelegramUsers" Width="1.5" PointX="11.25" PointY="37.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="38.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbUseages" Width="1.5" PointX="3" PointY="41.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbUserFactors" Width="1.5" PointX="11.25" PointY="44" IsExpanded="true" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbUsers" Width="1.5" PointX="9" PointY="26.375" IsExpanded="true" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbBankCardNumbers_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbBotSettings_tbPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbBotSettings_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbConnectionHelp_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbExpLog_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbFirebaseMobileTokens_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbLinks_tbPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbLinks_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbLinks_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbLinkServerGroupWithUsers_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbLinkUserAndPlans_tbPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbLinkUserAndPlans_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbLogs_tbLinkUserAndPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbNotifications_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbNotificationUser_tbNotifications" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbNotificationUser_tbUsers1" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbOrders_tbPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbOrders_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbPlans_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbPlans_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbUpdateLogs_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbUseages_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbUsers_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbTelegramUsers_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbTelegramUsers_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbUsers_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbUserFactors_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="SafeNetDBModel.FK_tbUsers_tbUsers" ManuallyRouted="false" />
+      <Diagram DiagramId="2fd8a31305a944bc858d2e92b419085f" Name="Diagram1" ZoomLevel="52">
+        <EntityTypeShape EntityType="SafeNetDBModel.NLog" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="SafeNetDBModel.sysdiagrams" Width="1.5" PointX="2.75" PointY="0.75" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbBankCardNumbers" Width="1.5" PointX="8.25" PointY="45.625" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbBotSettings" Width="1.5" PointX="13.5" PointY="25" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbConnectionHelp" Width="1.5" PointX="8.25" PointY="36.25" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbDepositWallet_Log" Width="1.5" PointX="10.5" PointY="50.5" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbExpLog" Width="1.5" PointX="8.25" PointY="55.5" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbFailureServers" Width="1.5" PointX="2.75" PointY="3.75" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbFirebaseMobileTokens" Width="1.5" PointX="8.25" PointY="17.625" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbLinks" Width="1.5" PointX="3" PointY="32.125" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="11.25" PointY="29.75" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbLinkUserAndPlans" Width="1.5" PointX="10.5" PointY="26.625" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbLogs" Width="1.5" PointX="12.75" PointY="20.25" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbNotifications" Width="1.5" PointX="6" PointY="22.75" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbNotificationUser" Width="1.5" PointX="8.25" PointY="29.875" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbOrders" Width="1.5" PointX="10.5" PointY="35.375" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbPlans" Width="1.5" PointX="8.25" PointY="20.375" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbRedisInfo" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbServerGroups" Width="1.5" PointX="9" PointY="41.125" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbServers" Width="1.5" PointX="0.75" PointY="28.375" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbSocks5" Width="1.5" PointX="4.75" PointY="3.75" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbTelegramUsers" Width="1.5" PointX="8.25" PointY="48.875" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="63.625" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbUseages" Width="1.5" PointX="3" PointY="28" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbUserFactors" Width="1.5" PointX="8.25" PointY="58.625" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbUsers" Width="1.5" PointX="6" PointY="26.75" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbBankCardNumbers_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbBotSettings_tbPlans" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbBotSettings_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbConnectionHelp_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbExpLog_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbFirebaseMobileTokens_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbLinks_tbPlans" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbLinks_tbServers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbLinks_tbTelegramUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbLinkServerGroupWithUsers_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbLinkUserAndPlans_tbPlans" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbLinkUserAndPlans_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbLogs_tbLinkUserAndPlans" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbNotificationUser_tbNotifications" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbNotificationUser_tbUsers1" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbOrders_tbPlans" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbOrders_tbTelegramUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbPlans_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbUpdateLogs_tbServers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbUseages_tbServers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbUsers_tbServers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbTelegramUsers_tbTelegramUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbTelegramUsers_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbUsers_tbTelegramUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbUserFactors_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbUsers_tbUsers" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

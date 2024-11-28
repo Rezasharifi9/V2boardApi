@@ -24,7 +24,6 @@ namespace DataLayer.DomainModel
             this.tbFirebaseMobileTokens = new HashSet<tbFirebaseMobileTokens>();
             this.tbLinkServerGroupWithUsers = new HashSet<tbLinkServerGroupWithUsers>();
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
-            this.tbNotifications = new HashSet<tbNotifications>();
             this.tbNotificationUser = new HashSet<tbNotificationUser>();
             this.tbPlans = new HashSet<tbPlans>();
             this.tbTelegramUsers = new HashSet<tbTelegramUsers>();
@@ -71,8 +70,6 @@ namespace DataLayer.DomainModel
         public virtual ICollection<tbLinkServerGroupWithUsers> tbLinkServerGroupWithUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbNotifications> tbNotifications { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbNotificationUser> tbNotificationUser { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

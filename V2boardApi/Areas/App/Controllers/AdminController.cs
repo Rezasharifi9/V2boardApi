@@ -344,7 +344,7 @@ namespace V2boardApi.Areas.App.Controllers
                             return MessageBox.Warning("هشدار", "لطفا مبلغ را صحیح وارد کنید", icon: icon.warning);
                         }
                         tbUser.PhoneNumber = user.userContact;
-
+                        tbUser.TelegramID = user.userTelegramid;
 
 
                         if (tbUser.Username != user.userUsername)
@@ -925,7 +925,7 @@ namespace V2boardApi.Areas.App.Controllers
                     RepositoryUser.Save();
                     if (User.Role == 1)
                     {
-                        var URL = Url.Action("Index", "Dashboard");
+                        var URL = Url.Action("Index", "Admin");
                         return Json(new { status = "success", redirectURL = URL });
 
                     }
@@ -1021,7 +1021,7 @@ namespace V2boardApi.Areas.App.Controllers
             var User = RepositoryUser.Where(p => p.User_ID == user_id).FirstOrDefault();
             if (User != null)
             {
-                var Factors = User.tbUserFactors.Where(p => p.IsPayed == true).ToList();
+                var Factors = User.tbUserFactors.ToList();
                 List<UserFactorResponseModel> Factores = new List<UserFactorResponseModel>();
                 foreach (var item in Factors)
                 {
@@ -1073,7 +1073,6 @@ namespace V2boardApi.Areas.App.Controllers
                     factor.tbUf_Value = us.Wallet - intWallet;
                     factor.tbUf_CreateTime = DateTime.Now;
                     factor.FK_User_ID = user_id;
-                    factor.IsPayed = true;
                     us.Wallet = intWallet;
                     us.tbUserFactors.Add(factor);
                 }
@@ -1084,7 +1083,6 @@ namespace V2boardApi.Areas.App.Controllers
                     factor.tbUf_Value = us.Wallet - intWallet;
                     factor.tbUf_CreateTime = DateTime.Now;
                     factor.FK_User_ID = user_id;
-                    factor.IsPayed = true;
                     us.Wallet = intWallet;
                     us.tbUserFactors.Add(factor);
                 }
@@ -1256,7 +1254,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     reader3.Close();
 
-                    var Deb = user.tbUserFactors.Where(s => s.IsPayed == true).OrderByDescending(s => s.tbUf_CreateTime).FirstOrDefault();
+                    var Deb = user.tbUserFactors.OrderByDescending(s => s.tbUf_CreateTime).FirstOrDefault();
 
                     if (Users.Count > 0)
                     {
