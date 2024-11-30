@@ -291,7 +291,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     getUserData.IsOnline = true;
                                 }
                                 getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
-                                getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi4(ex);
+                                getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi5(ex);
                                 getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
 
                                 if (ex <= DateTime.Now)

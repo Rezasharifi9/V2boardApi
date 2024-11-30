@@ -231,7 +231,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [AuthorizeApp(Roles = "1,3,4")]
         [System.Web.Mvc.HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateOrEdit(UserRequestModel user)
         {
             try

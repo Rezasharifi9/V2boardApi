@@ -52,7 +52,7 @@
     </div>
     <div class="offcanvas-body flex-grow-1">
         <form class="add-new-record pt-0 row g-2" id="planForm">
-            <input type="hidden" name="id" value="" id="planId" />
+            <input type="hidden" name="id" value="0" id="planId" />
             <div class="col-sm-12">
                 <label class="form-label" for="basicFullname">نام تعرفه</label>
                 <div class="input-group input-group-merge">
@@ -153,10 +153,19 @@
 
     <script src="../../assets/js/app-plan-list.js"></script>
     <script>
-        $("#btnAddPlan").click(function () {
+        //$("#btnAddPlan").click(function () {
 
-            console.log("clicked");
-            document.getElementById('planForm').reset();
+        //    console.log("clicked");
+        //    document.getElementById('planForm').reset();
+
+        //});
+
+        $(function () {
+
+            $('#Add-Or-EditPlan').on('hidden.bs.offcanvas', function () {
+                    console.log("clicked");
+                    document.getElementById('planForm').reset();
+            });
 
         });
     </script>

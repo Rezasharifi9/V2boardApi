@@ -171,7 +171,7 @@ namespace V2boardApi.Areas.App.Controllers
 
 
 
-                        if (model.id != null)
+                        if (model.id != 0)
                         {
                             plan = await RepositoryPlans.FirstOrDefaultAsync(s => s.Plan_ID == model.id);
                             Query = "update v2_plan set group_id=@planGroup,content=@Content,transfer_enable=@planTraffic,name=@planName,speed_limit=@Speed where id= @Plan_ID_V2";
@@ -188,7 +188,7 @@ namespace V2boardApi.Areas.App.Controllers
                             Reader.Close();
                             plan.Group_Id = group.FK_Group_Id;
 
-                            if (model.id == null)
+                            if (model.id == 0)
                             {
                                 var Disc3 = new Dictionary<string, object>();
                                 Disc3.Add("@planName", model.planName);
@@ -216,7 +216,7 @@ namespace V2boardApi.Areas.App.Controllers
                             plan.Speed_limit = model.planSpeed;
                             plan.device_limit = model.planDevicelimit;
                             plan.FK_User_ID = user.User_ID;
-                            if (model.id == null)
+                            if (model.id == 0)
                             {
                                 RepositoryPlans.Insert(plan);
                             }
@@ -226,7 +226,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                         }
                     }
-                    if (model.id != null)
+                    if (model.id != 0)
                     {
                         logger.Info("تعرفه با موفقیت ویرایش گردید");
                         return Toaster.Success("موفق", "تعرفه با موفقیت ویرایش گردید");
