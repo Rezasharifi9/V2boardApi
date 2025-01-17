@@ -101,6 +101,10 @@ namespace V2boardApi.Tools
         {
             return dt.ToString("yyyy/MM/dd", CultureInfo.GetCultureInfo("fa-IR")); ;
         }
+        public static string GetTime(this DateTime dt)
+        {
+            return dt.ToString("HH:mm", CultureInfo.GetCultureInfo("fa-IR")); ;
+        }
         public static string GetMonthName(DateTime date)
         {
             PersianCalendar pc = new PersianCalendar();

@@ -167,6 +167,9 @@
     <Compile Include="DomainModel\tbFirebaseMobileTokens.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbHistoryChats.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbLinks.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>

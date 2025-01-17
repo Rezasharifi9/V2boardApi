@@ -59,6 +59,9 @@
         <AssociationConnector Association="SafeNetDBModel.FK_tbUsers_tbTelegramUsers" />
         <AssociationConnector Association="SafeNetDBModel.FK_tbUserFactors_tbUsers" />
         <AssociationConnector Association="SafeNetDBModel.FK_tbUsers_tbUsers" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbHistoryChats" Width="1.5" PointX="8.25" PointY="33.125" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbHistoryChats_tbUsers" />
+        <AssociationConnector Association="SafeNetDBModel.FK_tbHistoryChats_tbUsers1" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

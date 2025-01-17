@@ -1,0 +1,25 @@
+﻿@model List<DataLayer.DomainModel.tbUsers>
+
+
+
+@foreach (var item in Model)
+{
+    <li class="chat-contact-list-item" onclick="OpenChat('@item.User_ID')" data-id="@item.User_ID">
+        <a class="d-flex align-items-center">
+            <div class="flex-shrink-0 avatar avatar-offline">
+                <img alt="آواتار" class="rounded-circle" src="~/assets/img/avatars/profile.png" />
+            </div>
+            <div class="chat-contact-info flex-grow-1 ms-2">
+                <h6 class="chat-contact-name text-truncate m-0">@item.Username</h6>
+                @if (item.Role == 3 || item.Role == 4)
+                {
+                    <p class="chat-contact-status text-muted text-truncate mb-0">نماینده ارشد</p>
+                }
+                else if (item.Role == 2)
+                {
+                    <p class="chat-contact-status text-muted text-truncate mb-0">نماینده</p>
+                }
+            </div>
+        </a>
+    </li>
+}

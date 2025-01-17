@@ -20,6 +20,16 @@ namespace DataLayer.Repository
             throw new NotImplementedException();
         }
 
+        public Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<T>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public T GetById(object id)
         {
             throw new NotImplementedException();
@@ -31,6 +41,11 @@ namespace DataLayer.Repository
         }
 
         public bool Save()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> SaveChangesAsync()
         {
             throw new NotImplementedException();
         }

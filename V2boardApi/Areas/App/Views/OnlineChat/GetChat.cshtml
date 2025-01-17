@@ -1,0 +1,55 @@
+﻿@model List<V2boardApi.Models.OnlineChatModel.ChatViewModel>
+<ul class="list-unstyled chat-history">
+
+    @foreach (var item in Model)
+    {
+        if (item.SenderIsMe)
+        {
+            <li class="chat-message chat-message-right">
+                <div class="d-flex overflow-hidden">
+                    <div class="chat-message-wrapper flex-grow-1">
+                        <div class="chat-message-text">
+                            <p class="mb-0">@item.MessageText</p>
+                        </div>
+                        <div class="text-end text-muted mt-1">
+                            @if (item.Seened)
+                            {
+                                <i class="ti ti-checks ti-xs me-1 text-success"></i>
+                            }
+                            else
+                            {
+                                <i class="ti ti-checks ti-xs me-1 text-secondary"></i>
+                            }
+                            <small>@item.MessageTime</small>
+                        </div>
+                    </div>
+                    <div class="user-avatar flex-shrink-0 ms-3">
+                        <div class="avatar avatar-sm">
+                            <img alt="آواتار" class="rounded-circle" src="~/assets/img/avatars/profile.png" />
+                        </div>
+                    </div>
+                </div>
+            </li>
+        }
+        else
+        {
+            <li class="chat-message">
+                <div class="d-flex overflow-hidden">
+                    <div class="user-avatar flex-shrink-0 me-3">
+                        <div class="avatar avatar-sm">
+                            <img alt="آواتار" class="rounded-circle" src="~/assets/img/avatars/profile.png" />
+                        </div>
+                    </div>
+                    <div class="chat-message-wrapper flex-grow-1">
+                        <div class="chat-message-text">
+                            <p class="mb-0">@item.MessageText</p>
+                        </div>
+                        <div class="text-muted mt-1">
+                            <small>@item.MessageTime</small>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        }
+    }
+</ul>

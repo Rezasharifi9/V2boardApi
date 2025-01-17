@@ -131,6 +131,17 @@
           <Property Name="tbFireBase_SubToken" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="tbFireBase_FK_User_ID" Type="int" Nullable="false" />
         </EntityType>
+        <EntityType Name="tbHistoryChats">
+          <Key>
+            <PropertyRef Name="chatId" />
+          </Key>
+          <Property Name="chatId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="fk_fromUser" Type="int" Nullable="false" />
+          <Property Name="fk_toUser" Type="int" Nullable="false" />
+          <Property Name="message" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="createDatetime" Type="datetime" Nullable="false" />
+          <Property Name="seened" Type="bit" Nullable="false" />
+        </EntityType>
         <EntityType Name="tbLinks">
           <Key>
             <PropertyRef Name="tbLink_ID" />
@@ -473,6 +484,30 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbHistoryChats_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbHistoryChats" Type="Self.tbHistoryChats" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbHistoryChats">
+              <PropertyRef Name="fk_fromUser" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbHistoryChats_tbUsers1">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbHistoryChats" Type="Self.tbHistoryChats" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbHistoryChats">
+              <PropertyRef Name="fk_toUser" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbLinks_tbPlans">
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
@@ -793,6 +828,7 @@
           <EntitySet Name="tbExpLog" EntityType="Self.tbExpLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbFailureServers" EntityType="Self.tbFailureServers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbFirebaseMobileTokens" EntityType="Self.tbFirebaseMobileTokens" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbHistoryChats" EntityType="Self.tbHistoryChats" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinks" EntityType="Self.tbLinks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="Self.tbLinkServerGroupWithUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" Schema="dbo" store:Type="Tables" />
@@ -837,6 +873,14 @@
           <AssociationSet Name="FK_tbFirebaseMobileTokens_tbUsers" Association="Self.FK_tbFirebaseMobileTokens_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbFirebaseMobileTokens" EntitySet="tbFirebaseMobileTokens" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbHistoryChats_tbUsers" Association="Self.FK_tbHistoryChats_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbHistoryChats_tbUsers1" Association="Self.FK_tbHistoryChats_tbUsers1">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
           </AssociationSet>
           <AssociationSet Name="FK_tbLinks_tbPlans" Association="Self.FK_tbLinks_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
@@ -1099,6 +1143,15 @@
           <AssociationSet Name="FK_tbUsers_tbUsers" Association="SafeNetDBModel.FK_tbUsers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
+          </AssociationSet>
+          <EntitySet Name="tbHistoryChats" EntityType="SafeNetDBModel.tbHistoryChats" />
+          <AssociationSet Name="FK_tbHistoryChats_tbUsers" Association="SafeNetDBModel.FK_tbHistoryChats_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbHistoryChats_tbUsers1" Association="SafeNetDBModel.FK_tbHistoryChats_tbUsers1">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
           </AssociationSet>
           </EntityContainer>
         <ComplexType Name="GetBotSales_Result">
@@ -1563,6 +1616,8 @@
           <NavigationProperty Name="tbUserFactors" Relationship="SafeNetDBModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
           <NavigationProperty Name="tbUsers1" Relationship="SafeNetDBModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="SafeNetDBModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
+          <NavigationProperty Name="tbHistoryChats" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers" FromRole="tbUsers" ToRole="tbHistoryChats" />
+          <NavigationProperty Name="tbHistoryChats1" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers1" FromRole="tbUsers" ToRole="tbHistoryChats" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
@@ -1919,6 +1974,43 @@
             </Principal>
             <Dependent Role="tbUsers1">
               <PropertyRef Name="Parent_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="tbHistoryChats">
+          <Key>
+            <PropertyRef Name="chatId" />
+          </Key>
+          <Property Name="chatId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="fk_fromUser" Type="Int32" Nullable="false" />
+          <Property Name="fk_toUser" Type="Int32" Nullable="false" />
+          <Property Name="message" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers" FromRole="tbHistoryChats" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers1" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers1" FromRole="tbHistoryChats" ToRole="tbUsers" />
+          <Property Name="createDatetime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="seened" Type="Boolean" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_tbHistoryChats_tbUsers">
+          <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="SafeNetDBModel.tbHistoryChats" Role="tbHistoryChats" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbHistoryChats">
+              <PropertyRef Name="fk_fromUser" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbHistoryChats_tbUsers1">
+          <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="SafeNetDBModel.tbHistoryChats" Role="tbHistoryChats" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbHistoryChats">
+              <PropertyRef Name="fk_toUser" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -2381,6 +2473,18 @@
                 <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="User_ID" ColumnName="User_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbHistoryChats">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbHistoryChats">
+              <MappingFragment StoreEntitySet="tbHistoryChats">
+                <ScalarProperty Name="seened" ColumnName="seened" />
+                <ScalarProperty Name="createDatetime" ColumnName="createDatetime" />
+                <ScalarProperty Name="message" ColumnName="message" />
+                <ScalarProperty Name="fk_toUser" ColumnName="fk_toUser" />
+                <ScalarProperty Name="fk_fromUser" ColumnName="fk_fromUser" />
+                <ScalarProperty Name="chatId" ColumnName="chatId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

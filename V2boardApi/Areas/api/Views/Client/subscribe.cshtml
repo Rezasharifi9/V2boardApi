@@ -31,10 +31,28 @@
                         فعال
                     </span>
                 }
-                else if (Model.IsActive == 2 || Model.IsActive == 3 || Model.IsActive == 4)
+                else if (Model.IsActive == 2)
                 {
                     <span class="text-slate-800 text-xs font-bold px-2 py-1 rounded-sm bg-red-500 shadow-md">
-                        اتمام تاریخ انقضا
+                        اتمام حجم
+                    </span>
+                }
+                else if (Model.IsActive == 3)
+                {
+                    <span class="text-slate-800 text-xs font-bold px-2 py-1 rounded-sm bg-red-500 shadow-md">
+                        اتمام زمان
+                    </span>
+                }
+                else if (Model.IsActive == 4)
+                {
+                    <span class="text-slate-800 text-xs font-bold px-2 py-1 rounded-sm bg-red-500 shadow-md">
+                        اتمام حجم و زمان
+                    </span>
+                }
+                else if (Model.IsActive == 5)
+                {
+                    <span class="text-slate-800 text-xs font-bold px-2 py-1 rounded-sm bg-red-500 shadow-md">
+                        مسدود شده
                     </span>
                 }
 

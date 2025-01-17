@@ -183,9 +183,16 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var response = await httpClient.GetAsync(fileUrl);
 
 
-                                                var DateAgo = DateTime.Now.AddDays(-24);
-                                                var Factor =  RepoFactor.Where(s => s.tbUf_Value == pr && s.tbUf_Status == null && s.tbUf_CreateTime >= DateAgo).OrderByDescending(s=> s.tbUf_CreateTime.Value).FirstOrDefault();                                               if (Factor != null)
+                                                var DateAgo = DateTime.Now.AddHours(-3);
+                                                var Factor = RepoFactor.Where(s => s.tbUf_Value == pr && s.tbUf_Status == null && s.tbUf_CreateTime >= DateAgo).OrderByDescending(s => s.tbUf_CreateTime.Value).FirstOrDefault();
+                                                if (Factor != null)
                                                 {
+
+                                                    StringBuilder str2 = new StringBuilder();
+                                                    str2.AppendLine("🧑‍💻 مدیر عزیز");
+                                                    str2.AppendLine("");
+                                                    str2.AppendLine("🤵 نماینده با نام کاربری : " + UserAgent.Username);
+                                                    str2.AppendLine("");
                                                     Factor.tbUf_Status = 2;
                                                     Factor.FK_User_ID = UserAgent.User_ID;
 
@@ -228,15 +235,19 @@ namespace V2boardApi.Areas.api.Controllers
                                                             {
                                                                 UserAgent.Wallet -= (int)Remainder;
                                                                 str.AppendLine("♨️ هزینه مازاد پرداختی به حالت بستانکار در کیف پول شما لحاظ شد");
+                                                                str2.AppendLine("کیف پول اش صفرشد و به حالت بستنکار در آمد");
                                                             }
                                                             else
                                                             {
                                                                 str.AppendLine("♨️ بدهی شما صفر شد");
+                                                                str2.AppendLine("بدهی نماینده صفرشد");
                                                             }
+                                                            Factor.tbUf_Description = "آخرین فاکتور ثبت شده";
                                                         }
                                                         else
                                                         {
                                                             str.AppendLine("♨️ رسید های شما از بدهی شما کسر و 2 درصد بدهی در کیف پول شما درج گردید");
+                                                            str2.AppendLine("کیف پول اش به مقدار 2 درصد بدهی درج گردید و مابقی کسر گردید");
                                                             UserAgent.Wallet = Math.Abs((int)Remainder);
                                                         }
 
@@ -250,16 +261,31 @@ namespace V2boardApi.Areas.api.Controllers
                                                     else
                                                     {
                                                         str.AppendLine("♨️ رسید شما در سیستم ذخیره می شود بعد پرداخت کامل از بدهی شما کسر خواهد شد");
+                                                        str2.AppendLine("");
+                                                        str2.AppendLine("واریزی اش در سیستم ثبت گردید");
+                                                        str2.AppendLine("");
+                                                        str2.AppendLine("💸 مبلغ : " + Factor.tbUf_Value.Value.ConvertToMony() + " تومان");
+                                                        str2.AppendLine("🕐 تاریخ :" + DateTime.Now.ConvertDateTimeToShamsi2());
                                                     }
-                                                    
+
 
                                                     await tbUsersRepository.SaveChangesAsync();
                                                     await RepoFactor.SaveChangesAsync();
 
                                                     str.AppendLine("");
+                                                    str.AppendLine("<b>" + "⚠️ نکته : حتما رسید را نهایتا تا 3 ساعت بعد از واریز برای ربات ارسال کنید" + "</b>");
                                                     str.AppendLine("");
                                                     str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                                     await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html);
+
+                                                    var admin = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == BotSettings.AdminBot_ID.ToString()).FirstOrDefault();
+                                                    if (admin != null)
+                                                    {
+                                                        TelegramBotClient botClient = new TelegramBotClient(BotSettings.Bot_Token);
+                                                        await botClient.SendTextMessageAsync(admin.Tel_UniqUserID, str2.ToString());
+                                                    }
+
+                                                    return;
 
                                                 }
                                                 else
@@ -289,7 +315,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                     await tbUsersRepository.SaveChangesAsync();
 
                                                     StringBuilder str = new StringBuilder();
-                                                    str.AppendLine("✅ نماینده گرامی رسید شما موفقیت ثبت گردید . می توانید وارد پنل شوید و از بخش فاکتور ها رسید خود را مشاهده کنید");
+                                                    str.AppendLine("✅ نماینده گرامی رسید شما موفقیت ثبت گردید . حتما بعد از 10 دقیقه چک کنید در بخش پرداخت ها در پنل که پرداختیتون به حالت پرداخت شده در آمده باشد");
                                                     str.AppendLine("");
                                                     str.AppendLine("");
                                                     str.AppendLine("🆔 @" + BotSettings.Bot_ID);
@@ -302,7 +328,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             catch (Exception ex)
                                             {
                                                 logger.Error(ex, "خطا در ثبت رسید از طریق ربات");
-                                                
+
                                             }
                                         }
                                         else
@@ -1039,8 +1065,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         if (BotSettings.IsActiveCardToCard == true)
                                         {
-                                            str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                            str.AppendLine("<b>" + "⚠️ نکته : هر فاکتور 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
+                                            str.AppendLine("");
+                                            str.AppendLine("<b>" + "❗️ لطفا به مبلغ واریزی دقت کنید در صورت واریزی اشتباه امکان بازگشت وجه نیست" + "</b>");
                                         }
+
                                         tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
                                         tbDeposit.dw_Price = fullPrice;
                                         tbDeposit.dw_CreateDatetime = DateTime.Now;
@@ -1986,7 +2015,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (callbackQuery.Data == "InventoryIncreaseCard")
                                 {
                                     StringBuilder str = new StringBuilder();
-                                    str.AppendLine("◀️  لطفا مبلغ مورد نظر خود را جهت افزایش موجودی وارد کنید ");
+                                    str.AppendLine("◀️  لطفا مبلغ مورد نظر خود را به تومان جهت افزایش موجودی وارد کنید ");
                                     str.AppendLine("");
                                     str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 10,000 تومان تا 5,000,000 تومان می باشد");
                                     str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");

@@ -42,12 +42,14 @@ using System.IO.Packaging;
 using Stimulsoft.Data.Expressions.Antlr.Runtime.Misc;
 using Org.BouncyCastle.Utilities;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNet.SignalR;
 
 namespace V2boardApi.Areas.App.Controllers
 {
     [LogActionFilter]
     public class AdminController : Controller
     {
+        private readonly IHubContext _chatHubContext;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -80,6 +82,9 @@ namespace V2boardApi.Areas.App.Controllers
             serverGroup_Repo = new Repository<tbServerGroups>(db);
             repositoryCard = new Repository<tbBankCardNumbers>(db);
             repositoryOrders = new Repository<tbOrders>(db);
+
+            _chatHubContext = GlobalHost.ConnectionManager.GetHubContext<ChatHub>();
+            
         }
 
         #region تغییر پروفایل
@@ -703,13 +708,6 @@ namespace V2boardApi.Areas.App.Controllers
         {
             return View();
         }
-        // کلاس کمکی برای ذخیره داده‌های کاربر
-        public class UserData
-        {
-            public long UserId { get; set; }
-            public string Email { get; set; }
-            public DateTime ExpirationDate { get; set; }
-        }
         /// <summary>
         /// تابع لاگین از سمت پنل ادمین
         /// </summary>
@@ -923,6 +921,10 @@ namespace V2boardApi.Areas.App.Controllers
 
                     logger.Info("ورود موفق");
                     RepositoryUser.Save();
+
+                    // ارسال پیام به SignalR برای ثبت کاربر
+                    _chatHubContext.Clients.All.RegisterUser(User.Username);
+
                     if (User.Role == 1)
                     {
                         var URL = Url.Action("Index", "Admin");

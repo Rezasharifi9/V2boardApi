@@ -147,7 +147,7 @@ namespace V2boardApi.Areas.api.Controllers
                         
 
 
-                        var date2 = DateTime.Now.AddDays(-2);
+                        var date2 = DateTime.Now.AddHours(-24);
                         var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2);
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         foreach (var item in tbDepositLog)
@@ -202,7 +202,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                         }
                         var NewPrice = pr / 10;
-                        var DayAgo = DateTime.Now.AddHours(-24);
+                        var DayAgo = DateTime.Now.AddHours(-6);
                         var tbUserFactor = await RepositoryFactor.FirstOrDefaultAsync(p => p.tbUf_Value == NewPrice && p.tbUf_CreateTime.Value >= DayAgo && p.tbUf_Status == 1);
                         if (tbUserFactor != null)
                         {
@@ -219,9 +219,17 @@ namespace V2boardApi.Areas.api.Controllers
                             StringBuilder str = new StringBuilder();
                             str.AppendLine("✅ نماینده گرامی رسید شما با موفقیت از سمت بانک تائید شد");
                             str.AppendLine("");
+                            StringBuilder str2 = new StringBuilder();
+                            str2.AppendLine("🧑‍💻 مدیر عزیز");
+                            str2.AppendLine("");
+                            str2.AppendLine("🤵 نماینده با نام کاربری : "+ UserAgent.Username);
+                            str2.AppendLine("");
                             if (SumPay2Factor >= UserAgent.Wallet)
                             {
                                 var Remainder = SumPayFactores - UserAgent.Wallet;
+
+
+                                var PayedFactroress = PayedFactores.OrderByDescending(s => s.tbUf_CreateTime).ToList();
 
                                 if (SumPayFactores >= UserAgent.Wallet)
                                 {
@@ -230,15 +238,21 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         UserAgent.Wallet -= (int)Remainder;
                                         str.AppendLine("♨️ هزینه مازاد پرداختی به حالت بستانکار در کیف پول شما لحاظ شد");
+
+                                        str2.AppendLine("کیف پول اش صفرشد و به حالت بستنکار در آمد");
                                     }
                                     else
                                     {
                                         str.AppendLine("♨️ بدهی شما صفر شد");
+
+                                        str2.AppendLine("بدهی اش صفرشد");
                                     }
+                                    tbUserFactor.tbUf_Description = "آخرین فاکتور ثبت شده";
                                 }
                                 else
                                 {
                                     str.AppendLine("♨️ رسید های شما از بدهی شما کسر و 2 درصد بدهی در کیف پول شما درج گردید");
+                                    str2.AppendLine("کیف پول اش به مقدار 2 درصد بدهی درج گردید و مابقی کسر گردید");
                                     UserAgent.Wallet = Math.Abs((int)Remainder);
                                 }
 
@@ -253,12 +267,15 @@ namespace V2boardApi.Areas.api.Controllers
                             else
                             {
                                 str.AppendLine("♨️ رسید شما در سیستم ذخیره می شود بعد پرداخت کامل از بدهی شما کسر خواهد شد");
+
+                                str2.AppendLine("واریزی اش در سیستم ثبت گردید");
                             }
 
                             var TelegramUser = await RepositoryTelegramUser.FirstOrDefaultAsync(s => s.Tel_Username == UserAgent.TelegramID);
                             if (TelegramUser != null)
                             {
                                 str.AppendLine("");
+                                str.AppendLine("<b>"+ "⚠️ نکته : حتما رسید را نهایتا تا 3 ساعت بعد از واریز برای ربات ارسال کنید" + "</b>");
                                 str.AppendLine("");
                                 str.AppendLine("🆔 @" + botSetting.Bot_ID);
                                 TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
@@ -266,6 +283,14 @@ namespace V2boardApi.Areas.api.Controllers
                             }
                             RepositoryFactor.Save();
                             transaction.Commit();
+
+                            var admin = RepositoryTelegramUser.Where(s => s.Tel_UniqUserID == botSetting.AdminBot_ID.ToString()).FirstOrDefault();
+                            if(admin != null)
+                            {
+                                TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
+                                await botClient.SendTextMessageAsync(admin.Tel_UniqUserID, str2.ToString());
+                            }
+
                             return BadRequest("Add");
                         }
                         else
@@ -279,8 +304,6 @@ namespace V2boardApi.Areas.api.Controllers
                             return BadRequest("Add");
 
                         }
-
-
                     }
                     else
                     {

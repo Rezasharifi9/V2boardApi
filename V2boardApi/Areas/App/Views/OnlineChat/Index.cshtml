@@ -1,0 +1,224 @@
+﻿@section vendorStyle {
+
+    <!-- Page CSS -->
+    <link href="~/assets/vendor/css/pages/app-chat.css" rel="stylesheet" />
+
+
+}
+@{
+    var Role = V2boardApi.Tools.JwtToken.GetUserRole();
+}
+<div class="app-chat card overflow-hidden">
+    <div class="row g-0">
+        <!-- Sidebar Left -->
+        <div class="col app-chat-sidebar-left app-sidebar overflow-hidden" id="app-chat-sidebar-left">
+            <div class="chat-sidebar-left-user sidebar-header d-flex flex-column justify-content-center align-items-center flex-wrap px-4 pt-5">
+                <div class="avatar avatar-xl avatar-online">
+                    <img alt="آواتار" class="rounded-circle" src="../../assets/img/avatars/1.png" />
+                </div>
+                <h5 class="mt-2 mb-0">جواد عزتی</h5>
+                <span>Admin</span>
+                <i class="ti ti-x ti-sm cursor-pointer close-sidebar" data-bs-toggle="sidebar" data-overlay data-target="#app-chat-sidebar-left"></i>
+            </div>
+            <div class="sidebar-body px-4 pb-4">
+                <div class="my-4">
+                    <small class="text-muted text-uppercase">وضعیت</small>
+                    <div class="d-grid gap-2 mt-3">
+                        <div class="form-check form-check-success">
+                            <input checked class="form-check-input" id="user-active" name="chat-user-status" type="radio" value="active" />
+                            <label class="form-check-label" for="user-active">فعال</label>
+                        </div>
+                        <div class="form-check form-check-danger">
+                            <input class="form-check-input" id="user-busy" name="chat-user-status" type="radio" value="busy" />
+                            <label class="form-check-label" for="user-busy">گرفتار</label>
+                        </div>
+                        <div class="form-check form-check-warning">
+                            <input class="form-check-input" id="user-away" name="chat-user-status" type="radio" value="away" />
+                            <label class="form-check-label" for="user-away">دور</label>
+                        </div>
+                        <div class="form-check form-check-secondary">
+                            <input class="form-check-input" id="user-offline" name="chat-user-status" type="radio" value="offline" />
+                            <label class="form-check-label" for="user-offline">آفلاین</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex mt-4">
+                    <button class="btn btn-primary" data-bs-toggle="sidebar" data-overlay data-target="#app-chat-sidebar-left"> خروج</button>
+                </div>
+            </div>
+        </div>
+        <!-- /Sidebar Left-->
+        <!-- Chat & Contacts -->
+        <div class="col app-chat-contacts app-sidebar flex-grow-0 overflow-hidden border-end" id="app-chat-contacts">
+            <div class="sidebar-header">
+                <div class="d-flex align-items-center me-3 me-lg-0">
+                    <div class="flex-shrink-0 avatar avatar-online me-3" data-bs-toggle="sidebar" data-overlay="app-overlay-ex" data-target="#app-chat-sidebar-left">
+                        <img alt="آواتار" class="user-avatar rounded-circle cursor-pointer" src="~/assets/img/avatars/profile.png" />
+                    </div>
+                    <div class="flex-grow-1 input-group input-group-merge rounded-pill">
+                        <span class="input-group-text" id="basic-addon-search31">
+                            <i class="ti ti-search h-mirror"></i>
+                        </span>
+                        <input aria-describedby="basic-addon-search31" aria-label="جستجو..." class="form-control chat-search-input" placeholder="جستجو..." type="text" />
+                    </div>
+                </div>
+                <i class="ti ti-x cursor-pointer d-lg-none d-block position-absolute mt-2 me-1 top-0 end-0" data-bs-toggle="sidebar" data-overlay data-target="#app-chat-contacts"></i>
+            </div>
+            <hr class="container-m-nx m-0" />
+            <div class="sidebar-body">
+                <div class="chat-contact-list-item-title">
+                    @if (Role == "1" || Role == "3" || Role == "4")
+                    {
+                        <h5 class="text-primary mb-0 px-4 pt-3 pb-2">چت با نمایندگان</h5>
+                    }
+                    else
+                    {
+                        <h5 class="text-primary mb-0 px-4 pt-3 pb-2">چت با مدیر</h5>
+                    }
+                </div>
+                <!-- Chats -->
+                <ul class="list-unstyled chat-contact-list" id="chat-list">
+                    <li class="chat-contact-list-item chat-list-item-0 d-none">
+                        <h6 class="text-muted mb-0">هیچ گپی پیدا نشد</h6>
+                    </li>
+                    @Html.Action("GetChatUsers", "OnlineChat", new { area = "App" })
+
+
+
+                </ul>
+                <!-- Contacts -->
+                @if (Role == "3" || Role == "1" || Role == "4")
+                {
+                    <ul class="list-unstyled chat-contact-list mb-0" id="contact-list">
+                        <li class="chat-contact-list-item chat-contact-list-item-title">
+                            <h5 class="text-primary mb-0">نمایندگان</h5>
+                        </li>
+                        <li class="chat-contact-list-item contact-list-item-0 d-none">
+                            <h6 class="text-muted mb-0">هیچ نماینده ای یافت نشد</h6>
+                        </li>
+                        @Html.Action("GetContacts", "OnlineChat", new { area = "App" })
+                    </ul>
+                }
+            </div>
+        </div>
+        <!-- /Chat contacts -->
+        <!-- Chat History -->
+        <div class="col app-chat-history bg-body">
+            <div class="chat-history-wrapper">
+                <div class="chat-history-header border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex overflow-hidden align-items-center">
+                            <i class="ti ti-menu-2 ti-sm cursor-pointer d-lg-none d-block me-2" data-bs-toggle="sidebar" data-overlay data-target="#app-chat-contacts"></i>
+                            <div class="flex-shrink-0 avatar">
+                                <img alt="آواتار" class="rounded-circle" data-bs-toggle="sidebar" data-overlay data-target="#app-chat-sidebar-right" src="~/assets/img/avatars/profile.png" />
+                            </div>
+                            <div class="chat-contact-info flex-grow-1 ms-2">
+                                <h6 class="m-0" id="uUsername">....</h6>
+                                <small class="user-status text-muted" id="uRole">....</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-history-body bg-body section-block" id="chatbody">
+
+                </div>
+                <!-- Chat message form -->
+                <div class="chat-history-footer shadow-sm">
+                    <form class="form-send-message d-flex justify-content-between align-items-center">
+                        <input class="form-control message-input border-0 me-3 shadow-none" placeholder="پیام خود را اینجا تایپ کنید" />
+                        <div class="message-actions d-flex align-items-center">
+                            <i class="speech-to-text ti ti-microphone ti-sm cursor-pointer"></i>
+                            <label class="form-label mb-0" for="attach-doc">
+                                <i class="ti ti-photo ti-sm cursor-pointer mx-3"></i>
+                                <input hidden id="attach-doc" type="file" />
+                            </label>
+                            <button class="btn btn-primary d-flex send-msg-btn">
+                                <span class="align-middle d-md-inline-block d-none">ارسال</span>
+                                <i class="ti ti-send ms-md-1 ms-0 ic-mirror"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- /Chat History -->
+        <div class="app-overlay"></div>
+    </div>
+</div>
+
+@section VendorScripts {
+
+    <script src="~/assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js"></script>
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+
+}
+
+@section CustomScripts {
+    <script src="~/Scripts/jquery.signalR-2.4.3.js"></script>
+    <script src="~/signalr/hubs" type="text/javascript"></script>
+    <script src="~/assets/js/app-chat.js"></script>
+
+    <script>
+
+
+
+
+        function OpenChat(userid) {
+
+            blockUI('.section-block');
+            $.ajax({
+                url: "@Url.Action("GetInfoUser", "OnlineChat", new {area="App"})",
+                type: "Post",
+                dataType: "json",
+                data: { userid: userid },
+                success: function (result) {
+                    $("#uUsername").text(result.username);
+                    $("#uRole").text(result.role);
+                }
+            });
+
+            $.ajax({
+                url: "@Url.Action("GetChat","OnlineChat", new {area="App"})",
+                type: "Post",
+                dataType: "html",
+                data: { userid: userid },
+                success: function (result) {
+                    UnblockUI(".section-block");
+                    $("#chatbody").html(result);
+                    var chatHistoryBody = document.querySelector('.chat-history-body');
+                    chatHistoryBody.scrollTo(0, chatHistoryBody.scrollHeight);
+
+                    $('#chatbody > ul').addClass("classChat_" + userid);
+
+                }
+            });
+
+            
+
+
+        }
+
+
+
+        $(function () {
+
+            // start hub connection
+            $.connection.hub.start()
+                .done(function () {
+                })
+                .fail(function () {
+                    alert("failed");
+                });
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/chatHub", {
+                    transport: signalR.HttpTransportType.WebSockets
+                })
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+        });
+
+
+    </script>
+}

@@ -9,13 +9,19 @@ namespace DataLayer
 {
     public interface IRepository<T> where T : class
     {
+
         List<T> ToList();
         List<T> Where(Expression<Func<T, bool>> predicate);
         Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate);
+        Task<List<T>> GetAllAsync();
+        Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
+        Task<int> SaveChangesAsync();
         T GetById(object id);
         void Insert(T obj);
         void Update(T obj);
         void Delete(int id);
         bool Save();
+        void Dispose();
+
     }
 }

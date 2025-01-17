@@ -37,7 +37,6 @@
     @{
         var Role = V2boardApi.Tools.JwtToken.GetUserRole();
 
-
     }
 
     <!-- Layout wrapper -->
@@ -59,6 +58,7 @@
                 </div>
                 <div class="menu-inner-shadow"></div>
                 <ul class="menu-inner py-1">
+
                     @if (Role != null)
                     {
                         if (Role == "1")
@@ -184,8 +184,18 @@
                             <div>ربات</div>
                         </a>
                     </li>
-
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text" data-i18n="Components">پشتیبانی</span>
+                    </li>
+                    <li class="menu-item" style="">
+                        <a class="menu-link" href="@Url.Action("Index","OnlineChat",new {area="App"})">
+                            <i class="menu-icon tf-icons ti ti-message"></i>
+                            <div>چت آنلاین</div>
+                        </a>
+                    </li>
                 </ul>
+
+                
             </aside>
             <!-- / Menu -->
             <!-- Layout container -->
