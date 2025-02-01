@@ -13,7 +13,7 @@ using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
 {
-    [AuthorizeApp(Roles ="1,2,3,4")]
+    [AuthorizeApp(Roles = "1,2,3,4")]
     public class OnlineChatController : Controller
     {
         private readonly IHubContext<ChatHub> _chatHubContext;
@@ -41,7 +41,22 @@ namespace V2boardApi.Areas.App.Controllers
         public ActionResult GetChatUsers()
         {
             var userId = Convert.ToInt32(JwtToken.GetUser_ID());
-            var users = UsersRepository.Where(s => s.tbHistoryChats1.Where(a => a.fk_fromUser == userId).Count() > 0 || s.tbHistoryChats1.Where(a => a.fk_toUser == userId).Count() > 0).Where(s => s.User_ID != userId).Reverse().ToList();
+    
+            var Role = JwtToken.GetUserRole();
+
+            var UserMe = UsersRepository.Where(s => s.User_ID == userId).FirstOrDefault();
+
+            var users = new List<tbUsers>();
+            if (Role == "2")
+            {
+                users = UsersRepository.Where(s => s.User_ID == UserMe.Parent_ID).ToList();
+            }
+            else if (Role == "1" || Role == "3" || Role == "4")
+            {
+
+                users = UsersRepository.Where(s => s.Parent_ID == UserMe.User_ID && (s.tbHistoryChats.Count > 0 || s.tbHistoryChats1.Count > 0)).ToList();
+            }
+
 
             return PartialView(users);
 
@@ -73,7 +88,7 @@ namespace V2boardApi.Areas.App.Controllers
                     chat.Seened = true;
                     item.seened = true;
                 }
-                
+
                 chat.MessageText = item.message;
                 chat.MessageTime = Utility.GetTime(item.createDatetime);
                 Chats.Add(chat);
@@ -89,11 +104,11 @@ namespace V2boardApi.Areas.App.Controllers
             var User = UsersRepository.Where(s => s.User_ID == userid).FirstOrDefault();
 
             var Role = "";
-            if(User.Role == 2)
+            if (User.Role == 2)
             {
                 Role = "نماینده";
             }
-            else if(User.Role == 3 || User.Role == 4)
+            else if (User.Role == 3 || User.Role == 4)
             {
                 Role = "نماینده ارشد";
             }

@@ -414,7 +414,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     }
                                     else
                                     {
-                                        exp = DateTime.Now.AddMonths((int)plan.PlanMonth).ConvertDatetimeToSecond().ToString();
+                                        exp = DateTime.Now.AddDays(plan.PlanMonth * 30).ConvertDatetimeToSecond().ToString();
                                     }
 
 
@@ -786,7 +786,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                         else
                         {
-                            exp = DateTime.Now.AddMonths((int)Plan.PlanMonth).ConvertDatetimeToSecond().ToString();
+                            exp = DateTime.Now.AddMonths(Plan.PlanMonth * 30).ConvertDatetimeToSecond().ToString();
                         }
                         //چک می کنیم اگر نماینده بود از بر اساس محاسبات نماینده کل از کیف پولش کسر میکنیم
                         if (user.Role == 3)
