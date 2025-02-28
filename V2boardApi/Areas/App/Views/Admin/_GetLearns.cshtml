@@ -1,0 +1,33 @@
+﻿
+
+<form class="row g-3" id="LearnsForm">
+    <input type="hidden" name="user_id" id="user_id" value="" />
+    <input type="hidden" name="Learn_ID" id="id" value="" />
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <label class="form-label" for="Learn_Title"> عنوان آموزش <span class="text-danger"> * </span></label>
+            <input class="form-control" id="Learn_Title" dir="ltr" name="Learn_Title" placeholder="" type="text" />
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label" for="Learn_Link"> لینک آموزش در کانال <span class="text-danger"> * </span></label>
+            <input class="form-control" id="Learn_Link" name="Learn_Link" placeholder="" type="text" />
+        </div>
+    </div>
+    <div class="col-12" style="text-align:left;">
+        <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
+
+    </div>
+</form>
+<br />
+<div class="learns-datatable table-responsive">
+    <table class="datatables-learns table">
+        <thead class="border-top">
+            <tr>
+                <th></th>
+                <th>عنوان آموزش</th>
+                <th>لینک آموزش</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+    </table>
+</div>

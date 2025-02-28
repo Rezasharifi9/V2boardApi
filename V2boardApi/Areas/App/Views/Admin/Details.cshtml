@@ -141,6 +141,9 @@
                         <li class="nav-item">
                             <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-cards" data-bs-toggle="tab" role="tab">کارت ها</button>
                         </li>
+                        <li class="nav-item">
+                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-learns" data-bs-toggle="tab" role="tab">آموزش ها</button>
+                        </li>
                     </ul>
                 </div>
                 <div class="tab-content section-block">
@@ -194,6 +197,9 @@
                     </div>
                     <div class="tab-pane fade" id="form-tabs-cards" role="tabpanel">
                         @Html.Action("_GetBankNumbers", "Admin", new { area = "App", user_id = Model })
+                    </div>
+                    <div class="tab-pane fade" id="form-tabs-learns" role="tabpanel">
+                        @Html.Action("_GetLearns", "Admin", new { area = "App" })
                     </div>
 
                 </div>

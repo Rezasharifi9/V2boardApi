@@ -132,7 +132,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                         else
                         {
-                            var Date = DateTime.Now.AddMonths(model.planTime.Value);
+                            var Date = DateTime.Now.AddDays(model.planTime.Value * 30);
 
                             time = Utility.ConvertDatetimeToSecond(Date).ToString();
                         }

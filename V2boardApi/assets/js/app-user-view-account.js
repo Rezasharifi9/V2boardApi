@@ -1133,3 +1133,255 @@ $(function () {
 
 
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Learns
+
+
+let LearnsFv;
+
+// datatable (jquery)
+$(function () {
+
+    $('[data-bs-toggle="popover"]').tooltip();
+
+    var dt_learns_table = $('.datatables-learns');
+    var dt_learns;
+    // DataTable with buttons
+    // --------------------------------------------------------------------
+
+
+    if (dt_learns_table.length) {
+        dt_learns = dt_learns_table.DataTable({
+            ajax: '/App/Admin/_GetLearnsAsync?user_id=' + getUrlParameter("user_id"),
+            columns: [
+                { data: '' },
+                { data: 'Learn_Title' },
+                { data: 'Learn_Link' },
+                { data: '' },
+            ],
+            initComplete: function (setting, json) {
+
+                //تولتیپ کردن بعد از لود دیتا
+                $('[data-bs-toggle="popover"]').tooltip();
+            },
+            drawCallback: function (settings) {
+                //تولتیپ کردن بعد از تغییر صفحه یا سرچ
+                $('[data-bs-toggle="popover"]').tooltip();
+
+            },
+            columnDefs: [
+                {
+                    // For Responsive
+                    className: 'control',
+                    orderable: false,
+                    searchable: false,
+                    responsivePriority: 2,
+                    targets: 0,
+                    render: function (data, type, full, meta) {
+                        return '';
+                    }
+                },
+                {
+                    // Learn_Title
+                    targets: 1,
+                    responsivePriority: 1,
+                    render: function (data, type, full, meta) {
+                        var $name = full['Learn_Title'];
+                        // Creates full output for row
+                        var $row_output = "<span dir='ltr'>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Learn_Link
+                    targets: 2,
+                    responsivePriority: 2,
+                    render: function (data, type, full, meta) {
+                        var $name = full['Learn_Link'];
+                        // Creates full output for row
+                        var $row_output = "<span dir='ltr'>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Actions
+                    targets: -1,
+                    title: 'عملیات',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, full, meta) {
+
+                        return (
+                            '<button type="button" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditLearn" data-id="' + full["Learn_ID"] + '" data-Learn_Title="' + full["Learn_Title"] + '" data-Learn_Link="' + full["Learn_Link"] + '"><i class="text-primary ti ti-pencil"></i></button>' +
+                            '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteLearn" data-id="' + full["Learn_ID"] + '"><i class="text-primary ti ti-trash"></i></a>'
+                        );
+                    }
+                }
+            ],
+            "language": {
+                "paginate": {
+                    "first": "اولین",
+                    "last": "آخرین",
+                    "next": "بعدی",
+                    "previous": "قبلی"
+                },
+                "info": "نمایش _START_ تا _END_ از _TOTAL_ ورودی",
+                "lengthMenu": "نمایش _MENU_ ورودی",
+                "search": "جستجو:",
+                "zeroRecords": "موردی یافت نشد",
+                "infoEmpty": "هیچ موردی موجود نیست",
+                "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
+                sLengthMenu: '_MENU_',
+                search: '',
+                searchPlaceholder: 'جستجوی کارت',
+                loadingRecords: "در حال بارگزاری ..."
+            },
+            lengthChange: false,
+            displayLength: 10,
+            lengthMenu: [10, 25, 50, 75, 100]
+        });
+        $('div.head-label').html('<h5 class="card-title mb-0">تعرفه ها</h5>');
+    }
+
+    setTimeout(() => {
+        $('.dataTables_filter .form-control').removeClass('form-control-sm');
+        $('.dataTables_length .form-select').removeClass('form-select-sm');
+    }, 300);
+
+    //// EditCard
+    $('body').on('click', '.EditLearn', function () {
+
+        var id = $(this).attr("data-id");
+        var Learn_Title = $(this).attr("data-Learn_Title");
+        var Learn_Link = $(this).attr("data-Learn_Link");
+
+        $("#Learn_Title").val(Learn_Title);
+        $("#Learn_Link").val(Learn_Link);
+
+        $("#LearnsForm").find("#id").val(id);
+
+    });
+
+
+
+    //// Remove Card
+    $('body').on('click', '.DeleteLearn', function () {
+
+        var id = $(this).attr("data-id");
+
+        Swal.fire({
+            title: 'هشدار',
+            text: "آیا مطمئن هستی ؟",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+
+                blockUI(".section-block");
+
+                AjaxGet("/App/Admin/DeleteLearn?Learn_ID=" + id + "&user_id=" + getUrlParameter("user_id")).then(res => {
+
+                    UnblockUI(".section-block");
+                    eval(res.data);
+                    if (res.status == "success") {
+
+                        dt_learns.ajax.reload(null, false);
+                    }
+
+
+                });
+
+            }
+        });
+
+    });
+
+
+
+
+    const LearnsForm = document.getElementById('LearnsForm');
+
+    // Form validation for Add new record
+    LearnsFv = FormValidation.formValidation(LearnsForm, {
+        fields: {
+            Learn_Title: {
+                validators: {
+                    notEmpty: {
+                        message: 'عنوان آموزش را وارد کنید'
+                    }
+                }
+            },
+            Learn_Link: {
+                validators: {
+                    notEmpty: {
+                        message: 'لینک آموزش را وارد کنید'
+                    }
+                }
+            }
+        },
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                // Use this for enabling/changing valid/invalid class
+                // eleInvalidClass: '',
+                eleValidClass: '',
+                rowSelector: '.mb-3'
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+        },
+        init: instance => {
+            instance.on('plugins.message.placed', function (e) {
+                if (e.element.parentElement.classList.contains('input-group')) {
+                    e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+                }
+            });
+        }
+    });
+
+    LearnsFv.on('core.form.valid', function (e) {
+
+
+        $("#LearnsForm").find("#user_id").val(getUrlParameter("user_id"));
+
+        blockUI(".section-block");
+
+        AjaxFormPost('/App/Admin/SaveLearn', "#LearnsForm").then(res => {
+            UnblockUI(".section-block");
+            eval(res.data);
+            if (res.status == "success") {
+
+                dt_learns.ajax.reload(null, false);
+            }
+
+        });
+    });
+
+
+});

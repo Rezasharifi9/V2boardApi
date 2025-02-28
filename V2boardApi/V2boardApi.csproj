@@ -405,6 +405,7 @@
     </Compile>
     <Compile Include="Models\AdminModel\AccountsViewModel.cs" />
     <Compile Include="Models\AdminModel\BankNumberViewModel.cs" />
+    <Compile Include="Models\AdminModel\LearnsViewModel.cs" />
     <Compile Include="Models\AdminModel\LoginModel.cs" />
     <Compile Include="Models\AdminModel\UserLogViewModel.cs" />
     <Compile Include="Models\AdminModel\UsersModel.cs" />
@@ -1864,6 +1865,7 @@
     <Content Include="Areas\App\Views\OnlineChat\GetChatUsers.cshtml" />
     <Content Include="Areas\App\Views\OnlineChat\GetContacts.cshtml" />
     <Content Include="Areas\App\Views\OnlineChat\GetChat.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_GetLearns.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

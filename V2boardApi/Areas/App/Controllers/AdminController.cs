@@ -43,6 +43,7 @@ using Stimulsoft.Data.Expressions.Antlr.Runtime.Misc;
 using Org.BouncyCastle.Utilities;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR;
+using StackExchange.Redis;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -82,6 +83,7 @@ namespace V2boardApi.Areas.App.Controllers
             serverGroup_Repo = new Repository<tbServerGroups>(db);
             repositoryCard = new Repository<tbBankCardNumbers>(db);
             repositoryOrders = new Repository<tbOrders>(db);
+            
 
             _chatHubContext = GlobalHost.ConnectionManager.GetHubContext<ChatHub>();
             
@@ -1873,6 +1875,105 @@ namespace V2boardApi.Areas.App.Controllers
             }
 
         }
+
+        #endregion
+
+        #region تنظیمات ( آموزش ها )
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult _GetLearns()
+        {
+            return PartialView("_GetLearns");
+
+        }
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1")]
+        public async Task<ActionResult> _GetLearnsAsync(int user_id)
+        {
+            var user = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == user_id);
+
+            List<LearnsViewModel> Learns = new List<LearnsViewModel>();
+
+            foreach (var item in user.tbConnectionHelp)
+            {
+                LearnsViewModel learn = new LearnsViewModel();
+                learn.Learn_Title = item.ch_Title;
+                learn.Learn_Link = item.ch_Link;
+                learn.Learn_ID = item.ch_ID;
+                Learns.Add(learn);
+
+            }
+
+
+            return Json(new { status = "success", data = Learns }, JsonRequestBehavior.AllowGet);
+
+        }
+
+        [System.Web.Mvc.HttpGet]
+        public async Task<ActionResult> DeleteLearn(int Learn_ID, int user_id)
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+
+
+                var Learn = user.tbConnectionHelp.Where(s => s.ch_ID == Learn_ID).FirstOrDefault();
+                if (Learn != null)
+                {
+                    user.tbConnectionHelp.Remove(Learn);
+
+                    await repositoryCard.SaveChangesAsync();
+                    logger.Info("آموزش با موفقیت حذف گردید");
+                    return Toaster.Success("موفق", "آموزش مورد نظر حذف گردید");
+                }
+                else
+                {
+                    return MessageBox.Warning("هشدار", "آموزش مورد نظر یافت نشد");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در حذف آموزش");
+                return MessageBox.Error("خطا", "خطا در حذف آموزش");
+            }
+
+        }
+
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> SaveLearn(int user_id, string Learn_Title, string Learn_Link, int Learn_ID = 0)
+        {
+            var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+            if (Learn_ID != 0)
+            {
+                var Learn = user.tbConnectionHelp.Where(s => s.ch_ID == Learn_ID).FirstOrDefault();
+                if (Learn != null)
+                {
+                    Learn.ch_Link = Learn_Link;
+                    Learn.ch_Title = Learn_Title;
+                    Learn.ch_Type = "vpn";
+
+                }
+                await RepositoryUser.SaveChangesAsync();
+                return Toaster.Success("موفق", "اطلاعات آموزش ویرایش شد");
+            }
+            else
+            {
+                tbConnectionHelp learn = new tbConnectionHelp();
+                learn.ch_Link = Learn_Link;
+                learn.ch_Title = Learn_Title;
+                learn.ch_Type = "vpn";
+
+
+                user.tbConnectionHelp.Add(learn);
+                await RepositoryUser.SaveChangesAsync();
+                return Toaster.Success("موفق", "اطلاعات آموزش اضافه شد");
+            }
+        }
+
 
         #endregion
 
