@@ -78,7 +78,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                 return Json(new { data = List_Factor }, JsonRequestBehavior.AllowGet);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex, "خطا در لود لیست پرداخت ها");
                 return Content("");
@@ -96,7 +96,9 @@ namespace V2boardApi.Areas.App.Controllers
                 GeneralInfoPaymentViewModel payInfo = new GeneralInfoPaymentViewModel();
                 var Pc = new PersianCalendar();
                 var NowMonth = Pc.GetMonth(DateTime.Now);
-                var Factores = RepositoryFactors.GetAll().Where(s => Pc.GetMonth(s.tbUf_CreateTime.Value) == NowMonth && s.tbUsers?.Parent_ID?.ToString() == UserID && s.tbUf_Status != null).ToList();
+                var DateFirstYear = Pc.ToDateTime(Pc.GetYear(DateTime.Now), NowMonth, 1, 0, 0, 0, 0);
+
+                var Factores = RepositoryFactors.GetAll().Where(s => s.tbUf_CreateTime >= DateFirstYear && s.tbUsers?.Parent_ID?.ToString() == UserID && s.tbUf_Status != null).ToList();
                 var Users = RepositoryUsers.Where(s => s.Parent_ID.ToString() == UserID && s.Status == true).ToList();
 
 
@@ -171,7 +173,7 @@ namespace V2boardApi.Areas.App.Controllers
                     return Toaster.Success("موفق", "فاکتور با موفقیت اضافه گردید");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex, "خطا در ثبت پرداخت جدید");
                 return MessageBox.Error("خطا", "خطا در ثبت پرداخت");
@@ -203,7 +205,7 @@ namespace V2boardApi.Areas.App.Controllers
                     return RedirectToAction("ErrorNotFoundFile", "Error");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex, "خطا در دانلود فایل رسید");
                 return RedirectToAction("Error500", "Error");
@@ -269,7 +271,7 @@ namespace V2boardApi.Areas.App.Controllers
                 logger.Warn("پرداخت حذف گردید");
                 return Toaster.Success("موفق", "پرداخت ثبت شده با موفقیت حذف گردید");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex, "خطا در حذف پرداخت");
                 return MessageBox.Error("خطا", "خطا در حذف پرداخت");
