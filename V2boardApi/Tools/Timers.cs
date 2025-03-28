@@ -284,7 +284,7 @@ public class TimerService
                         {
                             var Disc = new Dictionary<string, object>();
                             Disc.Add("@email", item.AccountName);
-                            using (var Reader = await mySql.GetDataAsync("select * from v2_user where email like @email", Disc))
+                            using (var Reader = await mySql.GetDataAsync("select * from v2_user where email = @email", Disc))
                             {
                                 var Read = await Reader.ReadAsync();
                                 if (Read)

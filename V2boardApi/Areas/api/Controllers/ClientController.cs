@@ -172,7 +172,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         {
                                             Status = 3;
                                         }
-                                        if (day <= 0 && Status == 2)
+                                        if (day <= 0 && VolumeRemaning <= 0)
                                         {
                                             Status = 4;
                                         }
@@ -296,7 +296,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (ex <= DateTime.Now)
                                 {
-                                    getUserData.IsActive = 2;
+                                    getUserData.IsActive = 3;
                                 }
                                 if (getUserData.DaysLeft <= 2)
                                 {
@@ -307,7 +307,7 @@ namespace V2boardApi.Areas.api.Controllers
                             
                             if (getUserData.IsBanned)
                             {
-                                getUserData.IsActive = 4;
+                                getUserData.IsActive = 5;
                             }
 
                             getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
@@ -319,7 +319,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                             if (vol <= 0)
                             {
-                                getUserData.IsActive = 3;
+                                getUserData.IsActive = 2;
                             }
                             var d = Utility.ConvertByteToGB(vol);
                             if (d <= 2)

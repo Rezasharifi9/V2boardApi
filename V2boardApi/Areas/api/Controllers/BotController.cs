@@ -2302,7 +2302,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             Disc1.Add("@tbL_Email", Link.tbL_Email);
 
 
-                                            var Reader = await mySql.GetDataAsync("select * from v2_user where email like @tbL_Email", Disc1);
+                                            var Reader = await mySql.GetDataAsync("select * from v2_user where email = @tbL_Email", Disc1);
                                             var Ended = false;
                                             while (await Reader.ReadAsync())
                                             {
@@ -2929,7 +2929,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 Disc1.Add("@tbL_Email", Link.tbL_Email);
 
 
-                                                var Reader = await mySql.GetDataAsync("select * from v2_user where email like @tbL_Email", Disc1);
+                                                var Reader = await mySql.GetDataAsync("select * from v2_user where email = @tbL_Email", Disc1);
                                                 var Ended = false;
                                                 while (await Reader.ReadAsync())
                                                 {
