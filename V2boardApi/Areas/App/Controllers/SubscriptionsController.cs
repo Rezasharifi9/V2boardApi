@@ -439,7 +439,7 @@ namespace V2boardApi.Areas.App.Controllers
                                             {
                                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
 
-                                                user.tbUsers2.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser); ;
+                                                user.tbUsers2.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser);
                                             }
                                         }
                                         else
