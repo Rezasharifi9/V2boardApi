@@ -178,6 +178,7 @@
           <Property Name="L_FK_U_ID" Type="int" />
           <Property Name="L_FK_P_ID" Type="int" />
           <Property Name="L_Status" Type="bit" />
+          <Property Name="L_SellPrice" Type="int" />
         </EntityType>
         <EntityType Name="tbLogs">
           <Key>
@@ -1356,6 +1357,7 @@
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbLinkUserAndPlans" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbLinkUserAndPlans" ToRole="tbUsers" />
           <NavigationProperty Name="tbLogs" Relationship="SafeNetDBModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbLogs" />
+          <Property Name="L_SellPrice" Type="Int32" />
         </EntityType>
         <EntityType Name="tbLogs">
           <Key>
@@ -2236,6 +2238,7 @@
           <EntitySetMapping Name="tbLinkUserAndPlans">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbLinkUserAndPlans">
               <MappingFragment StoreEntitySet="tbLinkUserAndPlans">
+                <ScalarProperty Name="L_SellPrice" ColumnName="L_SellPrice" />
                 <ScalarProperty Name="L_Status" ColumnName="L_Status" />
                 <ScalarProperty Name="L_FK_P_ID" ColumnName="L_FK_P_ID" />
                 <ScalarProperty Name="L_FK_U_ID" ColumnName="L_FK_U_ID" />

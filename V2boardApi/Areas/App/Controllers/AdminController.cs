@@ -83,10 +83,10 @@ namespace V2boardApi.Areas.App.Controllers
             serverGroup_Repo = new Repository<tbServerGroups>(db);
             repositoryCard = new Repository<tbBankCardNumbers>(db);
             repositoryOrders = new Repository<tbOrders>(db);
-            
+
 
             _chatHubContext = GlobalHost.ConnectionManager.GetHubContext<ChatHub>();
-            
+
         }
 
         #region تغییر پروفایل
@@ -500,7 +500,7 @@ namespace V2boardApi.Areas.App.Controllers
         #region نمایش
         [System.Web.Mvc.HttpGet]
         [AuthorizeApp(Roles = "1,3,4")]
-        public async Task<ActionResult> SelectPlan(int user_id)
+        public async Task<ActionResult> GetPlans(int user_id)
         {
             try
             {
@@ -520,7 +520,27 @@ namespace V2boardApi.Areas.App.Controllers
 
                 var plans = user.tbLinkUserAndPlans.Where(p => p.L_Status == true).ToList();
 
-                return Json(new { status = "success", data = plans.Select(s => s.tbPlans.Plan_ID).ToList() }, JsonRequestBehavior.AllowGet);
+                List<UserPlansViewModel> userPlansViews = new List<UserPlansViewModel>();
+                foreach (var item in plans)
+                {
+                    UserPlansViewModel userPlans = new UserPlansViewModel();
+                    userPlans.UserPlan_ID = item.Link_PU_ID;
+                    userPlans.UserPlan_Name = item.tbPlans.Plan_Name;
+                    userPlans.Plan_ID = item.L_FK_P_ID.Value;
+                    if (item.L_SellPrice is null)
+                    {
+                        userPlans.UserPlan_Price = "ندارد";
+                    }
+                    else
+                    {
+                        userPlans.UserPlan_Price = item.L_SellPrice.Value.ConvertToMony() + " " + "ءتء";
+                    }
+
+                    userPlansViews.Add(userPlans);
+                }
+
+
+                return Json(new { status = "success", data = userPlansViews }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
@@ -536,7 +556,7 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,3,4")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> SetPlan(int user_id, List<int> userPlan)
+        public async Task<ActionResult> SetPlan(int user_id, int userPlan, string userPlanPrice)
         {
             try
             {
@@ -552,29 +572,43 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     return RedirectToAction("Error404", "Error", new { area = "App" });
                 }
-                foreach (var plan in user.tbLinkUserAndPlans)
-                {
-                    plan.L_Status = false;
-                }
 
-                if (userPlan != null)
+
+                var planuser = user.tbLinkUserAndPlans.Where(p => p.L_FK_P_ID == userPlan).FirstOrDefault();
+                if (planuser != null)
                 {
-                    foreach (var plan in userPlan)
+                    planuser.L_Status = true;
+                    if(userPlanPrice != "")
                     {
-                        var planuser = user.tbLinkUserAndPlans.Where(p => p.L_FK_P_ID == plan && p.L_Status == false).FirstOrDefault();
-                        if (planuser != null)
+                        try
                         {
-                            planuser.L_Status = true;
+                            planuser.L_SellPrice = int.Parse(userPlanPrice, NumberStyles.Currency);
                         }
-                        else
+                        catch(Exception ex)
                         {
-                            tbLinkUserAndPlans link = new tbLinkUserAndPlans();
-                            link.L_Status = true;
-                            link.L_FK_P_ID = plan;
-                            user.tbLinkUserAndPlans.Add(link);
+                            return MessageBox.Warning("هشدار", "لطفا قیمت فروش نماینده رو به صورت صحیح وارد کنید");
                         }
                     }
                 }
+                else
+                {
+                    tbLinkUserAndPlans link = new tbLinkUserAndPlans();
+                    link.L_Status = true;
+                    link.L_FK_P_ID = userPlan;
+                    if (userPlanPrice != "")
+                    {
+                        try
+                        {
+                            planuser.L_SellPrice = int.Parse(userPlanPrice, NumberStyles.Currency);
+                        }
+                        catch (Exception ex)
+                        {
+                            return MessageBox.Warning("هشدار", "لطفا قیمت فروش نماینده رو به صورت صحیح وارد کنید");
+                        }
+                    }
+                    user.tbLinkUserAndPlans.Add(link);
+                }
+
                 await RepositoryUser.SaveChangesAsync();
                 return Toaster.Success("موفق", "تعرفه های نماینده با موفقیت تغییر کرد");
 
@@ -588,6 +622,25 @@ namespace V2boardApi.Areas.App.Controllers
 
 
         }
+
+        #endregion
+
+        #region حذف 
+
+        [System.Web.Http.HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> DeletePlan(int id)
+        {
+            var planLink = await RepositoryUserPlanLinks.FirstOrDefaultAsync(s => s.Link_PU_ID == id);
+
+            planLink.L_Status = false;
+
+
+            await RepositoryUserPlanLinks.SaveChangesAsync();
+
+            return Toaster.Success("موفق", "تعرفه تخصیص داده شده حذف گردید");
+        }
+
 
         #endregion
 
@@ -899,7 +952,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     User.Token = (userUsername + userPassword).ToSha256();
 
-                    var token = JwtToken.GenerateToken(User.User_ID.ToString(), User.Role.ToString(), JwtToken.GetSecretKey(),1440);
+                    var token = JwtToken.GenerateToken(User.User_ID.ToString(), User.Role.ToString(), JwtToken.GetSecretKey(), 1440);
 
 
                     HttpCookie Role = new HttpCookie("Role");
@@ -959,10 +1012,10 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.Authorize]
         public ActionResult LogOut()
         {
-            
+
             Response.Cookies.Remove("Token");
             Response.Cookies.Remove("Role");
-            
+
             FormsAuthentication.SignOut();
             logger.Info("خروج موفق");
             return RedirectToAction("Login", "Admin");

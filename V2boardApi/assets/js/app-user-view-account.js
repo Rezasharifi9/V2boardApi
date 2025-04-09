@@ -292,6 +292,247 @@ $(function () {
     });
 
 
+    //لیست تعرفه ها
+    function Plans(selectId) {
+        var $select = $(selectId);
+
+        $.ajax({
+            url: "/App/Plan/Select2Plans",
+            type: "get",
+            dataType: "json",
+            success: function (res) {
+                // پاک کردن گزینه‌های قبلی
+                $select.empty();
+
+                // افزودن گزینه‌های جدید
+                $.each(res.result, function (index, item) {
+                    var newOption = new Option(item.Name, item.id, false, false);
+                    $select.append(newOption);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("An error occurred: " + status + " " + error);
+            }
+        });
+    }
+
+    
+    //جهت انتخاب تعرفه
+    function SelectPlans(selectId, Ids) {
+        $(selectId).val(Ids).trigger('change');
+    }
+
+
+    // Use plan Table
+    var dt_plan = $('.datatable-plan');
+
+
+    if (dt_plan.length) {
+
+        Plans("#userPlan");
+
+        var $this = $("#userPlan").select2();
+        $this.wrap('<div class="position-relative"></div>').select2({
+            placeholder: 'انتخاب تعرفه',
+            dropdownParent: $this.parent(),
+            allowClear: false
+        });
+
+        dt_plan = dt_plan.DataTable({
+            ajax: '/App/Admin/GetPlans?user_id=' + getUrlParameter("user_id"),
+            columns: [
+                { data: '' },
+                { data: 'UserPlan_Name' },
+                { data: 'UserPlan_Price' },
+                { data: '' }
+            ],
+            initComplete: function (setting, json) {
+
+                //تولتیپ کردن بعد از لود دیتا
+                $('[data-bs-toggle="popover"]').tooltip();
+            },
+            drawCallback: function (settings) {
+                //تولتیپ کردن بعد از تغییر صفحه یا سرچ
+                $('[data-bs-toggle="popover"]').tooltip();
+
+            },
+            columnDefs: [
+                {
+                    // For Responsive
+                    className: 'control',
+                    orderable: false,
+                    searchable: false,
+                    responsivePriority: 2,
+                    targets: 0,
+                    render: function (data, type, full, meta) {
+                        return '';
+                    }
+                },
+                {
+                    // UserPlan_Name
+                    targets: 1,
+                    responsivePriority: 1,
+                    render: function (data, type, full, meta) {
+                        var $name = full['UserPlan_Name'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // UserPlan_Price
+                    targets: 2,
+                    responsivePriority: 2,
+                    render: function (data, type, full, meta) {
+                        var $name = full['UserPlan_Price'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $name + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    targets: -1,
+                    title: 'عملیات',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, full, meta) {
+                        return (
+                            '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteUserPlan" data-id="' + full["UserPlan_ID"] + '">' +
+                            '<i class="text-primary ti ti-trash"></i></a>'
+                        );
+                    }
+                }
+
+            ],
+            "language": {
+                "paginate": {
+                    "first": "اولین",
+                    "last": "آخرین",
+                    "next": "بعدی",
+                    "previous": "قبلی"
+                },
+                "info": "نمایش _START_ تا _END_ از _TOTAL_ ورودی",
+                "lengthMenu": "نمایش _MENU_ ورودی",
+                "search": "جستجو:",
+                "zeroRecords": "موردی یافت نشد",
+                "infoEmpty": "هیچ موردی موجود نیست",
+                "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
+                sLengthMenu: '_MENU_',
+                search: '',
+                searchPlaceholder: 'جست و جو',
+                loadingRecords: "در حال بارگزاری ..."
+            },
+            lengthChange: false,
+            displayLength: 7,
+            lengthMenu: [10, 25, 50, 75, 100],
+            responsive: {
+                details: {
+                    display: $.fn.dataTable.Responsive.display.modal({
+                        header: function (row) {
+                            var data = row.data();
+                            return 'جزئیات ' + data['PlanName'];
+                        }
+                    }),
+                    type: 'column',
+                    renderer: function (api, rowIdx, columns) {
+                        var data = $.map(columns, function (col, i) {
+                            return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                ? '<tr data-dt-row="' +
+                                col.rowIndex +
+                                '" data-dt-column="' +
+                                col.columnIndex +
+                                '">' +
+                                '<td>' +
+                                col.title +
+                                ':' +
+                                '</td> ' +
+                                '<td>' +
+                                col.data +
+                                '</td>' +
+                                '</tr>'
+                                : '';
+                        }).join('');
+
+                        return data ? $('<table class="table"/><tbody />').append(data) : false;
+                    }
+                }
+            }
+        });
+        $('div.head-label').html('<h5 class="card-title mb-0">تعرفه ها</h5>');
+
+
+        ////////////////////////////Form Section///////////////////////////////
+
+
+        const phoneMaskList = document.querySelectorAll('.phone-mask'),
+            addNewPlanForm = document.getElementById('addNewPlanForm');
+
+        // Phone Number
+        if (phoneMaskList) {
+            phoneMaskList.forEach(function (phoneMask) {
+                new Cleave(phoneMask, {
+                    phone: true,
+                    phoneRegionCode: 'US'
+                });
+            });
+        }
+        const fv = FormValidation.formValidation(addNewPlanForm, {
+            plugins: {
+                trigger: new FormValidation.plugins.Trigger(),
+                bootstrap5: new FormValidation.plugins.Bootstrap5({
+                    eleValidClass: '',
+                    rowSelector: function (field, ele) {
+                        return '.mb-3';
+                    }
+                }),
+                submitButton: new FormValidation.plugins.SubmitButton(),
+                autoFocus: new FormValidation.plugins.AutoFocus()
+            }
+        });
+
+        fv.on('core.form.valid', function (e) {
+            
+            BodyBlockUI();
+            AjaxFormPost('/App/Admin/SetPlan', "#addNewPlanForm").then(res => {
+                BodyUnblockUI();
+                eval(res.data);
+
+                if (res.status == "success") {
+                    dt_plan.ajax.reload(null, false);
+                    document.getElementById('addNewPlanForm').reset();
+                }
+
+            });
+        });
+
+
+
+        $('body').on('click', '.DeleteUserPlan', function () {
+
+            var id = $(this).attr("data-id");
+
+            BodyBlockUI();
+
+            AjaxGet("/App/Admin/DeletePlan?id=" + id).then(res => {
+
+                BodyUnblockUI();
+                eval(res.data);
+                if (res.status == "success") {
+
+                    dt_plan.ajax.reload(null, false);
+                }
+
+
+            });
+
+        });
+
+
+
+
+    }
+
+
 
     // Filter form control to default size
     // ? setTimeout used for multilingual table initialization

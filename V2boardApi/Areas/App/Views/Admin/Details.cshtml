@@ -70,6 +70,22 @@
                     </a>
                 }
             </li>
+            <li class="nav-item">
+                @if (ViewBag.Type == "Plans")
+                {
+                    <a class="nav-link active" href="@Url.Action("Details","Admin",new {area="App",type="Plans",user_id=Model})">
+                        <i class="ti ti-category-2 ti-xs me-1"></i>
+                        تعرفه ها
+                    </a>
+                }
+                else
+                {
+                    <a class="nav-link" href="@Url.Action("Details","Admin",new {area="App",type="Plans",user_id=Model})">
+                        <i class="ti ti-category-2 ti-xs me-1"></i>
+                        تعرفه ها
+                    </a>
+                }
+            </li>
             @if (Role == "1")
             {
                 <li class="nav-item">
@@ -126,6 +142,50 @@
                     </table>
                 </div>
             </div>
+        }
+        else if (ViewBag.Type == "Plans")
+        {
+
+            <div class="card mb-4">
+
+                <form class="row g-3" id="addNewPlanForm" style="margin:20px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" value="@Model" id="user_id" name="user_id" />
+                    <input type="hidden" value="" id="planuser_Id" name="planuser_Id" />
+                    <div class="col-4 col-md-4">
+                        <label class="form-label" for="userPlan">تعرفه <span class="text-danger"> * </span></label>
+                        <select id="userPlan" class="select2 form-select" autocomplete="off" name="userPlan">
+                            <option value="-1">در حال بارگزاری ...</option>
+                        </select>
+                        <div id="userPlanMessage" class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback d-none"><div data-field="userLimit" data-validator="notEmpty">تعرفه را انتخاب کنید</div></div>
+                    </div>
+
+                    <div class="col-4 col-md-4">
+                        <label class="form-label" for="userPlanPrice">قیمت فروش نماینده <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="  قیمت فروش نماینده به مشتریان ( الزامی نیست )"></i></label>
+                        <input class="form-control" id="userPlanPrice" name="userPlanPrice" onkeyup="separateDigits(this)" placeholder="50,000"  />
+                    </div>
+                    <div class="col-4 col-md-4">
+                        <button class="btn btn-outline-success" style="margin-top:29px;" type="submit">ثبت</button>
+                    </div>
+                </form>
+
+                <div class="table-responsive mb-3">
+                    <table class="table datatable-plan border-top">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>نام تعرفه</th>
+                                <th>قیمت فروش نماینده</th>
+                                <th>عملیات</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+
+
+
         }
         else if (ViewBag.Type == "Settings")
         {

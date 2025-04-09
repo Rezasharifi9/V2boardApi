@@ -408,6 +408,7 @@
     <Compile Include="Models\AdminModel\LearnsViewModel.cs" />
     <Compile Include="Models\AdminModel\LoginModel.cs" />
     <Compile Include="Models\AdminModel\UserLogViewModel.cs" />
+    <Compile Include="Models\AdminModel\UserPlansViewModel.cs" />
     <Compile Include="Models\AdminModel\UsersModel.cs" />
     <Compile Include="Models\BanUserModel.cs" />
     <Compile Include="Models\CreateUserModel.cs" />
@@ -1866,6 +1867,7 @@
     <Content Include="Areas\App\Views\OnlineChat\GetContacts.cshtml" />
     <Content Include="Areas\App\Views\OnlineChat\GetChat.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetLearns.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_GetPlans.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

@@ -180,30 +180,11 @@
 
 <!-- Add New Credit Card Modal -->
 <div aria-hidden="true" class="modal fade" id="addNewPlan" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered1 modal-simple section-block">
+    <div class="modal-dialog modal-xl modal-dialog-centered1 modal-simple section-block">
         <div class="modal-content p-3 p-md-5">
             <div class="modal-body">
                 <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
-                <div class="text-center mb-4">
-                    <h3 class="mb-2">افزودن تعرفه</h3>
-                    <p class="text-muted">تعرفه را برای ادامه و خرید خدمات انتخاب کنید</p>
-                </div>
-                <form class="row g-3" id="addNewPlanForm">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" value="" id="user_id" name="user_id" />
-                    <div class="col-12 col-md-12">
-                        <label class="form-label" for="userPlan">تعرفه <span class="text-danger"> * </span></label>
-                        <select id="userPlan" class="select2 form-select" autocomplete="off" name="userPlan" multiple>
-                            <option value="-1">در حال بارگزاری ...</option>
-                        </select>
-                        <div id="userPlanMessage" class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback d-none"><div data-field="userLimit" data-validator="notEmpty">تعرفه را انتخاب کنید</div></div>
-                    </div>
 
-                    <div class="col-12 text-center">
-                        <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
-                        <button aria-label="" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal" type="reset">بازگشت</button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>

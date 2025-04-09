@@ -215,7 +215,6 @@ $(function () {
                             '<div class="dropdown-menu dropdown-menu-end m-0">' +
                             '<a href="/App/Admin/Details?user_id=' + userId +
                             '" class="dropdown-item">نمایش</a>' +
-                            '<a href="javascript:;" class="dropdown-item SelectPlan" data-id=' + $id + '>تعرفه ها</a>' +
                             '<a href="javascript:;" class="dropdown-item BanUser" data-id=' + $id + '>' + $StatusTitle + '</a>' +
                             menuRobot +
                             '</div>' +
@@ -442,6 +441,13 @@ $(function () {
     }
 
 
+    var dt_basic_table = $('.datatables-plan');
+    var dt_basic;
+    // DataTable with buttons
+    // --------------------------------------------------------------------
+
+
+ 
     // Delete Record
     $('.datatables-users tbody').on('click', '.delete-record', function () {
 
@@ -536,27 +542,6 @@ $(function () {
         });
     });
 
-    // Select Plan
-    $('body').on('click', '.SelectPlan', function () {
-
-        BodyBlockUI();
-
-        var id = $(this).attr("data-id");
-
-        $(".dtr-bs-modal").modal("hide");
-
-        AjaxGet('/App/Admin/SelectPlan?user_id=' + id).then(res => {
-            BodyUnblockUI();
-            $("#user_id").val(id);
-            $("#addNewPlan").modal("show");
-            if (res.status == "success") {
-                var data = res.data;
-
-                SelectPlans("#userPlan", data);
-            }
-
-        });
-    });
 
     function showOffcanvas() {
         var offcanvasElement = document.getElementById('offcanvasAddUser');
