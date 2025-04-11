@@ -18,6 +18,7 @@ namespace DataLayer.DomainModel
         public tbLinkUserAndPlans()
         {
             this.tbLogs = new HashSet<tbLogs>();
+            this.tbOrders = new HashSet<tbOrders>();
         }
     
         public int Link_PU_ID { get; set; }
@@ -25,10 +26,13 @@ namespace DataLayer.DomainModel
         public Nullable<int> L_FK_P_ID { get; set; }
         public Nullable<bool> L_Status { get; set; }
         public Nullable<int> L_SellPrice { get; set; }
+        public bool L_ShowInBot { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLogs> tbLogs { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbOrders> tbOrders { get; set; }
     }
 }

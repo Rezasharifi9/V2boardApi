@@ -29,8 +29,10 @@ namespace DataLayer.DomainModel
         public Nullable<int> Traffic { get; set; }
         public Nullable<int> Month { get; set; }
         public Nullable<System.DateTime> Tel_RenewedDate { get; set; }
+        public Nullable<int> FK_Link_Plan_ID { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
+        public virtual tbLinkUserAndPlans tbLinkUserAndPlans { get; set; }
     }
 }

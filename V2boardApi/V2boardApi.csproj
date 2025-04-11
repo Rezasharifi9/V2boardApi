@@ -423,7 +423,9 @@
     <Compile Include="Tools\BotMessages.cs" />
     <Compile Include="Tools\BotUtility.cs" />
     <Compile Include="Tools\ChatHub.cs" />
+    <Compile Include="Tools\HubSmartAPI.cs" />
     <Compile Include="Tools\JwtToken.cs" />
+    <Compile Include="Tools\NowPayment.cs" />
     <Compile Include="Tools\ObjectExtensions.cs" />
     <Compile Include="Tools\EqualToAttribute.cs" />
     <Compile Include="Tools\ModelStateExtensions.cs" />
@@ -1867,7 +1869,6 @@
     <Content Include="Areas\App\Views\OnlineChat\GetContacts.cshtml" />
     <Content Include="Areas\App\Views\OnlineChat\GetChat.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetLearns.cshtml" />
-    <Content Include="Areas\App\Views\Admin\_GetPlans.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

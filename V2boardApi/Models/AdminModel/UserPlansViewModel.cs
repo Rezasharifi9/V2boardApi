@@ -11,5 +11,6 @@ namespace V2boardApi.Models.AdminModel
         public int Plan_ID { get; set; }
         public string UserPlan_Name { get; set; }
         public string UserPlan_Price { get; set; }
+        public bool IsRobotPlan { get; set; }
     }
 }

@@ -344,6 +344,7 @@ $(function () {
                 { data: '' },
                 { data: 'UserPlan_Name' },
                 { data: 'UserPlan_Price' },
+                { data: 'IsRobotPlan' },
                 { data: '' }
             ],
             initComplete: function (setting, json) {
@@ -391,15 +392,46 @@ $(function () {
                     }
                 },
                 {
+                    // UserPlan_Price
+                    targets: 3,
+                    responsivePriority: 3,
+                    render: function (data, type, full, meta) {
+
+                        var $row_output = "";
+                        if (full['IsRobotPlan'] == true) {
+                            var $row_output = "<span class='badge bg-label-success'>" + "ثبت شده در ربات" + "</span>";
+                        }
+                        else {
+                            var $row_output = "<span class='badge bg-label-warning'>" + "عدم ثبت در ربات" + "</span>";
+                        }
+                        
+                        return $row_output;
+                    }
+                },
+                {
                     targets: -1,
                     title: 'عملیات',
                     orderable: false,
                     searchable: false,
                     render: function (data, type, full, meta) {
-                        return (
-                            '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteUserPlan" data-id="' + full["UserPlan_ID"] + '">' +
-                            '<i class="text-primary ti ti-trash"></i></a>'
-                        );
+
+                        if (full['IsRobotPlan'] == true) {
+                            return (
+                                '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteUserPlan" data-id="' + full["UserPlan_ID"] + '">' +
+                                '<i class="text-primary ti ti-trash"></i></a>' +
+                                '<a data-bs-toggle="popover" title="حذف از ربات" class="btn btn-sm btn-icon item-edit SetInBot" data-id="' + full["UserPlan_ID"] + '">' +
+                                '<i class="text-primary ti ti-robot-off"></i></a>'
+                            );
+                        }
+                        else {
+                            return (
+                                '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteUserPlan" data-id="' + full["UserPlan_ID"] + '">' +
+                                '<i class="text-primary ti ti-trash"></i></a>' +
+                                '<a data-bs-toggle="popover" title="ثبت در ربات" class="btn btn-sm btn-icon item-edit SetInBot" data-id="' + full["UserPlan_ID"] + '">' +
+                                '<i class="text-primary ti ti-robot"></i></a>'
+                            );
+                        }
+                        
                     }
                 }
 
@@ -514,6 +546,26 @@ $(function () {
             BodyBlockUI();
 
             AjaxGet("/App/Admin/DeletePlan?id=" + id).then(res => {
+
+                BodyUnblockUI();
+                eval(res.data);
+                if (res.status == "success") {
+
+                    dt_plan.ajax.reload(null, false);
+                }
+
+
+            });
+
+        });
+
+        $('body').on('click', '.SetInBot', function () {
+
+            var id = $(this).attr("data-id");
+
+            BodyBlockUI();
+
+            AjaxGet("/App/Admin/SetPlanInBot?id=" + id).then(res => {
 
                 BodyUnblockUI();
                 eval(res.data);

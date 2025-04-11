@@ -326,6 +326,109 @@ namespace V2boardApi.Areas.api.Controllers
 
         #endregion
 
+        
+        [System.Web.Http.HttpGet]
+        public async Task<IHttpActionResult> VerifyPay(string BotName, string TaxId)
+        {
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var User = await RepositoryUser.FirstOrDefaultAsync(p => p.Username == BotName);
+                    if (User != null)
+                    {
+                       
+                        var date2 = DateTime.Now.AddHours(-24);
+                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p =>  p.dw_Status == "FOR_PAY" && p.dw_TaxId == TaxId);
+                        var botSetting = User.tbBotSettings.FirstOrDefault();
+                        foreach (var item in tbDepositLog)
+                        {
+                            item.dw_Status = "FINISH";
+                            item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                            StringBuilder str = new StringBuilder();
+                            str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد!");
+                            str.AppendLine("");
+                            str.AppendLine("💰 موجودی فعلی کیف پول شما: " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                            str.AppendLine("");
+                            str.AppendLine("🔔 حالا می‌توانید برای خرید اشتراک جدید یا تمدید اشتراک اقدام کنید.");
+
+
+                            var keyboard = Keyboards.GetHomeButton();
+
+
+
+
+                            if (botSetting != null)
+                            {
+                                TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
+                                
+
+                                if (botSetting.InvitePercent != null)
+                                {
+                                    if (item.tbTelegramUsers.Tel_Parent_ID != null)
+                                    {
+                                        var parent = item.tbTelegramUsers.tbTelegramUsers2;
+                                        parent.Tel_Wallet += Convert.ToInt32((item.dw_Price / 10) * botSetting.InvitePercent.Value);
+
+                                        StringBuilder str1 = new StringBuilder();
+                                        str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("🚀 @" + botSetting.Bot_ID);
+
+                                        await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                    }
+                                }
+
+                                
+
+
+                                HubSmartAPI hubSmartAPI = new HubSmartAPI(botSetting.HubSmart_API_KEY);
+                                RequestVerifyTransaction verifyTransaction = new RequestVerifyTransaction();
+                                verifyTransaction.token = item.dw_hubsmart_token;
+
+                                var response = await hubSmartAPI.Verify(verifyTransaction);
+                                if (response.status)
+                                {
+                                    await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
+
+                                    await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                    await RepositoryDepositWallet.SaveChangesAsync();
+                                    transaction.Commit();
+                                }
+                                else
+                                {
+                                    logger.Warn("خطا در تائید تراکنش آیدی " + TaxId + " رخ داد");
+                                }
+
+                                logger.Info("فاکتور با آیدی " + item.dw_TaxId + " با موفقیت پرداخت شد");
+                                return Ok();
+                            }
+
+
+                        }
+                        return BadRequest("FINISHED");
+                    }
+                    else
+                    {
+
+                        return BadRequest("FINISHED");
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    logger.Error(ex, "خطا در تائید تراکنش آیدی " + TaxId + " رخ داد");
+                    return BadRequest();
+                }
+            }
+        }
+
+       
+
         #region دریافت فاکتور ها برای اپلیکیشن
 
         [System.Web.Http.HttpGet]

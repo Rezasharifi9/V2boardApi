@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -46,6 +47,19 @@ namespace V2boardApi.Tools
             System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
             dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dtDateTime;
+        }
+        public static Dictionary<string, string> ToDictionary(object obj)
+        {
+            var dict = new Dictionary<string, string>();
+            foreach (PropertyInfo prop in obj.GetType().GetProperties())
+            {
+                var value = prop.GetValue(obj);
+                if (value != null)
+                {
+                    dict[prop.Name] = value.ToString();
+                }
+            }
+            return dict;
         }
         public static string ConvertNumerals(this string input)
         {
@@ -406,7 +420,7 @@ namespace V2boardApi.Tools
 
 
 
-        public static string GetPriceUSDT()
+        public static double? GetPriceUSDT()
         {
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri("https://api.tetherland.com");
@@ -416,7 +430,7 @@ namespace V2boardApi.Tools
                 var model = JObject.Parse(res.Result.Content.ReadAsStringAsync().Result);
                 var price = model["data"]["currencies"]["USDT"]["price"];
 
-                return price.ToString();
+                return Convert.ToDouble(price);
             }
             else
             {

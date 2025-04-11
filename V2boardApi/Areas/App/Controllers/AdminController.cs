@@ -527,6 +527,7 @@ namespace V2boardApi.Areas.App.Controllers
                     userPlans.UserPlan_ID = item.Link_PU_ID;
                     userPlans.UserPlan_Name = item.tbPlans.Plan_Name;
                     userPlans.Plan_ID = item.L_FK_P_ID.Value;
+                    userPlans.IsRobotPlan = item.L_ShowInBot;
                     if (item.L_SellPrice is null)
                     {
                         userPlans.UserPlan_Price = "ندارد";
@@ -639,6 +640,32 @@ namespace V2boardApi.Areas.App.Controllers
             await RepositoryUserPlanLinks.SaveChangesAsync();
 
             return Toaster.Success("موفق", "تعرفه تخصیص داده شده حذف گردید");
+        }
+
+
+        #endregion
+
+        #region ثبت کردن در ربات 
+
+        [System.Web.Http.HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> SetPlanInBot(int id)
+        {
+            var planLink = await RepositoryUserPlanLinks.FirstOrDefaultAsync(s => s.Link_PU_ID == id);
+
+            if(planLink.L_ShowInBot == true)
+            {
+                planLink.L_ShowInBot = false;
+            }
+            else
+            {
+                planLink.L_ShowInBot = true;
+            }
+
+
+            await RepositoryUserPlanLinks.SaveChangesAsync();
+
+            return Toaster.Success("موفق", "ثبت شد");
         }
 
 

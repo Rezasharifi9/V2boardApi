@@ -33,7 +33,7 @@ namespace V2boardBot.Models
             ReplyKeyboardMarkup keyboard;
             using (Entities db = new Entities())
             {
-                
+
                 var learn = db.tbConnectionHelp.Where(s => s.ch_Type.Contains("buy_sub")).FirstOrDefault();
                 if (learn != null)
                 {
@@ -98,7 +98,7 @@ namespace V2boardBot.Models
                 }
             }
 
-            
+
 
 
             keyboard.IsPersistent = false;
@@ -133,7 +133,7 @@ namespace V2boardBot.Models
                                 new KeyboardButton("💳 کیف پول"),
                             }
 
-                        }) ;
+                        });
 
 
             keyboard.IsPersistent = true;
@@ -232,7 +232,7 @@ namespace V2boardBot.Models
         public static InlineKeyboardMarkup GetPlansKeyboard(string Email, Repository<tbLinkUserAndPlans> Rep)
         {
             var username = Email.Split('@')[1];
-            var Plans = Rep.Where(p => p.tbUsers.Username == username && p.tbPlans.Plan_Des != null).ToList();
+            var Plans = Rep.Where(p => p.tbUsers.Username == username && p.L_ShowInBot == true && p.L_Status == true && p.L_SellPrice != null).ToList();
 
             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
             int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
@@ -243,7 +243,7 @@ namespace V2boardBot.Models
 
                 for (int j = i; j < i + itemsPerRow && j < Plans.Count; j++)
                 {
-                    row.Add(InlineKeyboardButton.WithCallbackData(Plans[j].tbPlans.Plan_Name, Plans[j].tbPlans.Plan_ID + "%" + Email));
+                    row.Add(InlineKeyboardButton.WithCallbackData(Plans[j].tbPlans.PlanMonth + " ماهه | " + Plans[j].tbPlans.PlanVolume + " گیگ", "NextLevel" + "%" +Plans[j].Link_PU_ID + "%" + Email));
                 }
 
                 inlineKeyboards.Add(row);
@@ -415,7 +415,7 @@ namespace V2boardBot.Models
 
             btn.CallbackData = "paid_" + paymentId;
             var url = "https://t.me/SwapinoBot?start=BuyTron-" + Wallet + "-" + price + "-Tron";
-            
+
             row1.Add(InlineKeyboardButton.WithUrl("🏧 پرداخت", url));
             row1.Add(btn);
             var keyborad = new InlineKeyboardMarkup(row1);
@@ -427,19 +427,22 @@ namespace V2boardBot.Models
         /// تابع آوردن دکمه تائید پرداخت
         /// </summary>
         /// <returns></returns>
-        public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWallet(string paymentId, string Wallet, string price)
+        public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWallet(string Token)
         {
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
-            InlineKeyboardButton btn1 = new InlineKeyboardButton("🏧 پرداخت");
-            InlineKeyboardButton btn = new InlineKeyboardButton("✅ واریز کردم");
+            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn1 = new InlineKeyboardButton("🏧 پرداخت ");
 
-            btn.CallbackData = "paidwallet_" + paymentId;
             btn1.Pay = true;
-            btn1.Url = "https://t.me/SwapinoBot?start=BuyTron-" + Wallet + "-" + price + "-Tron";
+            btn1.Url = "https://t.me/hubsmartbot?start=Pay-" + Token;
 
             row1.Add(btn1);
-            row1.Add(btn);
-            var keyborad = new InlineKeyboardMarkup(row1);
+
+            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+            inlineKeyboards.Add(row1);
+            inlineKeyboards.Add(row2);
+
+            var keyborad = new InlineKeyboardMarkup(inlineKeyboards);
 
             return keyborad;
         }
@@ -476,18 +479,18 @@ namespace V2boardBot.Models
         /// تابع آوردن دکمه تائید پرداخت
         /// </summary>
         /// <returns></returns>
-        public static InlineKeyboardMarkup GetAccpetBuyFromWallet()
+        public static InlineKeyboardMarkup GetAccpetBuyFromWallet(int planId,string AccountName)
         {
             List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
             InlineKeyboardButton btn = new InlineKeyboardButton("💰 پرداخت از کیف پول");
-            btn.CallbackData = "AccpetWallet";
+            btn.CallbackData = "AccpetWallet%" + planId + "%" + AccountName;
             row1.Add(btn);
             btns.Add(row1);
 
             List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
             InlineKeyboardButton btn2 = new InlineKeyboardButton("🔙 برگشت");
-            btn2.CallbackData = "BackToCalc";
+            btn2.CallbackData = "backToInfo";
             row2.Add(btn2);
             btns.Add(row2);
             var keyborad = new InlineKeyboardMarkup(btns);
@@ -504,7 +507,7 @@ namespace V2boardBot.Models
             List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
             InlineKeyboardButton btn = new InlineKeyboardButton("💰 پرداخت از کیف پول");
-            btn.CallbackData = "AccpetWalletUnlimited%"+ PlanId;
+            btn.CallbackData = "AccpetWalletUnlimited%" + PlanId;
             row1.Add(btn);
             btns.Add(row1);
 
@@ -530,7 +533,7 @@ namespace V2boardBot.Models
             InlineKeyboardButton btn = new InlineKeyboardButton("🥇 طلایی");
             btn.CallbackData = "gold";
             row1.Add(btn);
-            
+
 
             InlineKeyboardButton btn2 = new InlineKeyboardButton("🥈 نقره ای");
             btn2.CallbackData = "premium";

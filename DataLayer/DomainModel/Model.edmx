@@ -81,6 +81,10 @@
           <Property Name="InvitePercent" Type="float" />
           <Property Name="GroupId_test" Type="int" />
           <Property Name="GroupId_testUnlimited" Type="int" />
+          <Property Name="NowPayment_API_KEY" Type="varchar" MaxLength="150" />
+          <Property Name="HubSmart_API_KEY" Type="varchar" MaxLength="150" />
+          <Property Name="HubSmartPay_Status" Type="bit" Nullable="false" />
+          <Property Name="NowPayment_Status" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -103,6 +107,8 @@
           <Property Name="dw_CreateDatetime" Type="datetime" />
           <Property Name="dw_payment_id" Type="varchar" MaxLength="50" />
           <Property Name="dw_message_id" Type="int" />
+          <Property Name="dw_hubsmart_token" Type="varchar" MaxLength="150" />
+          <Property Name="dw_TaxId" Type="varchar" MaxLength="150" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -179,6 +185,7 @@
           <Property Name="L_FK_P_ID" Type="int" />
           <Property Name="L_Status" Type="bit" />
           <Property Name="L_SellPrice" Type="int" />
+          <Property Name="L_ShowInBot" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbLogs">
           <Key>
@@ -224,6 +231,7 @@
           <Property Name="Order_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="FK_Plan_ID" Type="int" />
           <Property Name="V2_Plan_ID" Type="int" />
+          <Property Name="FK_Link_Plan_ID" Type="int" />
           <Property Name="AccountName" Type="nvarchar" MaxLength="350" />
           <Property Name="OrderDate" Type="datetime" />
           <Property Name="OrderStatus" Type="nvarchar" MaxLength="250" />
@@ -643,6 +651,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbOrders_tbLinkUserAndPlans">
+          <End Role="tbLinkUserAndPlans" Type="Self.tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbLinkUserAndPlans">
+              <PropertyRef Name="Link_PU_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_Link_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbOrders_tbPlans">
           <End Role="tbPlans" Type="Self.tbPlans" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
@@ -923,6 +943,10 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbNotificationUser" EntitySet="tbNotificationUser" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbLinkUserAndPlans" Association="Self.FK_tbOrders_tbLinkUserAndPlans">
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbOrders_tbPlans" Association="Self.FK_tbOrders_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
             <End Role="tbOrders" EntitySet="tbOrders" />
@@ -1154,6 +1178,10 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbLinkUserAndPlans" Association="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans">
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
           </EntityContainer>
         <ComplexType Name="GetBotSales_Result">
           <Property Type="String" Name="OrderDate" Nullable="true" MaxLength="10" />
@@ -1259,6 +1287,10 @@
           <Property Name="GroupId_testUnlimited" Type="Int32" />
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
+          <Property Name="NowPayment_API_KEY" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="HubSmart_API_KEY" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="HubSmartPay_Status" Type="Boolean" Nullable="false" />
+          <Property Name="NowPayment_Status" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1283,6 +1315,8 @@
           <Property Name="dw_payment_id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="dw_message_id" Type="Int32" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
+          <Property Name="dw_hubsmart_token" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="dw_TaxId" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -1358,6 +1392,8 @@
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbLinkUserAndPlans" ToRole="tbUsers" />
           <NavigationProperty Name="tbLogs" Relationship="SafeNetDBModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbLogs" />
           <Property Name="L_SellPrice" Type="Int32" />
+          <Property Name="L_ShowInBot" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="tbOrders" Relationship="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbOrders" />
         </EntityType>
         <EntityType Name="tbLogs">
           <Key>
@@ -1421,6 +1457,8 @@
           <Property Name="Tel_RenewedDate" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
+          <Property Name="FK_Link_Plan_ID" Type="Int32" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbOrders" ToRole="tbLinkUserAndPlans" />
         </EntityType>
         <EntityType Name="tbPlans">
           <Key>
@@ -2016,6 +2054,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbOrders_tbLinkUserAndPlans">
+          <End Type="SafeNetDBModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Type="SafeNetDBModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbLinkUserAndPlans">
+              <PropertyRef Name="Link_PU_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_Link_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2126,6 +2176,10 @@
           <EntitySetMapping Name="tbBotSettings">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
+                <ScalarProperty Name="NowPayment_Status" ColumnName="NowPayment_Status" />
+                <ScalarProperty Name="HubSmartPay_Status" ColumnName="HubSmartPay_Status" />
+                <ScalarProperty Name="HubSmart_API_KEY" ColumnName="HubSmart_API_KEY" />
+                <ScalarProperty Name="NowPayment_API_KEY" ColumnName="NowPayment_API_KEY" />
                 <ScalarProperty Name="GroupId_testUnlimited" ColumnName="GroupId_testUnlimited" />
                 <ScalarProperty Name="GroupId_test" ColumnName="GroupId_test" />
                 <ScalarProperty Name="InvitePercent" ColumnName="InvitePercent" />
@@ -2165,6 +2219,8 @@
           <EntitySetMapping Name="tbDepositWallet_Log">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
+                <ScalarProperty Name="dw_TaxId" ColumnName="dw_TaxId" />
+                <ScalarProperty Name="dw_hubsmart_token" ColumnName="dw_hubsmart_token" />
                 <ScalarProperty Name="dw_message_id" ColumnName="dw_message_id" />
                 <ScalarProperty Name="dw_payment_id" ColumnName="dw_payment_id" />
                 <ScalarProperty Name="dw_CreateDatetime" ColumnName="dw_CreateDatetime" />
@@ -2238,6 +2294,7 @@
           <EntitySetMapping Name="tbLinkUserAndPlans">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbLinkUserAndPlans">
               <MappingFragment StoreEntitySet="tbLinkUserAndPlans">
+                <ScalarProperty Name="L_ShowInBot" ColumnName="L_ShowInBot" />
                 <ScalarProperty Name="L_SellPrice" ColumnName="L_SellPrice" />
                 <ScalarProperty Name="L_Status" ColumnName="L_Status" />
                 <ScalarProperty Name="L_FK_P_ID" ColumnName="L_FK_P_ID" />
@@ -2289,6 +2346,7 @@
           <EntitySetMapping Name="tbOrders">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbOrders">
               <MappingFragment StoreEntitySet="tbOrders">
+                <ScalarProperty Name="FK_Link_Plan_ID" ColumnName="FK_Link_Plan_ID" />
                 <ScalarProperty Name="Tel_RenewedDate" ColumnName="Tel_RenewedDate" />
                 <ScalarProperty Name="Month" ColumnName="Month" />
                 <ScalarProperty Name="Traffic" ColumnName="Traffic" />

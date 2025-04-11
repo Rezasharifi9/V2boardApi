@@ -21,6 +21,8 @@ namespace DataLayer.DomainModel
         public Nullable<System.DateTime> dw_CreateDatetime { get; set; }
         public string dw_payment_id { get; set; }
         public Nullable<int> dw_message_id { get; set; }
+        public string dw_hubsmart_token { get; set; }
+        public string dw_TaxId { get; set; }
     
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
     }

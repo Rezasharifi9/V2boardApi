@@ -36,6 +36,10 @@ namespace DataLayer.DomainModel
         public Nullable<double> InvitePercent { get; set; }
         public Nullable<int> GroupId_test { get; set; }
         public Nullable<int> GroupId_testUnlimited { get; set; }
+        public string NowPayment_API_KEY { get; set; }
+        public string HubSmart_API_KEY { get; set; }
+        public bool HubSmartPay_Status { get; set; }
+        public bool NowPayment_Status { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }
