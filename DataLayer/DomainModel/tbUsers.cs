@@ -22,6 +22,8 @@ namespace DataLayer.DomainModel
             this.tbConnectionHelp = new HashSet<tbConnectionHelp>();
             this.tbExpLog = new HashSet<tbExpLog>();
             this.tbFirebaseMobileTokens = new HashSet<tbFirebaseMobileTokens>();
+            this.tbHistoryChats = new HashSet<tbHistoryChats>();
+            this.tbHistoryChats1 = new HashSet<tbHistoryChats>();
             this.tbLinkServerGroupWithUsers = new HashSet<tbLinkServerGroupWithUsers>();
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
             this.tbNotificationUser = new HashSet<tbNotificationUser>();
@@ -29,8 +31,6 @@ namespace DataLayer.DomainModel
             this.tbTelegramUsers = new HashSet<tbTelegramUsers>();
             this.tbUserFactors = new HashSet<tbUserFactors>();
             this.tbUsers1 = new HashSet<tbUsers>();
-            this.tbHistoryChats = new HashSet<tbHistoryChats>();
-            this.tbHistoryChats1 = new HashSet<tbHistoryChats>();
         }
     
         public int User_ID { get; set; }
@@ -69,6 +69,10 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbFirebaseMobileTokens> tbFirebaseMobileTokens { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbHistoryChats> tbHistoryChats { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbHistoryChats> tbHistoryChats1 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkServerGroupWithUsers> tbLinkServerGroupWithUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
@@ -85,9 +89,5 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUsers> tbUsers1 { get; set; }
         public virtual tbUsers tbUsers2 { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbHistoryChats> tbHistoryChats { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbHistoryChats> tbHistoryChats1 { get; set; }
     }
 }

@@ -1555,7 +1555,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [System.Web.Mvc.HttpPost]
         [AuthorizeApp(Roles = "1,2,3,4")]
-        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, int PricePerMonth_Major, int PricePerGig_Major, int PricePerMonth_Admin, int PricePerGig_Admin, bool? Active, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null)
+        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, bool? Active, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null)
         {
 
             try
@@ -1638,7 +1638,10 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         botSettings.Present_Discount = Present_Discount / 100;
                     }
-
+                    else
+                    {
+                        botSettings.Present_Discount = null;
+                    }
                     var ress = BotManager.GetBot(Use.Username);
                     if (ress == null)
                     {
@@ -1694,10 +1697,6 @@ namespace V2boardApi.Areas.App.Controllers
                     botSettings.Bot_Token = BotToken;
                     botSettings.Bot_ID = BotId;
                     botSettings.AdminBot_ID = TelegramUserId;
-                    botSettings.PricePerMonth_Major = PricePerMonth_Major;
-                    botSettings.PricePerGig_Major = PricePerGig_Major;
-                    botSettings.PricePerMonth_Admin = PricePerMonth_Admin;
-                    botSettings.PricePerGig_Admin = PricePerGig_Admin;
                     botSettings.FK_Plan_ID = userPlan;
 
                     await RepositoryUser.SaveChangesAsync();
@@ -1771,10 +1770,6 @@ namespace V2boardApi.Areas.App.Controllers
                     botSettings.Bot_Token = BotToken;
                     botSettings.Bot_ID = BotId;
                     botSettings.AdminBot_ID = TelegramUserId;
-                    botSettings.PricePerMonth_Major = PricePerMonth_Major;
-                    botSettings.PricePerGig_Major = PricePerGig_Major;
-                    botSettings.PricePerMonth_Admin = PricePerMonth_Admin;
-                    botSettings.PricePerGig_Admin = PricePerGig_Admin;
                     botSettings.FK_Plan_ID = userPlan;
                     Use.tbBotSettings.Add(botSettings);
 

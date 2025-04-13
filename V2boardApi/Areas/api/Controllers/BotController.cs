@@ -119,7 +119,22 @@ namespace V2boardApi.Areas.api.Controllers
                         return;
                     }
                     var BotSettings = await BotSettingRepository.FirstOrDefaultAsync(p => p.tbUsers.Username == botName);
-
+                    if(BotSettings.Enabled == false)
+                    {
+                        StringBuilder str2 = new StringBuilder();
+                        str2.AppendLine("⚠️ با عرض پوزش ربات برای مدت کمی از دسترس خارج شده لطفا بعدا تلاش کنید");
+                        str2.AppendLine("");
+                        str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                        if (update.CallbackQuery != null)
+                        {
+                            await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html);
+                        }
+                        else
+                        {
+                            await bot.Client.SendTextMessageAsync(update.Message.From.Id, str2.ToString(), parseMode: ParseMode.Html);
+                        }
+                        return;
+                    }
                     if (BotSettings.Active == true && BotSettings.Enabled && BotSettings.tbUsers.Wallet <= BotSettings.tbUsers.Limit)
                     {
                         nowPayment = new NowPayment(db, "https://api.nowpayments.io", BotSettings.NowPayment_API_KEY);
@@ -150,7 +165,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (Tel_Username != null)
                                 {
                                     Tel_Username = Tel_Username.ToLower();
-                                    var UserAgent = await tbUsersRepository.FirstOrDefaultAsync(s => s.TelegramID == Tel_Username);
+                                    var UserAgent = await tbUsersRepository.FirstOrDefaultAsync(s => s.TelegramID == Tel_Username && (s.Role == 2 || s.Role == 3));
                                     if (UserAgent != null)
                                     {
                                         var RepoFactor = new Repository<tbUserFactors>();
@@ -351,7 +366,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 }
                             }
 
-                            if ((bool)BotSettings.IsActiveSendReceipt)
+                            if ((bool)BotSettings.IsActiveSendReceipt && BotSettings.AdminBot_ID != chatid)
                             {
                                 #region ارسال رسید تراکنش برای ادمین
 
@@ -1189,7 +1204,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         RequestNewPay requestNewPay = new RequestNewPay();
                                         requestNewPay.amount = (price).ToString();
-                                        requestNewPay.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPay?BotName="+BotSettings.tbUsers.Username+"&TaxId=" + tbDeposit.dw_TaxId;
+                                        requestNewPay.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPay?BotName=" + BotSettings.tbUsers.Username + "&TaxId=" + tbDeposit.dw_TaxId;
                                         requestNewPay.order_id = tbDeposit.dw_TaxId;
 
                                         var ResHub = await HubSmartAPI.NewPay(requestNewPay);
@@ -1203,7 +1218,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("💸 تراکنش شما با مبلغ " + (price).ConvertToMony() + " تومان" + " با موفقیت ساخته شد !");
                                         str.AppendLine("");
-                                        str.AppendLine("<b>"+ "⚠️ لطفا به نکات زیر توجه کنید : " + "</b>");
+                                        str.AppendLine("<b>" + "⚠️ لطفا به نکات زیر توجه کنید : " + "</b>");
                                         str.AppendLine("");
                                         str.AppendLine("⭕️ فرآیند تأیید و شارژ کیف پول شما بین ۵ تا ۱۵ دقیقه زمان خواهد برد.");
                                         str.AppendLine("");
@@ -1215,8 +1230,9 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("در صورت بروز هرگونه مشکل یا سوال، تیم پشتیبانی آماده پاسخ‌گویی به شماست.\r\nبا تشکر از اعتماد شما. 🙏");
 
                                         var key = Keyboards.GetPaymentButtonForIncreaseWallet(tbDeposit.dw_hubsmart_token);
-                                        await bot.Client.EditMessageTextAsync(UserAcc.Tel_UniqUserID, model.MessageId, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
-
+                                        var model2 = await bot.Client.EditMessageTextAsync(UserAcc.Tel_UniqUserID, model.MessageId, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
+                                        tbDeposit.dw_message_id = model2.MessageId;
+                                        await tbDepositLogRepo.SaveChangesAsync();
                                         return;
                                     }
                                     else
@@ -1338,7 +1354,7 @@ namespace V2boardApi.Areas.api.Controllers
                         }
 
                         else
-                    if (update.CallbackQuery != null)
+                        if (update.CallbackQuery != null)
                         {
                             var callbackQuery = update.CallbackQuery;
                             var callback = update.CallbackQuery.Data.Split('%');
@@ -2112,7 +2128,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     StringBuilder str = new StringBuilder();
                                     str.AppendLine("◀️  لطفا مبلغ مورد نظر خود را به تومان جهت افزایش موجودی وارد کنید ");
                                     str.AppendLine("");
-                                    str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 10,000 تومان تا 5,000,000 تومان می باشد");
+                                    str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 1,000,000 تومان می باشد");
                                     str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
 
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db, botName);
@@ -2129,22 +2145,31 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (callbackQuery.Data == "InventoryIncreaseRial")
                                 {
-                                    StringBuilder str = new StringBuilder();
-                                    str.AppendLine("◀️  لطفا مبلغ مورد نظر خود را جهت افزایش موجودی وارد کنید ");
-                                    str.AppendLine("");
-                                    str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 1,000,000 تومان می باشد");
-                                    str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
+                                    if (BotSettings.HubSmart_API_KEY != null && BotSettings.HubSmartPay_Status == true)
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("◀️  لطفا مبلغ مورد نظر خود را جهت افزایش موجودی وارد کنید ");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 1,000,000 تومان می باشد");
+                                        str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
 
-                                    await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePriceRial", db, botName);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePriceRial", db, botName);
 
-                                    List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
-                                    List<KeyboardButton> row2 = new List<KeyboardButton>();
-                                    row2.Add(new KeyboardButton("⬅️ برگشت به صفحه اصلی"));
-                                    inlineKeyboards.Add(row2);
+                                        List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
+                                        List<KeyboardButton> row2 = new List<KeyboardButton>();
+                                        row2.Add(new KeyboardButton("⬅️ برگشت به صفحه اصلی"));
+                                        inlineKeyboards.Add(row2);
 
-                                    inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
-                                    await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
-                                    await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                        inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
+                                        await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                        await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                    }
+                                    else
+                                    {
+                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "⚠️ این روش موقتا از دسترس خارج شده ");
+
+                                    }
+
                                 }
 
                                 #endregion
@@ -2189,118 +2214,6 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                 }
 
-                                #endregion
-
-                                #endregion
-
-                                #region توابع مربوط به ماشین حساب تعرفه
-
-                                #region افزودن حجم
-                                if (callbackQuery.Data == "PlusTraffic")
-                                {
-
-                                    if (User.Tel_Traffic == 300)
-                                    {
-                                        await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ متاسفانه امکان ارائه حجم بیشتر از 300 گیگ نمی باشد", true);
-                                        return;
-                                    }
-                                    User.Tel_Traffic += 20;
-
-                                    if (User.Tel_Traffic > 300)
-                                    {
-                                        await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ متاسفانه امکان ارائه حجم بیشتر از 300 گیگ نمی باشد", true);
-                                        User.Tel_Traffic = 300;
-
-                                    }
-
-
-
-                                    CustomTrafficKeyboard customTrafficKeyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
-                                    var key = customTrafficKeyboard.GetKeyboard();
-
-                                    await RealUser.SetTraffic(User.Tel_UniqUserID, db, User.Tel_Traffic, botName);
-                                    await bot.Client.EditMessageReplyMarkupAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, key);
-
-                                    return;
-                                }
-
-                                #endregion
-
-                                #region کم کردن حجم
-
-                                if (callbackQuery.Data == "MinsTraffic")
-                                {
-                                    User.Tel_Traffic -= 5;
-                                    if (User.Tel_Traffic < 10)
-                                    {
-                                        await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ امکان ارائه حجم کمتر از 10 گیگ نیست", true);
-                                        return;
-                                    }
-
-
-                                    CustomTrafficKeyboard customTrafficKeyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
-                                    var key = customTrafficKeyboard.GetKeyboard();
-
-                                    await RealUser.SetTraffic(User.Tel_UniqUserID, db, User.Tel_Traffic, botName);
-                                    await bot.Client.EditMessageReplyMarkupAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, key);
-
-                                    return;
-                                }
-                                #endregion
-
-                                #region افزودن ماه
-
-                                if (callbackQuery.Data == "PlusMonth")
-                                {
-
-                                    if (User.Tel_Monthes == 3)
-                                    {
-                                        await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ متاسفانه امکان ارائه مدت زمان بیشتر از 3 ماه نمی باشد", true);
-                                        return;
-                                    }
-                                    User.Tel_Monthes++;
-
-                                    if (User.Tel_Monthes > 3)
-                                    {
-                                        await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ متاسفانه امکان ارائه مدت زمان بیشتر از 3 ماه نمی باشد", true);
-                                        User.Tel_Monthes = 3;
-                                    }
-
-
-                                    CustomTrafficKeyboard customTrafficKeyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
-                                    var key = customTrafficKeyboard.GetKeyboard();
-
-                                    await RealUser.SetMonth(User.Tel_UniqUserID, db, User.Tel_Monthes, botName);
-                                    await bot.Client.EditMessageReplyMarkupAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, key);
-
-                                    return;
-                                }
-
-                                #endregion
-
-                                #region کم کردن ماه
-
-                                if (callbackQuery.Data == "MinusMonth")
-                                {
-
-                                    User.Tel_Monthes--;
-                                    if (User.Tel_Monthes < 1)
-                                    {
-                                        await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ امکان ارائه مدت زمان کمتر از 1 ماه نیست", true);
-                                        return;
-                                    }
-
-
-
-
-                                    CustomTrafficKeyboard customTrafficKeyboard = new CustomTrafficKeyboard(BotSettings, User.Tel_Traffic, User.Tel_Monthes);
-                                    var key = customTrafficKeyboard.GetKeyboard();
-
-                                    await RealUser.SetMonth(User.Tel_UniqUserID, db, User.Tel_Monthes, botName);
-                                    await bot.Client.EditMessageReplyMarkupAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, key);
-
-                                    return;
-                                }
                                 #endregion
 
                                 #endregion
@@ -2833,84 +2746,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
-                                #region ایجاد فاکتور
-
-                                if (callback.Length == 1)
-                                {
-                                    if (callback[0] == "CreateFactor")
-                                    {
-                                        var PriceForGig = BotSettings.PricePerGig_Major;
-                                        var PriceForMonth = BotSettings.PricePerMonth_Major;
-                                        int price = Convert.ToInt32((User.Tel_Traffic * PriceForGig) + (User.Tel_Monthes * PriceForMonth));
-
-                                        if (BotSettings.Present_Discount != null)
-                                        {
-                                            price = (int)(price - (price * BotSettings.Present_Discount));
-                                        }
-
-
-                                        Random ran = new Random();
-                                        var RanNumber = ran.Next(1, 999);
-
-                                        var fullPrice = (price * 10);
-                                        if (BotSettings.IsActiveCardToCard == true)
-                                        {
-                                            fullPrice += RanNumber;
-                                        }
-                                        StringBuilder str = new StringBuilder();
-
-                                        var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
-
-                                        str.AppendLine("✅ فاکتور افزایش موجودی کیف پول شما  :");
-                                        str.AppendLine("");
-                                        str.AppendLine(" لطفا مبلغ " + "<code>" + fullPrice.ConvertToMony() + "</code>" + " ریال " + " را به شماره کارت " + FirstCard.CardNumber + " " + " به نام " + FirstCard.InTheNameOf + " واریز نمائید");
-                                        str.AppendLine("");
-                                        str.AppendLine("❗️ روی مبلغ کلیک کنید مبلغ کپی می شود و نیازی به حفظ نیست");
-                                        if ((bool)BotSettings.IsActiveSendReceipt && (bool)BotSettings.IsActiveCardToCard)
-                                        {
-                                            str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
-                                            str.AppendLine("");
-                                            str.AppendLine("❗️ در صورت عدم تایید خودکار رسید واریزیتون رو به صورت تصویر ( نه فایل ) برای ربات بفرستید");
-                                        }
-                                        else
-                                        {
-                                            if ((bool)BotSettings.IsActiveCardToCard)
-                                            {
-                                                str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
-                                            }
-                                            if ((bool)BotSettings.IsActiveSendReceipt)
-                                            {
-                                                str.AppendLine("");
-                                                str.Append("✅");
-                                                str.AppendLine("بعد واریزی حتما رسید را برای ربات بفرستید");
-                                            }
-                                        }
-                                        str.AppendLine("");
-                                        if (BotSettings.IsActiveCardToCard == true)
-                                        {
-                                            str.AppendLine("<b>" + "⚠️ نکته : این فاکتور تا 24 ساعت معتبر است و بعد از دریافت پیام منقضی شدن فاکتور به هیچ عنوان مبلغی واریز نکنید " + "</b>");
-                                        }
-                                        tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
-                                        tbDeposit.dw_Price = fullPrice;
-                                        tbDeposit.dw_CreateDatetime = DateTime.Now;
-                                        tbDeposit.dw_Status = "FOR_PAY";
-                                        tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
-                                        //tbDeposit.dw_message_id = update.Message.MessageId;
-                                        tbDepositLogRepo.Insert(tbDeposit);
-                                        await tbDepositLogRepo.SaveChangesAsync();
-                                        str.AppendLine("");
-                                        str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-
-
-
-                                        return;
-                                    }
-                                }
-
-                                #endregion
-
                                 #region چک کردن واریزی ارزدیجیتال
 
                                 if (callback.Length == 2)
@@ -2956,6 +2791,21 @@ namespace V2boardApi.Areas.api.Controllers
                         }
 
                     }
+                    else
+                    {
+                        StringBuilder str2 = new StringBuilder();
+                        str2.AppendLine("⚠️ با عرض پوزش ربات برای مدت کمی از دسترس خارج شده لطفا بعدا تلاش کنید");
+                        str2.AppendLine("");
+                        str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                        if (update.CallbackQuery != null)
+                        {
+                            await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html);
+                        }
+                        else
+                        {
+                            await bot.Client.SendTextMessageAsync(update.Message.From.Id, str2.ToString(), parseMode: ParseMode.Html);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -2966,24 +2816,6 @@ namespace V2boardApi.Areas.api.Controllers
             return;
         }
 
-
-
-        private bool CheckExistsAccountInBot(string username, tbBotSettings BotSetting)
-        {
-
-
-            username = username + "@" + BotSetting.tbUsers.Username;
-            if (!db.tbLinks.Any(p => p.tbL_Email == username))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-
-
-        }
 
         private async Task<bool> EndedVolumeOrDate(string username)
         {
@@ -3018,29 +2850,6 @@ namespace V2boardApi.Areas.api.Controllers
             return false;
         }
 
-        private async Task SendTrafficCalculator(tbTelegramUsers User, tbBotSettings BotSetting, TelegramBotClient bot, string botName, string Data = null, string Tel_Step = null, int messageId = 0)
-        {
-
-            CustomTrafficKeyboard keyboard = new CustomTrafficKeyboard(BotSetting, User.Tel_Traffic, User.Tel_Monthes);
-            var key = keyboard.GetKeyboard();
-
-            StringBuilder str = new StringBuilder();
-            str.AppendLine("🔐 اشتراکت رو خودت بساز");
-            str.AppendLine("");
-            str.AppendLine("💸 به ازای هر گیگ  : " + BotSetting.PricePerGig_Major.ConvertToMony() + " تومان");
-            str.AppendLine("");
-            str.AppendLine("⏳ هر ماه : " + BotSetting.PricePerMonth_Major.ConvertToMony() + " تومان");
-
-            if (messageId == 0)
-            {
-                await bot.SendTextMessageAsync(chatId: User.Tel_UniqUserID, str.ToString(), replyMarkup: key);
-            }
-            else
-            {
-                await bot.EditMessageTextAsync(chatId: User.Tel_UniqUserID, messageId, str.ToString(), replyMarkup: key);
-            }
-
-        }
 
         public async Task<bool> SaveUserProfilePicture(long userId, TelegramBotClient bot, string token, string path)
         {

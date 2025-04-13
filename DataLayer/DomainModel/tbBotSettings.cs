@@ -17,22 +17,17 @@ namespace DataLayer.DomainModel
         public int botSettingID { get; set; }
         public string Bot_Token { get; set; }
         public string Bot_ID { get; set; }
+        public Nullable<int> FK_Plan_ID { get; set; }
         public long AdminBot_ID { get; set; }
         public bool Active { get; set; }
         public bool RequiredJoinChannel { get; set; }
         public string ChannelID { get; set; }
-        public int PricePerGig_Admin { get; set; }
-        public int PricePerMonth_Admin { get; set; }
-        public int PricePerGig_Major { get; set; }
-        public int PricePerMonth_Major { get; set; }
         public int FK_User_ID { get; set; }
         public Nullable<double> Present_Discount { get; set; }
         public bool IsActiveSendReceipt { get; set; }
         public bool IsActiveCardToCard { get; set; }
         public bool Enabled { get; set; }
-        public Nullable<int> FK_Plan_ID { get; set; }
         public string AdminUsername { get; set; }
-        public Nullable<bool> Is_ActiveChangeLimitUser { get; set; }
         public Nullable<double> InvitePercent { get; set; }
         public Nullable<int> GroupId_test { get; set; }
         public Nullable<int> GroupId_testUnlimited { get; set; }
@@ -40,6 +35,7 @@ namespace DataLayer.DomainModel
         public string HubSmart_API_KEY { get; set; }
         public bool HubSmartPay_Status { get; set; }
         public bool NowPayment_Status { get; set; }
+        public bool IsActiveCard { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }

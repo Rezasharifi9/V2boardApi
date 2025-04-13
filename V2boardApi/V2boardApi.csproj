@@ -429,7 +429,6 @@
     <Compile Include="Tools\ObjectExtensions.cs" />
     <Compile Include="Tools\EqualToAttribute.cs" />
     <Compile Include="Tools\ModelStateExtensions.cs" />
-    <Compile Include="Tools\CustomTrafficKeyboard.cs" />
     <Compile Include="Tools\ExceptionHandling.cs" />
     <Compile Include="Tools\Keyboards.cs" />
     <Compile Include="Models\ManifestModel.cs" />

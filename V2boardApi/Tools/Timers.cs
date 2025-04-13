@@ -180,7 +180,7 @@ public class TimerService
 
                                                             }
                                                         }
-                                                       
+
                                                     }
 
 
@@ -340,7 +340,7 @@ public class TimerService
 
                                             var DeviceLimit_Structur = "";
                                             var DeviceLimit_data = "";
-                                            
+
 
                                             if (item.tbPlans != null)
                                             {
@@ -351,16 +351,7 @@ public class TimerService
                                                     //Disc1.Add("@device_limit", Plan.device_limit);
                                                 }
                                             }
-                                            else
-                                            {
-                                                var planId = item.tbTelegramUsers.tbUsers.tbBotSettings.First().FK_Plan_ID;
-                                                var Plan = tbPlanRepository.Where(s => s.Plan_ID == planId).FirstOrDefault();
-                                                if (Plan.device_limit != null)
-                                                {
-                                                    DeviceLimit_Structur = ",device_limit=" + (Plan.device_limit + 1);
-                                                    //Disc1.Add("@device_limit", Plan.device_limit);
-                                                }
-                                            }
+
 
 
                                             var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id" + DeviceLimit_Structur + ",group_id=@group_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";
@@ -388,7 +379,7 @@ public class TimerService
                                 Reader.Close();
                             }
 
-                            
+
                         }
 
                     }
@@ -413,13 +404,72 @@ public class TimerService
 
         using (Entities db = new Entities())
         {
-            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY").ToList();
+            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.dw_hubsmart_token == null).ToList();
             foreach (var item in Factores)
             {
                 try
                 {
 
                     if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Active == true && s.Enabled == true && s.IsActiveCardToCard == true).Count() != 0)
+                    {
+                        var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
+
+                        var botClient = new TelegramBotClient(BotSetting.Bot_Token);
+
+                        StringBuilder str = new StringBuilder();
+                        str.Append("❌ فاکتور با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این فاکتور را پرداخت نکنید");
+                        str.AppendLine("");
+                        str.AppendLine("");
+                        str.AppendLine("🚀 @" + BotSetting.Bot_ID);
+
+                        if (item.dw_message_id != null)
+                        {
+                            await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
+                        }
+                        else
+                        {
+                            await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                        }
+
+                        db.tbDepositWallet_Log.Remove(item);
+
+                    }
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    db.SaveChanges();
+                    // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
+                    // مثلا:
+                    foreach (var entry in ex.Entries)
+                    {
+                        if (entry.State == EntityState.Deleted)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری حذف شده باشد
+                            // اقدامات مناسب مانند نمایش پیام خطا
+                        }
+                        else if (entry.State == EntityState.Modified)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری تغییر کرده باشد
+                            // بازخوانی داده‌ها و تصمیم‌گیری برای ادامه کار
+                            entry.OriginalValues.SetValues(entry.GetDatabaseValues());
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    db.tbDepositWallet_Log.Remove(item);
+                }
+            }
+
+            var DateNow2 = DateTime.Now.AddMinutes(-20);
+            var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY" && s.dw_hubsmart_token != null).ToList();
+            foreach (var item in Factoress)
+            {
+                try
+                {
+
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Active == true && s.Enabled == true && s.HubSmartPay_Status == true).Count() != 0)
                     {
                         var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
 

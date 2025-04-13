@@ -20,26 +20,6 @@
     <br />
     <div class="row">
         <div class="col-md-3">
-            <label class="form-label" for="formtabs-linkedin">قیمت هر گیگ (ادمین) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="قیمت بر حسب گیگ تعیین شده توسط ادمین"></i></label>
-            <input class="form-control ltr" id="formtabs-linkedin" type="text" value="@Model.PricePerGig_Admin" name="PricePerGig_Admin" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label" for="formtabs-instagram">قیمت هر ماه (ادمین) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="قیمت بر حسب ماه تعیین شده توسط ادمین"></i></label>
-            <input class="form-control ltr" id="formtabs-instagram" type="text" value="@Model.PricePerMonth_Admin" name="PricePerMonth_Admin" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label" for="formtabs-linkedin">قیمت هر گیگ (نماینده) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="قیمت بر حسب گیگ تعیین شده توسط نماینده"></i> </label>
-            <input class="form-control ltr" id="formtabs-linkedin" type="text" value="@Model.PricePerGig_Major" name="PricePerGig_Major" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label" for="formtabs-instagram">قیمت هر ماه (نماینده) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="قیمت بر حسب ماه تعیین شده توسط نماینده"></i></label>
-            <input class="form-control ltr" id="formtabs-instagram" type="text" value="@Model.PricePerMonth_Major" name="PricePerMonth_Major" />
-        </div>
-
-    </div>
-    <br />
-    <div class="row">
-        <div class="col-md-3">
             <label class="form-label" for="formtabs-linkedin">درصد تخفیف (%) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="مقدار درصدی که نماینده می خواهد تخفیف اعمال کند"></i></label>
             @{
                 if (Model.Present_Discount != null)
@@ -54,7 +34,7 @@
             <input class="form-control ltr" id="formtabs-instagram" type="text" value="@Model.AdminBot_ID" name="TelegramUserId" />
         </div>
         <div class="col-md-3">
-            <label class="form-label" for="formtabs-instagram">تعرفه ربات<i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="برای حفظ ساختار باید اشتراک های ربات همراه با تعرفه خاصی ذخیره شود اگر تعرفه ای ندارید از بخش تعرفه ها تعریف کنید و در این بخش تخصیص دهید"></i></label>
+            <label class="form-label" for="formtabs-instagram">تعرفه ربات<i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="این تعرفه ای که از روش اشتراک تست میسازد مشخص میشود"></i></label>
             <select id="userPlan" class="select2 form-select" autocomplete="off" name="userPlan">
                 <option value="-1">در حال بارگزاری ...</option>
             </select>

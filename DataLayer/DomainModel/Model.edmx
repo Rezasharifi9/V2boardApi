@@ -62,22 +62,17 @@
           <Property Name="botSettingID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Bot_Token" Type="varchar(max)" Nullable="false" />
           <Property Name="Bot_ID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="FK_Plan_ID" Type="int" />
           <Property Name="AdminBot_ID" Type="bigint" Nullable="false" />
           <Property Name="Active" Type="bit" Nullable="false" />
           <Property Name="RequiredJoinChannel" Type="bit" Nullable="false" />
           <Property Name="ChannelID" Type="varchar" MaxLength="50" />
-          <Property Name="PricePerGig_Admin" Type="int" Nullable="false" />
-          <Property Name="PricePerMonth_Admin" Type="int" Nullable="false" />
-          <Property Name="PricePerGig_Major" Type="int" Nullable="false" />
-          <Property Name="PricePerMonth_Major" Type="int" Nullable="false" />
           <Property Name="FK_User_ID" Type="int" Nullable="false" />
           <Property Name="Present_Discount" Type="float" />
           <Property Name="IsActiveSendReceipt" Type="bit" Nullable="false" />
           <Property Name="IsActiveCardToCard" Type="bit" Nullable="false" />
           <Property Name="Enabled" Type="bit" Nullable="false" />
-          <Property Name="FK_Plan_ID" Type="int" />
           <Property Name="AdminUsername" Type="varchar" MaxLength="50" />
-          <Property Name="Is_ActiveChangeLimitUser" Type="bit" />
           <Property Name="InvitePercent" Type="float" />
           <Property Name="GroupId_test" Type="int" />
           <Property Name="GroupId_testUnlimited" Type="int" />
@@ -85,6 +80,7 @@
           <Property Name="HubSmart_API_KEY" Type="varchar" MaxLength="150" />
           <Property Name="HubSmartPay_Status" Type="bit" Nullable="false" />
           <Property Name="NowPayment_Status" Type="bit" Nullable="false" />
+          <Property Name="IsActiveCard" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1040,6 +1036,7 @@
           <EntitySet Name="tbExpLog" EntityType="SafeNetDBModel.tbExpLog" />
           <EntitySet Name="tbFailureServers" EntityType="SafeNetDBModel.tbFailureServers" />
           <EntitySet Name="tbFirebaseMobileTokens" EntityType="SafeNetDBModel.tbFirebaseMobileTokens" />
+          <EntitySet Name="tbHistoryChats" EntityType="SafeNetDBModel.tbHistoryChats" />
           <EntitySet Name="tbLinks" EntityType="SafeNetDBModel.tbLinks" />
           <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="SafeNetDBModel.tbLinkServerGroupWithUsers" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="SafeNetDBModel.tbLinkUserAndPlans" />
@@ -1085,6 +1082,14 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbFirebaseMobileTokens" EntitySet="tbFirebaseMobileTokens" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbHistoryChats_tbUsers" Association="SafeNetDBModel.FK_tbHistoryChats_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbHistoryChats_tbUsers1" Association="SafeNetDBModel.FK_tbHistoryChats_tbUsers1">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbLinks_tbPlans" Association="SafeNetDBModel.FK_tbLinks_tbPlans">
             <End Role="tbPlans" EntitySet="tbPlans" />
             <End Role="tbLinks" EntitySet="tbLinks" />
@@ -1116,6 +1121,10 @@
           <AssociationSet Name="FK_tbLogs_tbLinkUserAndPlans" Association="SafeNetDBModel.FK_tbLogs_tbLinkUserAndPlans">
             <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
             <End Role="tbLogs" EntitySet="tbLogs" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbLinkUserAndPlans" Association="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans">
+            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
           </AssociationSet>
           <AssociationSet Name="FK_tbNotificationUser_tbNotifications" Association="SafeNetDBModel.FK_tbNotificationUser_tbNotifications">
             <End Role="tbNotifications" EntitySet="tbNotifications" />
@@ -1168,19 +1177,6 @@
           <AssociationSet Name="FK_tbUsers_tbUsers" Association="SafeNetDBModel.FK_tbUsers_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
-          </AssociationSet>
-          <EntitySet Name="tbHistoryChats" EntityType="SafeNetDBModel.tbHistoryChats" />
-          <AssociationSet Name="FK_tbHistoryChats_tbUsers" Association="SafeNetDBModel.FK_tbHistoryChats_tbUsers">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbHistoryChats_tbUsers1" Association="SafeNetDBModel.FK_tbHistoryChats_tbUsers1">
-            <End Role="tbUsers" EntitySet="tbUsers" />
-            <End Role="tbHistoryChats" EntitySet="tbHistoryChats" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbOrders_tbLinkUserAndPlans" Association="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans">
-            <End Role="tbLinkUserAndPlans" EntitySet="tbLinkUserAndPlans" />
-            <End Role="tbOrders" EntitySet="tbOrders" />
           </AssociationSet>
           </EntityContainer>
         <ComplexType Name="GetBotSales_Result">
@@ -1266,31 +1262,27 @@
           <Property Name="botSettingID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Bot_Token" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="Bot_ID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="FK_Plan_ID" Type="Int32" />
           <Property Name="AdminBot_ID" Type="Int64" Nullable="false" />
           <Property Name="Active" Type="Boolean" Nullable="false" />
           <Property Name="RequiredJoinChannel" Type="Boolean" Nullable="false" />
           <Property Name="ChannelID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="PricePerGig_Admin" Type="Int32" Nullable="false" />
-          <Property Name="PricePerMonth_Admin" Type="Int32" Nullable="false" />
-          <Property Name="PricePerGig_Major" Type="Int32" Nullable="false" />
-          <Property Name="PricePerMonth_Major" Type="Int32" Nullable="false" />
           <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
           <Property Name="Present_Discount" Type="Double" />
           <Property Name="IsActiveSendReceipt" Type="Boolean" Nullable="false" />
           <Property Name="IsActiveCardToCard" Type="Boolean" Nullable="false" />
           <Property Name="Enabled" Type="Boolean" Nullable="false" />
-          <Property Name="FK_Plan_ID" Type="Int32" />
           <Property Name="AdminUsername" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Is_ActiveChangeLimitUser" Type="Boolean" />
           <Property Name="InvitePercent" Type="Double" />
           <Property Name="GroupId_test" Type="Int32" />
           <Property Name="GroupId_testUnlimited" Type="Int32" />
-          <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
-          <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
           <Property Name="NowPayment_API_KEY" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="HubSmart_API_KEY" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="HubSmartPay_Status" Type="Boolean" Nullable="false" />
           <Property Name="NowPayment_Status" Type="Boolean" Nullable="false" />
+          <Property Name="IsActiveCard" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1314,9 +1306,9 @@
           <Property Name="dw_CreateDatetime" Type="DateTime" Precision="3" />
           <Property Name="dw_payment_id" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="dw_message_id" Type="Int32" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
           <Property Name="dw_hubsmart_token" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="dw_TaxId" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -1346,6 +1338,19 @@
           <Property Name="tbFireBase_SubToken" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="tbFireBase_FK_User_ID" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbFirebaseMobileTokens_tbUsers" FromRole="tbFirebaseMobileTokens" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="tbHistoryChats">
+          <Key>
+            <PropertyRef Name="chatId" />
+          </Key>
+          <Property Name="chatId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="fk_fromUser" Type="Int32" Nullable="false" />
+          <Property Name="fk_toUser" Type="Int32" Nullable="false" />
+          <Property Name="message" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="createDatetime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="seened" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers" FromRole="tbHistoryChats" ToRole="tbUsers" />
+          <NavigationProperty Name="tbUsers1" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers1" FromRole="tbHistoryChats" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbLinks">
           <Key>
@@ -1388,11 +1393,11 @@
           <Property Name="L_FK_U_ID" Type="Int32" />
           <Property Name="L_FK_P_ID" Type="Int32" />
           <Property Name="L_Status" Type="Boolean" />
+          <Property Name="L_SellPrice" Type="Int32" />
+          <Property Name="L_ShowInBot" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbLinkUserAndPlans_tbPlans" FromRole="tbLinkUserAndPlans" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbLinkUserAndPlans" ToRole="tbUsers" />
           <NavigationProperty Name="tbLogs" Relationship="SafeNetDBModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbLogs" />
-          <Property Name="L_SellPrice" Type="Int32" />
-          <Property Name="L_ShowInBot" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbOrders" Relationship="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbLinkUserAndPlans" ToRole="tbOrders" />
         </EntityType>
         <EntityType Name="tbLogs">
@@ -1443,6 +1448,7 @@
           <Property Name="Order_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="FK_Plan_ID" Type="Int32" />
           <Property Name="V2_Plan_ID" Type="Int32" />
+          <Property Name="FK_Link_Plan_ID" Type="Int32" />
           <Property Name="AccountName" Type="String" MaxLength="350" FixedLength="false" Unicode="true" />
           <Property Name="OrderDate" Type="DateTime" Precision="3" />
           <Property Name="OrderStatus" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
@@ -1455,10 +1461,9 @@
           <Property Name="Traffic" Type="Int32" />
           <Property Name="Month" Type="Int32" />
           <Property Name="Tel_RenewedDate" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbOrders" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbOrders_tbPlans" FromRole="tbOrders" ToRole="tbPlans" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
-          <Property Name="FK_Link_Plan_ID" Type="Int32" />
-          <NavigationProperty Name="tbLinkUserAndPlans" Relationship="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbOrders" ToRole="tbLinkUserAndPlans" />
         </EntityType>
         <EntityType Name="tbPlans">
           <Key>
@@ -1646,6 +1651,8 @@
           <NavigationProperty Name="tbConnectionHelp" Relationship="SafeNetDBModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
           <NavigationProperty Name="tbExpLog" Relationship="SafeNetDBModel.FK_tbExpLog_tbUsers" FromRole="tbUsers" ToRole="tbExpLog" />
           <NavigationProperty Name="tbFirebaseMobileTokens" Relationship="SafeNetDBModel.FK_tbFirebaseMobileTokens_tbUsers" FromRole="tbUsers" ToRole="tbFirebaseMobileTokens" />
+          <NavigationProperty Name="tbHistoryChats" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers" FromRole="tbUsers" ToRole="tbHistoryChats" />
+          <NavigationProperty Name="tbHistoryChats1" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers1" FromRole="tbUsers" ToRole="tbHistoryChats" />
           <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="SafeNetDBModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbUsers" ToRole="tbLinkServerGroupWithUsers" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="SafeNetDBModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbNotificationUser" Relationship="SafeNetDBModel.FK_tbNotificationUser_tbUsers1" FromRole="tbUsers" ToRole="tbNotificationUser" />
@@ -1656,8 +1663,6 @@
           <NavigationProperty Name="tbUserFactors" Relationship="SafeNetDBModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
           <NavigationProperty Name="tbUsers1" Relationship="SafeNetDBModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="SafeNetDBModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
-          <NavigationProperty Name="tbHistoryChats" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers" FromRole="tbUsers" ToRole="tbHistoryChats" />
-          <NavigationProperty Name="tbHistoryChats1" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers1" FromRole="tbUsers" ToRole="tbHistoryChats" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
@@ -1742,6 +1747,30 @@
             </Principal>
             <Dependent Role="tbFirebaseMobileTokens">
               <PropertyRef Name="tbFireBase_FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbHistoryChats_tbUsers">
+          <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="SafeNetDBModel.tbHistoryChats" Role="tbHistoryChats" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbHistoryChats">
+              <PropertyRef Name="fk_fromUser" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbHistoryChats_tbUsers1">
+          <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="SafeNetDBModel.tbHistoryChats" Role="tbHistoryChats" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbHistoryChats">
+              <PropertyRef Name="fk_toUser" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1848,6 +1877,18 @@
             </Principal>
             <Dependent Role="tbLogs">
               <PropertyRef Name="FK_Link_User_Plan_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbOrders_tbLinkUserAndPlans">
+          <End Type="SafeNetDBModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1" />
+          <End Type="SafeNetDBModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbLinkUserAndPlans">
+              <PropertyRef Name="Link_PU_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_Link_Plan_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -2017,55 +2058,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="tbHistoryChats">
-          <Key>
-            <PropertyRef Name="chatId" />
-          </Key>
-          <Property Name="chatId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="fk_fromUser" Type="Int32" Nullable="false" />
-          <Property Name="fk_toUser" Type="Int32" Nullable="false" />
-          <Property Name="message" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers" FromRole="tbHistoryChats" ToRole="tbUsers" />
-          <NavigationProperty Name="tbUsers1" Relationship="SafeNetDBModel.FK_tbHistoryChats_tbUsers1" FromRole="tbHistoryChats" ToRole="tbUsers" />
-          <Property Name="createDatetime" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="seened" Type="Boolean" Nullable="false" />
-        </EntityType>
-        <Association Name="FK_tbHistoryChats_tbUsers">
-          <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
-          <End Type="SafeNetDBModel.tbHistoryChats" Role="tbHistoryChats" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="tbUsers">
-              <PropertyRef Name="User_ID" />
-            </Principal>
-            <Dependent Role="tbHistoryChats">
-              <PropertyRef Name="fk_fromUser" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_tbHistoryChats_tbUsers1">
-          <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
-          <End Type="SafeNetDBModel.tbHistoryChats" Role="tbHistoryChats" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="tbUsers">
-              <PropertyRef Name="User_ID" />
-            </Principal>
-            <Dependent Role="tbHistoryChats">
-              <PropertyRef Name="fk_toUser" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_tbOrders_tbLinkUserAndPlans">
-          <End Type="SafeNetDBModel.tbLinkUserAndPlans" Role="tbLinkUserAndPlans" Multiplicity="0..1" />
-          <End Type="SafeNetDBModel.tbOrders" Role="tbOrders" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="tbLinkUserAndPlans">
-              <PropertyRef Name="Link_PU_ID" />
-            </Principal>
-            <Dependent Role="tbOrders">
-              <PropertyRef Name="FK_Link_Plan_ID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2176,6 +2168,7 @@
           <EntitySetMapping Name="tbBotSettings">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
+                <ScalarProperty Name="IsActiveCard" ColumnName="IsActiveCard" />
                 <ScalarProperty Name="NowPayment_Status" ColumnName="NowPayment_Status" />
                 <ScalarProperty Name="HubSmartPay_Status" ColumnName="HubSmartPay_Status" />
                 <ScalarProperty Name="HubSmart_API_KEY" ColumnName="HubSmart_API_KEY" />
@@ -2183,22 +2176,17 @@
                 <ScalarProperty Name="GroupId_testUnlimited" ColumnName="GroupId_testUnlimited" />
                 <ScalarProperty Name="GroupId_test" ColumnName="GroupId_test" />
                 <ScalarProperty Name="InvitePercent" ColumnName="InvitePercent" />
-                <ScalarProperty Name="Is_ActiveChangeLimitUser" ColumnName="Is_ActiveChangeLimitUser" />
                 <ScalarProperty Name="AdminUsername" ColumnName="AdminUsername" />
-                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
                 <ScalarProperty Name="Enabled" ColumnName="Enabled" />
                 <ScalarProperty Name="IsActiveCardToCard" ColumnName="IsActiveCardToCard" />
                 <ScalarProperty Name="IsActiveSendReceipt" ColumnName="IsActiveSendReceipt" />
                 <ScalarProperty Name="Present_Discount" ColumnName="Present_Discount" />
                 <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
-                <ScalarProperty Name="PricePerMonth_Major" ColumnName="PricePerMonth_Major" />
-                <ScalarProperty Name="PricePerGig_Major" ColumnName="PricePerGig_Major" />
-                <ScalarProperty Name="PricePerMonth_Admin" ColumnName="PricePerMonth_Admin" />
-                <ScalarProperty Name="PricePerGig_Admin" ColumnName="PricePerGig_Admin" />
                 <ScalarProperty Name="ChannelID" ColumnName="ChannelID" />
                 <ScalarProperty Name="RequiredJoinChannel" ColumnName="RequiredJoinChannel" />
                 <ScalarProperty Name="Active" ColumnName="Active" />
                 <ScalarProperty Name="AdminBot_ID" ColumnName="AdminBot_ID" />
+                <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
                 <ScalarProperty Name="Bot_ID" ColumnName="Bot_ID" />
                 <ScalarProperty Name="Bot_Token" ColumnName="Bot_Token" />
                 <ScalarProperty Name="botSettingID" ColumnName="botSettingID" />
@@ -2258,6 +2246,18 @@
                 <ScalarProperty Name="tbFireBase_SubToken" ColumnName="tbFireBase_SubToken" />
                 <ScalarProperty Name="tbFirebase_Token" ColumnName="tbFirebase_Token" />
                 <ScalarProperty Name="tbFirebase_ID" ColumnName="tbFirebase_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbHistoryChats">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbHistoryChats">
+              <MappingFragment StoreEntitySet="tbHistoryChats">
+                <ScalarProperty Name="seened" ColumnName="seened" />
+                <ScalarProperty Name="createDatetime" ColumnName="createDatetime" />
+                <ScalarProperty Name="message" ColumnName="message" />
+                <ScalarProperty Name="fk_toUser" ColumnName="fk_toUser" />
+                <ScalarProperty Name="fk_fromUser" ColumnName="fk_fromUser" />
+                <ScalarProperty Name="chatId" ColumnName="chatId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -2346,7 +2346,6 @@
           <EntitySetMapping Name="tbOrders">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbOrders">
               <MappingFragment StoreEntitySet="tbOrders">
-                <ScalarProperty Name="FK_Link_Plan_ID" ColumnName="FK_Link_Plan_ID" />
                 <ScalarProperty Name="Tel_RenewedDate" ColumnName="Tel_RenewedDate" />
                 <ScalarProperty Name="Month" ColumnName="Month" />
                 <ScalarProperty Name="Traffic" ColumnName="Traffic" />
@@ -2359,6 +2358,7 @@
                 <ScalarProperty Name="OrderStatus" ColumnName="OrderStatus" />
                 <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
                 <ScalarProperty Name="AccountName" ColumnName="AccountName" />
+                <ScalarProperty Name="FK_Link_Plan_ID" ColumnName="FK_Link_Plan_ID" />
                 <ScalarProperty Name="V2_Plan_ID" ColumnName="V2_Plan_ID" />
                 <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
                 <ScalarProperty Name="Order_ID" ColumnName="Order_ID" />
@@ -2534,18 +2534,6 @@
                 <ScalarProperty Name="Parent_ID" ColumnName="Parent_ID" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="User_ID" ColumnName="User_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbHistoryChats">
-            <EntityTypeMapping TypeName="SafeNetDBModel.tbHistoryChats">
-              <MappingFragment StoreEntitySet="tbHistoryChats">
-                <ScalarProperty Name="seened" ColumnName="seened" />
-                <ScalarProperty Name="createDatetime" ColumnName="createDatetime" />
-                <ScalarProperty Name="message" ColumnName="message" />
-                <ScalarProperty Name="fk_toUser" ColumnName="fk_toUser" />
-                <ScalarProperty Name="fk_fromUser" ColumnName="fk_fromUser" />
-                <ScalarProperty Name="chatId" ColumnName="chatId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
