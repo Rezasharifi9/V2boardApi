@@ -19,7 +19,6 @@ namespace DataLayer.DomainModel
         public string Bot_ID { get; set; }
         public Nullable<int> FK_Plan_ID { get; set; }
         public long AdminBot_ID { get; set; }
-        public bool Active { get; set; }
         public bool RequiredJoinChannel { get; set; }
         public string ChannelID { get; set; }
         public int FK_User_ID { get; set; }

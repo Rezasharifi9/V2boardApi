@@ -135,7 +135,7 @@ namespace V2boardApi.Areas.api.Controllers
                         }
                         return;
                     }
-                    if (BotSettings.Active == true && BotSettings.Enabled && BotSettings.tbUsers.Wallet <= BotSettings.tbUsers.Limit)
+                    if (BotSettings.Enabled && BotSettings.tbUsers.Wallet <= BotSettings.tbUsers.Limit)
                     {
                         nowPayment = new NowPayment(db, "https://api.nowpayments.io", BotSettings.NowPayment_API_KEY);
                         HubSmartAPI = new HubSmartAPI(BotSettings.HubSmart_API_KEY);
@@ -721,7 +721,10 @@ namespace V2boardApi.Areas.api.Controllers
                                     var keyboard = Keyboards.GetPlansKeyboard(AccName, RepositoryLinkUserAndPlan);
 
                                     StringBuilder str = new StringBuilder();
-                                    str.Append("📊 تعرفه های اشتراک به شرح زیر است :");
+                                    str.Append("<b>"+ " با دست باز انتخاب کن !  " + "</b>");
+                                    str.AppendLine("");
+                                    str.AppendLine("");
+                                    str.Append("🔥 همه بسته‌ها رو برات آوردیم تا بر اساس مصرفت، بهترین تصمیم رو بگیری");
                                     var plans = RepositoryLinkUserAndPlan.GetAll().Where(s => s.tbUsers.Username == botName && s.L_SellPrice != null && s.L_Status == true && s.L_ShowInBot == true).ToList();
                                     str.AppendLine("");
                                     str.AppendLine("");
@@ -733,11 +736,12 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         Counter++;
                                     }
-
+                                    str.AppendLine("");
+                                    str.AppendLine("<b>"+ "همین الان یکیو انتخاب کن 👇" + "</b>");
                                     //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
 
-                                    await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard);
+                                    await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard,parseMode:ParseMode.Html);
 
                                     //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
 
@@ -753,18 +757,23 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (keyboard == null)
                                     {
                                         StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("❌ شما اشتراکی ندارید");
+                                        str2.AppendLine("");
+                                        str2.AppendLine("<b>" + "❌ عزیزم شما اشتراکی نداری" + "</b>");
+                                        str2.AppendLine("♨️ برو تو بخش تعرفه ها یه نگاه بنداز ببین کدوم بسته به دردت می‌خوره، بعد کیف پولتو شارژ کن و برو برا خرید!\n");
                                         str2.AppendLine("");
                                         str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyToMessageId: message.MessageId); return;
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyToMessageId: message.MessageId, parseMode: ParseMode.Html); return;
                                     }
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_AccountForShowInfo", db, botName);
                                     StringBuilder str = new StringBuilder();
-                                    str.AppendLine("💢 لطفا اشتراک مورد نظر را انتخاب کنید 👇");
+                                    str.AppendLine("");
+                                    str.AppendLine("<b>"+ "💢 اشتراکتو انتخاب کن ببینیم مصرفت تو چه مایه‌س!\n" + "</b>");
+                                    str.AppendLine("");
+                                    str.AppendLine("اگه خواستی لینکت رو تغییر بدی، یا اسم اشتراکت رو عوض کنی، همه‌ش همین‌جاست – از همین بخش می‌تونی مدیریت کنی.\n");
                                     str.AppendLine("");
                                     str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                    var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, text: str.ToString(), replyToMessageId: message.MessageId, replyMarkup: keyboard);
+                                    var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, text: str.ToString(), replyToMessageId: message.MessageId, replyMarkup: keyboard,parseMode:ParseMode.Html);
                                     return;
                                 }
                                 #endregion
@@ -780,7 +789,9 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (keyboard == null)
                                     {
                                         StringBuilder str3 = new StringBuilder();
-                                        str3.AppendLine("❌ شما اشتراکی ندارید");
+                                        str3.AppendLine("<b>"+ "❌ عزیزم شما اشتراکی نداری" + "</b>");
+                                        str3.AppendLine("");
+                                        str3.AppendLine("♨️ برو تو بخش تعرفه ها یه نگاه بنداز ببین کدوم بسته به دردت می‌خوره، بعد کیف پولتو شارژ کن و برو برا خرید!\r\n\r\n");
                                         str3.AppendLine("");
                                         str3.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str3.ToString());
@@ -790,7 +801,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     StringBuilder str2 = new StringBuilder();
                                     str2.AppendLine("");
-                                    str2.AppendLine("♨️  لطفا اشتراک مورد نظر را انتخاب کنید");
+                                    str2.AppendLine("♨️  عزیزم اشتراکتو انتخاب کن تا بریم برای تمدیدش");
                                     str2.AppendLine("〰️〰️〰️〰️〰️");
                                     str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
@@ -817,9 +828,10 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (BotSettings.Present_Discount != null)
                                     {
 
-                                        str.Append("📊 تعرفه های اشتراک به شرح زیر است :");
+                                        str.Append("<b>" + "🚦 بسته مناسب خودتو انتخاب کن!\r\n " + "</b>");
                                         str.AppendLine("");
                                         str.AppendLine("");
+                                        str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n"); str.AppendLine("");
                                         str.AppendLine("💥 با " + "%" + BotSettings.Present_Discount * 100 + " تخفیف ویژه 💥");
                                         str.AppendLine("");
                                         var Counter = 1;
@@ -833,8 +845,10 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                     else
                                     {
-                                        str.Append("📊 تعرفه های اشتراک به شرح زیر است :");
+                                        str.Append("<b>" + "🚦 بسته مناسب خودتو انتخاب کن!\r\n " + "</b>");
                                         str.AppendLine("");
+                                        str.AppendLine("");
+                                        str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n");
                                         var Counter = 1;
 
                                         foreach (var item in Plans.OrderBy(s => s.tbPlans.PlanMonth).OrderBy(s => s.tbPlans.PlanVolume))
@@ -2641,8 +2655,11 @@ namespace V2boardApi.Areas.api.Controllers
                                     var keyboard = Keyboards.GetPlansKeyboard(callbackQuery.Data, RepositoryLinkUserAndPlan);
 
                                     StringBuilder str = new StringBuilder();
-                                    str.Append("📊 تعرفه های اشتراک به شرح زیر است :");
-                                    var plans = RepositoryLinkUserAndPlan.GetAll().Where(s => s.tbUsers.Username == callbackQuery.Data.Split('@')[1] && s.L_SellPrice != null && s.L_Status == true && s.L_ShowInBot == true).ToList();
+                                    str.Append("<b>" + " با دست باز انتخاب کن !  " + "</b>");
+                                    str.AppendLine("");
+                                    str.AppendLine("");
+                                    str.Append("🔥 همه بسته‌ها رو برات آوردیم تا بر اساس مصرفت، بهترین تصمیم رو بگیری");
+                                    var plans = RepositoryLinkUserAndPlan.GetAll().Where(s => s.tbUsers.Username == botName && s.L_SellPrice != null && s.L_Status == true && s.L_ShowInBot == true).ToList();
                                     str.AppendLine("");
                                     str.AppendLine("");
                                     var Counter = 1;
@@ -2653,11 +2670,13 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         Counter++;
                                     }
+                                    str.AppendLine("");
+                                    str.AppendLine("<b>" + "همین الان یکیو انتخاب کن 👇" + "</b>");
 
                                     //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
 
-                                    await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard);
+                                    await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard,parseMode:ParseMode.Html);
 
                                     //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
 

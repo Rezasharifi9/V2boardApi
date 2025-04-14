@@ -579,13 +579,13 @@ namespace V2boardApi.Areas.App.Controllers
                 if (planuser != null)
                 {
                     planuser.L_Status = true;
-                    if(userPlanPrice != "")
+                    if (userPlanPrice != "")
                     {
                         try
                         {
                             planuser.L_SellPrice = int.Parse(userPlanPrice, NumberStyles.Currency);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             return MessageBox.Warning("هشدار", "لطفا قیمت فروش نماینده رو به صورت صحیح وارد کنید");
                         }
@@ -653,7 +653,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             var planLink = await RepositoryUserPlanLinks.FirstOrDefaultAsync(s => s.Link_PU_ID == id);
 
-            if(planLink.L_ShowInBot == true)
+            if (planLink.L_ShowInBot == true)
             {
                 planLink.L_ShowInBot = false;
             }
@@ -1554,8 +1554,8 @@ namespace V2boardApi.Areas.App.Controllers
 
 
         [System.Web.Mvc.HttpPost]
-        [AuthorizeApp(Roles = "1,2,3,4")]
-        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, bool? Active, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null)
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, bool? HubSmartPay_Status, bool? Enabled, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null)
         {
 
             try
@@ -1666,13 +1666,13 @@ namespace V2boardApi.Areas.App.Controllers
                     }
 
 
-                    if (Active == null)
+                    if (Enabled == null)
                     {
-                        botSettings.Active = false;
+                        botSettings.Enabled = false;
                     }
                     else
                     {
-                        botSettings.Active = true;
+                        botSettings.Enabled = true;
                     }
 
 
@@ -1692,6 +1692,15 @@ namespace V2boardApi.Areas.App.Controllers
                     else
                     {
                         botSettings.IsActiveSendReceipt = true;
+                    }
+
+                    if (HubSmartPay_Status == null)
+                    {
+                        botSettings.HubSmartPay_Status = false;
+                    }
+                    else
+                    {
+                        botSettings.HubSmartPay_Status = true;
                     }
 
                     botSettings.Bot_Token = BotToken;
@@ -1739,13 +1748,22 @@ namespace V2boardApi.Areas.App.Controllers
                     }
 
 
-                    if (Active == null)
+                    if (Enabled == null)
                     {
-                        botSettings.Active = false;
+                        botSettings.Enabled = false;
                     }
                     else
                     {
-                        botSettings.Active = true;
+                        botSettings.Enabled = true;
+                    }
+
+                    if (HubSmartPay_Status == null)
+                    {
+                        botSettings.HubSmartPay_Status = false;
+                    }
+                    else
+                    {
+                        botSettings.HubSmartPay_Status = true;
                     }
 
 

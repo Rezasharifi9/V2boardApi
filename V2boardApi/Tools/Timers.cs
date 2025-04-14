@@ -62,7 +62,7 @@ public class TimerService
                                     var BotSetting = item.tbUsers.tbBotSettings.FirstOrDefault();
                                     if (BotSetting != null)
                                     {
-                                        if (BotSetting.Bot_Token != null && BotSetting.Active == true)
+                                        if (BotSetting.Bot_Token != null && BotSetting.Enabled == true)
                                         {
                                             var bot = BotManager.GetBot(item.tbUsers.Username);
                                             if (bot != null)
@@ -223,7 +223,7 @@ public class TimerService
         {
             var BotSettingRepository = new Repository<tbBotSettings>(db);
             var botsetting = await BotSettingRepository
-            .WhereAsync(p => p.Active == true && p.Bot_Token != null)
+            .WhereAsync(p => p.Enabled == true && p.Bot_Token != null)
             .ConfigureAwait(false);
 
 
@@ -410,7 +410,7 @@ public class TimerService
                 try
                 {
 
-                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Active == true && s.Enabled == true && s.IsActiveCardToCard == true).Count() != 0)
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.IsActiveCardToCard == true).Count() != 0)
                     {
                         var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
 
@@ -469,7 +469,7 @@ public class TimerService
                 try
                 {
 
-                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Active == true && s.Enabled == true && s.HubSmartPay_Status == true).Count() != 0)
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.HubSmartPay_Status == true).Count() != 0)
                     {
                         var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
 

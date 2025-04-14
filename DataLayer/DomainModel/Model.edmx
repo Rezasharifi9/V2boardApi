@@ -64,7 +64,6 @@
           <Property Name="Bot_ID" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="FK_Plan_ID" Type="int" />
           <Property Name="AdminBot_ID" Type="bigint" Nullable="false" />
-          <Property Name="Active" Type="bit" Nullable="false" />
           <Property Name="RequiredJoinChannel" Type="bit" Nullable="false" />
           <Property Name="ChannelID" Type="varchar" MaxLength="50" />
           <Property Name="FK_User_ID" Type="int" Nullable="false" />
@@ -1264,7 +1263,6 @@
           <Property Name="Bot_ID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FK_Plan_ID" Type="Int32" />
           <Property Name="AdminBot_ID" Type="Int64" Nullable="false" />
-          <Property Name="Active" Type="Boolean" Nullable="false" />
           <Property Name="RequiredJoinChannel" Type="Boolean" Nullable="false" />
           <Property Name="ChannelID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
@@ -2184,7 +2182,6 @@
                 <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="ChannelID" ColumnName="ChannelID" />
                 <ScalarProperty Name="RequiredJoinChannel" ColumnName="RequiredJoinChannel" />
-                <ScalarProperty Name="Active" ColumnName="Active" />
                 <ScalarProperty Name="AdminBot_ID" ColumnName="AdminBot_ID" />
                 <ScalarProperty Name="FK_Plan_ID" ColumnName="FK_Plan_ID" />
                 <ScalarProperty Name="Bot_ID" ColumnName="Bot_ID" />
