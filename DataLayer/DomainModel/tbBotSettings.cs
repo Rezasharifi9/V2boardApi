@@ -35,6 +35,8 @@ namespace DataLayer.DomainModel
         public bool HubSmartPay_Status { get; set; }
         public bool NowPayment_Status { get; set; }
         public bool IsActiveCard { get; set; }
+        public bool Aranex_Status { get; set; }
+        public string TronWallet { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }

@@ -600,7 +600,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         try
                         {
-                            planuser.L_SellPrice = int.Parse(userPlanPrice, NumberStyles.Currency);
+                            link.L_SellPrice = int.Parse(userPlanPrice, NumberStyles.Currency);
                         }
                         catch (Exception ex)
                         {
@@ -1555,7 +1555,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         [System.Web.Mvc.HttpPost]
         [AuthorizeApp(Roles = "1,3,4")]
-        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, bool? HubSmartPay_Status, bool? Enabled, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null)
+        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, bool? HubSmartPay_Status,bool? Aranex_Status, bool? Enabled, bool? RequiredJoinChannel, bool? IsActiveCardToCard, bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null)
         {
 
             try
@@ -1703,6 +1703,15 @@ namespace V2boardApi.Areas.App.Controllers
                         botSettings.HubSmartPay_Status = true;
                     }
 
+                    if (Aranex_Status == null)
+                    {
+                        botSettings.Aranex_Status = false;
+                    }
+                    else
+                    {
+                        botSettings.Aranex_Status = true;
+                    }
+
                     botSettings.Bot_Token = BotToken;
                     botSettings.Bot_ID = BotId;
                     botSettings.AdminBot_ID = TelegramUserId;
@@ -1764,6 +1773,15 @@ namespace V2boardApi.Areas.App.Controllers
                     else
                     {
                         botSettings.HubSmartPay_Status = true;
+                    }
+
+                    if (Aranex_Status == null)
+                    {
+                        botSettings.Aranex_Status = false;
+                    }
+                    else
+                    {
+                        botSettings.Aranex_Status = true;
                     }
 
 

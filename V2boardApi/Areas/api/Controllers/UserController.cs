@@ -155,11 +155,13 @@ namespace V2boardApi.Areas.api.Controllers
                             item.dw_Status = "FINISH";
                             item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
                             StringBuilder str = new StringBuilder();
-                            str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد!");
+                            str.AppendLine("✅ کیف پولتو شارژ کردم");
                             str.AppendLine("");
-                            str.AppendLine("💰 موجودی فعلی کیف پول شما: " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                            str.AppendLine("💰 موجودی الانت : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
                             str.AppendLine("");
-                            str.AppendLine("🔔 حالا می‌توانید برای خرید اشتراک جدید یا تمدید اشتراک اقدام کنید.");
+                            str.AppendLine("🔔 خب حالا برو اشتراکتو تمدید کن یا اشتراک جدید بخر و حالشو ببر.");
+                            str.AppendLine("");
+                            str.AppendLine("توجه کن اگر اشتراک داری برو تو بخش تمدید و تمدید کن وگرنه اشتراکت تموم میشه و قطع میشی");
 
 
                             var keyboard = Keyboards.GetHomeButton();
@@ -346,12 +348,13 @@ namespace V2boardApi.Areas.api.Controllers
                             item.dw_Status = "FINISH";
                             item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
                             StringBuilder str = new StringBuilder();
-                            str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد!");
+                            str.AppendLine("✅ کیف پولتو شارژ کردم");
                             str.AppendLine("");
-                            str.AppendLine("💰 موجودی فعلی کیف پول شما: " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                            str.AppendLine("💰 موجودی الانت : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
                             str.AppendLine("");
-                            str.AppendLine("🔔 حالا می‌توانید برای خرید اشتراک جدید یا تمدید اشتراک اقدام کنید.");
-
+                            str.AppendLine("🔔 خب حالا برو اشتراکتو تمدید کن یا اشتراک جدید بخر و حالشو ببر.");
+                            str.AppendLine("");
+                            str.AppendLine("توجه کن اگر اشتراک داری برو تو بخش تمدید و تمدید کن وگرنه اشتراکت تموم میشه و قطع میشی");
 
                             var keyboard = Keyboards.GetHomeButton();
 
@@ -381,25 +384,28 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                 }
 
-                                
 
 
-                                HubSmartAPI hubSmartAPI = new HubSmartAPI(botSetting.HubSmart_API_KEY);
-                                RequestVerifyTransaction verifyTransaction = new RequestVerifyTransaction();
-                                verifyTransaction.token = item.dw_hubsmart_token;
 
-                                var response = await hubSmartAPI.Verify(verifyTransaction);
-                                if (response.status)
+                                if (botSetting.HubSmartPay_Status)
                                 {
-                                    await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
+                                    HubSmartAPI hubSmartAPI = new HubSmartAPI(botSetting.HubSmart_API_KEY);
+                                    RequestVerifyTransaction verifyTransaction = new RequestVerifyTransaction();
+                                    verifyTransaction.token = item.dw_hubsmart_token;
 
-                                    await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-                                    await RepositoryDepositWallet.SaveChangesAsync();
-                                    transaction.Commit();
-                                }
-                                else
-                                {
-                                    logger.Warn("خطا در تائید تراکنش آیدی " + TaxId + " رخ داد");
+                                    var response = await hubSmartAPI.Verify(verifyTransaction);
+                                    if (response.status)
+                                    {
+                                        await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
+
+                                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                        await RepositoryDepositWallet.SaveChangesAsync();
+                                        transaction.Commit();
+                                    }
+                                    else
+                                    {
+                                        logger.Warn("خطا در تائید تراکنش آیدی " + TaxId + " رخ داد");
+                                    }
                                 }
 
                                 logger.Info("فاکتور با آیدی " + item.dw_TaxId + " با موفقیت پرداخت شد");

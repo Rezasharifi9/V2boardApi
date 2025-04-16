@@ -447,6 +447,36 @@ namespace V2boardBot.Models
             return keyborad;
         }
 
+        /// <summary>
+        /// تابع آوردن دکمه تائید پرداخت
+        /// </summary>
+        /// <returns></returns>
+        public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWalletAranex(string PayLink,string TaxId)
+        {
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn1 = new InlineKeyboardButton("🏧 پرداخت ");
+         
+            btn1.Pay = true;
+            btn1.Url = PayLink;
+
+            row1.Add(btn1);
+
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("✅ واریز کردم ");
+
+            btn2.CallbackData = "Payed%" + TaxId;
+
+            row2.Add(btn2);
+
+            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+            inlineKeyboards.Add(row1);
+            inlineKeyboards.Add(row2);
+
+            var keyborad = new InlineKeyboardMarkup(inlineKeyboards);
+
+            return keyborad;
+        }
+
         public static InlineKeyboardMarkup GetHelpKeyboard(List<tbConnectionHelp> tbConnectionHelps)
         {
             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();

@@ -438,6 +438,24 @@ namespace V2boardApi.Tools
             }
         }
 
+        public static double? GetPriceTRX()
+        {
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("https://api.aranex.net");
+            var res = client.GetAsync("/prices?type=trx");
+            if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var model = JObject.Parse(res.Result.Content.ReadAsStringAsync().Result);
+                var price = model["data"]["prices"];
+
+                return Convert.ToDouble(price);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public static bool IsEnglishText(string input)
         {
             // الگوی منظم که فقط حروف انگلیسی، اعداد، فاصله و برخی کاراکترهای خاص را می‌پذیرد و از پذیرش @ جلوگیری می‌کند

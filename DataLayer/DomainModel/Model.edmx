@@ -80,6 +80,8 @@
           <Property Name="HubSmartPay_Status" Type="bit" Nullable="false" />
           <Property Name="NowPayment_Status" Type="bit" Nullable="false" />
           <Property Name="IsActiveCard" Type="bit" Nullable="false" />
+          <Property Name="Aranex_Status" Type="bit" Nullable="false" />
+          <Property Name="TronWallet" Type="nvarchar" MaxLength="150" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1281,6 +1283,8 @@
           <Property Name="IsActiveCard" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
+          <Property Name="Aranex_Status" Type="Boolean" Nullable="false" />
+          <Property Name="TronWallet" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -2166,6 +2170,8 @@
           <EntitySetMapping Name="tbBotSettings">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
+                <ScalarProperty Name="TronWallet" ColumnName="TronWallet" />
+                <ScalarProperty Name="Aranex_Status" ColumnName="Aranex_Status" />
                 <ScalarProperty Name="IsActiveCard" ColumnName="IsActiveCard" />
                 <ScalarProperty Name="NowPayment_Status" ColumnName="NowPayment_Status" />
                 <ScalarProperty Name="HubSmartPay_Status" ColumnName="HubSmartPay_Status" />
