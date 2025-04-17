@@ -60,6 +60,32 @@ namespace V2boardApi.Areas.App.Controllers
                     factor.Date = item.dw_CreateDatetime.Value.ConvertDateTimeToShamsi2();
                     factor.User = item.tbTelegramUsers.Tel_Username + "(" + item.tbTelegramUsers.Tel_FirstName + " " + item.tbTelegramUsers.Tel_LastName + ")";
                     factor.Price = item.dw_Price.Value.ConvertToMony();
+                    if (item.dw_PayMethod == null)
+                    {
+                        factor.PayMethod = 0;
+                    }
+                    else
+                    {
+                        if (item.dw_PayMethod == "Card")
+                        {
+                            factor.PayMethod = 0;
+                        }
+                        if (item.dw_PayMethod == "Gateway")
+                        {
+                            factor.PayMethod = 1;
+                        }
+                        if (item.dw_PayMethod == "HubSmart")
+                        {
+                            factor.PayMethod = 2;
+                        }
+                        if (item.dw_PayMethod == "Aranex")
+                        {
+                            factor.PayMethod = 3;
+                        }
+
+
+                    }
+
                     BotFactores.Add(factor);
                 }
 
@@ -132,9 +158,9 @@ namespace V2boardApi.Areas.App.Controllers
                     return MessageBox.Warning("ناموفق", "این تراکنش قبلا تائید شده");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                logger.Error(ex,"تائید فاکتور با خطا مواجه شد");
+                logger.Error(ex, "تائید فاکتور با خطا مواجه شد");
                 return MessageBox.Error("ناموفق", "خطا در تائید فاکتور");
             }
         }

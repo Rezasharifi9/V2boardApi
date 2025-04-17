@@ -12,5 +12,6 @@ namespace V2boardApi.Areas.App.Data.BotFactoresViewModels
         public string Date { get; set; }
         public int Status  { get; set; }
         public string Price { get; set; }
+        public int PayMethod { get; set; }
     }
 }

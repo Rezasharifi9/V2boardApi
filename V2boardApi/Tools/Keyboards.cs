@@ -39,11 +39,6 @@ namespace V2boardBot.Models
                 {
                     keyboard = new ReplyKeyboardMarkup(new[]
                         {
-                           new[]
-                            {
-
-                                new KeyboardButton("📲 آموزش خرید")
-                            },
                             new[]
                             {
 
@@ -471,6 +466,29 @@ namespace V2boardBot.Models
             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
             inlineKeyboards.Add(row1);
             inlineKeyboards.Add(row2);
+
+            var keyborad = new InlineKeyboardMarkup(inlineKeyboards);
+
+            return keyborad;
+        }
+
+        /// <summary>
+        /// تابع آوردن دکمه تائید پرداخت درگاه
+        /// </summary>
+        /// <returns></returns>
+        public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWalletGateway(string PayLink)
+        {
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn1 = new InlineKeyboardButton("🏧 پرداخت ");
+
+            btn1.Pay = true;
+            btn1.Url = PayLink;
+
+            row1.Add(btn1);
+
+            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+            inlineKeyboards.Add(row1);
 
             var keyborad = new InlineKeyboardMarkup(inlineKeyboards);
 

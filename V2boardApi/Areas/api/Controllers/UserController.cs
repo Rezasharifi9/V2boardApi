@@ -53,6 +53,8 @@ using V2boardBotApp.Models;
 using NLog;
 using System.Data.Entity;
 using V2boardApi.Areas.api.Data.ApiModels;
+using MySqlX.XDevAPI.Common;
+using System.Net;
 
 namespace V2boardApi.Areas.api.Controllers
 {
@@ -144,7 +146,7 @@ namespace V2boardApi.Areas.api.Controllers
                     if (User != null)
                     {
                         int pr = int.Parse(SMSMessageText, NumberStyles.Currency);
-                        
+
 
 
                         var date2 = DateTime.Now.AddHours(-24);
@@ -169,7 +171,7 @@ namespace V2boardApi.Areas.api.Controllers
                             await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
 
 
-                            
+
                             if (botSetting != null)
                             {
                                 TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
@@ -224,7 +226,7 @@ namespace V2boardApi.Areas.api.Controllers
                             StringBuilder str2 = new StringBuilder();
                             str2.AppendLine("🧑‍💻 مدیر عزیز");
                             str2.AppendLine("");
-                            str2.AppendLine("🤵 نماینده با نام کاربری : "+ UserAgent.Username);
+                            str2.AppendLine("🤵 نماینده با نام کاربری : " + UserAgent.Username);
                             str2.AppendLine("");
                             if (SumPay2Factor >= UserAgent.Wallet)
                             {
@@ -263,7 +265,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     item.tbUf_Status = 3;
                                 }
-                                
+
 
                             }
                             else
@@ -277,7 +279,7 @@ namespace V2boardApi.Areas.api.Controllers
                             if (TelegramUser != null)
                             {
                                 str.AppendLine("");
-                                str.AppendLine("<b>"+ "⚠️ نکته : حتما رسید را نهایتا تا 3 ساعت بعد از واریز برای ربات ارسال کنید" + "</b>");
+                                str.AppendLine("<b>" + "⚠️ نکته : حتما رسید را نهایتا تا 3 ساعت بعد از واریز برای ربات ارسال کنید" + "</b>");
                                 str.AppendLine("");
                                 str.AppendLine("🆔 @" + botSetting.Bot_ID);
                                 TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
@@ -287,7 +289,7 @@ namespace V2boardApi.Areas.api.Controllers
                             transaction.Commit();
 
                             var admin = RepositoryTelegramUser.Where(s => s.Tel_UniqUserID == botSetting.AdminBot_ID.ToString()).FirstOrDefault();
-                            if(admin != null)
+                            if (admin != null)
                             {
                                 TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
                                 await botClient.SendTextMessageAsync(admin.Tel_UniqUserID, str2.ToString());
@@ -328,9 +330,120 @@ namespace V2boardApi.Areas.api.Controllers
 
         #endregion
 
-        
+        #region تابع تائید کردن پرداختی زرین پال
+
         [System.Web.Http.HttpGet]
-        public async Task<IHttpActionResult> VerifyPay(string BotName, string TaxId)
+        public async Task<HttpResponseMessage> VerifyPayZarinPal(string BotName, string Authority)
+        {
+
+
+
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var User = await RepositoryUser.FirstOrDefaultAsync(p => p.Username == BotName);
+                    if (User != null)
+                    {
+                        var date2 = DateTime.Now.AddHours(-24);
+                        var item = await RepositoryDepositWallet.FirstOrDefaultAsync(p => p.dw_Status == "FOR_PAY" && p.dw_TaxId == Authority);
+                        var botSetting = User.tbBotSettings.FirstOrDefault();
+                        if (item != null)
+                        {
+                            item.dw_Status = "FINISH";
+                            item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                            StringBuilder str = new StringBuilder();
+                            str.AppendLine("✅ کیف پولتو شارژ کردم");
+                            str.AppendLine("");
+                            str.AppendLine("💰 موجودی الانت : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                            str.AppendLine("");
+                            str.AppendLine("🔔 خب حالا برو اشتراکتو تمدید کن یا اشتراک جدید بخر و حالشو ببر.");
+                            str.AppendLine("");
+                            str.AppendLine("توجه کن اگر اشتراک داری برو تو بخش تمدید و تمدید کن وگرنه اشتراکت تموم میشه و قطع میشی");
+
+                            var keyboard = Keyboards.GetHomeButton();
+
+
+                            var htmlBuilder = new StringBuilder();
+
+                            htmlBuilder.Append("<html><head><meta charset='UTF-8'><title>پرداخت موفق</title><style>");
+                            htmlBuilder.Append("body { font-family: 'Vazir', sans-serif; background-color: #f0f8ff; text-align: center; padding-top: 100px; direction: rtl; }");
+                            htmlBuilder.Append(".message-box { background-color: #e0ffe0; border: 2px solid #4CAF50; display: inline-block; padding: 30px 50px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }");
+                            htmlBuilder.Append("h1 { color: #2e7d32; margin-bottom: 20px; }");
+                            htmlBuilder.Append("p { font-size: 18px; color: #333; }");
+                            htmlBuilder.Append(".back-btn { margin-top: 30px; display: inline-block; padding: 10px 25px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 10px; font-size: 16px; }");
+                            htmlBuilder.Append(".back-btn:hover { background-color: #45a049; }");
+                            htmlBuilder.Append("</style></head><body>");
+
+                            htmlBuilder.Append("<div class='message-box'>");
+                            htmlBuilder.Append("<h1>✅ کیف پول شما با موفقیت شارژ شد!</h1>");
+                            htmlBuilder.Append("<p>برای ادامه، لطفاً به ربات بازگردید 🤖</p>");
+                            htmlBuilder.AppendFormat("<a class='back-btn' href='https://t.me/{0}'>بازگشت به ربات</a>", botSetting.Bot_ID);
+                            htmlBuilder.Append("</div></body></html>");
+
+
+                            TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
+
+
+                            if (botSetting.InvitePercent != null)
+                            {
+                                if (item.tbTelegramUsers.Tel_Parent_ID != null)
+                                {
+                                    var parent = item.tbTelegramUsers.tbTelegramUsers2;
+                                    parent.Tel_Wallet += Convert.ToInt32((item.dw_Price / 10) * botSetting.InvitePercent.Value);
+
+                                    StringBuilder str1 = new StringBuilder();
+                                    str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
+                                    str1.AppendLine("");
+                                    str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                                    str1.AppendLine("");
+                                    str1.AppendLine("🚀 @" + botSetting.Bot_ID);
+
+                                    await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                }
+                            }
+
+                            await RepositoryDepositWallet.SaveChangesAsync();
+
+                            await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+
+                            logger.Info("فاکتور با آیدی " + item.dw_TaxId + " با موفقیت پرداخت شد");
+
+                            var response = new HttpResponseMessage(HttpStatusCode.OK);
+                            response.Content = new StringContent(htmlBuilder.ToString(), Encoding.UTF8, "text/html");
+                            transaction.Commit();
+                            return response;
+
+
+                        }
+                        else
+                        {
+                            return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                        }
+                    }
+                    else
+                    {
+
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    logger.Error(ex, "خطا در تائید تراکنش آیدی " + Authority + " رخ داد");
+                    return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                }
+            }
+        }
+
+        #endregion
+
+        #region تائید پرداختی هاب اسمارت
+
+        [System.Web.Http.HttpGet]
+        public async Task<IHttpActionResult> VerifyPay(string BotName, string PayMethod, string TaxId)
         {
             using (var transaction = db.Database.BeginTransaction())
             {
@@ -339,9 +452,11 @@ namespace V2boardApi.Areas.api.Controllers
                     var User = await RepositoryUser.FirstOrDefaultAsync(p => p.Username == BotName);
                     if (User != null)
                     {
-                       
+
+
+
                         var date2 = DateTime.Now.AddHours(-24);
-                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p =>  p.dw_Status == "FOR_PAY" && p.dw_TaxId == TaxId);
+                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Status == "FOR_PAY" && p.dw_TaxId == TaxId && p.dw_PayMethod == PayMethod);
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         foreach (var item in tbDepositLog)
                         {
@@ -364,7 +479,7 @@ namespace V2boardApi.Areas.api.Controllers
                             if (botSetting != null)
                             {
                                 TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
-                                
+
 
                                 if (botSetting.InvitePercent != null)
                                 {
@@ -387,7 +502,7 @@ namespace V2boardApi.Areas.api.Controllers
 
 
 
-                                if (botSetting.HubSmartPay_Status)
+                                if (botSetting.HubSmartPay_Status && PayMethod == "HubSmart")
                                 {
                                     HubSmartAPI hubSmartAPI = new HubSmartAPI(botSetting.HubSmart_API_KEY);
                                     RequestVerifyTransaction verifyTransaction = new RequestVerifyTransaction();
@@ -433,7 +548,7 @@ namespace V2boardApi.Areas.api.Controllers
             }
         }
 
-       
+        #endregion
 
         #region دریافت فاکتور ها برای اپلیکیشن
 

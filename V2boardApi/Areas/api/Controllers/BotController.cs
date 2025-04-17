@@ -65,6 +65,7 @@ namespace V2boardApi.Areas.api.Controllers
 
         private NowPayment nowPayment;
         private HubSmartAPI HubSmartAPI;
+        private ZarinPalPayment ZarinPal;
         private static tbServers Server;
         private static string RobotIDforTimer { get; set; }
 
@@ -139,6 +140,7 @@ namespace V2boardApi.Areas.api.Controllers
                     if (BotSettings.Enabled && BotSettings.tbUsers.Wallet <= BotSettings.tbUsers.Limit)
                     {
                         nowPayment = new NowPayment(db, "https://api.nowpayments.io", BotSettings.NowPayment_API_KEY);
+                        ZarinPal = new ZarinPalPayment(BotSettings.PaymentGateWay_Merchant_ID, BotSettings.PaymentGateWay_Key);
                         HubSmartAPI = new HubSmartAPI(BotSettings.HubSmart_API_KEY);
                         var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
                         var tbServerRepository = new Repository<tbServers>(db);
@@ -972,13 +974,16 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
                                         row1.Add(InlineKeyboardButton.WithCallbackData("💳 کارت به کارت", "InventoryIncreaseCard"));
+                                        List<InlineKeyboardButton> row5 = new List<InlineKeyboardButton>();
+                                        row5.Add(InlineKeyboardButton.WithCallbackData("🏧 درگاه پرداخت ( پیشنهادی )", "InventoryIncreaseGateWay"));
                                         List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-                                        row2.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی ( هاب اسمارت )", "InventoryIncreaseRial"));
+                                        row2.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی هاب اسمارت", "InventoryIncreaseRial"));
                                         List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
-                                        row3.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی ( آرانکس )", "InventoryIncreaseRialAranex"));
+                                        row3.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی آرانکس ", "InventoryIncreaseRialAranex"));
                                         List<InlineKeyboardButton> row4 = new List<InlineKeyboardButton>();
                                         row4.Add(InlineKeyboardButton.WithCallbackData("زیر مجموعه گیری 👬", "InventoryIncreaseSub"));
                                         inlineKeyboards.Add(row1);
+                                        inlineKeyboards.Add(row5);
                                         inlineKeyboards.Add(row2);
                                         inlineKeyboards.Add(row3);
                                         inlineKeyboards.Add(row4);
@@ -1210,6 +1215,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         tbDeposit.dw_Status = "FOR_PAY";
                                         tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
                                         tbDeposit.dw_message_id = update.Message.MessageId;
+                                        tbDeposit.dw_PayMethod = "Card";
                                         tbDepositLogRepo.Insert(tbDeposit);
                                         await tbDepositLogRepo.SaveChangesAsync();
                                         str.AppendLine("");
@@ -1262,12 +1268,13 @@ namespace V2boardApi.Areas.api.Controllers
                                         tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
                                         tbDeposit.dw_message_id = update.Message.MessageId;
                                         tbDeposit.dw_TaxId = Guid.NewGuid().ToString().Split('-')[0];
+                                        tbDeposit.dw_PayMethod = "HubSmart";
                                         tbDepositLogRepo.Insert(tbDeposit);
                                         await tbDepositLogRepo.SaveChangesAsync();
 
                                         RequestNewPay requestNewPay = new RequestNewPay();
                                         requestNewPay.amount = (price - 10000).ToString();
-                                        requestNewPay.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPay?BotName=" + BotSettings.tbUsers.Username + "&TaxId=" + tbDeposit.dw_TaxId;
+                                        requestNewPay.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPay?BotName=" + BotSettings.tbUsers.Username + "&PayMethod=HubSmart&TaxId=" + tbDeposit.dw_TaxId;
                                         requestNewPay.order_id = tbDeposit.dw_TaxId;
 
                                         var ResHub = await HubSmartAPI.NewPay(requestNewPay);
@@ -1288,8 +1295,6 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("⭕️ لینک پرداخت تا ۲۰ دقیقه فعاله؛ اگه تو این مدت پرداخت نکنی، تراکنش منقضی می‌شه و باید دوباره امتحان کنی.");
                                         str.AppendLine("");
                                         str.AppendLine("⭕️  بعد از پرداخت، همه چیز خودکار انجام می‌شه — نیاز به هیچ پیگیری‌ای نیست. راحت باش 😎");
-                                        str.AppendLine("");
-                                        str.AppendLine("💡 فقط اینو هم در نظر داشته باش:\r\n\r\n" + "<b>درگاه پرداخت ۱۰ تومن کارمزد ثابت داره</b>" + ".\r\n\r\nو همچنین، ۵٪ بابت نوسان قیمت ترون روی مبلغ اعمال می‌شه.");
                                         str.AppendLine("");
                                         str.AppendLine("اگه سوال یا مشکلی داشتی، تیم پشتیبانی همیشه کنارت هست ❤️\r\nممنونیم از اعتمادت 🙏");
                                         str.AppendLine("");
@@ -1341,10 +1346,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
                                         tbDeposit.dw_message_id = update.Message.MessageId;
                                         tbDeposit.dw_TaxId = Guid.NewGuid().ToString().Split('-')[0];
+                                        tbDeposit.dw_PayMethod = "Aranex";
                                         tbDepositLogRepo.Insert(tbDeposit);
                                         await tbDepositLogRepo.SaveChangesAsync();
 
-                                        var LastPrice = (price - 10000);
+                                        var LastPrice = (price - 15000);
                                         var TrxPrice = LastPrice / Utility.GetPriceTRX();
 
                                         var PayLink = "https://site.aranex.net/web/buy?count=" + TrxPrice + "&wallet=" + BotSettings.TronWallet + "&type=trx&network=trc20&id=" + tbDeposit.dw_TaxId + "&refround=4d7r489d";
@@ -1360,7 +1366,6 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("⭕️ بعد از پرداخت حتما گزینه ✅ واریز کردم را بزن تا کیف پولت شارژ بشه");
                                         str.AppendLine("");
-                                        str.AppendLine("💡 فقط اینو هم در نظر داشته باش:\r\n\r\n" + "<b>درگاه پرداخت 5 تومن کارمزد ثابت داره</b>");
                                         str.AppendLine("");
                                         str.AppendLine("اگه سوال یا مشکلی داشتی، تیم پشتیبانی همیشه کنارت هست ❤️\r\nممنونیم از اعتمادت 🙏");
                                         str.AppendLine("");
@@ -1386,7 +1391,84 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
-                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePriceRial", db, botName);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePriceRialAranex", db, botName);
+
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                        return;
+                                    }
+                                }
+
+                                #endregion
+
+                                #region درگاه پرداخت
+
+                                if (UserAcc.Tel_Step == "Wait_For_Type_IncreasePriceGateway")
+                                {
+                                    var price = 0;
+
+                                    int.TryParse(mess, out price);
+                                    if (price >= 50000 && price <= 5000000)
+                                    {
+                                        var model = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت فاکتور ...", parseMode: ParseMode.Html);
+
+
+                                        tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
+                                        tbDeposit.dw_Price = price * 10;
+                                        tbDeposit.dw_CreateDatetime = DateTime.Now;
+                                        tbDeposit.dw_Status = "FOR_PAY";
+                                        tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
+                                        tbDeposit.dw_message_id = update.Message.MessageId;
+
+                                        tbDeposit.dw_PayMethod = "Gateway";
+                                        tbDepositLogRepo.Insert(tbDeposit);
+                                        await tbDepositLogRepo.SaveChangesAsync();
+
+                                        var reqModel = new ZarinPalPayment.PaymentRequestModel();
+
+                                        reqModel.amount = tbDeposit.dw_Price.Value;
+                                        reqModel.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPayZarinPal?BotName=" + BotSettings.tbUsers.Username;
+
+                                        var response = await ZarinPal.CreatePayment(reqModel);
+
+                                        var PayLink = "https://payment.zarinpal.com/pg/StartPay/" + response.data.authority;
+
+                                        tbDeposit.dw_TaxId = response.data.authority;
+                                        await tbDepositLogRepo.SaveChangesAsync();
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("💸 تراکنشت  با مبلغ " + (price).ConvertToMony() + " تومان" + " با موفقیت ثبت شد !");
+                                        str.AppendLine("");
+                                        str.AppendLine("⭕️ تأیید و شارژ کیف پول به صورت خودکار بعد از پرداخت انجام میشه 😉");
+                                        str.AppendLine("");
+                                        str.AppendLine("⭕️ لینک پرداخت تا 20 دقیقه فعاله؛ اگه تو این مدت پرداخت نکنی، تراکنش منقضی می‌شه و باید دوباره امتحان کنی.");
+                                        str.AppendLine("");
+                                        str.AppendLine("<b>⚠️  لطفا VPN را خاموش کن و سپس روی گزینه پرداخت کلیک کن  ⚠️</b>");
+                                        str.AppendLine("");
+                                        str.AppendLine("اگه سوال یا مشکلی داشتی، تیم پشتیبانی همیشه کنارت هست ❤️\r\nممنونیم از اعتمادت 🙏");
+                                        str.AppendLine("");
+                                        str.AppendLine("@" + BotSettings.AdminUsername + " : پشتیبانی 📞");
+
+                                        var key = Keyboards.GetPaymentButtonForIncreaseWalletGateway(PayLink);
+
+                                        var model2 = await bot.Client.EditMessageTextAsync(UserAcc.Tel_UniqUserID, model.MessageId, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
+                                        tbDeposit.dw_message_id = model2.MessageId;
+                                        await tbDepositLogRepo.SaveChangesAsync();
+
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("❌ فرمت مبلغ اشتباه");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 5,000,000 تومان می باشد");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ مبلغ را با اعداد انگلیسی وارد کنید");
+                                        str.AppendLine("");
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePriceGateway", db, botName);
 
                                         await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
                                         return;
@@ -2343,27 +2425,35 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (callbackQuery.Data == "InventoryIncreaseCard")
                                 {
-                                    StringBuilder str = new StringBuilder();
-                                    str.AppendLine("◀️  لطفا مبلغ تعرفه یا هر مبلغی رو که میخای وارد کن ");
-                                    str.AppendLine("");
-                                    str.AppendLine("❗️ توجه کن : بازه مبلغ واریزیت باید بین 50,000 تومان تا 1,000,000 تومان باشه");
-                                    str.AppendLine("❗️ مبلغو بدون گذاشتن , وارد کن");
+                                    if (BotSettings.IsActiveCardToCard == true || BotSettings.IsActiveSendReceipt == true)
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("◀️  لطفا مبلغ تعرفه یا هر مبلغی رو که میخای وارد کن ");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ توجه کن : بازه مبلغ واریزیت باید بین 50,000 تومان تا 1,000,000 تومان باشه");
+                                        str.AppendLine("❗️ مبلغو بدون گذاشتن , وارد کن");
 
-                                    await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db, botName);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db, botName);
 
-                                    List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
-                                    List<KeyboardButton> row2 = new List<KeyboardButton>();
-                                    row2.Add(new KeyboardButton("⬅️ برگشت به صفحه اصلی"));
-                                    inlineKeyboards.Add(row2);
+                                        List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
+                                        List<KeyboardButton> row2 = new List<KeyboardButton>();
+                                        row2.Add(new KeyboardButton("⬅️ برگشت به صفحه اصلی"));
+                                        inlineKeyboards.Add(row2);
 
-                                    inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
-                                    await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
-                                    await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                        inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
+                                        await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                        await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                    }
+                                    else
+                                    {
+                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "😔❤️ اوه عزیزم خیلی ببخشید این روش فعلا در دسترس نیست لطفا از روش دیگه استفاده کن ", showAlert: true);
+                                    }
+
                                 }
 
                                 if (callbackQuery.Data == "InventoryIncreaseRial")
                                 {
-                                    if (BotSettings.HubSmart_API_KEY != null && BotSettings.HubSmartPay_Status == true)
+                                    if (BotSettings.PaymentGateWay_Status == true)
                                     {
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("◀️  لطفا مبلغ تعرفه یا هر مبلغی رو که میخای وارد کن ");
@@ -2384,7 +2474,36 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                     else
                                     {
-                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "😔❤️ اوه عزیزم خیلی ببخشید این روش فعلا در دسترس نیست لطفا از روش دیگه استفاده کن ");
+                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "😔❤️ اوه عزیزم خیلی ببخشید این روش فعلا در دسترس نیست لطفا از روش دیگه استفاده کن ", showAlert: true);
+
+                                    }
+
+                                }
+
+                                if (callbackQuery.Data == "InventoryIncreaseGateWay")
+                                {
+                                    if (BotSettings.PaymentGateWay_Status == true && BotSettings.PaymentGateWay_Merchant_ID != null && BotSettings.PaymentGateWay_Key != null)
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("◀️  لطفا مبلغ تعرفه یا هر مبلغی رو که میخای وارد کن ");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ توجه کن : بازه مبلغ واریزیت باید بین 50,000 تومان تا 1,000,000 تومان باشه");
+                                        str.AppendLine("❗️ مبلغو بدون گذاشتن , وارد کن");
+
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePriceGateway", db, botName);
+
+                                        List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
+                                        List<KeyboardButton> row2 = new List<KeyboardButton>();
+                                        row2.Add(new KeyboardButton("⬅️ برگشت به صفحه اصلی"));
+                                        inlineKeyboards.Add(row2);
+
+                                        inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
+                                        await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                        await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                    }
+                                    else
+                                    {
+                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "😔❤️ اوه عزیزم خیلی ببخشید این روش فعلا در دسترس نیست لطفا از روش دیگه استفاده کن ", showAlert: true);
 
                                     }
 
@@ -2413,7 +2532,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     }
                                     else
                                     {
-                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "😔❤️ اوه عزیزم خیلی ببخشید این روش فعلا در دسترس نیست لطفا از روش دیگه استفاده کن ");
+                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "😔❤️ اوه عزیزم خیلی ببخشید این روش فعلا در دسترس نیست لطفا از روش دیگه استفاده کن ", showAlert: true);
 
                                     }
 
@@ -2727,8 +2846,8 @@ namespace V2boardApi.Areas.api.Controllers
                                                 Order.OrderDate = DateTime.Now;
                                                 Order.OrderType = "خرید";
                                                 Order.OrderStatus = "FINISH";
-                                                Order.Traffic = User.Tel_Traffic;
-                                                Order.Month = User.Tel_Monthes;
+                                                Order.Traffic = Plan.tbPlans.PlanVolume;
+                                                Order.Month = Plan.tbPlans.PlanMonth;
                                                 Order.V2_Plan_ID = V2boardPlanId;
                                                 Order.FK_Tel_UserID = UserAcc.Tel_UserID;
                                                 Order.Order_Price = Price;

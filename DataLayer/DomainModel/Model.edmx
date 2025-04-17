@@ -78,10 +78,13 @@
           <Property Name="NowPayment_API_KEY" Type="varchar" MaxLength="150" />
           <Property Name="HubSmart_API_KEY" Type="varchar" MaxLength="150" />
           <Property Name="HubSmartPay_Status" Type="bit" Nullable="false" />
-          <Property Name="NowPayment_Status" Type="bit" Nullable="false" />
+          <Property Name="NowPayment_Status" Type="bit" />
           <Property Name="IsActiveCard" Type="bit" Nullable="false" />
           <Property Name="Aranex_Status" Type="bit" Nullable="false" />
           <Property Name="TronWallet" Type="nvarchar" MaxLength="150" />
+          <Property Name="PaymentGateWay_Status" Type="bit" Nullable="false" />
+          <Property Name="PaymentGateWay_Merchant_ID" Type="varchar" MaxLength="150" />
+          <Property Name="PaymentGateWay_Key" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -106,6 +109,7 @@
           <Property Name="dw_message_id" Type="int" />
           <Property Name="dw_hubsmart_token" Type="varchar" MaxLength="150" />
           <Property Name="dw_TaxId" Type="varchar" MaxLength="150" />
+          <Property Name="dw_PayMethod" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -1279,12 +1283,15 @@
           <Property Name="NowPayment_API_KEY" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="HubSmart_API_KEY" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="HubSmartPay_Status" Type="Boolean" Nullable="false" />
-          <Property Name="NowPayment_Status" Type="Boolean" Nullable="false" />
+          <Property Name="NowPayment_Status" Type="Boolean" />
           <Property Name="IsActiveCard" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
           <Property Name="Aranex_Status" Type="Boolean" Nullable="false" />
           <Property Name="TronWallet" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="PaymentGateWay_Status" Type="Boolean" Nullable="false" />
+          <Property Name="PaymentGateWay_Merchant_ID" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="PaymentGateWay_Key" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1311,6 +1318,7 @@
           <Property Name="dw_hubsmart_token" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="dw_TaxId" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
+          <Property Name="dw_PayMethod" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -2170,6 +2178,9 @@
           <EntitySetMapping Name="tbBotSettings">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbBotSettings">
               <MappingFragment StoreEntitySet="tbBotSettings">
+                <ScalarProperty Name="PaymentGateWay_Key" ColumnName="PaymentGateWay_Key" />
+                <ScalarProperty Name="PaymentGateWay_Merchant_ID" ColumnName="PaymentGateWay_Merchant_ID" />
+                <ScalarProperty Name="PaymentGateWay_Status" ColumnName="PaymentGateWay_Status" />
                 <ScalarProperty Name="TronWallet" ColumnName="TronWallet" />
                 <ScalarProperty Name="Aranex_Status" ColumnName="Aranex_Status" />
                 <ScalarProperty Name="IsActiveCard" ColumnName="IsActiveCard" />
@@ -2210,6 +2221,7 @@
           <EntitySetMapping Name="tbDepositWallet_Log">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
+                <ScalarProperty Name="dw_PayMethod" ColumnName="dw_PayMethod" />
                 <ScalarProperty Name="dw_TaxId" ColumnName="dw_TaxId" />
                 <ScalarProperty Name="dw_hubsmart_token" ColumnName="dw_hubsmart_token" />
                 <ScalarProperty Name="dw_message_id" ColumnName="dw_message_id" />

@@ -14,6 +14,7 @@ $(function () {
                 { data: '' },
                 { data: 'User' },
                 { data: 'Date' },
+                { data: 'PayMethod' },
                 { data: 'Status' },
                 { data: 'Price' },
                 { data: '' }
@@ -67,6 +68,25 @@ $(function () {
                     targets: 3,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
+                        var $PayMethod = full['PayMethod'];
+
+                        var statusObj = {
+                            0: { title: 'کارت به کارت', class: 'bg-label-success' },
+                            1: { title: 'درگاه پرداخت', class: 'bg-label-primary' },
+                            2: { title: 'هاب اسمارت', class: 'bg-label-danger' },
+                            3: { title: 'آرانکس', class: 'bg-label-secondary' },
+                        };
+
+                        var $row_output = "<span class='badge " + statusObj[$PayMethod].class + "'>" + statusObj[$PayMethod].title + "</span>";
+
+                        return $row_output;
+                    }
+                },
+                {
+                    // Status
+                    targets: 4,
+                    responsivePriority: 4,
+                    render: function (data, type, full, meta) {
                         var $Traffic = full['Status'];
 
                         var statusObj = {
@@ -81,7 +101,7 @@ $(function () {
                 },
                 {
                     // Price
-                    targets: 4,
+                    targets: 5,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $Price = full['Price'];

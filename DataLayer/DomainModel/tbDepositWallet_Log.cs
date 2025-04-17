@@ -23,6 +23,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> dw_message_id { get; set; }
         public string dw_hubsmart_token { get; set; }
         public string dw_TaxId { get; set; }
+        public string dw_PayMethod { get; set; }
     
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
     }

@@ -33,10 +33,13 @@ namespace DataLayer.DomainModel
         public string NowPayment_API_KEY { get; set; }
         public string HubSmart_API_KEY { get; set; }
         public bool HubSmartPay_Status { get; set; }
-        public bool NowPayment_Status { get; set; }
+        public Nullable<bool> NowPayment_Status { get; set; }
         public bool IsActiveCard { get; set; }
         public bool Aranex_Status { get; set; }
         public string TronWallet { get; set; }
+        public bool PaymentGateWay_Status { get; set; }
+        public string PaymentGateWay_Merchant_ID { get; set; }
+        public string PaymentGateWay_Key { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }

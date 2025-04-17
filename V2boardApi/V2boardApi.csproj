@@ -457,6 +457,7 @@
     <Compile Include="Tools\Timers.cs" />
     <Compile Include="Tools\UserLog.cs" />
     <Compile Include="Tools\Utility.cs" />
+    <Compile Include="Tools\ZarinPalPayment.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\audio\Water_Lily.mp3" />
