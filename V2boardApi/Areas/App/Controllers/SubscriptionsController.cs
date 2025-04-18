@@ -384,7 +384,10 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 if (!string.IsNullOrEmpty(userSubname))
                 {
-
+                    if (userSubname.Contains('@'))
+                    {
+                        return MessageBox.Warning("هشدار", "نام اشتراک نمی تواند حاوی کاراکتر @ باشد");
+                    }
                     userSubname = userSubname.ToLower();
                     if (userPlan != 0)
                     {

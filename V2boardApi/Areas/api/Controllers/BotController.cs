@@ -1487,6 +1487,15 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         if (Utility.IsEnglishText(mess))
                                         {
+                                            if(mess.Contains('@') || mess.Contains('$'))
+                                            {
+
+                                                StringBuilder str1 = new StringBuilder();
+                                                str1.AppendLine("❌ نام اشتراک نمی تواند حاوی کاراکتر @ یا $ باشد");
+                                                await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                                return;
+                                            }
+
                                             var OldName = UserAcc.Tel_Data;
                                             var LastName = UserAcc.Tel_Data.Split('$')[1];
                                             var NewName = mess;

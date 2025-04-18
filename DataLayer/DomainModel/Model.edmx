@@ -1546,6 +1546,9 @@
           <NavigationProperty Name="tbUpdateLogs" Relationship="SafeNetDBModel.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
           <NavigationProperty Name="tbUseages" Relationship="SafeNetDBModel.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+          <Property Name="Cloudflare_API_KEY" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Cloudflare_Email" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Backup_IPServer" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbSocks5">
           <Key>
