@@ -1418,7 +1418,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         tbDeposit.dw_Status = "FOR_PAY";
                                         tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
                                         tbDeposit.dw_message_id = update.Message.MessageId;
-
+                                        tbDeposit.dw_TaxId = Guid.NewGuid().ToString();
                                         tbDeposit.dw_PayMethod = "Gateway";
                                         tbDepositLogRepo.Insert(tbDeposit);
                                         await tbDepositLogRepo.SaveChangesAsync();
@@ -1426,13 +1426,13 @@ namespace V2boardApi.Areas.api.Controllers
                                         var reqModel = new ZarinPalPayment.PaymentRequestModel();
 
                                         reqModel.amount = tbDeposit.dw_Price.Value;
-                                        reqModel.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPayZarinPal?BotName=" + BotSettings.tbUsers.Username;
+                                        reqModel.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPayZarinPal?BotName=" + BotSettings.tbUsers.Username+ "&TaxId"+ tbDeposit.dw_TaxId;
 
                                         var response = await ZarinPal.CreatePayment(reqModel);
 
                                         var PayLink = "https://payment.zarinpal.com/pg/StartPay/" + response.data.authority;
 
-                                        tbDeposit.dw_TaxId = response.data.authority;
+                                        
                                         await tbDepositLogRepo.SaveChangesAsync();
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("💸 تراکنشت  با مبلغ " + (price).ConvertToMony() + " تومان" + " با موفقیت ثبت شد !");

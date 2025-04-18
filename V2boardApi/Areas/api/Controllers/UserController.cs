@@ -333,7 +333,7 @@ namespace V2boardApi.Areas.api.Controllers
         #region تابع تائید کردن پرداختی زرین پال
 
         [System.Web.Http.HttpGet]
-        public async Task<HttpResponseMessage> VerifyPayZarinPal(string BotName, string Authority)
+        public async Task<HttpResponseMessage> VerifyPayZarinPal(string BotName, string TaxId)
         {
 
 
@@ -346,7 +346,7 @@ namespace V2boardApi.Areas.api.Controllers
                     if (User != null)
                     {
                         var date2 = DateTime.Now.AddHours(-24);
-                        var item = await RepositoryDepositWallet.FirstOrDefaultAsync(p => p.dw_Status == "FOR_PAY" && p.dw_TaxId == Authority);
+                        var item = await RepositoryDepositWallet.FirstOrDefaultAsync(p => p.dw_Status == "FOR_PAY" && p.dw_TaxId == TaxId);
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         if (item != null)
                         {
@@ -432,7 +432,7 @@ namespace V2boardApi.Areas.api.Controllers
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    logger.Error(ex, "خطا در تائید تراکنش آیدی " + Authority + " رخ داد");
+                    logger.Error(ex, "خطا در تائید تراکنش آیدی " + TaxId + " رخ داد");
                     return new HttpResponseMessage(HttpStatusCode.BadRequest);
                 }
             }

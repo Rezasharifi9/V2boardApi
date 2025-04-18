@@ -23,12 +23,16 @@ public class TimerService
     private System.Threading.Timer CheckRenewAccount;
     private System.Threading.Timer DeleteTestAccount;
     private System.Threading.Timer DeleteFactores;
+    private System.Threading.Timer DeleteFactoreGateway;
+    private System.Threading.Timer DeleteFactoreHubsmart;
     private tbServers Server;
     public TimerService()
     {
         // تنظیم تایمرها
         CheckLink = new System.Threading.Timer(async _ => await CheckSubTimerCallback(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
         DeleteFactores = new System.Threading.Timer(async _ => await CheckExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
+        DeleteFactoreGateway = new System.Threading.Timer(async _ => await CheckExpireFactoreGateway(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
+        DeleteFactoreHubsmart = new System.Threading.Timer(async _ => await CheckExpireFactoreHubsmart(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
         CheckRenewAccount = new System.Threading.Timer(async _ => await CheckRenewAccountFun(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(300000));
         DeleteTestAccount = new System.Threading.Timer(async _ => await DeleteTestSub(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
         Server = HttpRuntime.Cache["Server"] as tbServers;
@@ -397,14 +401,16 @@ public class TimerService
 
     #endregion
 
-    #region پاک کردن فاکتور های منقضی شده
+    #region پاک کردن فاکتورها
+
+    #region پاک کردن فاکتور های کارت به کارت
     public async Task CheckExpireFactores()
     {
         var DateNow = DateTime.Now.AddHours(-24);
 
         using (Entities db = new Entities())
         {
-            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.dw_hubsmart_token == null).ToList();
+            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.dw_PayMethod == "Card").ToList();
             foreach (var item in Factores)
             {
                 try
@@ -422,14 +428,8 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        if (item.dw_message_id != null)
-                        {
-                            await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
-                        }
-                        else
-                        {
-                            await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-                        }
+                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, item.dw_message_id.Value);
+
 
                         db.tbDepositWallet_Log.Remove(item);
 
@@ -462,14 +462,29 @@ public class TimerService
                 }
             }
 
-            var DateNow2 = DateTime.Now.AddMinutes(-20);
-            var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY" && s.dw_hubsmart_token != null).ToList();
-            foreach (var item in Factoress)
+            db.SaveChanges();
+        }
+
+
+    }
+
+
+    #endregion
+
+    #region پاک کردن فاکتورهای های درگاه
+
+    public async Task CheckExpireFactoreGateway()
+    {
+        using (Entities db = new Entities())
+        {
+            var DateNow3 = DateTime.Now.AddMinutes(-5);
+            var FactoresGateway = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow3 && s.dw_Status == "FOR_PAY" && s.dw_PayMethod == "Gateway").ToList();
+            foreach (var item in FactoresGateway)
             {
                 try
                 {
 
-                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.HubSmartPay_Status == true).Count() != 0)
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.PaymentGateWay_Status == true).Count() != 0)
                     {
                         var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
 
@@ -481,14 +496,8 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        if (item.dw_message_id != null)
-                        {
-                            await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
-                        }
-                        else
-                        {
-                            await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-                        }
+                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, item.dw_message_id.Value);
+
 
                         db.tbDepositWallet_Log.Remove(item);
 
@@ -522,10 +531,70 @@ public class TimerService
             }
             db.SaveChanges();
         }
-
-
     }
 
+    #endregion
+
+    #region پاک کردن فاکتورهای هاب اسمارت
+
+    public async Task CheckExpireFactoreHubsmart()
+    {
+        using (Entities db = new Entities())
+        {
+            db.SaveChanges(); var DateNow2 = DateTime.Now.AddMinutes(-20);
+            var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY" && s.dw_hubsmart_token != null).ToList();
+            foreach (var item in Factoress)
+            {
+                try
+                {
+
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.HubSmartPay_Status == true).Count() != 0)
+                    {
+                        var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
+
+                        var botClient = new TelegramBotClient(BotSetting.Bot_Token);
+
+
+                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, item.dw_message_id.Value);
+
+
+                        db.tbDepositWallet_Log.Remove(item);
+
+                    }
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    db.SaveChanges();
+                    // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
+                    // مثلا:
+                    foreach (var entry in ex.Entries)
+                    {
+                        if (entry.State == EntityState.Deleted)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری حذف شده باشد
+                            // اقدامات مناسب مانند نمایش پیام خطا
+                        }
+                        else if (entry.State == EntityState.Modified)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری تغییر کرده باشد
+                            // بازخوانی داده‌ها و تصمیم‌گیری برای ادامه کار
+                            entry.OriginalValues.SetValues(entry.GetDatabaseValues());
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    db.tbDepositWallet_Log.Remove(item);
+                }
+            }
+
+            db.SaveChanges();
+        }
+    }
+
+
+    #endregion
 
     #endregion
 }
