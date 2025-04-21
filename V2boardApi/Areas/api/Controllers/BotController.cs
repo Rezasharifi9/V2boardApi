@@ -2038,14 +2038,11 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var acc = tbLinksRepository.Where(p => p.FK_TelegramUserID == User.Tel_UserID).Count();
                                                 acc += 1;
 
-                                                AccountName += User.Tel_Username + acc;
+                                                AccountName += User.Tel_Username + acc+"$"+ s.ToString().Split('-')[ran.Next(0, 3)];
                                             }
                                             Order.AccountName = AccountName + "@" + BotSettings.tbUsers.Username;
 
-                                            if (Utility.IsPersian(AccountName))
-                                            {
-                                                AccountName = s.ToString().Split('-')[ran.Next(0, 3)];
-                                            }
+                                            
 
 
                                             while (IsExists)
