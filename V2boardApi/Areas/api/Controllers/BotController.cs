@@ -898,7 +898,9 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                     }
 
-
+                                    str.AppendLine("");
+                                    str.AppendLine("");
+                                    str.AppendLine("💢 اشتراک ها فاقد محدودیت کاربر هستند");
                                     str.AppendLine("");
                                     str.AppendLine("〰️〰️〰️〰️〰️");
                                     str.AppendLine("🚀@" + BotSettings.Bot_ID);
@@ -971,22 +973,37 @@ namespace V2boardApi.Areas.api.Controllers
                                         List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
 
 
+                                        if(BotSettings.IsActiveCardToCard == true || BotSettings.IsActiveSendReceipt == true)
+                                        {
+                                            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+                                            row1.Add(InlineKeyboardButton.WithCallbackData("💳 کارت به کارت", "InventoryIncreaseCard"));
 
-                                        List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
-                                        row1.Add(InlineKeyboardButton.WithCallbackData("💳 کارت به کارت", "InventoryIncreaseCard"));
+                                            inlineKeyboards.Add(row1);
+                                        }
+                                        if(BotSettings.PaymentGateWay_Status == true)
+                                        {
+                                            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+                                            row2.Add(InlineKeyboardButton.WithCallbackData("🏧 درگاه پرداخت ( پیشنهادی )", "InventoryIncreaseGateWay"));
+                                            inlineKeyboards.Add(row2);
+                                        }
+                                        if (BotSettings.HubSmartPay_Status)
+                                        {
+                                            List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
+                                            row3.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی هاب اسمارت", "InventoryIncreaseRial"));
+                                            inlineKeyboards.Add(row3);
+
+                                        }
+                                        if (BotSettings.Aranex_Status)
+                                        {
+                                            List<InlineKeyboardButton> row4 = new List<InlineKeyboardButton>();
+                                            row4.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی آرانکس ", "InventoryIncreaseRialAranex"));
+                                            inlineKeyboards.Add(row4);
+
+                                        }
+
                                         List<InlineKeyboardButton> row5 = new List<InlineKeyboardButton>();
-                                        row5.Add(InlineKeyboardButton.WithCallbackData("🏧 درگاه پرداخت ( پیشنهادی )", "InventoryIncreaseGateWay"));
-                                        List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-                                        row2.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی هاب اسمارت", "InventoryIncreaseRial"));
-                                        List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
-                                        row3.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی آرانکس ", "InventoryIncreaseRialAranex"));
-                                        List<InlineKeyboardButton> row4 = new List<InlineKeyboardButton>();
-                                        row4.Add(InlineKeyboardButton.WithCallbackData("زیر مجموعه گیری 👬", "InventoryIncreaseSub"));
-                                        inlineKeyboards.Add(row1);
+                                        row5.Add(InlineKeyboardButton.WithCallbackData("زیر مجموعه گیری 👬", "InventoryIncreaseSub"));
                                         inlineKeyboards.Add(row5);
-                                        inlineKeyboards.Add(row2);
-                                        inlineKeyboards.Add(row3);
-                                        inlineKeyboards.Add(row4);
 
                                         var inlineKeyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
@@ -1426,7 +1443,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         var reqModel = new ZarinPalPayment.PaymentRequestModel();
 
                                         reqModel.amount = tbDeposit.dw_Price.Value;
-                                        reqModel.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPayZarinPal?BotName=" + BotSettings.tbUsers.Username+ "&TaxId"+ tbDeposit.dw_TaxId;
+                                        reqModel.callback_url = "https://" + Server.BotbaseAddress + "/User/VerifyPayZarinPal?BotName=" + BotSettings.tbUsers.Username+ "&TaxId="+ tbDeposit.dw_TaxId;
 
                                         var response = await ZarinPal.CreatePayment(reqModel);
 

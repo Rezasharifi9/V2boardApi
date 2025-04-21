@@ -24,6 +24,7 @@ namespace DataLayer.DomainModel
         public string dw_hubsmart_token { get; set; }
         public string dw_TaxId { get; set; }
         public string dw_PayMethod { get; set; }
+        public bool dw_Alerted { get; set; }
     
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
     }

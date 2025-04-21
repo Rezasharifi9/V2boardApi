@@ -7,31 +7,31 @@
       <Diagram DiagramId="2fd8a31305a944bc858d2e92b419085f" Name="Diagram1" ZoomLevel="52">
         <EntityTypeShape EntityType="SafeNetDBModel.NLog" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="SafeNetDBModel.sysdiagrams" Width="1.5" PointX="2.75" PointY="0.75" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbBankCardNumbers" Width="1.5" PointX="8.25" PointY="27.125" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbBotSettings" Width="1.5" PointX="10.5" PointY="38.875" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbConnectionHelp" Width="1.5" PointX="8.25" PointY="55.25" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbDepositWallet_Log" Width="1.5" PointX="10.5" PointY="62.875" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbExpLog" Width="1.5" PointX="8.25" PointY="20.75" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbBankCardNumbers" Width="1.5" PointX="8.25" PointY="27.25" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbBotSettings" Width="1.5" PointX="10.5" PointY="42.375" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbConnectionHelp" Width="1.5" PointX="8.25" PointY="66.625" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbDepositWallet_Log" Width="1.5" PointX="10.5" PointY="61.25" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbExpLog" Width="1.5" PointX="8.25" PointY="37" />
         <EntityTypeShape EntityType="SafeNetDBModel.tbFailureServers" Width="1.5" PointX="2.75" PointY="3.75" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbFirebaseMobileTokens" Width="1.5" PointX="8.25" PointY="52.5" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbHistoryChats" Width="1.5" PointX="8.25" PointY="23.75" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbLinks" Width="1.5" PointX="3" PointY="33.75" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="8.25" PointY="34.5" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbLinkUserAndPlans" Width="1.5" PointX="13.5" PointY="40.125" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbLogs" Width="1.5" PointX="15.75" PointY="40" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbNotifications" Width="1.5" PointX="9" PointY="30.5" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbNotificationUser" Width="1.5" PointX="11.25" PointY="34.625" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbOrders" Width="1.5" PointX="15.75" PointY="51.375" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbPlans" Width="1.5" PointX="8.25" PointY="46.875" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbFirebaseMobileTokens" Width="1.5" PointX="8.25" PointY="24.5" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbHistoryChats" Width="1.5" PointX="8.25" PointY="51.125" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbLinks" Width="1.5" PointX="3" PointY="37.375" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="11.25" PointY="35" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbLinkUserAndPlans" Width="1.5" PointX="13.5" PointY="44.125" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbLogs" Width="1.5" PointX="15.75" PointY="44" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbNotifications" Width="1.5" PointX="9" PointY="21" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbNotificationUser" Width="1.5" PointX="11.25" PointY="31.125" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbOrders" Width="1.5" PointX="15.75" PointY="52.625" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbPlans" Width="1.5" PointX="8.25" PointY="54.5" />
         <EntityTypeShape EntityType="SafeNetDBModel.tbRedisInfo" Width="1.5" PointX="4.75" PointY="0.75" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbServerGroups" Width="1.5" PointX="6" PointY="27.75" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbServers" Width="1.5" PointX="0.75" PointY="33" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbServerGroups" Width="1.5" PointX="9" PointY="17.25" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbServers" Width="1.5" PointX="0.75" PointY="33.625" />
         <EntityTypeShape EntityType="SafeNetDBModel.tbSocks5" Width="1.5" PointX="4.75" PointY="3.75" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbTelegramUsers" Width="1.5" PointX="8.25" PointY="61.5" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="68.25" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbUseages" Width="1.5" PointX="3" PointY="71.75" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbUserFactors" Width="1.5" PointX="8.25" PointY="58.125" />
-        <EntityTypeShape EntityType="SafeNetDBModel.tbUsers" Width="1.5" PointX="6" PointY="31.25" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbTelegramUsers" Width="1.5" PointX="8.25" PointY="60" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbUpdateLogs" Width="1.5" PointX="3" PointY="72.125" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbUseages" Width="1.5" PointX="3" PointY="33.25" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbUserFactors" Width="1.5" PointX="8.25" PointY="33.625" />
+        <EntityTypeShape EntityType="SafeNetDBModel.tbUsers" Width="1.5" PointX="6" PointY="31.875" />
         <AssociationConnector Association="SafeNetDBModel.FK_tbBankCardNumbers_tbUsers" />
         <AssociationConnector Association="SafeNetDBModel.FK_tbBotSettings_tbPlans" />
         <AssociationConnector Association="SafeNetDBModel.FK_tbBotSettings_tbUsers" />

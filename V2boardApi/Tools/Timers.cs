@@ -23,6 +23,7 @@ public class TimerService
     private System.Threading.Timer CheckRenewAccount;
     private System.Threading.Timer DeleteTestAccount;
     private System.Threading.Timer DeleteFactores;
+    private System.Threading.Timer DeleteFactoresCard;
     private System.Threading.Timer DeleteFactoreGateway;
     private System.Threading.Timer DeleteFactoreHubsmart;
     private tbServers Server;
@@ -30,7 +31,8 @@ public class TimerService
     {
         // تنظیم تایمرها
         CheckLink = new System.Threading.Timer(async _ => await CheckSubTimerCallback(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
-        DeleteFactores = new System.Threading.Timer(async _ => await CheckExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
+        DeleteFactores = new System.Threading.Timer(async _ => await DeleteExpireFactore(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(43200000));
+        DeleteFactoresCard = new System.Threading.Timer(async _ => await CheckExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
         DeleteFactoreGateway = new System.Threading.Timer(async _ => await CheckExpireFactoreGateway(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
         DeleteFactoreHubsmart = new System.Threading.Timer(async _ => await CheckExpireFactoreHubsmart(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
         CheckRenewAccount = new System.Threading.Timer(async _ => await CheckRenewAccountFun(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(300000));
@@ -403,14 +405,14 @@ public class TimerService
 
     #region پاک کردن فاکتورها
 
-    #region پاک کردن فاکتور های کارت به کارت
+    #region پیغام پاک شدن فاکتور های کارت به کارت
     public async Task CheckExpireFactores()
     {
         var DateNow = DateTime.Now.AddHours(-24);
 
         using (Entities db = new Entities())
         {
-            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.dw_PayMethod == "Card").ToList();
+            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.dw_PayMethod == "Card" && s.dw_Alerted == false).ToList();
             foreach (var item in Factores)
             {
                 try
@@ -428,16 +430,13 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, item.dw_message_id.Value);
+                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
 
-
-                        db.tbDepositWallet_Log.Remove(item);
-
+                        item.dw_Alerted = true;
                     }
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    db.SaveChanges();
                     // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
                     // مثلا:
                     foreach (var entry in ex.Entries)
@@ -458,11 +457,11 @@ public class TimerService
                 }
                 catch (Exception ex)
                 {
-                    db.tbDepositWallet_Log.Remove(item);
                 }
+
+                db.SaveChanges();
             }
 
-            db.SaveChanges();
         }
 
 
@@ -471,14 +470,14 @@ public class TimerService
 
     #endregion
 
-    #region پاک کردن فاکتورهای های درگاه
+    #region پیغام پاک شدن فاکتورهای های درگاه
 
     public async Task CheckExpireFactoreGateway()
     {
         using (Entities db = new Entities())
         {
-            var DateNow3 = DateTime.Now.AddMinutes(-5);
-            var FactoresGateway = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow3 && s.dw_Status == "FOR_PAY" && s.dw_PayMethod == "Gateway").ToList();
+            var DateNow3 = DateTime.Now.AddMinutes(-20);
+            var FactoresGateway = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow3 && s.dw_Status == "FOR_PAY" && s.dw_PayMethod == "Gateway" && s.dw_Alerted == false).ToList();
             foreach (var item in FactoresGateway)
             {
                 try
@@ -496,11 +495,9 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, item.dw_message_id.Value);
-
-
-                        db.tbDepositWallet_Log.Remove(item);
-
+                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(),parseMode:ParseMode.Html,replyToMessageId:item.dw_message_id);
+                        item.dw_Alerted = true;
+                        db.SaveChanges();
                     }
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -526,23 +523,25 @@ public class TimerService
                 }
                 catch (Exception ex)
                 {
-                    db.tbDepositWallet_Log.Remove(item);
+
                 }
+
+                
             }
-            db.SaveChanges();
+            
         }
     }
 
     #endregion
 
-    #region پاک کردن فاکتورهای هاب اسمارت
+    #region پیغام پاک شدن فاکتورهای هاب اسمارت
 
     public async Task CheckExpireFactoreHubsmart()
     {
         using (Entities db = new Entities())
         {
             db.SaveChanges(); var DateNow2 = DateTime.Now.AddMinutes(-20);
-            var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY" && s.dw_hubsmart_token != null).ToList();
+            var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY" && s.dw_Alerted == false && s.dw_PayMethod == "HubSmart").ToList();
             foreach (var item in Factoress)
             {
                 try
@@ -555,16 +554,20 @@ public class TimerService
                         var botClient = new TelegramBotClient(BotSetting.Bot_Token);
 
 
-                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, item.dw_message_id.Value);
+                        StringBuilder str = new StringBuilder();
+                        str.Append("❌ فاکتور با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این فاکتور را پرداخت نکنید");
+                        str.AppendLine("");
+                        str.AppendLine("");
+                        str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
+                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
 
-                        db.tbDepositWallet_Log.Remove(item);
-
+                        item.dw_Alerted = true;
+                        db.SaveChanges();
                     }
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    db.SaveChanges();
                     // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
                     // مثلا:
                     foreach (var entry in ex.Entries)
@@ -585,10 +588,29 @@ public class TimerService
                 }
                 catch (Exception ex)
                 {
-                    db.tbDepositWallet_Log.Remove(item);
+
                 }
+                db.SaveChanges();
             }
 
+        }
+    }
+
+
+    #endregion
+
+    #region پاک کردن فاکتور های منقضی شده
+
+    public async Task DeleteExpireFactore()
+    {
+        using (Entities db = new Entities())
+        {
+            var DateNow2 = DateTime.Now.AddHours(-24);
+            var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY").ToList();
+            foreach (var item in Factoress)
+            {
+                db.tbDepositWallet_Log.Remove(item);
+            }
             db.SaveChanges();
         }
     }

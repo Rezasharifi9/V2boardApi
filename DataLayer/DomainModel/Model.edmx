@@ -110,6 +110,7 @@
           <Property Name="dw_hubsmart_token" Type="varchar" MaxLength="150" />
           <Property Name="dw_TaxId" Type="varchar" MaxLength="150" />
           <Property Name="dw_PayMethod" Type="varchar" MaxLength="50" />
+          <Property Name="dw_Alerted" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -1285,13 +1286,13 @@
           <Property Name="HubSmartPay_Status" Type="Boolean" Nullable="false" />
           <Property Name="NowPayment_Status" Type="Boolean" />
           <Property Name="IsActiveCard" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
-          <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
           <Property Name="Aranex_Status" Type="Boolean" Nullable="false" />
           <Property Name="TronWallet" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="PaymentGateWay_Status" Type="Boolean" Nullable="false" />
           <Property Name="PaymentGateWay_Merchant_ID" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="PaymentGateWay_Key" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbBotSettings_tbPlans" FromRole="tbBotSettings" ToRole="tbPlans" />
+          <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbBotSettings_tbUsers" FromRole="tbBotSettings" ToRole="tbUsers" />
         </EntityType>
         <EntityType Name="tbConnectionHelp">
           <Key>
@@ -1317,8 +1318,9 @@
           <Property Name="dw_message_id" Type="Int32" />
           <Property Name="dw_hubsmart_token" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="dw_TaxId" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
           <Property Name="dw_PayMethod" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="dw_Alerted" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbExpLog">
           <Key>
@@ -1546,9 +1548,6 @@
           <NavigationProperty Name="tbUpdateLogs" Relationship="SafeNetDBModel.FK_tbUpdateLogs_tbServers" FromRole="tbServers" ToRole="tbUpdateLogs" />
           <NavigationProperty Name="tbUseages" Relationship="SafeNetDBModel.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
-          <Property Name="Cloudflare_API_KEY" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Cloudflare_Email" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Backup_IPServer" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbSocks5">
           <Key>
@@ -2224,6 +2223,7 @@
           <EntitySetMapping Name="tbDepositWallet_Log">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
+                <ScalarProperty Name="dw_Alerted" ColumnName="dw_Alerted" />
                 <ScalarProperty Name="dw_PayMethod" ColumnName="dw_PayMethod" />
                 <ScalarProperty Name="dw_TaxId" ColumnName="dw_TaxId" />
                 <ScalarProperty Name="dw_hubsmart_token" ColumnName="dw_hubsmart_token" />

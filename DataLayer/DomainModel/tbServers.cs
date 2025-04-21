@@ -42,9 +42,6 @@ namespace DataLayer.DomainModel
         public Nullable<int> PricePerGig { get; set; }
         public Nullable<int> PricePerMonth { get; set; }
         public string BotbaseAddress { get; set; }
-        public string Cloudflare_API_KEY { get; set; }
-        public string Cloudflare_Email { get; set; }
-        public string Backup_IPServer { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinks> tbLinks { get; set; }
