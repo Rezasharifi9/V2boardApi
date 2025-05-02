@@ -3058,10 +3058,10 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var DeviceLimit_Structur = "";
                                                 var DeviceLimit_data = "";
 
-                                                if (BotSettings.tbPlans.device_limit != null)
+                                                if (Plan.tbPlans.device_limit != null)
                                                 {
                                                     DeviceLimit_Structur = ",device_limit";
-                                                    Disc3.Add("@device_limit", BotSettings.tbPlans.device_limit);
+                                                    Disc3.Add("@device_limit", Plan.tbPlans.device_limit);
                                                     DeviceLimit_data = ",@device_limit";
                                                 }
 
