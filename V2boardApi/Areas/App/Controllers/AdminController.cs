@@ -42,7 +42,6 @@ using System.IO.Packaging;
 using Stimulsoft.Data.Expressions.Antlr.Runtime.Misc;
 using Org.BouncyCastle.Utilities;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR;
 using StackExchange.Redis;
 
 namespace V2boardApi.Areas.App.Controllers
@@ -50,7 +49,6 @@ namespace V2boardApi.Areas.App.Controllers
     [LogActionFilter]
     public class AdminController : Controller
     {
-        private readonly IHubContext _chatHubContext;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -84,8 +82,6 @@ namespace V2boardApi.Areas.App.Controllers
             repositoryCard = new Repository<tbBankCardNumbers>(db);
             repositoryOrders = new Repository<tbOrders>(db);
 
-
-            _chatHubContext = GlobalHost.ConnectionManager.GetHubContext<ChatHub>();
 
         }
 
@@ -1004,8 +1000,6 @@ namespace V2boardApi.Areas.App.Controllers
                     logger.Info("ورود موفق");
                     RepositoryUser.Save();
 
-                    // ارسال پیام به SignalR برای ثبت کاربر
-                    _chatHubContext.Clients.All.RegisterUser(User.Username);
 
                     if (User.Role == 1)
                     {

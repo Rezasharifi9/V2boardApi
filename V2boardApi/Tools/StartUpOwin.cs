@@ -12,8 +12,7 @@ namespace V2boardApi.Tools
     {
         public void Configuration(IAppBuilder app)
         {
-            // پیکربندی SignalR
-            app.MapSignalR();
+
         }
     }
 }

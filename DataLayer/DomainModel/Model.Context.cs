@@ -33,10 +33,6 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbBotSettings> tbBotSettings { get; set; }
         public virtual DbSet<tbConnectionHelp> tbConnectionHelp { get; set; }
         public virtual DbSet<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }
-        public virtual DbSet<tbExpLog> tbExpLog { get; set; }
-        public virtual DbSet<tbFailureServers> tbFailureServers { get; set; }
-        public virtual DbSet<tbFirebaseMobileTokens> tbFirebaseMobileTokens { get; set; }
-        public virtual DbSet<tbHistoryChats> tbHistoryChats { get; set; }
         public virtual DbSet<tbLinks> tbLinks { get; set; }
         public virtual DbSet<tbLinkServerGroupWithUsers> tbLinkServerGroupWithUsers { get; set; }
         public virtual DbSet<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
@@ -45,12 +41,9 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbNotificationUser> tbNotificationUser { get; set; }
         public virtual DbSet<tbOrders> tbOrders { get; set; }
         public virtual DbSet<tbPlans> tbPlans { get; set; }
-        public virtual DbSet<tbRedisInfo> tbRedisInfo { get; set; }
         public virtual DbSet<tbServerGroups> tbServerGroups { get; set; }
         public virtual DbSet<tbServers> tbServers { get; set; }
-        public virtual DbSet<tbSocks5> tbSocks5 { get; set; }
         public virtual DbSet<tbTelegramUsers> tbTelegramUsers { get; set; }
-        public virtual DbSet<tbUpdateLogs> tbUpdateLogs { get; set; }
         public virtual DbSet<tbUseages> tbUseages { get; set; }
         public virtual DbSet<tbUserFactors> tbUserFactors { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }

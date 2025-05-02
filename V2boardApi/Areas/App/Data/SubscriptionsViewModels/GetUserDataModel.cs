@@ -21,6 +21,9 @@ namespace V2boardApi.Areas.App.Data.SubscriptionsViewModels
         public int IsActive { get; set;}
         public bool IsOnline { get; set; }
         public string LastTimeOnline { get; set; }
+        public int OnlineUsers { get; set; }
+        public int LimitUsers { get; set; }
+        public bool Exceeded { get; set; }
 
     }
 }

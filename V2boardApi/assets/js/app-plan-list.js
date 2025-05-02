@@ -146,7 +146,8 @@ $(function () {
 
                         return (
                             '<a data-bs-toggle="popover" title="' + statusText + '" class="btn btn-sm btn-icon item-edit change-status" data-id="' + full["id"] + '"><i class="text-primary ti ' + statusIcon +'"></i></a>' +
-                            '<a data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditPlan" data-id="' + full["id"] + '" data-bs-toggle="offcanvas" data-bs-target="#Add-Or-EditPlan"><i class="text-primary ti ti-pencil"></i></a>'
+                            '<a data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditPlan" data-id="' + full["id"] + '" data-bs-toggle="offcanvas" data-bs-target="#Add-Or-EditPlan"><i class="text-primary ti ti-pencil"></i></a>' +
+                            '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit delete-plan" data-id="' + full["id"] + '"><i class="text-primary ti ti-trash"></i></a>'
                         );
                     }
                 }
@@ -277,6 +278,40 @@ $(function () {
                     type: "get",
                     dataType: "json",
                     success: function (res) {
+                        dt_basic.ajax.reload(null, false);
+                    }
+                })
+
+            }
+        });
+    });
+
+
+    $('body').on('click', '.delete-plan', function () {
+
+        var id = $(this).attr("data-id");
+        Swal.fire({
+            title: 'هشدار',
+            text: "مطمئنی میخای تعرفه رو حذف کنی ؟ تمام اطلاعات سفارشات و گزارشات از بین خواهد رفت !",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+                BodyBlockUI();
+                $.ajax({
+                    url: "/App/Plan/DeletePlan?id=" + id,
+                    type: "get",
+                    dataType: "json",
+                    success: function (res) {
+                        BodyUnblockUI();
+                        eval(res.data);
                         dt_basic.ajax.reload(null, false);
                     }
                 })

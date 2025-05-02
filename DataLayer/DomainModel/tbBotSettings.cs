@@ -41,6 +41,8 @@ namespace DataLayer.DomainModel
         public string PaymentGateWay_Merchant_ID { get; set; }
         public string PaymentGateWay_Key { get; set; }
     
+        public virtual tbBotSettings tbBotSettings1 { get; set; }
+        public virtual tbBotSettings tbBotSettings2 { get; set; }
         public virtual tbPlans tbPlans { get; set; }
         public virtual tbUsers tbUsers { get; set; }
     }

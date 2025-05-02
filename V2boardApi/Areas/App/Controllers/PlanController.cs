@@ -316,6 +316,32 @@ namespace V2boardApi.Areas.App.Controllers
 
         }
 
+
+        [HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> DeletePlan (int id)
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                var Plan = await RepositoryPlans.FirstOrDefaultAsync(p => p.Plan_ID == id && p.FK_User_ID == user.User_ID);
+                RepositoryPlans.Delete(Plan);
+                await RepositoryPlans.SaveChangesAsync();
+
+                logger.Info("تعرفه با نام " + Plan.Plan_Name + " با موفقیت حذف گردید");
+                return Toaster.Success("موفق", "تعرفه با موفقیت حذف گردید");
+
+            }
+            catch (Exception ex)
+            {
+                logger.Info(ex, "حذف تعرفه با خطا مواجه شد");
+                return MessageBox.Error("ناموفق", "خطا در پردازش درخواست رخ داد لطفا با پشتیبانی ارتباط بگیرید");
+            }
+
+
+
+        }
+
         #endregion
 
         #region بروزرسانی تعرفه ها

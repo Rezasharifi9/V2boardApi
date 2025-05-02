@@ -115,6 +115,7 @@ $(function () {
                 { data: 'UsedVolume', className: "text-center" },
                 { data: 'RemainingVolume', className: "text-center" },
                 { data: 'DaysLeft', className: "text-center" },
+                { data: 'OnlineUsers', className: "text-center" },
                 { data: 'PlanName', className: "text-center" },
                 { data: 'ExpireDate', className: "text-center" },
                 { data: 'IsActive', className: "text-center" },
@@ -221,8 +222,36 @@ $(function () {
                     }
                 },
                 {
-                    // PlanName
+                    // DaysLeft
                     targets: 6,
+                    responsivePriority: 4,
+                    render: function (data, type, full, meta) {
+
+                        var $OnlineUsers = full['OnlineUsers'];
+                        var $LimitUsers = full['LimitUsers'];
+                        var $Exceeded = full['Exceeded'];
+
+                        if ($OnlineUsers < $LimitUsers && $OnlineUsers >= 1) {
+                            var $row_output = "<span class='badge bg-label-warning'>" + $OnlineUsers + "/" + $LimitUsers + "</span>";
+                        }
+                        else {
+                            if ($Exceeded) {
+                                var $row_output = "<span class='badge bg-label-danger'>" + $OnlineUsers + "/" + $LimitUsers + "</span>";
+                            }
+                            else {
+                                var $row_output = "<span class='badge bg-label-success'>" + $OnlineUsers + "/" + $LimitUsers + "</span>";
+                            }
+                        }
+                        
+
+
+
+                        return $row_output;
+                    }
+                },
+                {
+                    // PlanName
+                    targets: 7,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $PlanName = full['PlanName'];
@@ -232,7 +261,7 @@ $(function () {
                 },
                 {
                     // ExpireDate
-                    targets: 7,
+                    targets: 8,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $ExpireDate = full['ExpireDate'];
@@ -242,7 +271,7 @@ $(function () {
                 },
                 {
                     // Status
-                    targets: 8,
+                    targets: 9,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $IsActive = full['IsActive'];

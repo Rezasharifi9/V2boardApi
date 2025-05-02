@@ -74,7 +74,6 @@ namespace V2boardApi.Areas.api.Controllers
         private Repository<tbDepositWallet_Log> RepositoryDepositWallet { get; set; }
         private Repository<tbTelegramUsers> RepositoryTelegramUser { get; set; }
         private Repository<tbUserFactors> RepositoryFactor { get; set; }
-        private Repository<tbFirebaseMobileTokens> tbFirebaseMobileTokens { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public UserController()
         {
@@ -89,7 +88,6 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryDepositWallet = new Repository<tbDepositWallet_Log>(db);
             RepositoryTelegramUser = new Repository<tbTelegramUsers>(db);
             RepositoryFactor = new Repository<tbUserFactors>(db);
-            tbFirebaseMobileTokens = new Repository<tbFirebaseMobileTokens>();
             Timer = new System.Timers.Timer();
             Timer.Elapsed += Timer_Elapsed;
 
@@ -150,7 +148,7 @@ namespace V2boardApi.Areas.api.Controllers
 
 
                         var date2 = DateTime.Now.AddHours(-24);
-                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2);
+                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2 && p.dw_PayMethod == "Card");
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         foreach (var item in tbDepositLog)
                         {
@@ -346,7 +344,7 @@ namespace V2boardApi.Areas.api.Controllers
                     if (User != null)
                     {
                         var date2 = DateTime.Now.AddHours(-24);
-                        var item = await RepositoryDepositWallet.FirstOrDefaultAsync(p => p.dw_Status == "FOR_PAY" && p.dw_TaxId == TaxId);
+                        var item = await RepositoryDepositWallet.FirstOrDefaultAsync(p => p.dw_Status == "FOR_PAY" && p.dw_TaxId == TaxId && p.dw_PayMethod == "Gateway");
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         if (item != null)
                         {
@@ -568,58 +566,6 @@ namespace V2boardApi.Areas.api.Controllers
             }
 
             return Ok(new { reuslt = data });
-        }
-
-        #endregion
-
-        #region اضافه کردن توکن فایر بیس کاربر
-
-        [System.Web.Http.HttpPost]
-        public async Task<IHttpActionResult> addFirebaseToken(AddFirebaseTokenModel tokenModel)
-        {
-            try
-            {
-                tbUsers User = null;
-                var Log = await RepositoryLogs.FirstOrDefaultAsync(s => s.SubToken == tokenModel.sub_Token);
-                if (Log != null)
-                {
-                    User = Log.tbLinkUserAndPlans.tbUsers;
-                }
-                else
-                {
-                    var link = await RepositoryLinks.FirstOrDefaultAsync(s => s.tbL_Token == tokenModel.sub_Token);
-                    if (link != null)
-                    {
-                        User = link.tbTelegramUsers.tbUsers;
-                    }
-                }
-
-                if (User != null)
-                {
-                    var firbase = await tbFirebaseMobileTokens.FirstOrDefaultAsync(s => s.tbFireBase_SubToken == tokenModel.sub_Token && s.tbFirebase_Token == tokenModel.firebase_token);
-                    if (firbase != null)
-                    {
-                        return Content(System.Net.HttpStatusCode.Conflict, "این توکن از قبل ثبت شده است");
-                    }
-                    tbFirebaseMobileTokens tbFirebaseMobile = new tbFirebaseMobileTokens();
-                    tbFirebaseMobile.tbFirebase_Token = tokenModel.firebase_token;
-                    tbFirebaseMobile.tbFireBase_FK_User_ID = User.User_ID;
-                    tbFirebaseMobile.tbFireBase_SubToken = tokenModel.sub_Token;
-                    tbFirebaseMobileTokens.Insert(tbFirebaseMobile);
-                    await tbFirebaseMobileTokens.SaveChangesAsync();
-                    logger.Info("توکن فایربیس نماینده " + User.Username + " برای توکن " + tokenModel.sub_Token + " اضافه گردید");
-                    return Ok();
-                }
-                else
-                {
-                    return Content(System.Net.HttpStatusCode.NotFound, "توکن مورد نظر یافت نشد");
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "ثبت توکن فایبر بیس با خطا مواجه شد");
-                return Content(System.Net.HttpStatusCode.InternalServerError, "خطا در پردازش اطلاعات");
-            }
         }
 
         #endregion

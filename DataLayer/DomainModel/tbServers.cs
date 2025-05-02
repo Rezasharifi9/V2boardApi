@@ -18,7 +18,7 @@ namespace DataLayer.DomainModel
         public tbServers()
         {
             this.tbLinks = new HashSet<tbLinks>();
-            this.tbUpdateLogs = new HashSet<tbUpdateLogs>();
+            this.tbPlans = new HashSet<tbPlans>();
             this.tbUseages = new HashSet<tbUseages>();
             this.tbUsers = new HashSet<tbUsers>();
         }
@@ -42,11 +42,12 @@ namespace DataLayer.DomainModel
         public Nullable<int> PricePerGig { get; set; }
         public Nullable<int> PricePerMonth { get; set; }
         public string BotbaseAddress { get; set; }
+        public string ApiToken_V2board { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinks> tbLinks { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tbUpdateLogs> tbUpdateLogs { get; set; }
+        public virtual ICollection<tbPlans> tbPlans { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUseages> tbUseages { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

@@ -78,12 +78,6 @@
     <Reference Include="LiteDB, Version=5.0.17.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
       <HintPath>..\packages\LiteDB.5.0.17\lib\net45\LiteDB.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.4.3\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.SystemWeb, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.4.3\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -370,7 +364,6 @@
     <Compile Include="Areas\App\Controllers\DashboardController.cs" />
     <Compile Include="Areas\App\Controllers\ErrorController.cs" />
     <Compile Include="Areas\App\Controllers\LearnsController.cs" />
-    <Compile Include="Areas\App\Controllers\OnlineChatController.cs" />
     <Compile Include="Areas\App\Controllers\OrdersController.cs" />
     <Compile Include="Areas\App\Controllers\PlanController.cs" />
     <Compile Include="Areas\App\Controllers\ServerGroupsController.cs" />
@@ -422,14 +415,12 @@
     <Compile Include="Tools\BotManager.cs" />
     <Compile Include="Tools\BotMessages.cs" />
     <Compile Include="Tools\BotUtility.cs" />
-    <Compile Include="Tools\ChatHub.cs" />
     <Compile Include="Tools\HubSmartAPI.cs" />
     <Compile Include="Tools\JwtToken.cs" />
     <Compile Include="Tools\NowPayment.cs" />
     <Compile Include="Tools\ObjectExtensions.cs" />
     <Compile Include="Tools\EqualToAttribute.cs" />
     <Compile Include="Tools\ModelStateExtensions.cs" />
-    <Compile Include="Tools\ExceptionHandling.cs" />
     <Compile Include="Tools\Keyboards.cs" />
     <Compile Include="Models\ManifestModel.cs" />
     <Compile Include="Models\MysqlModel\UserMySqlModel.cs" />
@@ -451,12 +442,12 @@
     <Compile Include="Tools\MessageBox.cs" />
     <Compile Include="Tools\Network.cs" />
     <Compile Include="Tools\RealUser.cs" />
-    <Compile Include="Tools\RedisConnector.cs" />
     <Compile Include="Tools\StartUpOwin.cs" />
     <Compile Include="Tools\Stimulsoft.cs" />
     <Compile Include="Tools\Timers.cs" />
     <Compile Include="Tools\UserLog.cs" />
     <Compile Include="Tools\Utility.cs" />
+    <Compile Include="Tools\V2boardApiTools.cs" />
     <Compile Include="Tools\ZarinPalPayment.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1898,8 +1889,6 @@
     <Content Include="Scripts\jquery-3.4.1.slim.js" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
-    <Content Include="Scripts\jquery.signalR-2.4.3.js" />
-    <Content Include="Scripts\jquery.signalR-2.4.3.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />

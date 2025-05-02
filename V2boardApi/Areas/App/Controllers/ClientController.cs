@@ -34,7 +34,6 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbOrders> RepositoryOrders { get; set; }
-        private Repository<tbUpdateLogs> RepositoryUpdateLogs { get; set; }
         private Repository<tbLinks> RepositoryLinks { get; set; }
         public ClientController()
         {
@@ -44,7 +43,6 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryUser = new Repository<tbUsers>(db);
             RepositoryOrders = new Repository<tbOrders>(db);
-            RepositoryUpdateLogs = new Repository<tbUpdateLogs>(db);
             RepositoryLinks = new Repository<tbLinks>(db);
         }
         public async Task<ActionResult> subscribe(string token)

@@ -20,44 +20,11 @@ namespace V2boardApi.Tools
         public static tbServers Server;
         public static void AddBot(string name, string token)
         {
-            var Sock = new tbSocks5();
-            using (Entities db = new Entities())
-            {
-                var Sok = db.tbSocks5.Where(s => s.Active == true).FirstOrDefault();
-                if (Sok != null)
-                {
-                    Sock = Sok;
-                }
-                else
-                {
-                    Sock = null;
-                }
-            }
-
-            TelegramBotClient botClient;
-
-            if (Sock != null)
-            {
-                // آدرس پروکسی و پورت
-                var proxy = new HttpToSocks5Proxy(Sock.HostName, Sock.Port, username: Sock.Username, password: Sock.Password);
-
-                // تنظیمات TelegramBotClient با پروکسی
-
-                HttpClient http = new HttpClient(new HttpClientHandler
-                {
-                    Proxy = proxy,
-                    UseProxy = true
-                });
-                botClient = new TelegramBotClient(token, http);
-            }
-            else
-            {
-                botClient = new TelegramBotClient(token);
-            }
-            
+            var botClient = new TelegramBotClient(token);
 
 
-            
+
+
             var botInfo = new BotInfo();
             botInfo.Name = name;
             botInfo.Token = token;
@@ -147,7 +114,7 @@ namespace V2boardApi.Tools
             //}
 
             //var url = method + "://" + HttpContext.Current.Request.Url.Authority;
-            //var url = "https://9cd1-2a01-4f8-1c1b-10a5-00-1.ngrok-free.app";
+            //var url = "https://e74c-45-76-37-76.ngrok-free.app";
 
 
             var url = "https://";

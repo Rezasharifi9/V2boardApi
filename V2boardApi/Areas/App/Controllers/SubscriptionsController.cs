@@ -46,6 +46,7 @@ namespace V2boardApi.Areas.App.Controllers
             serverRepository = new Repository<tbServers>(db);
             linkUserGroupRepository = new Repository<tbLinkServerGroupWithUsers>(db);
             groupsRepository = new Repository<tbServerGroups>(db);
+            V2boardApiTools.init();
         }
 
         #region لیست اشتراک ها 
@@ -63,6 +64,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
+                
                 var draw = Request.Form.GetValues("draw").FirstOrDefault();
                 var start = Request.Form.GetValues("start").FirstOrDefault();
                 var length = Request.Form.GetValues("length").FirstOrDefault();
@@ -235,6 +237,21 @@ namespace V2boardApi.Areas.App.Controllers
                                     IsActive = 1,
                                     SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}"
                                 };
+
+                                
+                                var detail = await V2boardApiTools.GetSubOnlineDetails(getuserData.id);
+                                if (detail != null)
+                                {
+                                    getuserData.OnlineUsers = detail.online_count;
+                                    getuserData.LimitUsers = detail.device_limit;
+                                    getuserData.Exceeded = detail.exceeded;
+                                }
+                                else
+                                {
+                                    getuserData.OnlineUsers = 0;
+                                    getuserData.LimitUsers = 0;
+                                    getuserData.Exceeded = false;
+                                }
 
                                 var PlanId = reader.GetInt64(reader.GetOrdinal("plan_id"));
                                 var Plan = await plansRepository.FirstOrDefaultAsync(s => s.Plan_ID_V2 == PlanId);
@@ -831,6 +848,9 @@ namespace V2boardApi.Areas.App.Controllers
                         Disc1.Add("@transfer_enable", t);
                         Disc1.Add("@exp", exp);
 
+                        var group = await groupsRepository.FirstOrDefaultAsync(s => s.Group_Id == Plan.Group_Id);
+
+                        Disc1.Add("@group", group.V2_Group_Id);
 
                         var DeviceLimit = "";
 
@@ -846,7 +866,7 @@ namespace V2boardApi.Areas.App.Controllers
 
 
 
-                        var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2, transfer_enable =@transfer_enable , expired_at =@exp " + DeviceLimit + " where id =" + user_id;
+                        var Query = "update v2_user set u = 0 , d = 0 , t = 0 ,plan_id=@Plan_ID_V2,group_id=@group, transfer_enable =@transfer_enable , expired_at =@exp " + DeviceLimit + " where id =" + user_id;
 
                         MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                         await mySql.OpenAsync();

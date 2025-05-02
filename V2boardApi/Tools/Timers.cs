@@ -21,6 +21,7 @@ public class TimerService
     private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
     private System.Threading.Timer CheckLink;
     private System.Threading.Timer CheckRenewAccount;
+    private System.Threading.Timer CheckSubLimitedUser;
     private System.Threading.Timer DeleteTestAccount;
     private System.Threading.Timer DeleteFactores;
     private System.Threading.Timer DeleteFactoresCard;
@@ -36,6 +37,7 @@ public class TimerService
         DeleteFactoreGateway = new System.Threading.Timer(async _ => await CheckExpireFactoreGateway(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
         DeleteFactoreHubsmart = new System.Threading.Timer(async _ => await CheckExpireFactoreHubsmart(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
         CheckRenewAccount = new System.Threading.Timer(async _ => await CheckRenewAccountFun(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(300000));
+        CheckSubLimitedUser = new System.Threading.Timer(async _ => await CheckSubLimitedUsers(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(180000));
         DeleteTestAccount = new System.Threading.Timer(async _ => await DeleteTestSub(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
         Server = HttpRuntime.Cache["Server"] as tbServers;
     }
@@ -221,6 +223,122 @@ public class TimerService
 
     #endregion
 
+    #region تابع چک کردن محدودیت کاربر 
+    private async Task CheckSubLimitedUsers()
+    {
+        try
+        {
+
+            if (Server != null)
+            {
+                using (Entities db = new Entities())
+                {
+                    var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
+                    var Users = await tbTelegramUserRepository.GetAllAsync();
+
+                    MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
+                    await mySql.OpenAsync();
+                    foreach (var item in Users.ToList())
+                    {
+                        try
+                        {
+                            if (item.tbUsers != null)
+                            {
+                                if (item.tbUsers.tbBotSettings != null)
+                                {
+                                    var BotSetting = item.tbUsers.tbBotSettings.FirstOrDefault();
+                                    if (BotSetting != null)
+                                    {
+                                        if (BotSetting.Bot_Token != null && BotSetting.Enabled == true)
+                                        {
+                                            var bot = BotManager.GetBot(item.tbUsers.Username);
+                                            if (bot != null)
+                                            {
+                                                foreach (var link in item.tbLinks.ToList())
+                                                {
+                                                    var exdate = DateTime.Now.AddMinutes(-20);
+                                                    if(link.ExceededLastTime < exdate)
+                                                    {
+                                                        link.ExceededCount = 0;
+                                                    }
+                                                    if(link.ExceededCount <= 5)
+                                                    {
+                                                        var GetDataQuery = "select id FROM v2_user WHERE ((v2_user.d + v2_user.u) < v2_user.transfer_enable AND expired_at > UNIX_TIMESTAMP()) AND banned=0 AND email='" + link.tbL_Email + "'";
+
+                                                        using (var reader = await mySql.GetDataAsync(GetDataQuery))
+                                                        {
+                                                            while (await reader.ReadAsync())
+                                                            {
+
+                                                                var id = reader.GetInt32(reader.GetOrdinal("id"));
+
+                                                                var detail = await V2boardApiTools.GetSubOnlineDetails(id);
+                                                                if (detail != null)
+                                                                {
+                                                                    if (detail.exceeded)
+                                                                    {
+                                                                        StringBuilder str = new StringBuilder();
+                                                                        str.AppendLine("❗️ وایسا ببینم!\r\n");
+                                                                        str.AppendLine("اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0]);
+                                                                        str.AppendLine("");
+                                                                        str.AppendLine("به نظر می‌رسه بیشتر از حد مجاز دستگاه به حسابت وصل شدن. حواست باشه! اگه چند بار دیگه این اتفاق بیفته، تو نوبت پنجم ممکنه سرویس‌ت به‌طور خودکار قطع شه. مراقب خودت و اشتراکت باش 😉❤️");
+                                                                        str.AppendLine("");
+                                                                        str.AppendLine("@" + BotSetting.Bot_ID);
+
+                                                                        link.ExceededCount += 1;
+                                                                        link.ExceededLastTime = DateTime.Now;
+                                                                        
+                                                                        try
+                                                                        {
+                                                                            await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                                                        }
+                                                                        catch
+                                                                        {
+                                                                            continue;
+                                                                        }
+                                                                    }
+                                                                }
+
+
+
+                                                            }
+                                                        }
+                                                    }
+
+                                                    await tbTelegramUserRepository.SaveChangesAsync();
+
+
+
+                                                }
+
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+
+
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Error(ex);
+                        }
+                    }
+                    await mySql.CloseAsync().ConfigureAwait(false);
+                }
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex);
+        }
+    }
+
+    #endregion
+
     #region تابع حذف کردن اشتراکات تست
 
     private async Task DeleteTestSub()
@@ -348,14 +466,18 @@ public class TimerService
                                             var DeviceLimit_data = "";
 
 
-                                            if (item.tbPlans != null)
+                                            if (item.tbLinkUserAndPlans != null)
                                             {
-                                                var Plan = item.tbPlans;
+                                                var Plan = item.tbLinkUserAndPlans.tbPlans;
                                                 if (Plan.device_limit != null)
                                                 {
                                                     DeviceLimit_Structur = ",device_limit=" + (Plan.device_limit + 1);
                                                     //Disc1.Add("@device_limit", Plan.device_limit);
                                                 }
+                                            }
+                                            else
+                                            {
+                                                DeviceLimit_Structur = ",device_limit=20";
                                             }
 
 
@@ -495,7 +617,7 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(),parseMode:ParseMode.Html,replyToMessageId:item.dw_message_id);
+                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
                         item.dw_Alerted = true;
                         db.SaveChanges();
                     }
@@ -526,9 +648,9 @@ public class TimerService
 
                 }
 
-                
+
             }
-            
+
         }
     }
 

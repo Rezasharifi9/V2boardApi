@@ -227,7 +227,7 @@ namespace V2boardBot.Models
         public static InlineKeyboardMarkup GetPlansKeyboard(string Email, Repository<tbLinkUserAndPlans> Rep)
         {
             var username = Email.Split('@')[1];
-            var Plans = Rep.Where(p => p.tbUsers.Username == username && p.L_ShowInBot == true && p.L_Status == true && p.L_SellPrice != null).ToList();
+            var Plans = Rep.Where(p => p.tbUsers.Username == username && p.L_ShowInBot == true && p.L_Status == true && p.L_SellPrice != null && p.tbPlans.IsRobotPlan == false).ToList();
 
             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
             int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
@@ -238,7 +238,30 @@ namespace V2boardBot.Models
 
                 for (int j = i; j < i + itemsPerRow && j < Plans.Count; j++)
                 {
-                    row.Add(InlineKeyboardButton.WithCallbackData(Plans[j].tbPlans.PlanMonth + " ماهه | " + Plans[j].tbPlans.PlanVolume + " گیگ", "NextLevel" + "%" +Plans[j].Link_PU_ID + "%" + Email));
+
+
+                    row.Add(InlineKeyboardButton.WithCallbackData(Plans[j].tbPlans.PlanMonth + " ماهه | " + Plans[j].tbPlans.PlanVolume + " گیگ", "NextLevel" + "%" + Plans[j].Link_PU_ID + "%" + Email));
+
+
+                }
+
+                inlineKeyboards.Add(row);
+            }
+
+            var Plans2 = Rep.Where(p => p.tbUsers.Username == username && p.L_ShowInBot == true && p.L_Status == true && p.L_SellPrice != null && p.tbPlans.IsRobotPlan == true).ToList();
+
+            for (int i = 0; i < Plans2.Count; i += itemsPerRow)
+            {
+                List<InlineKeyboardButton> row = new List<InlineKeyboardButton>();
+
+                for (int j = i; j < i + itemsPerRow && j < Plans2.Count; j++)
+                {
+
+
+                    row.Add(InlineKeyboardButton.WithCallbackData(Plans2[j].tbPlans.PlanMonth + " ماهه | " + " نامحدود" + " | " + Plans2[j].tbPlans.device_limit + " کاربر", "NextLevel" + "%" + Plans2[j].Link_PU_ID + "%" + Email));
+
+
+
                 }
 
                 inlineKeyboards.Add(row);
@@ -446,12 +469,12 @@ namespace V2boardBot.Models
         /// تابع آوردن دکمه تائید پرداخت
         /// </summary>
         /// <returns></returns>
-        public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWalletAranex(string PayLink,string TaxId)
+        public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWalletAranex(string PayLink, string TaxId)
         {
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
             List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
             InlineKeyboardButton btn1 = new InlineKeyboardButton("🏧 پرداخت ");
-         
+
             btn1.Pay = true;
             btn1.Url = PayLink;
 
@@ -527,7 +550,7 @@ namespace V2boardBot.Models
         /// تابع آوردن دکمه تائید پرداخت
         /// </summary>
         /// <returns></returns>
-        public static InlineKeyboardMarkup GetAccpetBuyFromWallet(int planId,string AccountName)
+        public static InlineKeyboardMarkup GetAccpetBuyFromWallet(int planId, string AccountName)
         {
             List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();

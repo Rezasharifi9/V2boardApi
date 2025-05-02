@@ -38,7 +38,6 @@ namespace V2boardApi.Areas.api.Controllers
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbOrders> RepositoryOrders { get; set; }
-        private Repository<tbUpdateLogs> RepositoryUpdateLogs { get; set; }
         private Repository<tbLinks> RepositoryLinks { get; set; }
         public ClientController()
         {
@@ -48,7 +47,6 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryUser = new Repository<tbUsers>(db);
             RepositoryOrders = new Repository<tbOrders>(db);
-            RepositoryUpdateLogs = new Repository<tbUpdateLogs>(db);
             RepositoryLinks = new Repository<tbLinks>(db);
         }
 
@@ -59,17 +57,13 @@ namespace V2boardApi.Areas.api.Controllers
             {
                 var UserAgent = Request.UserAgent.ToLower();
                 var host = Request.Url.Host;
-                if (host == "panel.darkbaz.site")
-                {
-                    host = "panel.darkbaz.com";
-                }
                 var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(host)).FirstOrDefault();
                 if (UserAgent.StartsWith("hiddify") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn") || UserAgent.StartsWith("safenet"))
                 {
                     if (server != null)
                     {
                         HttpClient client = new HttpClient();
-                        client.BaseAddress = new Uri("https://" + server.ServerAddress + "/api/v1/");
+                        client.BaseAddress = new Uri(server.ServerAddress + "/api/v1/");
                         client.DefaultRequestHeaders.UserAgent.TryParseAdd(Request.UserAgent);
                         var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + token);
                         if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)

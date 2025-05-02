@@ -158,18 +158,6 @@
     <Compile Include="DomainModel\tbDepositWallet_Log.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
-    <Compile Include="DomainModel\tbExpLog.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DomainModel\tbFailureServers.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DomainModel\tbFirebaseMobileTokens.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DomainModel\tbHistoryChats.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
     <Compile Include="DomainModel\tbLinks.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
@@ -194,22 +182,13 @@
     <Compile Include="DomainModel\tbPlans.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
-    <Compile Include="DomainModel\tbRedisInfo.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
     <Compile Include="DomainModel\tbServerGroups.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbServers.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
-    <Compile Include="DomainModel\tbSocks5.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
     <Compile Include="DomainModel\tbTelegramUsers.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="DomainModel\tbUpdateLogs.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbUseages.cs">
