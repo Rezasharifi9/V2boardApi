@@ -201,7 +201,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                 double sum = (double)(BotSum + UserSaleSum + MasterUserSUm) / 1000;
 
-                list_kol.Add(sum);
+                list_kol.Add(Math.Round(sum,0));
                 list_date.Add(i.ToString());
             }
 
@@ -257,7 +257,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                 double sum = (double)(BotSum) / 1000;
 
-                list_bot.Add(sum);
+                list_bot.Add(Math.Round(sum, 0));
                 list_date2.Add(i.ToString());
             }
 

@@ -81,6 +81,8 @@ namespace V2boardApi.Areas.App.Controllers
                     return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
                 }
 
+                var detail_online = await V2boardApiTools.GetSubOnlineList();
+
                 // دریافت نقش کاربر
                 var userRole = user.Role.Value; // فرض می‌کنیم نقش کاربر در user.Role ذخیره شده است
 
@@ -238,8 +240,8 @@ namespace V2boardApi.Areas.App.Controllers
                                     SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}"
                                 };
 
-                                
-                                var detail = await V2boardApiTools.GetSubOnlineDetails(getuserData.id);
+
+                                var detail = detail_online.Where(s => s.user_id == getuserData.id).FirstOrDefault();
                                 if (detail != null)
                                 {
                                     getuserData.OnlineUsers = detail.online_count;
