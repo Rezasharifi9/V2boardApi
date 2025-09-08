@@ -973,6 +973,15 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         return MessageBox.Warning("هشدار", "حساب کاربری شما غیرفعال شده است");
                     }
+
+                    if (User.tbUsers2 != null)
+                    {
+                        if(!User.tbUsers2.Status.Value)
+                        {
+                            return MessageBox.Warning("هشدار", "حساب کاربری شما غیرفعال شده است");
+                        }
+                    }
+
                     User.Token = (userUsername + userPassword).ToSha256();
 
                     var token = JwtToken.GenerateToken(User.User_ID.ToString(), User.Role.ToString(), JwtToken.GetSecretKey(), 1440);
