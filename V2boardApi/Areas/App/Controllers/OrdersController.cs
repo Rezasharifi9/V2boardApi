@@ -50,6 +50,7 @@ namespace V2boardApi.Areas.App.Controllers
                 model.Plan = item.Traffic + " گیگ " + item.Month + " ماهه";
                 model.SubName = item.AccountName.Split('@')[0];
                 model.Price = item.Order_Price.Value.ConvertToMony();
+                model.UserId = item.FK_Tel_UserID.Value;
                 model.UserCreator = item.tbTelegramUsers.Tel_Username + "(" + item.tbTelegramUsers.Tel_FirstName + " " + item.tbTelegramUsers.Tel_LastName + ")";
                 if (model.Status == 1)
                 {

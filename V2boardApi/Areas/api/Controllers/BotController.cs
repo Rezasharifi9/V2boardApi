@@ -39,6 +39,7 @@ using System.Windows.Input;
 using StackExchange.Redis;
 using V2boardBot.Tools;
 using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 
 namespace V2boardApi.Areas.api.Controllers
@@ -502,19 +503,87 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     if (message.Text.StartsWith("/all"))
                                     {
-                                        var Users = BotSettings.tbUsers.tbTelegramUsers.ToList();
-                                        Task.Run(() =>
+                                        var users = BotSettings.tbUsers.tbTelegramUsers.ToList();
+
+                                        // پیدا کردن طول دستور (مثلاً "/all " یا فقط "/all")
+                                        var m = Regex.Match(message.Text, @"^/all(\s+)?");
+                                        int removeLen = m.Success ? m.Length : 4; // محافظت در برابر حالت‌های عجیب
+
+                                        // متن جدید (بدون /all)
+                                        var newText = message.Text.Substring(removeLen);
+
+                                        // اصلاح/کپی کردن entityها (اگر وجود داشته باشه)
+                                        MessageEntity[] adjustedEntities = null;
+                                        if (message.Entities != null && message.Entities.Length > 0)
                                         {
-                                            foreach (var item in Users)
+                                            var list = new List<MessageEntity>();
+                                            foreach (var e in message.Entities)
+                                            {
+                                                int entStart = e.Offset;
+                                                int entEnd = e.Offset + e.Length; // exclusive end
+
+                                                // اگر entity کاملاً قبل از بخش حذف‌شده بود -> حذفش کن (معمولاً برای دستور /all پیش میاد)
+                                                if (entEnd <= removeLen)
+                                                {
+                                                    continue;
+                                                }
+
+                                                // اگر entity کاملاً بعد از بخش حذف‌شده -> offset رو کم کن
+                                                if (entStart >= removeLen)
+                                                {
+                                                    var ne = new MessageEntity
+                                                    {
+                                                        Type = e.Type,
+                                                        Offset = e.Offset - removeLen,
+                                                        Length = e.Length,
+                                                        Url = e.Url,
+                                                        User = e.User,
+                                                        Language = e.Language,
+                                                        CustomEmojiId = e.CustomEmojiId
+                                                    };
+                                                    list.Add(ne);
+                                                    continue;
+                                                }
+
+                                                // اگر entity قسمتی در بخش حذف‌شده و قسمتی در متن جدید داره -> کوتاهش کن و قرارش بده در ابتدای متن جدید
+                                                if (entStart < removeLen && entEnd > removeLen)
+                                                {
+                                                    int newLen = entEnd - removeLen; // بخشی که بعد از حذف مانده
+                                                    var ne = new MessageEntity
+                                                    {
+                                                        Type = e.Type,
+                                                        Offset = 0,
+                                                        Length = newLen,
+                                                        Url = e.Url,
+                                                        User = e.User,
+                                                        Language = e.Language,
+                                                        CustomEmojiId = e.CustomEmojiId
+                                                    };
+                                                    list.Add(ne);
+                                                    continue;
+                                                }
+                                            }
+
+                                            adjustedEntities = list.ToArray();
+                                        }
+
+                                        // ارسال به همه کاربران (هر کاربر را جداگانه با entities ارسال کن)
+                                        Task.Run(async () =>
+                                        {
+                                            foreach (var item in users)
                                             {
                                                 try
                                                 {
-                                                    message.Text = message.Text.Replace("/all", "");
-                                                    bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, message.Text, parseMode: ParseMode.Html);
+                                                    // استفاده از entities بجای parseMode
+                                                    await bot.Client.SendTextMessageAsync(
+                                                        chatId: item.Tel_UniqUserID,
+                                                        text: newText,
+                                                        entities: adjustedEntities
+                                                    );
                                                 }
                                                 catch (Exception ex)
                                                 {
-
+                                                    // لاگ کن یا هندل کن
                                                 }
                                             }
                                         });
@@ -1645,6 +1714,12 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await reader.ReadAsync();
                                                 reader.Close();
                                                 await mySql.CloseAsync();
+                                            }
+
+
+                                            foreach(var item in User.tbOrders)
+                                            {
+                                                item.AccountName = Link.tbL_Email;
                                             }
 
                                             await tbLinksRepository.SaveChangesAsync();

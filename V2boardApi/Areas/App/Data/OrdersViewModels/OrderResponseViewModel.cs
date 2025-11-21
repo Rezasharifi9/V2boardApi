@@ -7,8 +7,10 @@ namespace V2boardApi.Areas.App.Data.OrdersViewModels
 {
     public class OrderResponseViewModel
     {
+       
         public string SubName { get; set; }
         public string UserCreator { get; set; }
+        public int UserId { get; set; }
         public string Plan { get; set; }
         public string CreateDate { get; set; }
         public string Price { get; set; }

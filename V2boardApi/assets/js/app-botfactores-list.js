@@ -47,8 +47,10 @@ $(function () {
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $name = full['User'];
+                        var $id = full['UserId'];
+
                         // Creates full output for row
-                        var $row_output = "<span>" + $name + "</span>";
+                        var $row_output = "<a href='/App/TelegramUsers/Details?user_id=" + $id + "'>" + $name + "</a>";
                         return $row_output;
                     }
                 },

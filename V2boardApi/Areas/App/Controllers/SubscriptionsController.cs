@@ -53,6 +53,12 @@ namespace V2boardApi.Areas.App.Controllers
 
         // GET: App/Subscriptions
         [AuthorizeApp(Roles = "1,2,3,4")]
+        public ActionResult Index(string SubName)
+        {
+            ViewBag.SubName = SubName;
+            return View();
+        }
+        [AuthorizeApp(Roles = "1,2,3,4")]
         public ActionResult Index()
         {
             return View();

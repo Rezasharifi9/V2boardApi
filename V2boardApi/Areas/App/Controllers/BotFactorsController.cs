@@ -47,6 +47,7 @@ namespace V2boardApi.Areas.App.Controllers
                 foreach (var item in Factors)
                 {
                     BotFactoresResponseModel factor = new BotFactoresResponseModel();
+                    factor.UserId = item.FK_TelegramUser_ID.Value;
                     factor.Id = item.dw_ID;
                     if (item.dw_Status == "FOR_PAY")
                     {

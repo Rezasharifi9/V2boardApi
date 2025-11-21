@@ -22,7 +22,7 @@ $(function () {
                 { data: 'CreateDate' },
                 { data: 'SellPrice' },
                 { data: 'Plan' },
-                { data: 'action' },
+                { data: 'action' }
             ],
             columnDefs: [
                 {
@@ -189,9 +189,7 @@ $(function () {
                 { data: 'Plan' },
                 { data: 'CreateDate' },
                 { data: 'Price' },
-                { data: 'Status' },
-                { data: '' },
-
+                { data: 'Status' }
             ],
             columnDefs: [
                 {
@@ -238,9 +236,9 @@ $(function () {
                     targets: 4,
                     render: function (data, type, full, meta) {
                         var $Price = full['Price'];
-                        return (
-                            "<span>" + $Price + "</span>"
-                        );
+                        var $row_output = "<span>" + $Price + ' ءتء' + "</span>";
+
+                        return $row_output;
                     }
                 },
                 {
@@ -258,30 +256,30 @@ $(function () {
                             );
                         }  
                     }
-                },
-                {
-                    // Actions
-                    targets: -1,
-                    title: 'عملیات',
-                    orderable: false,
-                    render: function (data, type, full, meta) {
-                        return (
-                            '<div class="d-flex align-items-center">' +
-                            '<a href="javascript:;" class="text-body" data-bs-toggle="tooltip" title="ارسال ایمیل"><i class="ti ti-mail me-2 ti-sm"></i></a>' +
-                            '<a href="app-invoice-preview.html" class="text-body" data-bs-toggle="tooltip" title="نمایش"><i class="ti ti-eye mx-2 ti-sm"></i></a>' +
-                            '<div class="d-inline-block">' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow text-body" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>' +
-                            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
-                            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
-                            '<div class="dropdown-divider"></div>' +
-                            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
-                            '</ul>' +
-                            '</div>' +
-                            '</div>'
-                        );
-                    }
                 }
+                //{
+                //    // Actions
+                //    targets: -1,
+                //    title: 'عملیات',
+                //    orderable: false,
+                //    render: function (data, type, full, meta) {
+                //        return (
+                //            '<div class="d-flex align-items-center">' +
+                //            '<a href="javascript:;" class="text-body" data-bs-toggle="tooltip" title="ارسال ایمیل"><i class="ti ti-mail me-2 ti-sm"></i></a>' +
+                //            '<a href="app-invoice-preview.html" class="text-body" data-bs-toggle="tooltip" title="نمایش"><i class="ti ti-eye mx-2 ti-sm"></i></a>' +
+                //            '<div class="d-inline-block">' +
+                //            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow text-body" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>' +
+                //            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
+                //            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
+                //            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
+                //            '<div class="dropdown-divider"></div>' +
+                //            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
+                //            '</ul>' +
+                //            '</div>' +
+                //            '</div>'
+                //        );
+                //    }
+                //}
             ],
             displayLength: 6,
             lengthMenu: [6, 10, 25, 50, 75, 100],
@@ -358,8 +356,7 @@ $(function () {
                 { data: 'RemainingVolume' },
                 { data: 'TotalVolume' },
                 { data: 'ExpireDate' },
-                { data: 'State' },
-                { data: '' },
+                { data: 'State' }
             ],
             columnDefs: [
                 {
@@ -378,6 +375,8 @@ $(function () {
                         var $V2boardUsername = full['V2boardUsername'];
                         // Creates full output for row
                         var $row_output = '<span>' + $V2boardUsername + '</span>';
+
+
                         return $row_output;
                     }
                 },
@@ -447,30 +446,30 @@ $(function () {
                                 );
                             }
                     }
-                },
-                {
-                    // Actions
-                    targets: -1,
-                    title: 'عملیات',
-                    orderable: false,
-                    render: function (data, type, full, meta) {
-                        return (
-                            '<div class="d-flex align-items-center">' +
-                            '<a href="javascript:;" class="text-body" data-bs-toggle="tooltip" title="ارسال ایمیل"><i class="ti ti-mail me-2 ti-sm"></i></a>' +
-                            '<a href="app-invoice-preview.html" class="text-body" data-bs-toggle="tooltip" title="نمایش"><i class="ti ti-eye mx-2 ti-sm"></i></a>' +
-                            '<div class="d-inline-block">' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow text-body" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>' +
-                            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
-                            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
-                            '<div class="dropdown-divider"></div>' +
-                            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
-                            '</ul>' +
-                            '</div>' +
-                            '</div>'
-                        );
-                    }
                 }
+                //{
+                //    // Actions
+                //    targets: -1,
+                //    title: 'عملیات',
+                //    orderable: false,
+                //    render: function (data, type, full, meta) {
+                //        return (
+                //            '<div class="d-flex align-items-center">' +
+                //            '<a href="javascript:;" class="text-body" data-bs-toggle="tooltip" title="ارسال ایمیل"><i class="ti ti-mail me-2 ti-sm"></i></a>' +
+                //            '<a href="app-invoice-preview.html" class="text-body" data-bs-toggle="tooltip" title="نمایش"><i class="ti ti-eye mx-2 ti-sm"></i></a>' +
+                //            '<div class="d-inline-block">' +
+                //            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow text-body" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>' +
+                //            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
+                //            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
+                //            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
+                //            '<div class="dropdown-divider"></div>' +
+                //            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
+                //            '</ul>' +
+                //            '</div>' +
+                //            '</div>'
+                //        );
+                //    }
+                //}
             ],
             displayLength: 6,
             lengthMenu: [6, 10, 25, 50, 75, 100],

@@ -17,9 +17,8 @@ $(function () {
                 { data: 'Plan' },
                 { data: 'CreateDate' },
                 { data: 'ActiveDate' },
-                { data: 'Status' },
                 { data: 'Price' },
-                { data: '' },
+                { data: 'Status' }
             ],
             columnDefs: [
                 {
@@ -49,9 +48,12 @@ $(function () {
                     targets: 2,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
+
                         var $UserCreator = full['UserCreator'];
+                        var $id = full['UserId'];
+                        var $row_output = "<a href='/App/TelegramUsers/Details?user_id=" + $id + "'>" + $UserCreator + "</a>";
+
                         // Creates full output for row
-                        var $row_output = "<span>" + $UserCreator + "</span>";
                         return $row_output;
                     }
                 },
@@ -91,8 +93,19 @@ $(function () {
                     }
                 },
                 {
-                    // CreateDate
-                    targets:6,
+                    // Price
+                    targets: 6,
+                    responsivePriority: 4,
+                    render: function (data, type, full, meta) {
+                        var $Price = full['Price'];
+                        // Creates full output for row
+                        var $row_output = "<span>" + $Price + ' ءتء' + "</span>";
+                        return $row_output;
+                    }
+                },
+                {
+                    // Status
+                    targets:7,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
                         var $Status = full['Status'];
@@ -106,43 +119,32 @@ $(function () {
 
                         return $row_output;
                     }
-                },
-                {
-                    // Price
-                    targets: 7,
-                    responsivePriority: 4,
-                    render: function (data, type, full, meta) {
-                        var $Price = full['Price'];
-                        // Creates full output for row
-                        var $row_output = "<span>" + $Price + ' ءتء' + "</span>";
-                        return $row_output;
-                    }
-                },
-                {
-                    // Actions
-                    targets: -1,
-                    title: 'عملیات',
-                    orderable: false,
-                    searchable: false,
-                    render: function (data, type, full, meta) {
-                        return (
-                            '<div class="d-inline-block">' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="text-primary ti ti-dots-vertical"></i></a>' +
-                            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
-                            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
-                            '<div class="dropdown-divider"></div>' +
-                            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
-                            '</ul>' +
-                            '</div>' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'
-                        );
-                    }
                 }
+                //{
+                //    // Actions
+                //    targets: -1,
+                //    title: 'عملیات',
+                //    orderable: false,
+                //    searchable: false,
+                //    render: function (data, type, full, meta) {
+                //        return (
+                //            '<div class="d-inline-block">' +
+                //            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="text-primary ti ti-dots-vertical"></i></a>' +
+                //            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
+                //            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
+                //            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
+                //            '<div class="dropdown-divider"></div>' +
+                //            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
+                //            '</ul>' +
+                //            '</div>' +
+                //            '<a href="javascript:;" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'
+                //        );
+                //    }
+                //}
             ],
             order: [[2, 'desc']],
-            displayLength: 10,
-            lengthMenu: [10, 25, 50, 75, 100],
+            displayLength: 6,
+            lengthMenu: [6, 25, 50, 75, 100],
             responsive: {
                 details: {
                     display: $.fn.dataTable.Responsive.display.modal({
