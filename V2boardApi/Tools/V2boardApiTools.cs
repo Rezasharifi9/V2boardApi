@@ -67,21 +67,28 @@ namespace V2boardApi.Tools
         {
             if (IsInit)
             {
-                HttpClient client = new HttpClient();
-                client.BaseAddress = new Uri(BaseUrl);
-                var response = await client.GetAsync(client.BaseAddress + "info/alivelist?token=" + Token);
-
-                if (response.IsSuccessStatusCode)
+                if (Server.ApiToken_V2board != null)
                 {
-                    var result = await response.Content.ReadAsStringAsync();
+                    HttpClient client = new HttpClient();
+                    client.BaseAddress = new Uri(BaseUrl);
+                    var response = await client.GetAsync(client.BaseAddress + "info/alivelist?token=" + Token);
 
-                    var model = JsonConvert.DeserializeObject<List<SubInfo>>(result);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var result = await response.Content.ReadAsStringAsync();
 
-                    return model;
+                        var model = JsonConvert.DeserializeObject<List<SubInfo>>(result);
+
+                        return model;
+                    }
+                    else
+                    {
+                        return new List<SubInfo>();
+                    }
                 }
                 else
                 {
-                    return null;
+                    return new List<SubInfo>();
                 }
             }
             else
