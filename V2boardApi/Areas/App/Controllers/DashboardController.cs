@@ -1,7 +1,5 @@
 ﻿using DataLayer.DomainModel;
 using DataLayer.Repository;
-using Stimulsoft.Report.Mvc;
-using Stimulsoft.Report;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -38,11 +36,6 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryServer = new Repository<tbServers>(db);
             RepositoryTelegramUsers = new Repository<tbTelegramUsers>();
-
-
-            var path = System.Web.HttpContext.Current.Server.MapPath("~/Key/license.key");
-
-            Stimulsoft.Base.StiLicense.LoadFromFile(path);
         }
 
         [AuthorizeApp(Roles = "1")]

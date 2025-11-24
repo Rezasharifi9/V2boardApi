@@ -3,7 +3,6 @@ using DataLayer.DomainModel;
 using DataLayer.Repository;
 using Microsoft.Extensions.Logging;
 using NLog;
-using Stimulsoft.Base;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

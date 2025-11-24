@@ -16,7 +16,6 @@ using MySql.Data.MySqlClient;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
-using static Stimulsoft.Base.Drawing.StiFontReader;
 using System.Numerics;
 using V2boardApi.Models.V2boardModel;
 

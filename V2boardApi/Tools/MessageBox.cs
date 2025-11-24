@@ -5,7 +5,6 @@ using System.Linq;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
-using System.Web.Script.Serialization;
 
 namespace V2boardApi.Tools
 {
@@ -26,6 +25,7 @@ namespace V2boardApi.Tools
                 },
                 buttonsStyling = false
             };
+            
 
             // تبدیل داده‌های JSON به رشته جاوااسکریپت
             string script = $"Swal.fire({Json.Encode(data)});";
