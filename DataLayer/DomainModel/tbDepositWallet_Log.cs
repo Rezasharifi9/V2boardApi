@@ -25,7 +25,9 @@ namespace DataLayer.DomainModel
         public string dw_TaxId { get; set; }
         public string dw_PayMethod { get; set; }
         public bool dw_Alerted { get; set; }
+        public Nullable<int> FK_Order_ID { get; set; }
     
+        public virtual tbOrders tbOrders { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
     }
 }

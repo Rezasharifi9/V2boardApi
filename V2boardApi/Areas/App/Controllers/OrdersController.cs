@@ -45,7 +45,11 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     model.Status = 1;
                 }
-                
+                else if (item.OrderStatus == "FOR_PAY")
+                {
+                    model.Status = 3;
+                }
+
                 model.CreateDate = item.OrderDate.Value.ConvertDateTimeToShamsi2();
                 model.Plan = item.Traffic + " گیگ " + item.Month + " ماهه";
                 model.SubName = item.AccountName.Split('@')[0];
@@ -69,8 +73,14 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 orders.Add(model);
             }
+            
+            return new JsonResult() {
 
-            return Json(new { data = orders }, JsonRequestBehavior.AllowGet);
+                Data = new { data = orders },
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+                MaxJsonLength = int.MaxValue,
+
+            };
         }
 
         protected override void Dispose(bool disposing)

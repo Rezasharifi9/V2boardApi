@@ -2849,6 +2849,114 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (callback.Length == 3)
                                 {
+                                    if (callback[0] == "ConfirmPay")
+                                    {
+                                        var accountName = callback[2];
+                                        var planId = Convert.ToInt32(callback[1]);
+
+                                        var Plan = RepositoryLinkUserAndPlan.Where(a => a.Link_PU_ID == planId).FirstOrDefault();
+                                        var Account = tbLinksRepository.Where(a => a.tbL_Email == accountName).FirstOrDefault();
+
+
+                                        var Price = Plan.L_SellPrice.Value;
+                                        if (BotSettings.Present_Discount != null && BotSettings.Present_Discount != 0)
+                                        {
+                                            Price -= (int)(Price * BotSettings.Present_Discount);
+                                        }
+
+                                        Random ran = new Random();
+                                        var RanNumber = ran.Next(1, 999);
+
+                                        var fullPrice = (Price * 10);
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            fullPrice += RanNumber;
+                                        }
+                                        StringBuilder str = new StringBuilder();
+
+                                        var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
+
+                                        str.AppendLine("✅  فاکتور خرید بسته شما با موفقیت ثبت شد ");
+                                        str.AppendLine("");
+                                        str.AppendLine("💳 لطفاً مبلغ " + "<code>" + fullPrice.ConvertToMony() + "</code>" + " ریال رو به شماره کارت زیر واریز کن :");
+                                        str.AppendLine("");
+                                        str.AppendLine(FirstCard.CardNumber);
+                                        str.AppendLine("به نام : " + FirstCard.InTheNameOf);
+                                        str.AppendLine("");
+                                        str.AppendLine("🔹 روی مبلغ کلیک کن تا خودش کپی بشه — لازم نیست حفظش کنی 😌");
+                                        if ((bool)BotSettings.IsActiveSendReceipt && (bool)BotSettings.IsActiveCardToCard)
+                                        {
+                                            str.AppendLine("🔹 حتماً مبلغ رو دقیقاً با سه رقم آخر واریز کن. اگه مبلغ رو دقیق نزنی، ربات نمی‌تونه تراکنشت رو تشخیص بده ❗️");
+                                            str.AppendLine("");
+                                            str.AppendLine("📸 اگه به هر دلیلی پرداختت به‌صورت خودکار تأیید نشد، کافیه رسید واریزی رو به‌صورت عکس (نه فایل) برای ربات بفرستی.");
+                                        }
+                                        else
+                                        {
+                                            if ((bool)BotSettings.IsActiveCardToCard)
+                                            {
+                                                str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
+                                            }
+                                            if ((bool)BotSettings.IsActiveSendReceipt)
+                                            {
+                                                str.AppendLine("");
+                                                str.Append("✅");
+                                                str.AppendLine("بعد واریزی حتما رسید را برای ربات بفرستید");
+                                            }
+                                        }
+                                        str.AppendLine("");
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            str.AppendLine("⚠️ نکته مهم:\r\n");
+                                            str.AppendLine("<b>" + "هر فاکتور فقط ۲۴ ساعت اعتبار داره. اگه پیام \"منقضی شدن فاکتور\" برات اومد، دیگه هیچ مبلغی واریز نکن ❌ " + "</b>");
+                                            str.AppendLine("");
+                                            str.AppendLine("<b>" + "🔺 حواست باشه! اگه مبلغ اشتباه واریز بشه، امکان برگشت وجه وجود نداره 🙏" + "</b>");
+                                        }
+
+                                        tbOrders order = new tbOrders();
+                                        order.Order_Guid = Guid.NewGuid();
+                                        order.AccountName = accountName;
+                                        order.OrderDate = DateTime.Now;
+                                        order.OrderStatus = "FOR_PAY";
+                                        order.Order_Price = Price;
+                                        order.Traffic = Plan.tbPlans.PlanVolume;
+                                        order.Month = Plan.tbPlans.PlanMonth;
+                                        order.PriceWithOutDiscount = Plan.L_SellPrice.Value;
+                                        order.V2_Plan_ID = Plan.tbPlans.Plan_ID_V2;
+                                        order.FK_Tel_UserID = UserAcc.Tel_UserID;
+                                        order.FK_Link_Plan_ID = Plan.Link_PU_ID;
+                                        order.Tel_RenewedDate = DateTime.Now;
+
+                                        if (Account != null)
+                                        {
+                                            order.OrderType = "تمدید";
+
+                                        }
+                                        else
+                                        {
+                                            order.OrderType = "جدید";
+                                            
+                                        }
+                                        
+
+                                        tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
+                                        tbDeposit.dw_Price = fullPrice;
+                                        tbDeposit.dw_CreateDatetime = DateTime.Now;
+                                        tbDeposit.dw_Status = "FOR_PAY";
+                                        tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
+                                        tbDeposit.dw_PayMethod = "Card";
+
+                                        order.tbDepositWallet_Log.Add(tbDeposit);
+
+                                        tbOrdersRepository.Insert(order);
+                                        await tbOrdersRepository.SaveChangesAsync();
+                                        str.AppendLine("");
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+
+
+                                    }
+                                    else
                                     if (callback[0] == "AccpetWallet")
                                     {
 

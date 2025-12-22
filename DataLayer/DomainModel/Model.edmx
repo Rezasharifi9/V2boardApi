@@ -111,6 +111,7 @@
           <Property Name="dw_TaxId" Type="varchar" MaxLength="150" />
           <Property Name="dw_PayMethod" Type="varchar" MaxLength="50" />
           <Property Name="dw_Alerted" Type="bit" Nullable="false" />
+          <Property Name="FK_Order_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbLinks">
           <Key>
@@ -399,6 +400,18 @@
             </Principal>
             <Dependent Role="tbConnectionHelp">
               <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbDepositWallet_Log_tbOrders">
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="0..1" />
+          <End Role="tbDepositWallet_Log" Type="Self.tbDepositWallet_Log" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbOrders">
+              <PropertyRef Name="Order_ID" />
+            </Principal>
+            <Dependent Role="tbDepositWallet_Log">
+              <PropertyRef Name="FK_Order_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -755,6 +768,10 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbDepositWallet_Log_tbOrders" Association="Self.FK_tbDepositWallet_Log_tbOrders">
+            <End Role="tbOrders" EntitySet="tbOrders" />
+            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbTelegramUsers" Association="Self.FK_tbDepositWallet_Log_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
@@ -918,6 +935,10 @@
           <AssociationSet Name="FK_tbConnectionHelp_tbUsers" Association="SafeNetDBModel.FK_tbConnectionHelp_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbDepositWallet_Log_tbOrders" Association="SafeNetDBModel.FK_tbDepositWallet_Log_tbOrders">
+            <End Role="tbOrders" EntitySet="tbOrders" />
+            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
           </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbTelegramUsers" Association="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
@@ -1141,6 +1162,8 @@
           <Property Name="dw_TaxId" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Name="dw_PayMethod" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="dw_Alerted" Type="Boolean" Nullable="false" />
+          <Property Name="FK_Order_ID" Type="Int32" />
+          <NavigationProperty Name="tbOrders" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbOrders" FromRole="tbDepositWallet_Log" ToRole="tbOrders" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbLinks">
@@ -1159,10 +1182,10 @@
           <Property Name="tb_ChargeLinkedTime" Type="DateTime" Precision="3" />
           <Property Name="tb_ChargePlan_ID" Type="Int32" />
           <Property Name="tb_status" Type="Boolean" />
-          <NavigationProperty Name="tbServers" Relationship="SafeNetDBModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
-          <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
           <Property Name="ExceededCount" Type="Int32" Nullable="false" />
           <Property Name="ExceededLastTime" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbServers" Relationship="SafeNetDBModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
+          <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbLinkServerGroupWithUsers">
           <Key>
@@ -1252,6 +1275,7 @@
           <Property Name="Traffic" Type="Int32" />
           <Property Name="Month" Type="Int32" />
           <Property Name="Tel_RenewedDate" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbDepositWallet_Log" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbOrders" FromRole="tbOrders" ToRole="tbDepositWallet_Log" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbOrders" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
         </EntityType>
@@ -1475,6 +1499,18 @@
             </Principal>
             <Dependent Role="tbConnectionHelp">
               <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbDepositWallet_Log_tbOrders">
+          <End Type="SafeNetDBModel.tbOrders" Role="tbOrders" Multiplicity="0..1" />
+          <End Type="SafeNetDBModel.tbDepositWallet_Log" Role="tbDepositWallet_Log" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbOrders">
+              <PropertyRef Name="Order_ID" />
+            </Principal>
+            <Dependent Role="tbDepositWallet_Log">
+              <PropertyRef Name="FK_Order_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1905,6 +1941,7 @@
           <EntitySetMapping Name="tbDepositWallet_Log">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
+                <ScalarProperty Name="FK_Order_ID" ColumnName="FK_Order_ID" />
                 <ScalarProperty Name="dw_Alerted" ColumnName="dw_Alerted" />
                 <ScalarProperty Name="dw_PayMethod" ColumnName="dw_PayMethod" />
                 <ScalarProperty Name="dw_TaxId" ColumnName="dw_TaxId" />

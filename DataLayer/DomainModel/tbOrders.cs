@@ -14,6 +14,12 @@ namespace DataLayer.DomainModel
     
     public partial class tbOrders
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public tbOrders()
+        {
+            this.tbDepositWallet_Log = new HashSet<tbDepositWallet_Log>();
+        }
+    
         public int Order_ID { get; set; }
         public Nullable<int> V2_Plan_ID { get; set; }
         public Nullable<int> FK_Link_Plan_ID { get; set; }
@@ -30,6 +36,8 @@ namespace DataLayer.DomainModel
         public Nullable<int> Month { get; set; }
         public Nullable<System.DateTime> Tel_RenewedDate { get; set; }
     
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }
         public virtual tbLinkUserAndPlans tbLinkUserAndPlans { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
     }

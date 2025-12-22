@@ -113,6 +113,7 @@ $(function () {
                         var statusObj = {
                             0: { title: 'در صف رزرو', class: 'bg-label-warning' },
                             1: { title: 'انجام شده', class: 'bg-label-success' },
+                            3: { title: 'در صف پرداخت', class: 'bg-label-primary' },
                         };
 
                         var $row_output = "<span class='badge " + statusObj[$Status].class + "'>" + statusObj[$Status].title + "</span>";

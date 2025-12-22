@@ -560,10 +560,16 @@ namespace V2boardBot.Models
             btns.Add(row1);
 
             List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-            InlineKeyboardButton btn2 = new InlineKeyboardButton("🔙 برگشت");
-            btn2.CallbackData = "backToInfo";
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("💳 پرداخت مستقیم");
+            btn2.CallbackData = "ConfirmPay%" + planId + "%" + AccountName;
             row2.Add(btn2);
             btns.Add(row2);
+
+            List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn3 = new InlineKeyboardButton("🔙 برگشت");
+            btn3.CallbackData = "backToInfo";
+            row3.Add(btn3);
+            btns.Add(row3);
             var keyborad = new InlineKeyboardMarkup(btns);
 
             return keyborad;

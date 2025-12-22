@@ -14,6 +14,8 @@ using V2boardApi.Areas.App.Data.BotFactoresViewModels;
 using V2boardApi.Tools;
 using V2boardBot.Functions;
 using V2boardBot.Models;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -102,7 +104,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         [HttpPost]
-        public ActionResult Accept(int factor_id)
+        public async Task<ActionResult> Accept(int factor_id)
         {
             try
             {
@@ -111,47 +113,16 @@ namespace V2boardApi.Areas.App.Controllers
                 var factor = RepositoryDepositLog.Where(s => s.dw_ID == factor_id && s.tbTelegramUsers.FK_User_ID == User_ID && s.dw_Status == "FOR_PAY").FirstOrDefault();
                 if (factor != null)
                 {
-                    factor.dw_Status = "FINISH";
-                    factor.tbTelegramUsers.Tel_Wallet += factor.dw_Price / 10;
-                    StringBuilder str = new StringBuilder();
-                    str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد!");
-                    str.AppendLine("");
-                    str.AppendLine("💰 موجودی فعلی کیف پول شما: " + factor.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
-                    str.AppendLine("");
-                    str.AppendLine("🔔 حالا می‌توانید برای خرید اشتراک جدید یا تمدید اشتراک اقدام کنید.");
 
+                    var baseUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}/";
 
-                    var keyboard = Keyboards.GetHomeButton();
-
-                    RealUser.SetUserStepWithoutAsync(factor.tbTelegramUsers.Tel_UniqUserID, "Start", db, factor.tbTelegramUsers.tbUsers.Username);
-
-
-                    var botSetting = factor.tbTelegramUsers.tbUsers.tbBotSettings.FirstOrDefault();
-
-                    TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
-
-                    botClient.SendTextMessageAsync(factor.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-
-                    if (botSetting.InvitePercent != null)
+                    using (var client = new HttpClient())
                     {
-                        if (factor.tbTelegramUsers.Tel_Parent_ID != null)
-                        {
-                            var parent = factor.tbTelegramUsers.tbTelegramUsers2;
-                            parent.Tel_Wallet += Convert.ToInt32((factor.dw_Price / 10) * botSetting.InvitePercent.Value);
-
-                            StringBuilder str1 = new StringBuilder();
-                            str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
-                            str1.AppendLine("");
-                            str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
-                            str1.AppendLine("");
-                            str1.AppendLine("🚀 @" + botSetting.Bot_ID);
-
-                            botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
-                        }
+                        client.BaseAddress = new Uri(baseUrl);
+                        var response = await client.GetAsync("/User/CheckOrder?SMSMessageText="+factor.dw_Price+"&Mobile="+factor.tbTelegramUsers.tbUsers.PhoneNumber);
                     }
 
-                    RepositoryDepositLog.Save();
-                    logger.Info("فاکتور به مبلغ " + factor.dw_Price.ToString().ConvertToMony() + " با موفقیت پرداخت شد");
+
                     return Toaster.Success("موفق", "تراکنش با موفقیت تائید شد");
                 }
                 else
