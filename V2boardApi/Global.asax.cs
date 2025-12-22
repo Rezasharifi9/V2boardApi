@@ -18,7 +18,6 @@ using Newtonsoft.Json;
 using V2boardApi.Models.V2boardModel;
 using V2boardApi.Tools;
 using V2boardApi.Areas.api;
-using static Stimulsoft.Base.Drawing.StiFontReader;
 using System.Web.Caching;
 
 namespace V2boardApi
