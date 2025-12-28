@@ -157,6 +157,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                         foreach (var item in tbDepositLog)
                         {
+                            item.dw_Status = "FINISH";
                             if (item.FK_Order_ID != null)
                             {
                                 var Link = await RepositoryLinks.FirstOrDefaultAsync(p => p.tbL_Email == item.tbOrders.AccountName);
@@ -234,6 +235,12 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         order.OrderStatus = "FINISH";
 
+
+                                        await mySql.CloseAsync();
+                                        await RepositoryOrder.SaveChangesAsync();
+                                        await RepositoryDepositWallet.SaveChangesAsync();
+                                        transaction.Commit();
+
                                         StringBuilder str2 = new StringBuilder();
                                         str2.AppendLine("✅ بسته تو تمدید کردم");
                                         str2.AppendLine("");
@@ -241,8 +248,9 @@ namespace V2boardApi.Areas.api.Controllers
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
                                         await botClient.SendTextMessageAsync(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
-
                                         
+                                        return Ok();
+
                                     }
                                     else
                                     {
@@ -250,6 +258,11 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         order.OrderStatus = "FOR_RESERVE";
 
+
+                                        await mySql.CloseAsync();
+                                        await RepositoryOrder.SaveChangesAsync();
+                                        await RepositoryDepositWallet.SaveChangesAsync();
+                                        transaction.Commit();
 
 
                                         StringBuilder str2 = new StringBuilder();
@@ -260,9 +273,10 @@ namespace V2boardApi.Areas.api.Controllers
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
                                         await botClient.SendTextMessageAsync(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
-
+                                        
+                                        return Ok();
                                     }
-                                    await mySql.CloseAsync();
+                                    
 
                                 }
                                 else
@@ -372,6 +386,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     await RepositoryTelegramUser.SaveChangesAsync();
                                     await RepositoryLinks.SaveChangesAsync();
                                     await RepositoryLinkUserAndPlan.SaveChangesAsync();
+                                    transaction.Commit();
 
                                     var keys = Keyboards.GetHomeButton();
 
@@ -387,7 +402,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     await botClient.SendTextMessageAsync(Order.tbTelegramUsers.Tel_UniqUserID, "به منو اصلی بازگشتید 🏘", parseMode: ParseMode.Html, replyMarkup: keys);
                                     await RealUser.SetEmptyState(Order.tbTelegramUsers.Tel_UniqUserID, db, Order.tbTelegramUsers.tbUsers.Username);
-
+                                    
+                                    return Ok();
                                 }
                             }
                             else
@@ -403,6 +419,8 @@ namespace V2boardApi.Areas.api.Controllers
                                 str.AppendLine("");
                                 str.AppendLine("توجه کن اگر اشتراک داری برو تو بخش تمدید و تمدید کن وگرنه اشتراکت تموم میشه و قطع میشی");
 
+                                item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                                await RepositoryDepositWallet.SaveChangesAsync();
 
                                 var keyboard = Keyboards.GetHomeButton();
 
@@ -411,10 +429,10 @@ namespace V2boardApi.Areas.api.Controllers
                                 
                                 await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
 
+                                
                             }
 
-                            item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
-                            item.dw_Status = "FINISH";
+                            
 
                             if (botSetting != null)
                             {
@@ -425,6 +443,9 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         var parent = item.tbTelegramUsers.tbTelegramUsers2;
                                         parent.Tel_Wallet += Convert.ToInt32((item.dw_Price / 10) * botSetting.InvitePercent.Value);
+
+                                        
+                                        await RepositoryDepositWallet.SaveChangesAsync();
 
                                         StringBuilder str1 = new StringBuilder();
                                         str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
@@ -443,9 +464,10 @@ namespace V2boardApi.Areas.api.Controllers
                                 
                             }
 
-                            await RepositoryDepositWallet.SaveChangesAsync();
+                            
+                            return Ok();
                         }
-                        return Ok();
+                        return Content(HttpStatusCode.NotFound,"تراکنشی یافت نشد");
                     }
                     else
                     {

@@ -811,7 +811,16 @@ namespace V2boardApi.Areas.api.Controllers
                                     var AccName = "";
                                     if (User.Tel_Username != null)
                                     {
-                                        AccName = User.Tel_Username + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                        var Link = await tbLinksRepository.FirstOrDefaultAsync(a => a.tbL_Email.Contains(User.Tel_Username) && a.tbTelegramUsers.Tel_UniqUserID == UserAcc.Tel_UniqUserID);
+                                        if (Link != null)
+                                        {
+                                            AccName = User.Tel_Username + Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                        }
+                                        else
+                                        {
+                                            AccName = User.Tel_Username + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                        }
+
                                     }
                                     else
                                     {
