@@ -1,0 +1,154 @@
+﻿
+@{ 
+    ViewBag.Title = "گزارش سالانه - پنل مدیریت کاربران";
+}
+
+<div class="row section-loading" id="SalesSummaryReport">
+
+</div>
+
+<div class="row">
+    <!-- Shipment statistics-->
+    <div class="col-md-12 mb-4 order-3">
+        <div class="card" style="height:100%;">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-title mb-0">
+                    <h5 class="m-0 me-2">نمایندگان برتر</h5>
+                </div>
+            </div>
+            <div class="card-body" >
+                <div class="my-1" id="shipmentStatisticsChart"></div>
+            </div>
+        </div>
+    </div>
+    <!--/ Shipment statistics -->
+</div>
+<div class="row">
+    <!-- Earning Reports Tabs-->
+    <div class="col-12 col-xl-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <div class="card-title mb-0">
+                    <h5 class="mb-0">عملکرد کل سیستم در سال</h5>
+                    <small class="text-muted" id="textBoxSell">بررسی فروش امسال</small>
+                </div>
+                <div class="card-title mb-0" id="kol-sum">
+                    <h5 class="mb-0"> جمع : <span id="sum-kol">1,820</span></h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs widget-nav-tabs pb-3 gap-4 mx-1 d-flex flex-nowrap" role="tablist">
+                    <li class="nav-item setTitle" id="click-kol" title="بررسی مختصر فروش سیستم به تفکیک ماه">
+                        <a aria-controls="navs-orders-id" aria-selected="true" class="nav-link btn active d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-orders-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
+                            <div class="badge bg-label-secondary rounded p-2">
+                                <i class="ti ti-report ti-sm"></i>
+                            </div>
+                            <h6 class="tab-widget-title mb-0 mt-2">کل</h6>
+                        </a>
+                    </li>
+                    @*<li class="nav-item">
+                        <a aria-controls="navs-income-id" aria-selected="false" class="nav-link btn d-flex flex-column align-items-center justify-content-center" data-bs-target="#navs-income-id" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
+                            <div class="badge bg-label-secondary rounded p-2">
+                                <i class="ti ti-chart-pie-2 ti-sm"></i>
+                            </div>
+                            <h6 class="tab-widget-title mb-0 mt-2">درآمد</h6>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a aria-selected="false" class="nav-link btn d-flex align-items-center justify-content-center disabled" data-bs-toggle="tab" href="javascript:void(0);" role="tab">
+                            <div class="badge bg-label-secondary rounded p-2">
+                                <i class="ti ti-plus ti-sm"></i>
+                            </div>
+                        </a>
+                    </li>*@
+                </ul>
+                <div class="tab-content p-0 ms-0 ms-sm-2">
+                    <div class="tab-pane fade show active" id="navs-orders-id" role="tabpanel">
+                        <div id="earningReportsTabsOrders"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sales last 6 months -->
+
+
+    
+
+</div>
+
+@section vendorScripts {
+
+    <!-- Vendors JS -->
+    <script src="../../assets/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+}
+
+@section customScripts {
+
+
+    <!-- Page JS -->
+    <script src="../../assets/js/app-logistics-admindashboard.js"></script>
+    <!-- Page JS -->
+    <script src="~/assets/js/dashboards-crm-admin.js"></script>
+
+    <script>
+
+
+        $(".setTitle").click(function () {
+
+            var text = $(this).attr("title");
+
+            $("#textBoxSell").text(text);
+
+        });
+
+
+        $("#click-kol").click(function () {
+
+            $("#kol-sum").css("display", "block");
+            $("#agent-sum").css("display", "none");
+            $("#bot-sum").css("display", "none");
+        });
+
+        $("#click-agent").click(function () {
+
+            $("#agent-sum").css("display", "block");
+            $("#kol-sum").css("display", "none");
+            $("#bot-sum").css("display", "none");
+
+        });
+
+        $("#click-bot").click(function () {
+
+            $("#bot-sum").css("display", "block");
+
+            $("#kol-sum").css("display", "none");
+            $("#agent-sum").css("display", "none");
+
+        });
+
+
+        $(function () {
+
+            $.ajax({
+                url: "@Url.Action("GetSalesSummary", "AdminDashboard",new {area="App"})",
+                type: "get",
+                dataType: "html",
+                beforeSend: function () {
+                    blockUI(".section-loading");
+                },
+                success: function (res) {
+                    UnblockUI(".section-loading");
+                    $("#SalesSummaryReport").html(res);
+                }
+            });
+
+
+
+        });
+
+
+    </script>
+
+} 

@@ -63,14 +63,27 @@
                     {
                         if (Role == "1")
                         {
+                            <li class="menu-header small text-uppercase">
+                                <span class="menu-header-text" data-i18n="Components">گزارشات</span>
+                            </li>
                             <li class="menu-item" style="">
-                                <a class="menu-link" href="@Url.Action("Index","Dashboard",new {area="App"})">
-                                    <i class="menu-icon tf-icons ti ti-smart-home"></i>
-                                    <div>داشبورد</div>
+                                <a class="menu-link" href="@Url.Action("Index","AdminDashboard",new {area="App"})">
+                                    <i class="menu-icon tf-icons ti ti-report-analytics"></i>
+                                    <div>گزارش سالانه</div>
                                 </a>
                             </li>
+                            <li class="menu-item" style="">
+                                <a class="menu-link" href="@Url.Action("Index","Dashboard",new {area="App"})">
+                                    <i class="menu-icon tf-icons ti ti-report-search"></i>
+                                    <div>گزارش ماهانه</div>
+                                </a>
+                            </li>
+
                         }
                     }
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text" data-i18n="Components">مشتریان</span>
+                    </li>
                     <li class="menu-item" style="">
                         <a class="menu-link" href="@Url.Action("Index","Subscriptions")">
                             <i class="menu-icon tf-icons ti ti-users-group"></i>
@@ -185,14 +198,14 @@
                         </a>
                     </li>
                     @*<li class="menu-header small text-uppercase">
-                        <span class="menu-header-text" data-i18n="Components">پشتیبانی</span>
-                    </li>
-                    <li class="menu-item" style="">
-                        <a class="menu-link" href="@Url.Action("Index","OnlineChat",new {area="App"})">
-                            <i class="menu-icon tf-icons ti ti-message"></i>
-                            <div>چت آنلاین</div>
-                        </a>
-                    </li>*@
+            <span class="menu-header-text" data-i18n="Components">پشتیبانی</span>
+        </li>
+        <li class="menu-item" style="">
+            <a class="menu-link" href="@Url.Action("Index","OnlineChat",new {area="App"})">
+                <i class="menu-icon tf-icons ti ti-message"></i>
+                <div>چت آنلاین</div>
+            </a>
+        </li>*@
                 </ul>
 
                 

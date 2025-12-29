@@ -80,8 +80,14 @@ namespace V2boardApi.Areas.App.Controllers
 
             WeeklyDataReportViewModel wkData = new WeeklyDataReportViewModel();
 
+            var Year = persianCalendar.GetYear(DateTime.Now);
+            var Month = persianCalendar.GetMonth(DateTime.Now);
+            var FirstMonth = persianCalendar.ToDateTime(Year, Month,1,0,0,0,0);
 
 
+            var SellMonth = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= FirstMonth).Sum(s => s.SalePrice);
+            SellMonth += db.GetUserSales().Where(s => s.CreateDate >= FirstMonth).Sum(s => s.SalePrice);
+            SellMonth += db.GetMasterUserSales().Where(s => s.CreateDate >= FirstMonth).Sum(s => s.SalePrice);
 
             var ThisWeekSale = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= startOfThisWeek).Sum(s => s.SalePrice);
             ThisWeekSale += db.GetUserSales().Where(s => s.CreateDate >= startOfThisWeek).Sum(s => s.SalePrice);
@@ -96,12 +102,11 @@ namespace V2boardApi.Areas.App.Controllers
             wkData.Sale = (long)ThisWeekSale;
             wkData.ProfitSale = Math.Round((double)(((double)(ThisWeekSale - OldWeekSale) / OldWeekSale) * 100), 2);
 
-            DayOfWeek startOfWeek = persianCalendar.GetDayOfWeek(startOfThisWeek);
-            int daysSinceStartOfWeek = (today.DayOfWeek - startOfWeek + 7) % 7;
-            daysSinceStartOfWeek++;
+            var PassedDayes = (DateTime.Now - FirstMonth).Days + 1;
 
 
-            wkData.SellAvg = ThisWeekSale.Value / daysSinceStartOfWeek;
+
+            wkData.SellAvg = SellMonth.Value / PassedDayes;
 
 
 

@@ -354,6 +354,7 @@
     <Compile Include="Areas\api\Data\ViewModels\AddAccountWithOutPlanInputModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\GetFactorsViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\NotPayedUserModel.cs" />
+    <Compile Include="Areas\App\Controllers\AdminDashboardController.cs" />
     <Compile Include="Areas\App\AppAreaRegistration.cs" />
     <Compile Include="Areas\App\Controllers\AdminController.cs" />
     <Compile Include="Areas\App\Controllers\BotFactorsController.cs" />
@@ -369,6 +370,9 @@
     <Compile Include="Areas\App\Controllers\TelegramUsersController.cs" />
     <Compile Include="Areas\App\Controllers\UserFactorsController.cs" />
     <Compile Include="Areas\App\Controllers\UserNotificationsController.cs" />
+    <Compile Include="Areas\App\Data\AdminDashboard\OverallSalesPerformanceViewModel.cs" />
+    <Compile Include="Areas\App\Data\AdminDashboard\SalesSummaryViewModel.cs" />
+    <Compile Include="Areas\App\Data\AdminDashboard\TopAgentsViewModel.cs" />
     <Compile Include="Areas\App\Data\BotFactoresViewModels\BotFactoresResponseModel.cs" />
     <Compile Include="Areas\App\Data\BotViewModel\UseageViewModel.cs" />
     <Compile Include="Areas\App\Data\CountAccountCreatedFromMajorModel.cs" />
@@ -874,6 +878,7 @@
     <Content Include="assets\js\app-invoice-user-list.js" />
     <Content Include="assets\js\app-invoice-print.js" />
     <Content Include="assets\js\app-kanban.js" />
+    <Content Include="assets\js\app-logistics-admindashboard.js" />
     <Content Include="assets\js\app-logistics-dashboard.js" />
     <Content Include="assets\js\app-logistics-fleet-mapbox.js" />
     <Content Include="assets\js\app-logistics-fleet.js" />
@@ -896,6 +901,7 @@
     <Content Include="assets\js\charts-chartjs.js" />
     <Content Include="assets\js\config.js" />
     <Content Include="assets\js\dashboards-analytics.js" />
+    <Content Include="assets\js\dashboards-crm-admin.js" />
     <Content Include="assets\js\dashboards-crm.js" />
     <Content Include="assets\js\extended-ui-blockui.js" />
     <Content Include="assets\js\extended-ui-drag-and-drop.js" />
@@ -1857,6 +1863,8 @@
     <Content Include="Areas\App\Views\OnlineChat\GetContacts.cshtml" />
     <Content Include="Areas\App\Views\OnlineChat\GetChat.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetLearns.cshtml" />
+    <Content Include="Areas\App\Views\AdminDashboard\Index.cshtml" />
+    <Content Include="Areas\App\Views\AdminDashboard\_SalesSummaryReport.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />
