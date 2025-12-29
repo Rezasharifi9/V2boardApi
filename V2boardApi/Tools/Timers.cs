@@ -731,6 +731,11 @@ public class TimerService
             var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY").ToList();
             foreach (var item in Factoress)
             {
+                if (item.FK_Order_ID != null)
+                {
+                    db.tbOrders.Remove(item.tbOrders);
+                }
+
                 db.tbDepositWallet_Log.Remove(item);
             }
             db.SaveChanges();
