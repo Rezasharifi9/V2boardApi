@@ -58,7 +58,7 @@ namespace V2boardApi.Areas.api.Controllers
                 var UserAgent = Request.UserAgent.ToLower();
                 var host = Request.Url.Host;
                 var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(host)).FirstOrDefault();
-                if (UserAgent.StartsWith("hiddify") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn") || UserAgent.StartsWith("safenet"))
+                if (UserAgent.StartsWith("hiddify") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn") || UserAgent.StartsWith("safenet") || UserAgent.StartsWith("happ"))
                 {
                     if (server != null)
                     {
