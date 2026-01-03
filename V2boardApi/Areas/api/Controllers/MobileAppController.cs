@@ -63,50 +63,53 @@ namespace V2boardApi.Areas.api.Controllers
             //}
 
 
-            var Link = RepositoryLinks.Where(a => a.tbL_Token == Token).FirstOrDefault();
-            if (Link == null)
-            {
-                return BadRequest("لینک اشتراک VPN یافت نشد؛");
-
-            }
-
             SubscriptionInfo model = new SubscriptionInfo();
 
             using (MySqlEntities mySql = new MySqlEntities(Server.ConnectionString))
             {
                 await mySql.OpenAsync();
                 var Disc1 = new Dictionary<string, object>();
-                Disc1.Add("@Email", Link.tbL_Email);
-                var reader = await mySql.GetDataAsync("select * from v2_user where email=@Email", Disc1);
+                Disc1.Add("@token", Token);
+                var reader = await mySql.GetDataAsync("select * from v2_user where token=@token", Disc1);
 
-                while (await reader.ReadAsync())
+                if (await reader.ReadAsync())
                 {
                     var ExpireTime = reader.GetBodyDefinition("expired_at");
                     var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(ExpireTime));
                     var UsedVolume = Utility.ConvertByteToGB(reader.GetDouble("d") + reader.GetDouble("u"));
                     var TotalVolume = reader.GetInt64("transfer_enable");
-
+                    var email = reader.GetString("email");
 
                     var TotalDays = (ex - DateTime.Now).TotalDays;
 
 
-                    var AccountName = Link.tbL_Email.Split('@')[0];
+                    var AccountName = email.Split('@')[0];
                     if (AccountName.Contains('$'))
                     {
                         AccountName = AccountName.Split('$')[0];
                     }
 
+                    var BussinesUserName = email.Split('@')[1];
+                    var BussinessUser = RepositoryUser.Where(a => a.Username == BussinesUserName).FirstOrDefault();
+                    if (BussinessUser != null)
+                    {
+                        model.BusinessName = BussinessUser.BussinesTitle;
+                        model.BusinessUserName = BussinessUser.Username;
+                    }
+
 
                     model.TotalVolume = Utility.ConvertByteToGB(TotalVolume);
-                    model.UsedVolume = Math.Round(Utility.ConvertByteToGB(UsedVolume),2);
-                    model.BusinessName = Link.tbTelegramUsers.tbUsers.BussinesTitle;
-                    model.BusinessUserName = Link.tbTelegramUsers.tbUsers.Username;
-                    model.RemainingDays = (int)TotalDays;
+                    model.UsedVolume = Math.Round(UsedVolume, 2);
+
+                    model.RemainingDays = (int)TotalDays + 1;
                     model.SubscriptionName = AccountName;
 
 
                 }
-
+                else
+                {
+                    return BadRequest("لینک اشتراک VPN نامعتبر می باشد");
+                }
             }
 
             return Ok(model);
