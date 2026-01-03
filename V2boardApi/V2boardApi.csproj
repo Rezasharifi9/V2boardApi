@@ -348,8 +348,10 @@
     <Compile Include="Areas\api\apiAreaRegistration.cs" />
     <Compile Include="Areas\api\Controllers\BotController.cs" />
     <Compile Include="Areas\api\Controllers\ClientController.cs" />
+    <Compile Include="Areas\api\Controllers\MobileAppController.cs" />
     <Compile Include="Areas\api\Controllers\UserController.cs" />
     <Compile Include="Areas\api\Data\ApiModels\AddFirebaseTokenModel.cs" />
+    <Compile Include="Areas\api\Data\AppModels\SubscriptionInfoModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AccountHistoryViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AddAccountWithOutPlanInputModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\GetFactorsViewModel.cs" />
@@ -1929,6 +1931,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Areas\api\Views\App\" />
+    <Folder Include="Areas\api\Views\MobileApp\" />
     <Folder Include="Areas\App\Views\Client\" />
     <Folder Include="assets\img\UserAgentFactorImages\" />
     <Folder Include="Controllers\" />
