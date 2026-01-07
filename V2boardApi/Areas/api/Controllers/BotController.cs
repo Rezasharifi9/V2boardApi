@@ -2331,6 +2331,10 @@ namespace V2boardApi.Areas.api.Controllers
                                             row3.Add(InlineKeyboardButton.WithCallbackData("حذف اشتراک 🗑", "DeleteAcc%" + Link.tbL_Email));
                                             inlineKeyboards.Add(row3);
 
+                                            List<InlineKeyboardButton> row4 = new List<InlineKeyboardButton>();
+                                            row4.Add(InlineKeyboardButton.WithCallbackData("تحلیل اشتراک توسط هوش مصنوعی 🗑", "Analysis%" + Link.tbL_Email));
+                                            inlineKeyboards.Add(row3);
+
                                             //List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
                                             //row3.Add(InlineKeyboardButton.WithCallbackData("تمدید خودکار ⏳", "AutoRenew%" + Link.tb_RandomEmail));
                                             //inlineKeyboards.Add(row3);

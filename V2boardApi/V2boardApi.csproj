@@ -418,6 +418,7 @@
     <Compile Include="Tools\BotManager.cs" />
     <Compile Include="Tools\BotMessages.cs" />
     <Compile Include="Tools\BotUtility.cs" />
+    <Compile Include="Tools\GeminiAPI.cs" />
     <Compile Include="Tools\HubSmartAPI.cs" />
     <Compile Include="Tools\JwtToken.cs" />
     <Compile Include="Tools\NowPayment.cs" />

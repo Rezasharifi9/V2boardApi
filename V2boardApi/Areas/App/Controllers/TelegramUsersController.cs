@@ -118,6 +118,10 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     model.Status = 1;
                 }
+                else if (item.OrderStatus == "FOR_PAY")
+                {
+                    model.Status = 0;
+                }
 
                 model.CreateDate = item.OrderDate.Value.ConvertDateTimeToShamsi2();
                 model.Plan = item.Traffic + " گیگ " + item.Month + " ماهه";

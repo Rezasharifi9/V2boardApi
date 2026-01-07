@@ -250,6 +250,11 @@ $(function () {
                             return (
                                 "<span class='badge bg-label-success'>" + "انجام شده" + "</span>"
                             );
+                        }
+                        if ($State == 0) {
+                            return (
+                                "<span class='badge bg-label-primary'>" + "در صف پرداخت" + "</span>"
+                            );
                         } else {
                             return (
                                 "<span class='badge bg-label-warning'>" + "در صف رزرو" + "</span>"
