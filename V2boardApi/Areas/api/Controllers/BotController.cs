@@ -40,6 +40,7 @@ using StackExchange.Redis;
 using V2boardBot.Tools;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using System.Net;
 
 
 namespace V2boardApi.Areas.api.Controllers
@@ -773,6 +774,17 @@ namespace V2boardApi.Areas.api.Controllers
 
 
                                     var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+
+                                    if (BotSettings.IsNotActiveSell)
+                                    {
+                                        StringBuilder st2 = new StringBuilder();
+
+                                        st2.AppendLine("<b>" + "❌ به اطلاع می‌رسانیم فروش در حال حاضر به‌صورت موقت متوقف شده است. ❌" + "</b>");
+                                        st2.AppendLine("");
+
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st2.ToString(), parseMode: ParseMode.Html);
+
+                                    }
                                     return;
 
                                 }
@@ -801,133 +813,151 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #region بخش فشردن گزینه خرید سرویس
 
+
+
                                 else if (mess == "🛒 خرید اشتراک")
                                 {
-                                    await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
-
-                                    //await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectSubType", db, botName);
-
-                                    var AccName = "";
-                                    if (User.Tel_Username != null)
+                                    if (!BotSettings.IsNotActiveSell)
                                     {
-                                        var Link = await tbLinksRepository.FirstOrDefaultAsync(a => a.tbL_Email.Contains(User.Tel_Username) && a.tbTelegramUsers.Tel_UniqUserID == UserAcc.Tel_UniqUserID);
-                                        if (Link != null)
+                                        await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
+
+
+                                        //await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectSubType", db, botName);
+
+                                        var AccName = "";
+                                        if (User.Tel_Username != null)
                                         {
-                                            AccName = User.Tel_Username + Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                            var Link = await tbLinksRepository.FirstOrDefaultAsync(a => a.tbL_Email.Contains(User.Tel_Username) && a.tbTelegramUsers.Tel_UniqUserID == UserAcc.Tel_UniqUserID);
+                                            if (Link != null)
+                                            {
+                                                AccName = User.Tel_Username + Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                            }
+                                            else
+                                            {
+                                                AccName = User.Tel_Username + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                            }
+
                                         }
                                         else
                                         {
-                                            AccName = User.Tel_Username + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+
+                                            AccName = Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
                                         }
 
-                                    }
-                                    else
-                                    {
 
-                                        AccName = Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
-                                    }
+                                        var keyboard = Keyboards.GetPlansKeyboard(AccName, RepositoryLinkUserAndPlan);
 
+                                        StringBuilder str = new StringBuilder();
 
-                                    var keyboard = Keyboards.GetPlansKeyboard(AccName, RepositoryLinkUserAndPlan);
-
-                                    StringBuilder str = new StringBuilder();
-
-                                    if (BotSettings.Present_Discount != null)
-                                    {
-
-                                        str.Append("<b>" + "🚦 بسته مناسب خودتو انتخاب کن!\r\n " + "</b>");
-                                        str.AppendLine("");
-                                        str.AppendLine("");
-                                        str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n"); str.AppendLine("");
-                                        str.AppendLine("💥 با " + "%" + BotSettings.Present_Discount * 100 + " تخفیف ویژه 💥");
-                                        str.AppendLine("");
-                                        str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
-                                        var Counter = 1;
-                                        var ordered = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == false && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-                                        foreach (var item in ordered)
+                                        if (BotSettings.Present_Discount != null)
                                         {
-                                            str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " | " + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
 
-                                            Counter++;
-                                        }
-
-                                        str.AppendLine("");
-                                        str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
-                                        var ordered2 = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == true && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-
-                                        if (ordered2.Count() != 0)
-                                        {
+                                            str.Append("<b>" + "🚦 بسته مناسب خودتو انتخاب کن!\r\n " + "</b>");
                                             str.AppendLine("");
-                                            str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
-
-                                            foreach (var item in ordered2)
+                                            str.AppendLine("");
+                                            str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n"); str.AppendLine("");
+                                            str.AppendLine("💥 با " + "%" + BotSettings.Present_Discount * 100 + " تخفیف ویژه 💥");
+                                            str.AppendLine("");
+                                            str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
+                                            var Counter = 1;
+                                            var ordered = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == false && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+                                            foreach (var item in ordered)
                                             {
-                                                str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + "  نامحدود" + " | " + item.tbPlans.device_limit + " کاربره" + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+                                                str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " | " + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
 
                                                 Counter++;
                                             }
+
                                             str.AppendLine("");
+                                            str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
+                                            var ordered2 = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == true && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+
                                             if (ordered2.Count() != 0)
                                             {
-                                                str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
+                                                str.AppendLine("");
+                                                str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
+
+                                                foreach (var item in ordered2)
+                                                {
+                                                    str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + "  نامحدود" + " | " + item.tbPlans.device_limit + " کاربره" + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
+
+                                                    Counter++;
+                                                }
+                                                str.AppendLine("");
+                                                if (ordered2.Count() != 0)
+                                                {
+                                                    str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
+                                                }
                                             }
                                         }
-                                    }
-                                    else
-                                    {
-                                        str.Append("<b>" + "🚦 بسته مناسب خودتو انتخاب کن!\r\n " + "</b>");
-                                        str.AppendLine("");
-                                        str.AppendLine("");
-                                        str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n");
-                                        var Counter = 1;
-                                        str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
-                                        var ordered = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == false && s.L_SellPrice!=null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-                                        foreach (var item in ordered)
+                                        else
                                         {
-
-                                            str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " 👈 " + item.L_SellPrice.Value.ConvertToMony() + " تومان");
-
-                                            Counter++;
-                                        }
-
-                                        str.AppendLine("");
-                                        str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
-
-                                        var ordered2 = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == true && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-
-                                        if (ordered2.Count() != 0)
-                                        {
+                                            str.Append("<b>" + "🚦 بسته مناسب خودتو انتخاب کن!\r\n " + "</b>");
                                             str.AppendLine("");
-                                            str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
-                                            foreach (var item in ordered2)
+                                            str.AppendLine("");
+                                            str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n");
+                                            var Counter = 1;
+                                            str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
+                                            var ordered = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == false && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+                                            foreach (var item in ordered)
                                             {
 
-                                                str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + " نامحدود | " + item.tbPlans.device_limit + " کاربره" + " 👈 " + item.L_SellPrice.Value.ConvertToMony() + " تومان");
+                                                str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " 👈 " + item.L_SellPrice.Value.ConvertToMony() + " تومان");
 
                                                 Counter++;
                                             }
+
                                             str.AppendLine("");
+                                            str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
 
-                                            str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
+                                            var ordered2 = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == true && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
 
+                                            if (ordered2.Count() != 0)
+                                            {
+                                                str.AppendLine("");
+                                                str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
+                                                foreach (var item in ordered2)
+                                                {
+
+                                                    str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + " نامحدود | " + item.tbPlans.device_limit + " کاربره" + " 👈 " + item.L_SellPrice.Value.ConvertToMony() + " تومان");
+
+                                                    Counter++;
+                                                }
+                                                str.AppendLine("");
+
+                                                str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
+
+                                            }
                                         }
+
+
+                                        str.AppendLine("");
+
+                                        str.AppendLine("");
+                                        str.AppendLine("〰️〰️〰️〰️〰️");
+                                        str.AppendLine("🚀@" + BotSettings.Bot_ID);
+                                        //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
+
+
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
+
+                                        //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
+
+                                        return;
                                     }
+                                    else
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("💢 با عرض پوزش فروش ربات موقتا غیرفعال شده است .");
+                                        str.AppendLine("");
+                                        str.AppendLine("〰️〰️〰️〰️〰️");
+                                        str.AppendLine("🚀@" + BotSettings.Bot_ID);
+                                        //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
 
-                                    str.AppendLine("");
-
-                                    str.AppendLine("");
-                                    str.AppendLine("〰️〰️〰️〰️〰️");
-                                    str.AppendLine("🚀@" + BotSettings.Bot_ID);
-                                    //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
-
-
-                                    await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
-
-                                    //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
-
-                                    return;
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                    }
                                 }
 
                                 #endregion
@@ -1088,7 +1118,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
                                         }
-                                        
+
 
                                     }
 
@@ -1144,67 +1174,83 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (mess == "👜 کیف پول من")
                                 {
-                                    if (UserAcc != null)
+                                    if (!BotSettings.IsNotActiveSell)
+                                    {
+                                        if (UserAcc != null)
+                                        {
+                                            StringBuilder str = new StringBuilder();
+                                            str.AppendLine("");
+                                            str.AppendLine("<b>" + "📌 موجودی کیف پولت : " + UserAcc.Tel_Wallet.Value.ConvertToMony() + " تومان" + "</b>");
+                                            str.AppendLine("");
+
+                                            var learns = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_Type == "crypto").ToList();
+                                            foreach (var item in learns)
+                                            {
+                                                str.AppendLine(" <a href='" + item.ch_Link + "'>" + item.ch_Title + "</a>");
+                                            }
+                                            str.AppendLine("");
+                                            str.AppendLine("✅ واسه شارژ کیف پول، یکی از روش‌های زیر رو انتخاب کن 😊");
+                                            str.AppendLine("");
+                                            str.AppendLine("👥 اگه دوست داری اعتبار رایگان بگیری، کافیه چندتا از رفقاتو از بخش " + "<b>زیرمجموعه‌گیری</b>" + " دعوت کنی. هم خودت می‌بری، هم اونا! 🎁");
+                                            str.AppendLine("");
+                                            str.AppendLine("➖➖➖➖➖➖➖➖➖");
+                                            str.AppendLine("");
+                                            str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+
+
+                                            if (BotSettings.IsActiveCardToCard == true || BotSettings.IsActiveSendReceipt == true)
+                                            {
+                                                List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+                                                row1.Add(InlineKeyboardButton.WithCallbackData("💳 کارت به کارت", "InventoryIncreaseCard"));
+
+                                                inlineKeyboards.Add(row1);
+                                            }
+                                            if (BotSettings.PaymentGateWay_Status == true)
+                                            {
+                                                List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+                                                row2.Add(InlineKeyboardButton.WithCallbackData("🏧 درگاه پرداخت ( پیشنهادی )", "InventoryIncreaseGateWay"));
+                                                inlineKeyboards.Add(row2);
+                                            }
+                                            if (BotSettings.HubSmartPay_Status)
+                                            {
+                                                List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
+                                                row3.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی هاب اسمارت", "InventoryIncreaseRial"));
+                                                inlineKeyboards.Add(row3);
+
+                                            }
+                                            if (BotSettings.Aranex_Status)
+                                            {
+                                                List<InlineKeyboardButton> row4 = new List<InlineKeyboardButton>();
+                                                row4.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی آرانکس ", "InventoryIncreaseRialAranex"));
+                                                inlineKeyboards.Add(row4);
+
+                                            }
+
+                                            List<InlineKeyboardButton> row5 = new List<InlineKeyboardButton>();
+                                            row5.Add(InlineKeyboardButton.WithCallbackData("زیر مجموعه گیری 👬", "InventoryIncreaseSub"));
+                                            inlineKeyboards.Add(row5);
+
+                                            var inlineKeyboard = new InlineKeyboardMarkup(inlineKeyboards);
+
+                                            await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_Way_To_Increase", db, botName);
+
+                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboard, disableWebPagePreview: true, replyToMessageId: message.MessageId);
+
+                                        }
+                                    }
+                                    else
                                     {
                                         StringBuilder str = new StringBuilder();
+                                        str.AppendLine("💢 با عرض پوزش فروش ربات موقتا غیرفعال شده است .");
                                         str.AppendLine("");
-                                        str.AppendLine("<b>" + "📌 موجودی کیف پولت : " + UserAcc.Tel_Wallet.Value.ConvertToMony() + " تومان" + "</b>");
-                                        str.AppendLine("");
-
-                                        var learns = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_Type == "crypto").ToList();
-                                        foreach (var item in learns)
-                                        {
-                                            str.AppendLine(" <a href='" + item.ch_Link + "'>" + item.ch_Title + "</a>");
-                                        }
-                                        str.AppendLine("");
-                                        str.AppendLine("✅ واسه شارژ کیف پول، یکی از روش‌های زیر رو انتخاب کن 😊");
-                                        str.AppendLine("");
-                                        str.AppendLine("👥 اگه دوست داری اعتبار رایگان بگیری، کافیه چندتا از رفقاتو از بخش " + "<b>زیرمجموعه‌گیری</b>" + " دعوت کنی. هم خودت می‌بری، هم اونا! 🎁");
-                                        str.AppendLine("");
-                                        str.AppendLine("➖➖➖➖➖➖➖➖➖");
-                                        str.AppendLine("");
-                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                        List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+                                        str.AppendLine("〰️〰️〰️〰️〰️");
+                                        str.AppendLine("🚀@" + BotSettings.Bot_ID);
+                                        //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
 
-                                        if (BotSettings.IsActiveCardToCard == true || BotSettings.IsActiveSendReceipt == true)
-                                        {
-                                            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
-                                            row1.Add(InlineKeyboardButton.WithCallbackData("💳 کارت به کارت", "InventoryIncreaseCard"));
-
-                                            inlineKeyboards.Add(row1);
-                                        }
-                                        if (BotSettings.PaymentGateWay_Status == true)
-                                        {
-                                            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-                                            row2.Add(InlineKeyboardButton.WithCallbackData("🏧 درگاه پرداخت ( پیشنهادی )", "InventoryIncreaseGateWay"));
-                                            inlineKeyboards.Add(row2);
-                                        }
-                                        if (BotSettings.HubSmartPay_Status)
-                                        {
-                                            List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
-                                            row3.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی هاب اسمارت", "InventoryIncreaseRial"));
-                                            inlineKeyboards.Add(row3);
-
-                                        }
-                                        if (BotSettings.Aranex_Status)
-                                        {
-                                            List<InlineKeyboardButton> row4 = new List<InlineKeyboardButton>();
-                                            row4.Add(InlineKeyboardButton.WithCallbackData("🏧 صرافی آرانکس ", "InventoryIncreaseRialAranex"));
-                                            inlineKeyboards.Add(row4);
-
-                                        }
-
-                                        List<InlineKeyboardButton> row5 = new List<InlineKeyboardButton>();
-                                        row5.Add(InlineKeyboardButton.WithCallbackData("زیر مجموعه گیری 👬", "InventoryIncreaseSub"));
-                                        inlineKeyboards.Add(row5);
-
-                                        var inlineKeyboard = new InlineKeyboardMarkup(inlineKeyboards);
-
-                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_Way_To_Increase", db, botName);
-
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboard, disableWebPagePreview: true, replyToMessageId: message.MessageId);
-
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                        return;
                                     }
                                 }
 
@@ -1726,7 +1772,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
 
 
-                                            foreach(var item in User.tbOrders)
+                                            foreach (var item in User.tbOrders)
                                             {
                                                 item.AccountName = Link.tbL_Email;
                                             }
@@ -2332,8 +2378,8 @@ namespace V2boardApi.Areas.api.Controllers
                                             inlineKeyboards.Add(row3);
 
                                             List<InlineKeyboardButton> row4 = new List<InlineKeyboardButton>();
-                                            row4.Add(InlineKeyboardButton.WithCallbackData("تحلیل اشتراک توسط هوش مصنوعی 🗑", "Analysis%" + Link.tbL_Email));
-                                            inlineKeyboards.Add(row3);
+                                            row4.Add(InlineKeyboardButton.WithCallbackData("دریافت کانفیگ ها 🔗", "GetConfig%" + Link.tbL_Token));
+                                            inlineKeyboards.Add(row4);
 
                                             //List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
                                             //row3.Add(InlineKeyboardButton.WithCallbackData("تمدید خودکار ⏳", "AutoRenew%" + Link.tb_RandomEmail));
@@ -2460,8 +2506,75 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
-                                #region نمایش ریز مصرف کاربر
+                                #region نمایش کانفیگ
+                                if (callback.Length == 2)
+                                {
+                                    if (callback[0] == "GetConfig")
+                                    {
+                                        HttpClient client = new HttpClient();
+                                        client.BaseAddress = new Uri(Server.ServerAddress + "/api/v1/");
+                                        client.DefaultRequestHeaders.UserAgent.TryParseAdd("Happ/3.8.1");
+                                        var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + callback[1]);
+                                        if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                                        {
+                                            var result = await res.Result.Content.ReadAsStringAsync();
+                                            var Base64 = Utility.Base64Decode(result);
+                                            var lines = Base64
+    .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+    .Select(x => x.Trim())
+    .Where(x => x.Length > 0)
+    .ToArray();
 
+                                            await bot.Client.SendTextMessageAsync(
+                                                callbackQuery.From.Id,
+                                                "🔷 ————- لیست سرور ها ————- 🔷",
+                                                parseMode: ParseMode.Html
+                                            );
+
+                                            var normal = lines.Where(x => !x.Contains("EM")).ToList(); // بهتره شرط دقیق‌تر باشه
+                                            const int chunkSize = 5;
+
+                                            for (int offset = 0; offset < normal.Count; offset += chunkSize)
+                                            {
+                                                var chunk = normal.Skip(offset).Take(chunkSize);
+                                                var finalText = string.Join("\n", chunk);
+
+                                                var html = $"<pre><code>{WebUtility.HtmlEncode(finalText)}</code></pre>";
+
+                                                await bot.Client.SendTextMessageAsync(
+                                                    callbackQuery.From.Id,
+                                                    html,
+                                                    parseMode: ParseMode.Html
+                                                );
+                                            }
+
+                                            var emList = lines.Where(x => x.Contains("EM")).ToList(); // بهتره شرط دقیق‌تر باشه
+                                            if (emList.Count > 0)
+                                            {
+                                                await bot.Client.SendTextMessageAsync(
+                                                    callbackQuery.From.Id,
+                                                    "🔻 ————- این کانفیگ ها در شرایط اضطراری و درصورت برقراری نبودن سایر سرور ها استفاده شود ————- 🔻",
+                                                    parseMode: ParseMode.Html
+                                                );
+
+                                                foreach (var item in emList)
+                                                {
+                                                    await bot.Client.SendTextMessageAsync(
+                                                        callbackQuery.From.Id,
+                                                        $"<pre><code>{WebUtility.HtmlEncode(item)}</code></pre>",
+                                                        parseMode: ParseMode.Html
+                                                    );
+                                                }
+                                            }
+
+                                            await bot.Client.SendTextMessageAsync(
+                                                callbackQuery.From.Id,
+                                                "👆👆 لطفا تمامی سرور ها رو تک به تک به گوشیتون اضافه کنید 💢",
+                                                parseMode: ParseMode.Html
+                                            );
+                                        }
+                                    }
+                                }
 
                                 if (callback.Length == 2)
                                 {
@@ -2947,9 +3060,9 @@ namespace V2boardApi.Areas.api.Controllers
                                         else
                                         {
                                             order.OrderType = "جدید";
-                                            
+
                                         }
-                                        
+
 
                                         tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
                                         tbDeposit.dw_Price = fullPrice;
@@ -2973,7 +3086,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (callback[0] == "AccpetWallet")
                                     {
 
-                                        var LinkPlanId = Convert.ToInt32(callback[1]);
+                                        var LinkPlanId = System.Convert.ToInt32(callback[1]);
                                         var AccName = callback[2];
                                         var Plan = await RepositoryLinkUserAndPlan.FirstOrDefaultAsync(s => s.Link_PU_ID == LinkPlanId);
 
@@ -3327,7 +3440,6 @@ namespace V2boardApi.Areas.api.Controllers
                                                 //await botClient.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد", replyMarkup: keys);
 
                                                 await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "✅ اکانت شما با موفقیت ایجاد شد", true);
-
 
                                                 await bot.Client.SendPhotoAsync(
                                                   chatId: UserAcc.Tel_UniqUserID,

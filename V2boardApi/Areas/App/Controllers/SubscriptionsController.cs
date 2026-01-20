@@ -409,6 +409,13 @@ namespace V2boardApi.Areas.App.Controllers
                     userSubname = userSubname.ToLower();
                     if (userPlan != 0)
                     {
+
+                        var userAdmin = usersRepository.table.Where(p => p.Role == 1 && p.Status == true && p.Username != User.Identity.Name && p.IsNotActiveSell).Any();
+                        if (userAdmin)
+                        {
+                            return MessageBox.Warning("هشدار", "متاسفانه فروش موقتا غیرفعال شده است");
+                        }
+
                         var user = usersRepository.table.Where(p => p.Username == User.Identity.Name && p.Status == true).FirstOrDefault();
                         if (user != null)
                         {

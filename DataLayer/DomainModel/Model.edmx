@@ -80,6 +80,7 @@
           <Property Name="HubSmartPay_Status" Type="bit" Nullable="false" />
           <Property Name="NowPayment_Status" Type="bit" />
           <Property Name="IsActiveCard" Type="bit" Nullable="false" />
+          <Property Name="IsNotActiveSell" Type="bit" Nullable="false" />
           <Property Name="Aranex_Status" Type="bit" Nullable="false" />
           <Property Name="TronWallet" Type="nvarchar" MaxLength="150" />
           <Property Name="PaymentGateWay_Status" Type="bit" Nullable="false" />
@@ -340,6 +341,7 @@
           <Property Name="Profile_Filename" Type="varchar" MaxLength="250" />
           <Property Name="GeneralAgent" Type="bit" Nullable="false" />
           <Property Name="Register_Date" Type="datetime" />
+          <Property Name="IsNotActiveSell" Type="bit" Nullable="false" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
@@ -1126,6 +1128,7 @@
           <Property Name="HubSmartPay_Status" Type="Boolean" Nullable="false" />
           <Property Name="NowPayment_Status" Type="Boolean" />
           <Property Name="IsActiveCard" Type="Boolean" Nullable="false" />
+          <Property Name="IsNotActiveSell" Type="Boolean" Nullable="false" />
           <Property Name="Aranex_Status" Type="Boolean" Nullable="false" />
           <Property Name="TronWallet" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="PaymentGateWay_Status" Type="Boolean" Nullable="false" />
@@ -1426,6 +1429,7 @@
           <Property Name="Profile_Filename" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
           <Property Name="GeneralAgent" Type="Boolean" Nullable="false" />
           <Property Name="Register_Date" Type="DateTime" Precision="3" />
+          <Property Name="IsNotActiveSell" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="SafeNetDBModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="SafeNetDBModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="SafeNetDBModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
@@ -1903,6 +1907,7 @@
                 <ScalarProperty Name="PaymentGateWay_Status" ColumnName="PaymentGateWay_Status" />
                 <ScalarProperty Name="TronWallet" ColumnName="TronWallet" />
                 <ScalarProperty Name="Aranex_Status" ColumnName="Aranex_Status" />
+                <ScalarProperty Name="IsNotActiveSell" ColumnName="IsNotActiveSell" />
                 <ScalarProperty Name="IsActiveCard" ColumnName="IsActiveCard" />
                 <ScalarProperty Name="NowPayment_Status" ColumnName="NowPayment_Status" />
                 <ScalarProperty Name="HubSmartPay_Status" ColumnName="HubSmartPay_Status" />
@@ -2171,6 +2176,7 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="IsNotActiveSell" ColumnName="IsNotActiveSell" />
                 <ScalarProperty Name="Register_Date" ColumnName="Register_Date" />
                 <ScalarProperty Name="GeneralAgent" ColumnName="GeneralAgent" />
                 <ScalarProperty Name="Profile_Filename" ColumnName="Profile_Filename" />

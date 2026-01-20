@@ -42,6 +42,7 @@ using System.IO.Packaging;
 using Org.BouncyCastle.Utilities;
 using Newtonsoft.Json.Linq;
 using StackExchange.Redis;
+using System.Security.Cryptography;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -783,6 +784,12 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpGet]
         public ActionResult Login()
         {
+            var isTrue = RepositoryUser.table.Where(p => p.IsNotActiveSell ==true && p.Role == 1 && p.Status == true).Any();
+            if (isTrue)
+            {
+                ViewBag.IsNotActiveSell = true;
+                return View();
+            }
             return View();
         }
         /// <summary>
