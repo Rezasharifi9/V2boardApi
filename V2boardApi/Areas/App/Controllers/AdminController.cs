@@ -65,7 +65,6 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbServerGroups> serverGroup_Repo { get; set; }
         private Repository<tbBankCardNumbers> repositoryCard { get; set; }
         private Repository<tbOrders> repositoryOrders { get; set; }
-        private Repository<tbNotifications> repositoryNotifications { get; set; }
         private System.Timers.Timer Timer { get; set; }
         public AdminController()
         {
@@ -82,7 +81,6 @@ namespace V2boardApi.Areas.App.Controllers
             serverGroup_Repo = new Repository<tbServerGroups>(db);
             repositoryCard = new Repository<tbBankCardNumbers>(db);
             repositoryOrders = new Repository<tbOrders>(db);
-            repositoryNotifications = new Repository<tbNotifications>(db);
 
 
         }
@@ -792,16 +790,6 @@ namespace V2boardApi.Areas.App.Controllers
                 ViewBag.IsNotActiveSell = true;
                 return View();
             }
-            else
-            {
-                var text = repositoryNotifications.Where(a=> a.tbNoti_EndDate>= DateTime.Now).FirstOrDefault();
-                if (text != null)
-                {
-                    ViewBag.message = text.tbNoti_Text;
-                }
-            }
-
-
             return View();
         }
         /// <summary>

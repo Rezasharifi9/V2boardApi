@@ -114,7 +114,7 @@ namespace V2boardApi.Areas.App.Controllers
                 if (factor != null)
                 {
 
-                    var baseUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}";
+                    var baseUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}/";
 
                     using (var client = new HttpClient())
                     {
