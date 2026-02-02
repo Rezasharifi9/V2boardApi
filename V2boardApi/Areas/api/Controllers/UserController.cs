@@ -150,13 +150,41 @@ namespace V2boardApi.Areas.api.Controllers
 
 
 
-                        var date2 = DateTime.Now.AddHours(-24);
-                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2 && p.dw_PayMethod == "Card");
+                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_PayMethod == "Card");
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
 
                         foreach (var item in tbDepositLog)
                         {
+                            if (botSetting != null)
+                            {
+
+                                if (botSetting.InvitePercent != null)
+                                {
+                                    if (item.tbTelegramUsers.Tel_Parent_ID != null)
+                                    {
+                                        var parent = item.tbTelegramUsers.tbTelegramUsers2;
+                                        parent.Tel_Wallet += Convert.ToInt32((item.dw_Price / 10) * botSetting.InvitePercent.Value);
+
+
+                                        await RepositoryDepositWallet.SaveChangesAsync();
+
+                                        StringBuilder str1 = new StringBuilder();
+                                        str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("🚀 @" + botSetting.Bot_ID);
+
+                                        await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                    }
+                                }
+
+
+
+
+                            }
+
                             item.dw_Status = "FINISH";
                             if (item.FK_Order_ID != null)
                             {
@@ -421,7 +449,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
                                 await RepositoryDepositWallet.SaveChangesAsync();
-
+                                transaction.Commit();
                                 var keyboard = Keyboards.GetHomeButton();
 
                                 await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
@@ -430,42 +458,15 @@ namespace V2boardApi.Areas.api.Controllers
                                 await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
 
                                 
+                                return Ok();
                             }
 
                             
 
-                            if (botSetting != null)
-                            {
-                                
-                                if (botSetting.InvitePercent != null)
-                                {
-                                    if (item.tbTelegramUsers.Tel_Parent_ID != null)
-                                    {
-                                        var parent = item.tbTelegramUsers.tbTelegramUsers2;
-                                        parent.Tel_Wallet += Convert.ToInt32((item.dw_Price / 10) * botSetting.InvitePercent.Value);
-
-                                        
-                                        await RepositoryDepositWallet.SaveChangesAsync();
-
-                                        StringBuilder str1 = new StringBuilder();
-                                        str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
-                                        str1.AppendLine("");
-                                        str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
-                                        str1.AppendLine("");
-                                        str1.AppendLine("🚀 @" + botSetting.Bot_ID);
-
-                                        await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
-                                    }
-                                }
-
-                                transaction.Commit();
-
-                                logger.Info("فاکتور به مبلغ " + pr.ConvertToMony() + " با موفقیت پرداخت شد");
-                                
-                            }
+                            
 
                             
-                            return Ok();
+                            
                         }
                         return Content(HttpStatusCode.NotFound,"تراکنشی یافت نشد");
                     }
