@@ -43,10 +43,10 @@
 </head>
 
 <body>
-    
+
     <!-- Content -->
     <div class="container-xxl">
-        
+
         <div class="authentication-wrapper authentication-basic container-p-y">
 
             <div class="authentication-inner py-4">
@@ -54,6 +54,12 @@
                 {
                     <div class="alert alert-danger" role="alert">
                         متأسفانه فروش اشتراک به‌صورت موقت متوقف شده است.
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(ViewBag.message))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @ViewBag.message
                     </div>
                 }
                 <!-- Login -->
@@ -70,8 +76,8 @@
                                 <div class="d-flex justify-content-between">
                                     <label class="form-label" for="userPassword">رمز عبور</label>
                                     @*<a href="auth-forgot-password-basic.html">
-                                <small>فراموش کرده‌اید؟</small>
-                            </a>*@
+                                            <small>فراموش کرده‌اید؟</small>
+                                        </a>*@
                                 </div>
                                 <div class="input-group input-group-merge">
                                     <input aria-describedby="password" class="form-control" id="userPassword" name="userPassword" placeholder="············" type="password" />

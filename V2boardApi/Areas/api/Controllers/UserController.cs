@@ -149,14 +149,42 @@ namespace V2boardApi.Areas.api.Controllers
                         int pr = int.Parse(SMSMessageText, NumberStyles.Currency);
 
 
-
-                        var date2 = DateTime.Now.AddHours(-24);
-                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_CreateDatetime >= date2 && p.dw_PayMethod == "Card");
+                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Status == "FOR_PAY" && p.dw_PayMethod == "Card");
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
 
                         foreach (var item in tbDepositLog)
                         {
+
+                            if (botSetting != null)
+                            {
+
+                                if (botSetting.InvitePercent != null)
+                                {
+                                    if (item.tbTelegramUsers.Tel_Parent_ID != null)
+                                    {
+                                        var parent = item.tbTelegramUsers.tbTelegramUsers2;
+                                        parent.Tel_Wallet += Convert.ToInt32((item.dw_Price / 10) * botSetting.InvitePercent.Value);
+
+
+                                        await RepositoryDepositWallet.SaveChangesAsync();
+
+                                        StringBuilder str1 = new StringBuilder();
+                                        str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
+                                        str1.AppendLine("");
+                                        str1.AppendLine("🚀 @" + botSetting.Bot_ID);
+
+                                        await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                    }
+                                }
+
+
+                                logger.Info("فاکتور به مبلغ " + pr.ConvertToMony() + " با موفقیت پرداخت شد");
+
+                            }
+
                             item.dw_Status = "FINISH";
                             if (item.FK_Order_ID != null)
                             {
@@ -373,6 +401,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     appInfo.Url = SubLink;
                                     inlineKeyboard.WebApp = appInfo;
                                     row2.Add(inlineKeyboard);
+                                    row2.Add(InlineKeyboardButton.WithCallbackData("دریافت کانفیگ ها 🔗", "GetConfig%" + token));
                                     inlineKeyboards.Add(row2);
                                     var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
@@ -432,39 +461,8 @@ namespace V2boardApi.Areas.api.Controllers
                                 
                             }
 
-                            
+                            transaction.Commit();
 
-                            if (botSetting != null)
-                            {
-                                
-                                if (botSetting.InvitePercent != null)
-                                {
-                                    if (item.tbTelegramUsers.Tel_Parent_ID != null)
-                                    {
-                                        var parent = item.tbTelegramUsers.tbTelegramUsers2;
-                                        parent.Tel_Wallet += Convert.ToInt32((item.dw_Price / 10) * botSetting.InvitePercent.Value);
-
-                                        
-                                        await RepositoryDepositWallet.SaveChangesAsync();
-
-                                        StringBuilder str1 = new StringBuilder();
-                                        str1.AppendLine("☺️ کاربر گرامی، به دلیل خرید دوستتان، ‌" + botSetting.InvitePercent * 100 + " درصد از مبلغ خرید ایشان به کیف پول شما اضافه شد. از حمایت شما سپاسگزاریم 🙏🏻");
-                                        str1.AppendLine("");
-                                        str1.AppendLine("💰 موجودی فعلی کیف پول شما: " + parent.Tel_Wallet.Value.ConvertToMony() + " تومان");
-                                        str1.AppendLine("");
-                                        str1.AppendLine("🚀 @" + botSetting.Bot_ID);
-
-                                        await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
-                                    }
-                                }
-
-                                transaction.Commit();
-
-                                logger.Info("فاکتور به مبلغ " + pr.ConvertToMony() + " با موفقیت پرداخت شد");
-                                
-                            }
-
-                            
                             return Ok();
                         }
                         return Content(HttpStatusCode.NotFound,"تراکنشی یافت نشد");
@@ -716,8 +714,7 @@ namespace V2boardApi.Areas.api.Controllers
         [Authorize]
         public async Task<IHttpActionResult> GetFactors()
         {
-            var Date = DateTime.Now.AddDays(-1);
-            var Factors = await db.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= Date && p.dw_Status == "FOR_PAY").OrderByDescending(p => p.dw_CreateDatetime).ToListAsync();
+            var Factors = await db.tbDepositWallet_Log.Where(p => p.dw_Status == "FOR_PAY").OrderByDescending(p => p.dw_CreateDatetime).ToListAsync();
             List<GetFactorsViewModel> data = new List<GetFactorsViewModel>();
             foreach (var item in Factors)
             {
@@ -731,9 +728,6 @@ namespace V2boardApi.Areas.api.Controllers
         }
 
         #endregion
-
-
-
 
     }
 

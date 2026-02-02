@@ -162,220 +162,13 @@ namespace V2boardApi.Areas.api.Controllers
                             var mess = message.Text;
 
 
-                            if (update.Message.Type == MessageType.Photo || update.Message.Type == MessageType.Document)
-                            {
-                                var Tel_Username = update.Message.From.Username;
-                                if (Tel_Username != null)
-                                {
-                                    Tel_Username = Tel_Username.ToLower();
-                                    var UserAgent = await tbUsersRepository.FirstOrDefaultAsync(s => s.TelegramID == Tel_Username && (s.Role == 2 || s.Role == 3));
-                                    if (UserAgent != null)
-                                    {
-                                        var RepoFactor = new Repository<tbUserFactors>();
-                                        if (update.Message.Caption != null)
-                                        {
-                                            var Price = update.Message.Caption;
-                                            try
-                                            {
-                                                int pr = 0;
-                                                try
-                                                {
-                                                    pr = int.Parse(Price, NumberStyles.Currency);
-                                                }
-                                                catch
-                                                {
-                                                    StringBuilder str = new StringBuilder();
-                                                    str.AppendLine("❌ نماینده گرامی لطفا مبلغ را صحیح وارد کنید و عدد باید به انگلیسی باشد مثال : برای 500 هزارتومن عدد 500 را بفرستید");
-                                                    str.AppendLine("");
-                                                    str.AppendLine("");
-                                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-
-                                                    await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html);
-                                                    return;
-                                                }
-                                                pr = pr * 1000;
-                                                var fileId = message.Photo[message.Photo.Length - 1].FileId; // Get the highest quality photo
-                                                var filed = await bot.Client.GetFileAsync(fileId);
-
-                                                var file = InputFile.FromFileId(fileId);
-
-                                                var fileSave = await bot.Client.GetFileAsync(fileId);
-
-                                                var fileUrl = $"https://api.telegram.org/file/bot{bot.Token}/{fileSave.FilePath}";
-                                                var httpClient = new HttpClient();
-                                                var response = await httpClient.GetAsync(fileUrl);
-
-
-                                                var DateAgo = DateTime.Now.AddHours(-3);
-                                                var Factor = RepoFactor.Where(s => s.tbUf_Value == pr && s.tbUf_Status == null && s.tbUf_CreateTime >= DateAgo).OrderByDescending(s => s.tbUf_CreateTime.Value).FirstOrDefault();
-                                                if (Factor != null)
-                                                {
-
-                                                    StringBuilder str2 = new StringBuilder();
-                                                    str2.AppendLine("🧑‍💻 مدیر عزیز");
-                                                    str2.AppendLine("");
-                                                    str2.AppendLine("🤵 نماینده با نام کاربری : " + UserAgent.Username);
-                                                    str2.AppendLine("");
-                                                    Factor.tbUf_Status = 2;
-                                                    Factor.FK_User_ID = UserAgent.User_ID;
-
-                                                    if (response.IsSuccessStatusCode)
-                                                    {
-                                                        var imageData = await response.Content.ReadAsByteArrayAsync();
-
-                                                        var NewGuid = Guid.NewGuid();
-                                                        var fileName = $"{NewGuid}.jpg";
-                                                        var savePath = Path.Combine(HttpContext.Current.Server.MapPath("~/assets/img/UserAgentFactorImages"), fileName);
-
-
-                                                        System.IO.File.WriteAllBytes(savePath, imageData);
-
-
-                                                        Factor.tbUf_FileName = fileName;
-
-                                                    }
-
-                                                    await RepoFactor.SaveChangesAsync();
-
-
-                                                    var PayedFactores = await RepoFactor.WhereAsync(s => s.tbUf_Status == 2 && s.FK_User_ID == UserAgent.User_ID);
-
-                                                    var SumPayFactores = PayedFactores.Sum(s => s.tbUf_Value);
-                                                    var SumPay2Factor = SumPayFactores;
-                                                    var res = SumPayFactores * 0.02;
-                                                    SumPay2Factor += (int)res;
-                                                    StringBuilder str = new StringBuilder();
-                                                    str.AppendLine("✅ نماینده گرامی رسید شما با موفقیت از سمت بانک تائید شد");
-                                                    str.AppendLine("");
-                                                    if (SumPay2Factor >= UserAgent.Wallet)
-                                                    {
-                                                        var Remainder = SumPayFactores - UserAgent.Wallet;
-
-                                                        if (SumPayFactores >= UserAgent.Wallet)
-                                                        {
-                                                            UserAgent.Wallet = 0;
-                                                            if (Remainder > 0)
-                                                            {
-                                                                UserAgent.Wallet -= (int)Remainder;
-                                                                str.AppendLine("♨️ هزینه مازاد پرداختی به حالت بستانکار در کیف پول شما لحاظ شد");
-                                                                str2.AppendLine("کیف پول اش صفرشد و به حالت بستنکار در آمد");
-                                                            }
-                                                            else
-                                                            {
-                                                                str.AppendLine("♨️ بدهی شما صفر شد");
-                                                                str2.AppendLine("بدهی نماینده صفرشد");
-                                                            }
-                                                            Factor.tbUf_Description = "آخرین فاکتور ثبت شده";
-                                                        }
-                                                        else
-                                                        {
-                                                            str.AppendLine("♨️ رسید های شما از بدهی شما کسر و 2 درصد بدهی در کیف پول شما درج گردید");
-                                                            str2.AppendLine("کیف پول اش به مقدار 2 درصد بدهی درج گردید و مابقی کسر گردید");
-                                                            UserAgent.Wallet = Math.Abs((int)Remainder);
-                                                        }
-
-
-                                                        foreach (var item in PayedFactores)
-                                                        {
-                                                            item.tbUf_Status = 3;
-                                                        }
-
-                                                    }
-                                                    else
-                                                    {
-                                                        str.AppendLine("♨️ رسید شما در سیستم ذخیره می شود بعد پرداخت کامل از بدهی شما کسر خواهد شد");
-                                                        str2.AppendLine("");
-                                                        str2.AppendLine("واریزی اش در سیستم ثبت گردید");
-                                                        str2.AppendLine("");
-                                                        str2.AppendLine("💸 مبلغ : " + Factor.tbUf_Value.Value.ConvertToMony() + " تومان");
-                                                        str2.AppendLine("🕐 تاریخ :" + DateTime.Now.ConvertDateTimeToShamsi2());
-                                                    }
-
-
-                                                    await tbUsersRepository.SaveChangesAsync();
-                                                    await RepoFactor.SaveChangesAsync();
-
-                                                    str.AppendLine("");
-                                                    str.AppendLine("<b>" + "⚠️ نکته : حتما رسید را نهایتا تا 3 ساعت بعد از واریز برای ربات ارسال کنید" + "</b>");
-                                                    str.AppendLine("");
-                                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                                    await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html);
-
-                                                    var admin = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == BotSettings.AdminBot_ID.ToString()).FirstOrDefault();
-                                                    if (admin != null)
-                                                    {
-                                                        TelegramBotClient botClient = new TelegramBotClient(BotSettings.Bot_Token);
-                                                        await botClient.SendTextMessageAsync(admin.Tel_UniqUserID, str2.ToString());
-                                                    }
-
-                                                    return;
-
-                                                }
-                                                else
-                                                {
-                                                    tbUserFactors factor = new tbUserFactors();
-                                                    factor.tbUf_CreateTime = DateTime.Now;
-                                                    factor.tbUf_Value = pr;
-                                                    factor.tbUf_Status = 1;
-
-                                                    if (response.IsSuccessStatusCode)
-                                                    {
-                                                        var imageData = await response.Content.ReadAsByteArrayAsync();
-
-                                                        var NewGuid = Guid.NewGuid();
-                                                        var fileName = $"{NewGuid}.jpg";
-                                                        var savePath = Path.Combine(HttpContext.Current.Server.MapPath("~/assets/img/UserAgentFactorImages"), fileName);
-
-
-                                                        System.IO.File.WriteAllBytes(savePath, imageData);
-
-
-                                                        factor.tbUf_FileName = fileName;
-
-                                                    }
-
-                                                    UserAgent.tbUserFactors.Add(factor);
-                                                    await tbUsersRepository.SaveChangesAsync();
-
-                                                    StringBuilder str = new StringBuilder();
-                                                    str.AppendLine("✅ نماینده گرامی رسید شما موفقیت ثبت گردید . حتما بعد از 10 دقیقه چک کنید در بخش پرداخت ها در پنل که پرداختیتون به حالت پرداخت شده در آمده باشد");
-                                                    str.AppendLine("");
-                                                    str.AppendLine("");
-                                                    str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-
-                                                    await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html);
-
-                                                    return;
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                logger.Error(ex, "خطا در ثبت رسید از طریق ربات");
-
-                                            }
-                                        }
-                                        else
-                                        {
-                                            StringBuilder str = new StringBuilder();
-                                            str.AppendLine("❌ نماینده گرامی لطفا تصویر را با مبلغ بفرستید . به صورت مثال برای 500 هزارتومن فقط عدد 500 را در کپشن عکس بفرستید");
-                                            str.AppendLine("");
-                                            str.AppendLine("");
-                                            str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-
-                                            await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html);
-                                            return;
-                                        }
-                                    }
-                                }
-                            }
-
                             if ((bool)BotSettings.IsActiveSendReceipt && BotSettings.AdminBot_ID != chatid)
                             {
                                 #region ارسال رسید تراکنش برای ادمین
 
                                 if (update.Message.Type == MessageType.Photo)
                                 {
-                                    var Deposit = await tbDepositLogRepo.WhereAsync(p => p.dw_Status == "FOR_PAY");
+                                    var Deposit = await tbDepositLogRepo.WhereAsync(p => p.dw_Status == "FOR_PAY" && p.tbTelegramUsers.Tel_UniqUserID == chatid.ToString());
 
                                     if (Deposit.Count == 0)
                                     {
@@ -1376,7 +1169,15 @@ namespace V2boardApi.Areas.api.Controllers
                                             tbTelegram.Tel_GetedTestAccount = true;
                                         }
                                         tbTelegramUserRepository.Save();
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+
+                                        List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+
+                                        List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+                                        row1.Add(InlineKeyboardButton.WithCallbackData("دریافت کانفیگ ها 🔗", "GetConfig%" + token));
+                                        inlineKeyboards.Add(row1);
+
+                                        var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
+                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
                                     }
                                     else
                                     {
@@ -1865,8 +1666,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         if (btn == "accept")
                                         {
-                                            var NowDate = DateTime.Now.AddHours(-1);
-                                            var Deposit = await tbDepositLogRepo.WhereAsync(p => p.dw_CreateDatetime >= NowDate && p.dw_Status == "FOR_PAY");
+                                            var Deposit = await tbDepositLogRepo.WhereAsync(p => p.dw_Status == "FOR_PAY" && p.tbTelegramUsers.Tel_UniqUserID == id);
 
                                             int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
                                             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
@@ -1901,27 +1701,29 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                         else if (btn == "Faccept")
                                         {
+
                                             var Deposit = await tbDepositLogRepo.FirstOrDefaultAsync(p => p.dw_ID.ToString() == id && p.dw_Status == "FOR_PAY");
                                             if (Deposit != null)
                                             {
-                                                Deposit.dw_Status = "FINISH";
-                                                Deposit.tbTelegramUsers.Tel_Wallet += Deposit.dw_Price / 10;
-                                                StringBuilder str = new StringBuilder();
-                                                str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد!");
-                                                str.AppendLine("");
-                                                str.AppendLine("💰 موجودی فعلی کیف پول شما: " + Deposit.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
-                                                str.AppendLine("");
-                                                str.AppendLine("🔔 حالا می‌توانید برای خرید اشتراک جدید یا تمدید اشتراک اقدام کنید.");
-                                                str.AppendLine("");
-                                                str.AppendLine("〰️〰️〰️〰️〰️");
-                                                str.AppendLine("🚀 @" + Deposit.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0].Bot_ID);
-                                                var keyboard = Keyboards.GetHomeButton();
+                                                var baseUrl = Request.RequestUri.Scheme + "://" + Request.RequestUri.Authority;
 
-                                                await RealUser.SetUserStep(Deposit.tbTelegramUsers.Tel_UniqUserID, "Start", db, Deposit.tbTelegramUsers.tbUsers.Username);
-                                                await tbDepositLogRepo.SaveChangesAsync();
-                                                await bot.Client.SendTextMessageAsync(Deposit.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-                                                await bot.Client.SendTextMessageAsync(BotSettings.AdminBot_ID, "✅ تراکنش با موفقیت تایید شد");
-                                                return;
+                                                using (var client = new HttpClient())
+                                                {
+                                                    client.BaseAddress = new Uri(baseUrl);
+                                                    var response = await client.GetAsync("/User/CheckOrder?SMSMessageText=" + Deposit.dw_Price + "&Mobile=" + Deposit.tbTelegramUsers.tbUsers.PhoneNumber);
+                                                    if (response.IsSuccessStatusCode)
+                                                    {
+                                                        StringBuilder str = new StringBuilder();
+                                                        str.AppendLine("✅ تراکنش با موفقیت تایید شد");
+                                                        await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html);
+                                                    }
+                                                    else
+                                                    {
+                                                        StringBuilder str = new StringBuilder();
+                                                        str.AppendLine("❌ تایید تراکنش با خطا مواجه شد");
+                                                        await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html);
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -3425,7 +3227,13 @@ namespace V2boardApi.Areas.api.Controllers
                                                 appInfo.Url = SubLink;
                                                 inlineKeyboard.WebApp = appInfo;
                                                 row2.Add(inlineKeyboard);
+                                                row2.Add(InlineKeyboardButton.WithCallbackData("دریافت کانفیگ ها 🔗", "GetConfig%" + token));
+
                                                 inlineKeyboards.Add(row2);
+
+                                                InlineKeyboardButton inlineKeyboard1 = new InlineKeyboardButton("🔗 اتصال به اشتراک");
+
+
                                                 var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
                                                 tbOrdersRepository.Insert(Order);
