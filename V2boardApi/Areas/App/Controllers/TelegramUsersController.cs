@@ -120,7 +120,7 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 else if (item.OrderStatus == "FOR_PAY")
                 {
-                    model.Status = 0;
+                    model.Status = 3;
                 }
 
                 model.CreateDate = item.OrderDate.Value.ConvertDateTimeToShamsi2();

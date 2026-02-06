@@ -161,6 +161,33 @@ namespace V2boardApi.Areas.api.Controllers
                             chatid = update.Message.From.Id;
                             var mess = message.Text;
 
+                            if (!string.IsNullOrEmpty(mess) && mess.StartsWith("@") && BotSettings.AdminBot_ID == chatid)
+                            {
+                                if (mess.Contains("="))
+                                {
+                                    var Username = mess.Split('=')[0];
+                                    Username = Username.Remove(0, 1);
+                                    var TelegramUser = tbTelegramUserRepository.Where(a=> a.Tel_Username ==  Username).FirstOrDefault();
+                                    if (TelegramUser != null)
+                                    {
+                                        var OrgMessage = mess.Split('=')[1];
+
+                                        await bot.Client.SendTextMessageAsync(TelegramUser.Tel_UniqUserID, OrgMessage, parseMode: ParseMode.Html);
+                                        await bot.Client.SendTextMessageAsync(chatid, "✅ پیام با موفقیت ارسال شد", parseMode: ParseMode.Html);
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        await bot.Client.SendTextMessageAsync(chatid, "❌ کاربری با این آیدی یافت نشد", parseMode: ParseMode.Html);
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    await bot.Client.SendTextMessageAsync(chatid, "ادمین عزیز بعد از درج نام کاربری = گذاشته و سپس پیام خود را بنویسید", parseMode: ParseMode.Html);
+                                    return;
+                                }
+                            }
 
                             if (update.Message.Type == MessageType.Photo || update.Message.Type == MessageType.Document)
                             {
@@ -375,7 +402,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (update.Message.Type == MessageType.Photo)
                                 {
-                                    var Deposit = await tbDepositLogRepo.WhereAsync(p => p.dw_Status == "FOR_PAY");
+                                    var Deposit = await tbDepositLogRepo.WhereAsync(p => p.dw_Status == "FOR_PAY" && p.tbTelegramUsers.Tel_UniqUserID == chatid.ToString());
 
                                     if (Deposit.Count == 0)
                                     {
