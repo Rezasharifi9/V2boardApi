@@ -888,7 +888,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
                                             str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
                                             var Counter = 1;
-                                            var ordered = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == false && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+                                            var ordered = RepositoryLinkUserAndPlan.Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_Status == true).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
                                             foreach (var item in ordered)
                                             {
                                                 str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " | " + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
@@ -1061,7 +1061,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (mess == "📊 تعرفه‌ها")
                                 {
 
-                                    var Plans = RepositoryLinkUserAndPlan.GetAll().Where(s => s.tbUsers.Username == botName && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_Status == true).ToList();
+                                    var Plans = RepositoryLinkUserAndPlan.GetAll().Where(s => s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_Status == true).ToList();
 
                                     StringBuilder str = new StringBuilder();
 
@@ -3517,7 +3517,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
                                         var Counter = 1;
-                                        var ordered = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == false && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+                                        var ordered = RepositoryLinkUserAndPlan.Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_Status == true).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
                                         foreach (var item in ordered)
                                         {
                                             str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " | " + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
