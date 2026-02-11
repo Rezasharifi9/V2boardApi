@@ -877,6 +877,9 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         StringBuilder str = new StringBuilder();
 
+                                        var ordered = RepositoryLinkUserAndPlan.Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_Status == true).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+
+
                                         if (BotSettings.Present_Discount != null)
                                         {
 
@@ -888,7 +891,6 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
                                             str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
                                             var Counter = 1;
-                                            var ordered = RepositoryLinkUserAndPlan.Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_Status == true).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
                                             foreach (var item in ordered)
                                             {
                                                 str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " | " + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
@@ -898,25 +900,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             str.AppendLine("");
                                             str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
-                                            var ordered2 = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == true && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-
-                                            if (ordered2.Count() != 0)
-                                            {
-                                                str.AppendLine("");
-                                                str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
-
-                                                foreach (var item in ordered2)
-                                                {
-                                                    str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + "  نامحدود" + " | " + item.tbPlans.device_limit + " کاربره" + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
-
-                                                    Counter++;
-                                                }
-                                                str.AppendLine("");
-                                                if (ordered2.Count() != 0)
-                                                {
-                                                    str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
-                                                }
-                                            }
                                         }
                                         else
                                         {
@@ -926,7 +909,6 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n");
                                             var Counter = 1;
                                             str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
-                                            var ordered = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == false && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
                                             foreach (var item in ordered)
                                             {
 
@@ -938,24 +920,6 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
                                             str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
 
-                                            var ordered2 = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == true && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-
-                                            if (ordered2.Count() != 0)
-                                            {
-                                                str.AppendLine("");
-                                                str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
-                                                foreach (var item in ordered2)
-                                                {
-
-                                                    str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + " نامحدود | " + item.tbPlans.device_limit + " کاربره" + " 👈 " + item.L_SellPrice.Value.ConvertToMony() + " تومان");
-
-                                                    Counter++;
-                                                }
-                                                str.AppendLine("");
-
-                                                str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
-
-                                            }
                                         }
 
 
@@ -1076,7 +1040,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
                                         var Counter = 1;
-                                        var ordered = Plans.Where(s => s.tbPlans.IsRobotPlan == false).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+                                        var ordered = Plans.OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
                                         foreach (var item in ordered)
                                         {
                                             str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " | " + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
@@ -1086,25 +1050,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         str.AppendLine("");
                                         str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
-
-                                        var ordered2 = Plans.Where(s => s.tbPlans.IsRobotPlan == true).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-
-                                        if (ordered2.Count() != 0)
-                                        {
-                                            str.AppendLine("");
-                                            str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
-
-                                            foreach (var item in ordered2)
-                                            {
-                                                str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + "  نامحدود" + " | " + item.tbPlans.device_limit + " کاربره" + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
-
-                                                Counter++;
-                                            }
-                                            str.AppendLine("");
-
-                                            str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
-
-                                        }
 
 
                                     }
@@ -1116,7 +1061,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n");
                                         var Counter = 1;
                                         str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
-                                        var ordered = Plans.Where(s => s.tbPlans.IsRobotPlan == false).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+                                        var ordered = Plans.OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
                                         foreach (var item in ordered)
                                         {
 
@@ -1127,25 +1072,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         str.AppendLine("");
                                         str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
-
-                                        var ordered2 = Plans.Where(s => s.tbPlans.IsRobotPlan == true).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-
-                                        if (ordered2.Count() != 0)
-                                        {
-                                            str.AppendLine("");
-                                            str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
-                                            foreach (var item in ordered2)
-                                            {
-
-                                                str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + " نامحدود | " + item.tbPlans.device_limit + " کاربره" + " 👈 " + item.L_SellPrice.Value.ConvertToMony() + " تومان");
-
-                                                Counter++;
-                                            }
-                                            str.AppendLine("");
-
-                                            str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
-                                        }
-
 
                                     }
 
@@ -3506,6 +3432,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     StringBuilder str = new StringBuilder();
 
+                                    var ordered = RepositoryLinkUserAndPlan.Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_Status == true).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+
                                     if (BotSettings.Present_Discount != null)
                                     {
 
@@ -3517,7 +3445,6 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
                                         var Counter = 1;
-                                        var ordered = RepositoryLinkUserAndPlan.Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_Status == true).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
                                         foreach (var item in ordered)
                                         {
                                             str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + item.tbPlans.PlanVolume + " گیگ" + " | " + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
@@ -3527,25 +3454,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         str.AppendLine("");
                                         str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
-                                        var ordered2 = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == true && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
 
-                                        if (ordered2.Count() != 0)
-                                        {
-                                            str.AppendLine("");
-                                            str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
-
-                                            foreach (var item in ordered2)
-                                            {
-                                                str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + "  نامحدود" + " | " + item.tbPlans.device_limit + " کاربره" + "<s>" + item.L_SellPrice.Value.ConvertToMony() + "</s>" + " 👈 " + (item.L_SellPrice.Value - (item.L_SellPrice.Value * BotSettings.Present_Discount)).Value.ConvertToMony() + " تومان");
-
-                                                Counter++;
-                                            }
-                                            str.AppendLine("");
-                                            if (ordered2.Count() != 0)
-                                            {
-                                                str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
-                                            }
-                                        }
                                     }
                                     else
                                     {
@@ -3555,7 +3464,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("با توجه به مصرف اینترنتت، ما تعرفه ‌هایی با حجم و زمان ‌های مختلف آماده کردیم. کافیه ببینی چقدر مصرف داری و همون تعرفه رو فعال کنی 💥\r\n\r\n");
                                         var Counter = 1;
                                         str.AppendLine("<b>" + "اشتراک های حجمی :" + "</b>");
-                                        var ordered = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == false && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
+
                                         foreach (var item in ordered)
                                         {
 
@@ -3566,25 +3475,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         str.AppendLine("");
                                         str.AppendLine("💢 اشتراک های حجمی فاقد محدودیت کاربر هستند");
-
-                                        var ordered2 = RepositoryLinkUserAndPlan.Where(s => s.tbPlans.IsRobotPlan == true && s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID).OrderBy(s => s.tbPlans.PlanMonth).ThenBy(s => s.tbPlans.PlanVolume);
-
-                                        if (ordered2.Count() != 0)
-                                        {
-                                            str.AppendLine("");
-                                            str.AppendLine("<b>" + "اشتراک های نامحدود :" + "</b>");
-                                            foreach (var item in ordered2)
-                                            {
-
-                                                str.AppendLine(Counter + " - " + item.tbPlans.PlanMonth + " ماهه " + " نامحدود | " + item.tbPlans.device_limit + " کاربره" + " 👈 " + item.L_SellPrice.Value.ConvertToMony() + " تومان");
-
-                                                Counter++;
-                                            }
-                                            str.AppendLine("");
-
-                                            str.AppendLine("💡 نکته مهم:\r\nاشتراک‌های نامحدود فقط برای وب‌گردی سبک و چرخیدن تو اینستاگرام طراحی شدن!\r\n📌 برای کارایی مثل ارز دیجیتال، ترید، یا مدیریت کسب‌وکار اینستاگرامی ممکنه دردسرساز بشه!\r\nپس لطفاً فقط برای استفاده معمولی و سبک سراغش برو 😉");
-
-                                        }
                                     }
 
 
