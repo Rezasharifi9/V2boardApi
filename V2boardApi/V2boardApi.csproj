@@ -449,6 +449,7 @@
     <Compile Include="Tools\StartUpOwin.cs" />
     <Compile Include="Tools\Stimulsoft.cs" />
     <Compile Include="Tools\Timers.cs" />
+    <Compile Include="Tools\TransactionHanderService.cs" />
     <Compile Include="Tools\UserLog.cs" />
     <Compile Include="Tools\Utility.cs" />
     <Compile Include="Tools\V2boardApiTools.cs" />

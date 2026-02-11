@@ -1892,8 +1892,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         if (btn == "accept")
                                         {
-                                            var NowDate = DateTime.Now.AddHours(-1);
-                                            var Deposit = await tbDepositLogRepo.WhereAsync(p => p.dw_CreateDatetime >= NowDate && p.dw_Status == "FOR_PAY");
+                                            
+                                            var Deposit = await tbDepositLogRepo.WhereAsync(p => p.tbTelegramUsers.Tel_UniqUserID == id && p.dw_Status == "FOR_PAY");
 
                                             int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
                                             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
@@ -1931,23 +1931,16 @@ namespace V2boardApi.Areas.api.Controllers
                                             var Deposit = await tbDepositLogRepo.FirstOrDefaultAsync(p => p.dw_ID.ToString() == id && p.dw_Status == "FOR_PAY");
                                             if (Deposit != null)
                                             {
-                                                Deposit.dw_Status = "FINISH";
-                                                Deposit.tbTelegramUsers.Tel_Wallet += Deposit.dw_Price / 10;
-                                                StringBuilder str = new StringBuilder();
-                                                str.AppendLine("✅ کیف پول شما با موفقیت شارژ شد!");
-                                                str.AppendLine("");
-                                                str.AppendLine("💰 موجودی فعلی کیف پول شما: " + Deposit.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
-                                                str.AppendLine("");
-                                                str.AppendLine("🔔 حالا می‌توانید برای خرید اشتراک جدید یا تمدید اشتراک اقدام کنید.");
-                                                str.AppendLine("");
-                                                str.AppendLine("〰️〰️〰️〰️〰️");
-                                                str.AppendLine("🚀 @" + Deposit.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0].Bot_ID);
-                                                var keyboard = Keyboards.GetHomeButton();
-
-                                                await RealUser.SetUserStep(Deposit.tbTelegramUsers.Tel_UniqUserID, "Start", db, Deposit.tbTelegramUsers.tbUsers.Username);
-                                                await tbDepositLogRepo.SaveChangesAsync();
-                                                await bot.Client.SendTextMessageAsync(Deposit.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-                                                await bot.Client.SendTextMessageAsync(BotSettings.AdminBot_ID, "✅ تراکنش با موفقیت تایید شد");
+                                                TransactionHanderService service = new TransactionHanderService();
+                                                var res = await service.CheckOrder(Deposit.dw_Price.ToString(), Deposit.tbTelegramUsers.tbUsers.PhoneNumber);
+                                                if (res)
+                                                {
+                                                    await bot.Client.SendTextMessageAsync(BotSettings.AdminBot_ID, "✅ تراکنش با موفقیت تایید شد");
+                                                }
+                                                else
+                                                {
+                                                    await bot.Client.SendTextMessageAsync(BotSettings.AdminBot_ID, "❌ تائید تراکنش با خطا مواجه شد");
+                                                }
                                                 return;
                                             }
                                         }

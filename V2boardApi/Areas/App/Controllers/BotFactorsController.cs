@@ -114,16 +114,17 @@ namespace V2boardApi.Areas.App.Controllers
                 if (factor != null)
                 {
 
-                    var baseUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}/";
-
-                    using (var client = new HttpClient())
+                    TransactionHanderService service = new TransactionHanderService();
+                    var res = await service.CheckOrder(factor.dw_Price.ToString(), factor.tbTelegramUsers.tbUsers.PhoneNumber);
+                    if (res)
                     {
-                        client.BaseAddress = new Uri(baseUrl);
-                        var response = await client.GetAsync("/User/CheckOrder?SMSMessageText="+factor.dw_Price+"&Mobile="+factor.tbTelegramUsers.tbUsers.PhoneNumber);
+                        return Toaster.Success("موفق", "تراکنش با موفقیت تائید شد");
+                    }
+                    else
+                    {
+                        return MessageBox.Warning("ناموفق", "تائید تراکنش با خطا مواجه شد");
                     }
 
-
-                    return Toaster.Success("موفق", "تراکنش با موفقیت تائید شد");
                 }
                 else
                 {
