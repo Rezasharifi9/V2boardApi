@@ -402,7 +402,7 @@ namespace V2boardApi.Areas.api.Controllers
             if (facotr != null)
             {
                 TransactionHanderService transactionHanderService = new TransactionHanderService();
-                await transactionHanderService.CheckOrder(facotr.dw_Price.ToString(), facotr.tbTelegramUsers.tbUsers.PhoneNumber);
+                await transactionHanderService.CheckOrderTetraPay(facotr.dw_ID, facotr.tbTelegramUsers.tbUsers.PhoneNumber);
                 return Ok();
             }
             else

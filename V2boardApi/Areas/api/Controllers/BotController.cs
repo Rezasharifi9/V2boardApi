@@ -1281,7 +1281,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             throw new Exception();
                                         }
 
-                                        var TaxId = Guid.NewGuid().ToString().Split('-')[0]+"#"+User.Tel_UserID;
+                                        var TaxId = Guid.NewGuid().ToString().Split('-')[0]+"#"+UserAcc.Tel_UserID;
 
                                         TetraPay tetraPay = new TetraPay(setting.tbValue);
 
