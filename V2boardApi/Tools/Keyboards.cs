@@ -469,6 +469,28 @@ namespace V2boardBot.Models
         /// تابع آوردن دکمه تائید پرداخت
         /// </summary>
         /// <returns></returns>
+        public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWalletTetraPay(string url)
+        {
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn1 = new InlineKeyboardButton("💳 کارت به کارت ");
+
+            btn1.Pay = true;
+            btn1.Url = url;
+
+            row1.Add(btn1);
+
+            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+            inlineKeyboards.Add(row1);
+
+            var keyborad = new InlineKeyboardMarkup(inlineKeyboards);
+
+            return keyborad;
+        }
+
+        /// <summary>
+        /// تابع آوردن دکمه تائید پرداخت
+        /// </summary>
+        /// <returns></returns>
         public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWalletAranex(string PayLink, string TaxId)
         {
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
@@ -559,11 +581,11 @@ namespace V2boardBot.Models
             row1.Add(btn);
             btns.Add(row1);
 
-            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-            InlineKeyboardButton btn2 = new InlineKeyboardButton("💳 پرداخت مستقیم");
-            btn2.CallbackData = "ConfirmPay%" + planId + "%" + AccountName;
-            row2.Add(btn2);
-            btns.Add(row2);
+            //List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+            //InlineKeyboardButton btn2 = new InlineKeyboardButton("💳 پرداخت مستقیم");
+            //btn2.CallbackData = "ConfirmPay%" + planId + "%" + AccountName;
+            //row2.Add(btn2);
+            //btns.Add(row2);
 
             List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
             InlineKeyboardButton btn3 = new InlineKeyboardButton("🔙 برگشت");

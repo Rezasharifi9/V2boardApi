@@ -179,6 +179,12 @@
     <Compile Include="DomainModel\tbOrders.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbPaymentMethods.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbPaymentMethodUser.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbPlans.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
@@ -186,6 +192,9 @@
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbServers.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbSettings.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="DomainModel\tbTelegramUsers.cs">

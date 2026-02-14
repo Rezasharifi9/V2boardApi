@@ -16,6 +16,7 @@ $(function () {
                 { data: 'Date' },
                 { data: 'PayMethod' },
                 { data: 'Status' },
+                { data: 'TaxId' },
                 { data: 'Price' },
                 { data: '' }
             ],
@@ -72,14 +73,9 @@ $(function () {
                     render: function (data, type, full, meta) {
                         var $PayMethod = full['PayMethod'];
 
-                        var statusObj = {
-                            0: { title: 'کارت به کارت', class: 'bg-label-success' },
-                            1: { title: 'درگاه پرداخت', class: 'bg-label-primary' },
-                            2: { title: 'هاب اسمارت', class: 'bg-label-danger' },
-                            3: { title: 'آرانکس', class: 'bg-label-secondary' },
-                        };
 
-                        var $row_output = "<span class='badge " + statusObj[$PayMethod].class + "'>" + statusObj[$PayMethod].title + "</span>";
+
+                        var $row_output = "<span class='badge bg-label-success'>" + $PayMethod + "</span>";
 
                         return $row_output;
                     }
@@ -102,9 +98,21 @@ $(function () {
                     }
                 },
                 {
-                    // Price
+                    // Status
                     targets: 5,
                     responsivePriority: 4,
+                    render: function (data, type, full, meta) {
+                        var $TaxId = full['TaxId'];
+
+                        var $row_output = "<span>" + $TaxId + "</span>";
+
+                        return $row_output;
+                    }
+                },
+                {
+                    // Price
+                    targets: 6,
+                    responsivePriority: 7,
                     render: function (data, type, full, meta) {
                         var $Price = full['Price'];
                         // Creates full output for row

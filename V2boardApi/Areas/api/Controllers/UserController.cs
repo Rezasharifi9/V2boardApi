@@ -395,8 +395,22 @@ namespace V2boardApi.Areas.api.Controllers
         #endregion
 
 
-
-
+        [System.Web.Http.HttpPost]
+        public async Task<IHttpActionResult> VerifyTetraPay(TetraRespModel model)
+        {
+            var facotr = RepositoryDepositWallet.Where(a=> a.dw_Authority == model.authority && a.dw_Status == "FOR_PAY").FirstOrDefault();
+            if (facotr != null)
+            {
+                TransactionHanderService transactionHanderService = new TransactionHanderService();
+                await transactionHanderService.CheckOrder(facotr.dw_Price.ToString(), facotr.tbTelegramUsers.tbUsers.PhoneNumber);
+                return Ok();
+            }
+            else
+            {
+                return Content(HttpStatusCode.NotFound, "تراکنشی با این مشخصات یافت نشد");
+            }
+            
+        }
     }
 
 }

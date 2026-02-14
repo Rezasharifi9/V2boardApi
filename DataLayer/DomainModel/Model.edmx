@@ -113,6 +113,8 @@
           <Property Name="dw_PayMethod" Type="varchar" MaxLength="50" />
           <Property Name="dw_Alerted" Type="bit" Nullable="false" />
           <Property Name="FK_Order_ID" Type="int" />
+          <Property Name="dw_Authority" Type="varchar" MaxLength="50" />
+          <Property Name="FK_PayMethod_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbLinks">
           <Key>
@@ -212,6 +214,25 @@
           <Property Name="Month" Type="int" />
           <Property Name="Tel_RenewedDate" Type="datetime" />
         </EntityType>
+        <EntityType Name="tbPaymentMethods">
+          <Key>
+            <PropertyRef Name="tbpm_ID" />
+          </Key>
+          <Property Name="tbpm_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tbpm_MethodName" Type="nvarchar" MaxLength="150" Nullable="false" />
+          <Property Name="tbpm_Key" Type="varchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbPaymentMethodUser">
+          <Key>
+            <PropertyRef Name="tbpu_ID" />
+          </Key>
+          <Property Name="tbpu_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_User_ID" Type="int" Nullable="false" />
+          <Property Name="FK_PaymentMethod_ID" Type="int" Nullable="false" />
+          <Property Name="FK_Learn_ID" Type="int" />
+          <Property Name="tbpu_ApiKey" Type="varchar" MaxLength="250" />
+          <Property Name="tbpu_Status" Type="bit" Nullable="false" />
+        </EntityType>
         <EntityType Name="tbPlans">
           <Key>
             <PropertyRef Name="Plan_ID" />
@@ -265,6 +286,13 @@
           <Property Name="PricePerMonth" Type="int" />
           <Property Name="BotbaseAddress" Type="varchar" MaxLength="50" />
           <Property Name="ApiToken_V2board" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="tbSettings">
+          <Key>
+            <PropertyRef Name="tbKey" />
+          </Key>
+          <Property Name="tbKey" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="tbValue" Type="varchar" MaxLength="150" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
           <Key>
@@ -414,6 +442,18 @@
             </Principal>
             <Dependent Role="tbDepositWallet_Log">
               <PropertyRef Name="FK_Order_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbDepositWallet_Log_tbPaymentMethods">
+          <End Role="tbPaymentMethods" Type="Self.tbPaymentMethods" Multiplicity="0..1" />
+          <End Role="tbDepositWallet_Log" Type="Self.tbDepositWallet_Log" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPaymentMethods">
+              <PropertyRef Name="tbpm_ID" />
+            </Principal>
+            <Dependent Role="tbDepositWallet_Log">
+              <PropertyRef Name="FK_PayMethod_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -576,6 +616,42 @@
             </Principal>
             <Dependent Role="tbOrders">
               <PropertyRef Name="FK_Tel_UserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbPaymentMethodUser_tbConnectionHelp">
+          <End Role="tbConnectionHelp" Type="Self.tbConnectionHelp" Multiplicity="0..1" />
+          <End Role="tbPaymentMethodUser" Type="Self.tbPaymentMethodUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbConnectionHelp">
+              <PropertyRef Name="ch_ID" />
+            </Principal>
+            <Dependent Role="tbPaymentMethodUser">
+              <PropertyRef Name="FK_Learn_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbPaymentMethodUser_tbPaymentMethods">
+          <End Role="tbPaymentMethods" Type="Self.tbPaymentMethods" Multiplicity="1" />
+          <End Role="tbPaymentMethodUser" Type="Self.tbPaymentMethodUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPaymentMethods">
+              <PropertyRef Name="tbpm_ID" />
+            </Principal>
+            <Dependent Role="tbPaymentMethodUser">
+              <PropertyRef Name="FK_PaymentMethod_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbPaymentMethodUser_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbPaymentMethodUser" Type="Self.tbPaymentMethodUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbPaymentMethodUser">
+              <PropertyRef Name="FK_User_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -743,9 +819,12 @@
           <EntitySet Name="tbNotifications" EntityType="Self.tbNotifications" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbNotificationUser" EntityType="Self.tbNotificationUser" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbPaymentMethods" EntityType="Self.tbPaymentMethods" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbPaymentMethodUser" EntityType="Self.tbPaymentMethodUser" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServerGroups" EntityType="Self.tbServerGroups" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbSettings" EntityType="Self.tbSettings" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbTelegramUsers" EntityType="Self.tbTelegramUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
@@ -772,6 +851,10 @@
           </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbOrders" Association="Self.FK_tbDepositWallet_Log_tbOrders">
             <End Role="tbOrders" EntitySet="tbOrders" />
+            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbDepositWallet_Log_tbPaymentMethods" Association="Self.FK_tbDepositWallet_Log_tbPaymentMethods">
+            <End Role="tbPaymentMethods" EntitySet="tbPaymentMethods" />
             <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
           </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbTelegramUsers" Association="Self.FK_tbDepositWallet_Log_tbTelegramUsers">
@@ -821,6 +904,18 @@
           <AssociationSet Name="FK_tbOrders_tbTelegramUsers" Association="Self.FK_tbOrders_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPaymentMethodUser_tbConnectionHelp" Association="Self.FK_tbPaymentMethodUser_tbConnectionHelp">
+            <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
+            <End Role="tbPaymentMethodUser" EntitySet="tbPaymentMethodUser" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPaymentMethodUser_tbPaymentMethods" Association="Self.FK_tbPaymentMethodUser_tbPaymentMethods">
+            <End Role="tbPaymentMethods" EntitySet="tbPaymentMethods" />
+            <End Role="tbPaymentMethodUser" EntitySet="tbPaymentMethodUser" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPaymentMethodUser_tbUsers" Association="Self.FK_tbPaymentMethodUser_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbPaymentMethodUser" EntitySet="tbPaymentMethodUser" />
           </AssociationSet>
           <AssociationSet Name="FK_tbPlans_tbServers" Association="Self.FK_tbPlans_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
@@ -911,9 +1006,12 @@
           <EntitySet Name="tbNotifications" EntityType="SafeNetDBModel.tbNotifications" />
           <EntitySet Name="tbNotificationUser" EntityType="SafeNetDBModel.tbNotificationUser" />
           <EntitySet Name="tbOrders" EntityType="SafeNetDBModel.tbOrders" />
+          <EntitySet Name="tbPaymentMethods" EntityType="SafeNetDBModel.tbPaymentMethods" />
+          <EntitySet Name="tbPaymentMethodUser" EntityType="SafeNetDBModel.tbPaymentMethodUser" />
           <EntitySet Name="tbPlans" EntityType="SafeNetDBModel.tbPlans" />
           <EntitySet Name="tbServerGroups" EntityType="SafeNetDBModel.tbServerGroups" />
           <EntitySet Name="tbServers" EntityType="SafeNetDBModel.tbServers" />
+          <EntitySet Name="tbSettings" EntityType="SafeNetDBModel.tbSettings" />
           <EntitySet Name="tbTelegramUsers" EntityType="SafeNetDBModel.tbTelegramUsers" />
           <EntitySet Name="tbUseages" EntityType="SafeNetDBModel.tbUseages" />
           <EntitySet Name="tbUserFactors" EntityType="SafeNetDBModel.tbUserFactors" />
@@ -938,8 +1036,16 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbPaymentMethodUser_tbConnectionHelp" Association="SafeNetDBModel.FK_tbPaymentMethodUser_tbConnectionHelp">
+            <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
+            <End Role="tbPaymentMethodUser" EntitySet="tbPaymentMethodUser" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbOrders" Association="SafeNetDBModel.FK_tbDepositWallet_Log_tbOrders">
             <End Role="tbOrders" EntitySet="tbOrders" />
+            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbDepositWallet_Log_tbPaymentMethods" Association="SafeNetDBModel.FK_tbDepositWallet_Log_tbPaymentMethods">
+            <End Role="tbPaymentMethods" EntitySet="tbPaymentMethods" />
             <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
           </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbTelegramUsers" Association="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers">
@@ -989,6 +1095,14 @@
           <AssociationSet Name="FK_tbOrders_tbTelegramUsers" Association="SafeNetDBModel.FK_tbOrders_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbOrders" EntitySet="tbOrders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPaymentMethodUser_tbPaymentMethods" Association="SafeNetDBModel.FK_tbPaymentMethodUser_tbPaymentMethods">
+            <End Role="tbPaymentMethods" EntitySet="tbPaymentMethods" />
+            <End Role="tbPaymentMethodUser" EntitySet="tbPaymentMethodUser" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbPaymentMethodUser_tbUsers" Association="SafeNetDBModel.FK_tbPaymentMethodUser_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbPaymentMethodUser" EntitySet="tbPaymentMethodUser" />
           </AssociationSet>
           <AssociationSet Name="FK_tbPlans_tbServers" Association="SafeNetDBModel.FK_tbPlans_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
@@ -1149,6 +1263,7 @@
           <Property Name="FK_User_ID" Type="Int32" />
           <Property Name="ch_Type" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbConnectionHelp_tbUsers" FromRole="tbConnectionHelp" ToRole="tbUsers" />
+          <NavigationProperty Name="tbPaymentMethodUser" Relationship="SafeNetDBModel.FK_tbPaymentMethodUser_tbConnectionHelp" FromRole="tbConnectionHelp" ToRole="tbPaymentMethodUser" />
         </EntityType>
         <EntityType Name="tbDepositWallet_Log">
           <Key>
@@ -1166,7 +1281,10 @@
           <Property Name="dw_PayMethod" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="dw_Alerted" Type="Boolean" Nullable="false" />
           <Property Name="FK_Order_ID" Type="Int32" />
+          <Property Name="dw_Authority" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="FK_PayMethod_ID" Type="Int32" />
           <NavigationProperty Name="tbOrders" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbOrders" FromRole="tbDepositWallet_Log" ToRole="tbOrders" />
+          <NavigationProperty Name="tbPaymentMethods" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbPaymentMethods" FromRole="tbDepositWallet_Log" ToRole="tbPaymentMethods" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
         </EntityType>
         <EntityType Name="tbLinks">
@@ -1282,6 +1400,30 @@
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="SafeNetDBModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbOrders" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
         </EntityType>
+        <EntityType Name="tbPaymentMethods">
+          <Key>
+            <PropertyRef Name="tbpm_ID" />
+          </Key>
+          <Property Name="tbpm_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbpm_MethodName" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="tbpm_Key" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="tbDepositWallet_Log" Relationship="SafeNetDBModel.FK_tbDepositWallet_Log_tbPaymentMethods" FromRole="tbPaymentMethods" ToRole="tbDepositWallet_Log" />
+          <NavigationProperty Name="tbPaymentMethodUser" Relationship="SafeNetDBModel.FK_tbPaymentMethodUser_tbPaymentMethods" FromRole="tbPaymentMethods" ToRole="tbPaymentMethodUser" />
+        </EntityType>
+        <EntityType Name="tbPaymentMethodUser">
+          <Key>
+            <PropertyRef Name="tbpu_ID" />
+          </Key>
+          <Property Name="tbpu_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
+          <Property Name="FK_PaymentMethod_ID" Type="Int32" Nullable="false" />
+          <Property Name="FK_Learn_ID" Type="Int32" />
+          <Property Name="tbpu_ApiKey" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="tbpu_Status" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="tbConnectionHelp" Relationship="SafeNetDBModel.FK_tbPaymentMethodUser_tbConnectionHelp" FromRole="tbPaymentMethodUser" ToRole="tbConnectionHelp" />
+          <NavigationProperty Name="tbPaymentMethods" Relationship="SafeNetDBModel.FK_tbPaymentMethodUser_tbPaymentMethods" FromRole="tbPaymentMethodUser" ToRole="tbPaymentMethods" />
+          <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbPaymentMethodUser_tbUsers" FromRole="tbPaymentMethodUser" ToRole="tbUsers" />
+        </EntityType>
         <EntityType Name="tbPlans">
           <Key>
             <PropertyRef Name="Plan_ID" />
@@ -1344,6 +1486,13 @@
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
           <NavigationProperty Name="tbUseages" Relationship="SafeNetDBModel.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+        </EntityType>
+        <EntityType Name="tbSettings">
+          <Key>
+            <PropertyRef Name="tbKey" />
+          </Key>
+          <Property Name="tbKey" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="tbValue" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
           <Key>
@@ -1436,6 +1585,7 @@
           <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="SafeNetDBModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbUsers" ToRole="tbLinkServerGroupWithUsers" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="SafeNetDBModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbNotificationUser" Relationship="SafeNetDBModel.FK_tbNotificationUser_tbUsers1" FromRole="tbUsers" ToRole="tbNotificationUser" />
+          <NavigationProperty Name="tbPaymentMethodUser" Relationship="SafeNetDBModel.FK_tbPaymentMethodUser_tbUsers" FromRole="tbUsers" ToRole="tbPaymentMethodUser" />
           <NavigationProperty Name="tbPlans" Relationship="SafeNetDBModel.FK_tbPlans_tbUsers" FromRole="tbUsers" ToRole="tbPlans" />
           <NavigationProperty Name="tbServers" Relationship="SafeNetDBModel.FK_tbUsers_tbServers" FromRole="tbUsers" ToRole="tbServers" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="SafeNetDBModel.FK_tbTelegramUsers_tbUsers" FromRole="tbUsers" ToRole="tbTelegramUsers" />
@@ -1506,6 +1656,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbPaymentMethodUser_tbConnectionHelp">
+          <End Type="SafeNetDBModel.tbConnectionHelp" Role="tbConnectionHelp" Multiplicity="0..1" />
+          <End Type="SafeNetDBModel.tbPaymentMethodUser" Role="tbPaymentMethodUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbConnectionHelp">
+              <PropertyRef Name="ch_ID" />
+            </Principal>
+            <Dependent Role="tbPaymentMethodUser">
+              <PropertyRef Name="FK_Learn_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbDepositWallet_Log_tbOrders">
           <End Type="SafeNetDBModel.tbOrders" Role="tbOrders" Multiplicity="0..1" />
           <End Type="SafeNetDBModel.tbDepositWallet_Log" Role="tbDepositWallet_Log" Multiplicity="*" />
@@ -1515,6 +1677,18 @@
             </Principal>
             <Dependent Role="tbDepositWallet_Log">
               <PropertyRef Name="FK_Order_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbDepositWallet_Log_tbPaymentMethods">
+          <End Type="SafeNetDBModel.tbPaymentMethods" Role="tbPaymentMethods" Multiplicity="0..1" />
+          <End Type="SafeNetDBModel.tbDepositWallet_Log" Role="tbDepositWallet_Log" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPaymentMethods">
+              <PropertyRef Name="tbpm_ID" />
+            </Principal>
+            <Dependent Role="tbDepositWallet_Log">
+              <PropertyRef Name="FK_PayMethod_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1677,6 +1851,30 @@
             </Principal>
             <Dependent Role="tbOrders">
               <PropertyRef Name="FK_Tel_UserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbPaymentMethodUser_tbPaymentMethods">
+          <End Type="SafeNetDBModel.tbPaymentMethods" Role="tbPaymentMethods" Multiplicity="1" />
+          <End Type="SafeNetDBModel.tbPaymentMethodUser" Role="tbPaymentMethodUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPaymentMethods">
+              <PropertyRef Name="tbpm_ID" />
+            </Principal>
+            <Dependent Role="tbPaymentMethodUser">
+              <PropertyRef Name="FK_PaymentMethod_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbPaymentMethodUser_tbUsers">
+          <End Type="SafeNetDBModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="SafeNetDBModel.tbPaymentMethodUser" Role="tbPaymentMethodUser" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbPaymentMethodUser">
+              <PropertyRef Name="FK_User_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1946,6 +2144,8 @@
           <EntitySetMapping Name="tbDepositWallet_Log">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
+                <ScalarProperty Name="FK_PayMethod_ID" ColumnName="FK_PayMethod_ID" />
+                <ScalarProperty Name="dw_Authority" ColumnName="dw_Authority" />
                 <ScalarProperty Name="FK_Order_ID" ColumnName="FK_Order_ID" />
                 <ScalarProperty Name="dw_Alerted" ColumnName="dw_Alerted" />
                 <ScalarProperty Name="dw_PayMethod" ColumnName="dw_PayMethod" />
@@ -2066,6 +2266,27 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="tbPaymentMethods">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbPaymentMethods">
+              <MappingFragment StoreEntitySet="tbPaymentMethods">
+                <ScalarProperty Name="tbpm_Key" ColumnName="tbpm_Key" />
+                <ScalarProperty Name="tbpm_MethodName" ColumnName="tbpm_MethodName" />
+                <ScalarProperty Name="tbpm_ID" ColumnName="tbpm_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbPaymentMethodUser">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbPaymentMethodUser">
+              <MappingFragment StoreEntitySet="tbPaymentMethodUser">
+                <ScalarProperty Name="tbpu_Status" ColumnName="tbpu_Status" />
+                <ScalarProperty Name="tbpu_ApiKey" ColumnName="tbpu_ApiKey" />
+                <ScalarProperty Name="FK_Learn_ID" ColumnName="FK_Learn_ID" />
+                <ScalarProperty Name="FK_PaymentMethod_ID" ColumnName="FK_PaymentMethod_ID" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="tbpu_ID" ColumnName="tbpu_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tbPlans">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbPlans">
               <MappingFragment StoreEntitySet="tbPlans">
@@ -2120,6 +2341,14 @@
                 <ScalarProperty Name="ServerIP" ColumnName="ServerIP" />
                 <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
                 <ScalarProperty Name="ServerID" ColumnName="ServerID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbSettings">
+            <EntityTypeMapping TypeName="SafeNetDBModel.tbSettings">
+              <MappingFragment StoreEntitySet="tbSettings">
+                <ScalarProperty Name="tbValue" ColumnName="tbValue" />
+                <ScalarProperty Name="tbKey" ColumnName="tbKey" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

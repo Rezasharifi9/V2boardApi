@@ -117,7 +117,7 @@ namespace V2boardBot.Tools
         //    }
         //    else
         //    {
-        //        var s=  request.Result.Content.ReadAsStringAsync();
+        //        var s = request.Result.Content.ReadAsStringAsync();
         //    }
         //}
 
@@ -145,7 +145,7 @@ namespace V2boardBot.Tools
         //                str.AppendLine("");
         //                str.AppendLine("📌 موجودی کیف پول شما : " + tbDepositLog.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
 
-                       
+
         //                tbDepositLogRepo.Save();
         //                bot.SendTextMessageAsync(Tel_uniq_userid, str.ToString(), parseMode: ParseMode.Html);
         //                return;

@@ -25,17 +25,12 @@ public class TimerService
     private System.Threading.Timer DeleteTestAccount;
     private System.Threading.Timer DeleteFactores;
     private System.Threading.Timer DeleteFactoresCard;
-    private System.Threading.Timer DeleteFactoreGateway;
-    private System.Threading.Timer DeleteFactoreHubsmart;
     private tbServers Server;
     public TimerService()
     {
         // تنظیم تایمرها
         CheckLink = new System.Threading.Timer(async _ => await CheckSubTimerCallback(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
-        DeleteFactores = new System.Threading.Timer(async _ => await DeleteExpireFactore(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(43200000));
         DeleteFactoresCard = new System.Threading.Timer(async _ => await CheckExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
-        DeleteFactoreGateway = new System.Threading.Timer(async _ => await CheckExpireFactoreGateway(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
-        DeleteFactoreHubsmart = new System.Threading.Timer(async _ => await CheckExpireFactoreHubsmart(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
         CheckRenewAccount = new System.Threading.Timer(async _ => await CheckRenewAccountFun(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(300000));
         //CheckSubLimitedUser = new System.Threading.Timer(async _ => await CheckSubLimitedUsers(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(180000));
         DeleteTestAccount = new System.Threading.Timer(async _ => await DeleteTestSub(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
@@ -223,121 +218,7 @@ public class TimerService
 
     #endregion
 
-    //#region تابع چک کردن محدودیت کاربر 
-    //private async Task CheckSubLimitedUsers()
-    //{
-    //    try
-    //    {
 
-    //        if (Server != null)
-    //        {
-    //            using (Entities db = new Entities())
-    //            {
-    //                var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
-    //                var Users = await tbTelegramUserRepository.GetAllAsync();
-
-    //                MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
-    //                await mySql.OpenAsync();
-    //                foreach (var item in Users.ToList())
-    //                {
-    //                    try
-    //                    {
-    //                        if (item.tbUsers != null)
-    //                        {
-    //                            if (item.tbUsers.tbBotSettings != null)
-    //                            {
-    //                                var BotSetting = item.tbUsers.tbBotSettings.FirstOrDefault();
-    //                                if (BotSetting != null)
-    //                                {
-    //                                    if (BotSetting.Bot_Token != null && BotSetting.Enabled == true)
-    //                                    {
-    //                                        var bot = BotManager.GetBot(item.tbUsers.Username);
-    //                                        if (bot != null)
-    //                                        {
-    //                                            foreach (var link in item.tbLinks.ToList())
-    //                                            {
-    //                                                var exdate = DateTime.Now.AddMinutes(-20);
-    //                                                if(link.ExceededLastTime < exdate)
-    //                                                {
-    //                                                    link.ExceededCount = 0;
-    //                                                }
-    //                                                if(link.ExceededCount <= 5)
-    //                                                {
-    //                                                    var GetDataQuery = "select id FROM v2_user WHERE ((v2_user.d + v2_user.u) < v2_user.transfer_enable AND expired_at > UNIX_TIMESTAMP()) AND banned=0 AND email='" + link.tbL_Email + "'";
-
-    //                                                    using (var reader = await mySql.GetDataAsync(GetDataQuery))
-    //                                                    {
-    //                                                        while (await reader.ReadAsync())
-    //                                                        {
-
-    //                                                            var id = reader.GetInt32(reader.GetOrdinal("id"));
-
-    //                                                            var detail = await V2boardApiTools.GetSubOnlineDetails(id);
-    //                                                            if (detail != null)
-    //                                                            {
-    //                                                                if (detail.exceeded)
-    //                                                                {
-    //                                                                    StringBuilder str = new StringBuilder();
-    //                                                                    str.AppendLine("❗️ وایسا ببینم!\r\n");
-    //                                                                    str.AppendLine("اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0]);
-    //                                                                    str.AppendLine("");
-    //                                                                    str.AppendLine("به نظر می‌رسه بیشتر از حد مجاز دستگاه به حسابت وصل شدن. حواست باشه! اگه چند بار دیگه این اتفاق بیفته، تو نوبت پنجم ممکنه سرویس‌ت به‌طور خودکار قطع شه. مراقب خودت و اشتراکت باش 😉❤️");
-    //                                                                    str.AppendLine("");
-    //                                                                    str.AppendLine("@" + BotSetting.Bot_ID);
-
-    //                                                                    link.ExceededCount += 1;
-    //                                                                    link.ExceededLastTime = DateTime.Now;
-                                                                        
-    //                                                                    try
-    //                                                                    {
-    //                                                                        await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-    //                                                                    }
-    //                                                                    catch
-    //                                                                    {
-    //                                                                        continue;
-    //                                                                    }
-    //                                                                }
-    //                                                            }
-
-
-
-    //                                                        }
-    //                                                    }
-    //                                                }
-
-    //                                                await tbTelegramUserRepository.SaveChangesAsync();
-
-
-
-    //                                            }
-
-    //                                        }
-    //                                    }
-
-    //                                }
-    //                            }
-    //                        }
-
-
-    //                    }
-    //                    catch (Exception ex)
-    //                    {
-    //                        logger.Error(ex);
-    //                    }
-    //                }
-    //                await mySql.CloseAsync().ConfigureAwait(false);
-    //            }
-    //        }
-
-
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        logger.Error(ex);
-    //    }
-    //}
-
-    //#endregion
 
     #region تابع حذف کردن اشتراکات تست
 
@@ -531,10 +412,11 @@ public class TimerService
     public async Task CheckExpireFactores()
     {
         var DateNow = DateTime.Now.AddHours(-24);
+        var DateNow2 = DateTime.Now.AddHours(-1);
 
         using (Entities db = new Entities())
         {
-            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.dw_PayMethod == "Card" && s.dw_Alerted == false).ToList();
+            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "CardToCard" && s.dw_Alerted == false).ToList();
             foreach (var item in Factores)
             {
                 try
@@ -547,7 +429,58 @@ public class TimerService
                         var botClient = new TelegramBotClient(BotSetting.Bot_Token);
 
                         StringBuilder str = new StringBuilder();
-                        str.Append("❌ فاکتور با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این فاکتور را پرداخت نکنید");
+                        str.Append("❌ تراکنش با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این تراکنش را پرداخت نکنید");
+                        str.AppendLine("");
+                        str.AppendLine("");
+                        str.AppendLine("🚀 @" + BotSetting.Bot_ID);
+
+                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
+
+                        item.dw_Alerted = true;
+                    }
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
+                    // مثلا:
+                    foreach (var entry in ex.Entries)
+                    {
+                        if (entry.State == EntityState.Deleted)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری حذف شده باشد
+                            // اقدامات مناسب مانند نمایش پیام خطا
+                        }
+                        else if (entry.State == EntityState.Modified)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری تغییر کرده باشد
+                            // بازخوانی داده‌ها و تصمیم‌گیری برای ادامه کار
+                            entry.OriginalValues.SetValues(entry.GetDatabaseValues());
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                }
+
+                db.SaveChanges();
+            }
+
+
+            var Factores2 = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "TetraPay" && s.dw_Alerted == false).ToList();
+            foreach (var item in Factores2)
+            {
+                try
+                {
+
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.IsActiveCardToCard == true).Count() != 0)
+                    {
+                        var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
+
+                        var botClient = new TelegramBotClient(BotSetting.Bot_Token);
+
+                        StringBuilder str = new StringBuilder();
+                        str.Append("❌ تراکنش با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این تراکنش را پرداخت نکنید");
                         str.AppendLine("");
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
@@ -592,158 +525,7 @@ public class TimerService
 
     #endregion
 
-    #region پیغام پاک شدن فاکتورهای های درگاه
 
-    public async Task CheckExpireFactoreGateway()
-    {
-        using (Entities db = new Entities())
-        {
-            var DateNow3 = DateTime.Now.AddMinutes(-20);
-            var FactoresGateway = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow3 && s.dw_Status == "FOR_PAY" && s.dw_PayMethod == "Gateway" && s.dw_Alerted == false).ToList();
-            foreach (var item in FactoresGateway)
-            {
-                try
-                {
-
-                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.PaymentGateWay_Status == true).Count() != 0)
-                    {
-                        var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
-
-                        var botClient = new TelegramBotClient(BotSetting.Bot_Token);
-
-                        StringBuilder str = new StringBuilder();
-                        str.Append("❌ فاکتور با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این فاکتور را پرداخت نکنید");
-                        str.AppendLine("");
-                        str.AppendLine("");
-                        str.AppendLine("🚀 @" + BotSetting.Bot_ID);
-
-                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
-                        item.dw_Alerted = true;
-                        db.SaveChanges();
-                    }
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    db.SaveChanges();
-                    // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
-                    // مثلا:
-                    foreach (var entry in ex.Entries)
-                    {
-                        if (entry.State == EntityState.Deleted)
-                        {
-                            // داده ممکن است توسط فرآیند دیگری حذف شده باشد
-                            // اقدامات مناسب مانند نمایش پیام خطا
-                        }
-                        else if (entry.State == EntityState.Modified)
-                        {
-                            // داده ممکن است توسط فرآیند دیگری تغییر کرده باشد
-                            // بازخوانی داده‌ها و تصمیم‌گیری برای ادامه کار
-                            entry.OriginalValues.SetValues(entry.GetDatabaseValues());
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-
-                }
-
-
-            }
-
-        }
-    }
-
-    #endregion
-
-    #region پیغام پاک شدن فاکتورهای هاب اسمارت
-
-    public async Task CheckExpireFactoreHubsmart()
-    {
-        using (Entities db = new Entities())
-        {
-            db.SaveChanges(); var DateNow2 = DateTime.Now.AddMinutes(-20);
-            var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY" && s.dw_Alerted == false && s.dw_PayMethod == "HubSmart").ToList();
-            foreach (var item in Factoress)
-            {
-                try
-                {
-
-                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.HubSmartPay_Status == true).Count() != 0)
-                    {
-                        var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
-
-                        var botClient = new TelegramBotClient(BotSetting.Bot_Token);
-
-
-                        StringBuilder str = new StringBuilder();
-                        str.Append("❌ فاکتور با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این فاکتور را پرداخت نکنید");
-                        str.AppendLine("");
-                        str.AppendLine("");
-                        str.AppendLine("🚀 @" + BotSetting.Bot_ID);
-
-                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
-
-                        item.dw_Alerted = true;
-                        db.SaveChanges();
-                    }
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
-                    // مثلا:
-                    foreach (var entry in ex.Entries)
-                    {
-                        if (entry.State == EntityState.Deleted)
-                        {
-                            // داده ممکن است توسط فرآیند دیگری حذف شده باشد
-                            // اقدامات مناسب مانند نمایش پیام خطا
-                        }
-                        else if (entry.State == EntityState.Modified)
-                        {
-                            // داده ممکن است توسط فرآیند دیگری تغییر کرده باشد
-                            // بازخوانی داده‌ها و تصمیم‌گیری برای ادامه کار
-                            entry.OriginalValues.SetValues(entry.GetDatabaseValues());
-                        }
-                    }
-
-                }
-                catch (Exception ex)
-                {
-
-                }
-                db.SaveChanges();
-            }
-
-        }
-    }
-
-
-    #endregion
-
-    #region پاک کردن فاکتور های منقضی شده
-
-    public async Task DeleteExpireFactore()
-    {
-        using (Entities db = new Entities())
-        {
-            var DateNow2 = DateTime.Now.AddHours(-24);
-            var Factoress = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY").ToList();
-            foreach (var item in Factoress)
-            {
-                if (item.FK_Order_ID != null)
-                {
-                    db.tbOrders.Remove(item.tbOrders);
-                }
-
-                db.tbDepositWallet_Log.Remove(item);
-            }
-            db.SaveChanges();
-        }
-    }
-
-
-    #endregion
 
     #endregion
 }

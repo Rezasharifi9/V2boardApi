@@ -23,6 +23,7 @@ namespace DataLayer.DomainModel
             this.tbLinkServerGroupWithUsers = new HashSet<tbLinkServerGroupWithUsers>();
             this.tbLinkUserAndPlans = new HashSet<tbLinkUserAndPlans>();
             this.tbNotificationUser = new HashSet<tbNotificationUser>();
+            this.tbPaymentMethodUser = new HashSet<tbPaymentMethodUser>();
             this.tbPlans = new HashSet<tbPlans>();
             this.tbTelegramUsers = new HashSet<tbTelegramUsers>();
             this.tbUserFactors = new HashSet<tbUserFactors>();
@@ -67,6 +68,8 @@ namespace DataLayer.DomainModel
         public virtual ICollection<tbLinkUserAndPlans> tbLinkUserAndPlans { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbNotificationUser> tbNotificationUser { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbPaymentMethodUser> tbPaymentMethodUser { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbPlans> tbPlans { get; set; }
         public virtual tbServers tbServers { get; set; }

@@ -351,6 +351,7 @@
     <Compile Include="Areas\api\Controllers\MobileAppController.cs" />
     <Compile Include="Areas\api\Controllers\UserController.cs" />
     <Compile Include="Areas\api\Data\ApiModels\AddFirebaseTokenModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\TetraRespModel.cs" />
     <Compile Include="Areas\api\Data\AppModels\SubscriptionInfoModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AccountHistoryViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AddAccountWithOutPlanInputModel.cs" />
@@ -414,6 +415,7 @@
     <Compile Include="Models\ServerGroups\List_Model.cs" />
     <Compile Include="Models\ServerGroups\UserGroupsViewModel.cs" />
     <Compile Include="Models\tbUserNotificationList_ViewModel.cs" />
+    <Compile Include="PaymentMethods\TetraPay.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
     <Compile Include="Tools\BotManager.cs" />
     <Compile Include="Tools\BotMessages.cs" />

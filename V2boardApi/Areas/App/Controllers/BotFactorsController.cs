@@ -51,6 +51,7 @@ namespace V2boardApi.Areas.App.Controllers
                     BotFactoresResponseModel factor = new BotFactoresResponseModel();
                     factor.UserId = item.FK_TelegramUser_ID.Value;
                     factor.Id = item.dw_ID;
+                    factor.TaxId = item.dw_TaxId;
                     if (item.dw_Status == "FOR_PAY")
                     {
                         factor.Status = 0;
@@ -63,31 +64,7 @@ namespace V2boardApi.Areas.App.Controllers
                     factor.Date = item.dw_CreateDatetime.Value.ConvertDateTimeToShamsi2();
                     factor.User = item.tbTelegramUsers.Tel_Username + "(" + item.tbTelegramUsers.Tel_FirstName + " " + item.tbTelegramUsers.Tel_LastName + ")";
                     factor.Price = item.dw_Price.Value.ConvertToMony();
-                    if (item.dw_PayMethod == null)
-                    {
-                        factor.PayMethod = 0;
-                    }
-                    else
-                    {
-                        if (item.dw_PayMethod == "Card")
-                        {
-                            factor.PayMethod = 0;
-                        }
-                        if (item.dw_PayMethod == "Gateway")
-                        {
-                            factor.PayMethod = 1;
-                        }
-                        if (item.dw_PayMethod == "HubSmart")
-                        {
-                            factor.PayMethod = 2;
-                        }
-                        if (item.dw_PayMethod == "Aranex")
-                        {
-                            factor.PayMethod = 3;
-                        }
-
-
-                    }
+                    factor.PayMethod = item.tbPaymentMethods.tbpm_MethodName;
 
                     BotFactores.Add(factor);
                 }

@@ -76,7 +76,7 @@ namespace V2boardApi.Tools
 
 
 
-                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.dw_PayMethod == "Card");
+                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY");
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
 

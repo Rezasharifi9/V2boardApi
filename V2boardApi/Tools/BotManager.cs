@@ -114,15 +114,15 @@ namespace V2boardApi.Tools
             //}
 
             //var url = method + "://" + HttpContext.Current.Request.Url.Authority;
-            //var url = "https://e06ed3847a21.ngrok-free.app";
+            var url = "https://c77a-2a00-c98-400f-114-1c00-80ff-fe00-dbc.ngrok-free.app";
 
 
-            var url = "https://";
-            var Server = HttpRuntime.Cache["Server"] as tbServers;
-            if (Server != null)
-            {
-                url += Server.BotbaseAddress;
-            }
+            //var url = "https://";
+            //var Server = HttpRuntime.Cache["Server"] as tbServers;
+            //if (Server != null)
+            //{
+            //    url += Server.BotbaseAddress;
+            //}
             var bot = BotManager.GetBot(name);
             if (bot == null)
             {
