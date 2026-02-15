@@ -411,32 +411,34 @@ public class TimerService
     #region پیغام پاک شدن فاکتور های کارت به کارت
     public async Task CheckExpireFactores()
     {
-        var DateNow = DateTime.Now.AddHours(-24);
-        var DateNow2 = DateTime.Now.AddHours(-1);
+        var DateNow_CardToCard = DateTime.Now.AddHours(-24);
+        var DateNow_TetraPay = DateTime.Now.AddHours(-1);
 
         using (Entities db = new Entities())
         {
-            var Factores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "CardToCard" && s.dw_Alerted == false).ToList();
-            foreach (var item in Factores)
+            var CardToCardFactores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow_CardToCard && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "CardToCard" && s.dw_Alerted == false).ToList();
+            foreach (var item in CardToCardFactores)
             {
                 try
                 {
 
-                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.IsActiveCardToCard == true).Count() != 0)
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Count() != 0)
                     {
                         var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
 
                         var botClient = new TelegramBotClient(BotSetting.Bot_Token);
 
                         StringBuilder str = new StringBuilder();
-                        str.Append("❌ تراکنش با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این تراکنش را پرداخت نکنید");
+                        str.Append("❌ تراکنش با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد لطفاً تحت هیچ شرایطی اقدام به پرداخت آن نکنید. مسئولیت هرگونه پرداخت بر عهده کاربر خواهد بود.");
                         str.AppendLine("");
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
+                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
 
                         item.dw_Alerted = true;
+
+                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, (int)item.dw_message_id);
                     }
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -463,24 +465,23 @@ public class TimerService
                 {
                 }
 
-                db.SaveChanges();
             }
 
 
-            var Factores2 = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow2 && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "TetraPay" && s.dw_Alerted == false).ToList();
-            foreach (var item in Factores2)
+            var TetraPayFactores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow_TetraPay && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "TetraPay" && s.dw_Alerted == false).ToList();
+            foreach (var item in TetraPayFactores)
             {
                 try
                 {
 
-                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Where(s => s.Enabled == true && s.IsActiveCardToCard == true).Count() != 0)
+                    if (item.tbTelegramUsers.tbUsers.tbBotSettings.Count() != 0)
                     {
                         var BotSetting = item.tbTelegramUsers.tbUsers.tbBotSettings.ToList()[0];
 
                         var botClient = new TelegramBotClient(BotSetting.Bot_Token);
 
                         StringBuilder str = new StringBuilder();
-                        str.Append("❌ تراکنش با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد به هیچ عنوان این تراکنش را پرداخت نکنید");
+                        str.Append("❌ تراکنش با مبلغ " + item.dw_Price.Value.ConvertToMony() + " ریال منقضی شد لطفاً تحت هیچ شرایطی اقدام به پرداخت آن نکنید. مسئولیت هرگونه پرداخت بر عهده کاربر خواهد بود.");
                         str.AppendLine("");
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
@@ -488,6 +489,8 @@ public class TimerService
                         await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
 
                         item.dw_Alerted = true;
+
+                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, (int)item.dw_message_id);
                     }
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -514,8 +517,10 @@ public class TimerService
                 {
                 }
 
-                db.SaveChanges();
+                
             }
+
+            db.SaveChanges();
 
         }
 

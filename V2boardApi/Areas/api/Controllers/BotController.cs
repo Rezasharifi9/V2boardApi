@@ -71,7 +71,6 @@ namespace V2boardApi.Areas.api.Controllers
         private ZarinPalPayment ZarinPal;
         private static tbServers Server;
         private static string RobotIDforTimer { get; set; }
-
         public BotController()
         {
             db = new Entities();
@@ -261,22 +260,38 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         var fileId = message.Photo.Last().FileId;
                                         var file = InputFile.FromFileId(fileId);
-                                        var Users = BotSettings.tbUsers.tbTelegramUsers.ToList();
-                                        Task.Run(() =>
+                                        var Users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == RobotIDforTimer).ToList();
+                                        _ = Task.Run(async () =>
                                         {
                                             foreach (var item in Users)
                                             {
                                                 try
                                                 {
                                                     message.Caption = message.Caption.Replace("/all", "");
-                                                    bot.Client.SendPhotoAsync(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
-                                                }
-                                                catch (Exception ex)
-                                                {
+                                                    await bot.Client.SendPhotoAsync(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
+                                                    await Task.Delay(35);
 
+                                                }
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 403)
+                                                {
+                                                    // احتمال زیاد بلاک کرده یا اکانت حذف شده
+                                                    item.Tel_IsBlocked = true;
+                                                    // SaveChanges();
+                                                }
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 400)
+                                                {
+                                                    // chat not found (یا id مشکل دارد)
+                                                    item.Tel_IsBlocked = true;
+                                                    // SaveChanges();
+                                                }
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 429)
+                                                {
+                                                    await Task.Delay(2000);
                                                 }
                                             }
                                         });
+                                        BotSettingRepository.Save();
+                                        return;
                                     }
                                 }
                                 else if (update.Message.Type == MessageType.Video && message.Caption != null)
@@ -285,138 +300,81 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         var fileId = message.Video.FileId;
                                         var file = InputFile.FromFileId(fileId);
-                                        var Users = BotSettings.tbUsers.tbTelegramUsers.ToList();
-                                        Task.Run(() =>
+                                        var Users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == RobotIDforTimer).ToList();
+                                        _ = Task.Run(async () =>
                                         {
                                             foreach (var item in Users)
                                             {
                                                 try
                                                 {
                                                     message.Caption = message.Caption.Replace("/all", "");
-                                                    bot.Client.SendVideoAsync(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
+                                                    await bot.Client.SendVideoAsync(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
+                                                    await Task.Delay(35);
                                                 }
-                                                catch (Exception ex)
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 403)
                                                 {
-
+                                                    // احتمال زیاد بلاک کرده یا اکانت حذف شده
+                                                    item.Tel_IsBlocked = true;
+                                                    // SaveChanges();
+                                                }
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 400)
+                                                {
+                                                    // chat not found (یا id مشکل دارد)
+                                                    item.Tel_IsBlocked = true;
+                                                    // SaveChanges();
+                                                }
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 429)
+                                                {
+                                                    await Task.Delay(2000);
                                                 }
                                             }
                                         });
-                                    }
-                                }
-                                else if (update.Message.Type == MessageType.Document && message.Caption != null)
-                                {
-                                    if (message.Caption.StartsWith("/all"))
-                                    {
-                                        var Users = BotSettings.tbUsers.tbTelegramUsers.ToList();
-                                        Task.Run(() =>
-                                        {
-                                            var fileId = message.Document.FileId;
-                                            var file = InputFile.FromFileId(fileId);
-
-                                            foreach (var item in Users)
-                                            {
-                                                try
-                                                {
-                                                    message.Caption = message.Caption.Replace("/all", "");
-                                                    bot.Client.SendDocumentAsync(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
-                                                }
-                                                catch (Exception ex)
-                                                {
-
-                                                }
-                                            }
-
-                                        });
+                                        BotSettingRepository.Save();
+                                        return;
                                     }
                                 }
                                 else if (update.Message.Type == MessageType.Text && message.Text != null)
                                 {
                                     if (message.Text.StartsWith("/all"))
                                     {
-                                        var users = BotSettings.tbUsers.tbTelegramUsers.ToList();
 
-                                        // پیدا کردن طول دستور (مثلاً "/all " یا فقط "/all")
-                                        var m = Regex.Match(message.Text, @"^/all(\s+)?");
-                                        int removeLen = m.Success ? m.Length : 4; // محافظت در برابر حالت‌های عجیب
+                                        var newText = message.Text.Replace("/all", "");
+                                        var users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == RobotIDforTimer).ToList();
 
-                                        // متن جدید (بدون /all)
-                                        var newText = message.Text.Substring(removeLen);
 
-                                        // اصلاح/کپی کردن entityها (اگر وجود داشته باشه)
-                                        MessageEntity[] adjustedEntities = null;
-                                        if (message.Entities != null && message.Entities.Length > 0)
-                                        {
-                                            var list = new List<MessageEntity>();
-                                            foreach (var e in message.Entities)
-                                            {
-                                                int entStart = e.Offset;
-                                                int entEnd = e.Offset + e.Length; // exclusive end
-
-                                                // اگر entity کاملاً قبل از بخش حذف‌شده بود -> حذفش کن (معمولاً برای دستور /all پیش میاد)
-                                                if (entEnd <= removeLen)
-                                                {
-                                                    continue;
-                                                }
-
-                                                // اگر entity کاملاً بعد از بخش حذف‌شده -> offset رو کم کن
-                                                if (entStart >= removeLen)
-                                                {
-                                                    var ne = new MessageEntity
-                                                    {
-                                                        Type = e.Type,
-                                                        Offset = e.Offset - removeLen,
-                                                        Length = e.Length,
-                                                        Url = e.Url,
-                                                        User = e.User,
-                                                        Language = e.Language,
-                                                        CustomEmojiId = e.CustomEmojiId
-                                                    };
-                                                    list.Add(ne);
-                                                    continue;
-                                                }
-
-                                                // اگر entity قسمتی در بخش حذف‌شده و قسمتی در متن جدید داره -> کوتاهش کن و قرارش بده در ابتدای متن جدید
-                                                if (entStart < removeLen && entEnd > removeLen)
-                                                {
-                                                    int newLen = entEnd - removeLen; // بخشی که بعد از حذف مانده
-                                                    var ne = new MessageEntity
-                                                    {
-                                                        Type = e.Type,
-                                                        Offset = 0,
-                                                        Length = newLen,
-                                                        Url = e.Url,
-                                                        User = e.User,
-                                                        Language = e.Language,
-                                                        CustomEmojiId = e.CustomEmojiId
-                                                    };
-                                                    list.Add(ne);
-                                                    continue;
-                                                }
-                                            }
-
-                                            adjustedEntities = list.ToArray();
-                                        }
-
-                                        // ارسال به همه کاربران (هر کاربر را جداگانه با entities ارسال کن)
-                                        Task.Run(async () =>
+                                        _ = Task.Run(async () =>
                                         {
                                             foreach (var item in users)
                                             {
                                                 try
                                                 {
-                                                    // استفاده از entities بجای parseMode
                                                     await bot.Client.SendTextMessageAsync(
                                                         chatId: item.Tel_UniqUserID,
-                                                        text: newText,
-                                                        entities: adjustedEntities
+                                                        text: newText
                                                     );
+
+                                                    await Task.Delay(35);
                                                 }
-                                                catch (Exception ex)
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 403)
                                                 {
-                                                    // لاگ کن یا هندل کن
+                                                    // احتمال زیاد بلاک کرده یا اکانت حذف شده
+                                                    item.Tel_IsBlocked = true;
+                                                    // SaveChanges();
+                                                }
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 400)
+                                                {
+                                                    // chat not found (یا id مشکل دارد)
+                                                    item.Tel_IsBlocked = true;
+                                                    // SaveChanges();
+                                                }
+                                                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 429)
+                                                {
+                                                    await Task.Delay(2000);
                                                 }
                                             }
                                         });
+                                        BotSettingRepository.Save();
+                                        return;
                                     }
                                 }
 
@@ -524,6 +482,12 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (message.From.FirstName != User.Tel_FirstName)
                                     {
                                         User.Tel_FirstName = message.From.FirstName;
+                                        edited = true;
+                                    }
+
+                                    if (User.Tel_IsBlocked)
+                                    {
+                                        User.Tel_IsBlocked = false;
                                         edited = true;
                                     }
 
@@ -939,6 +903,9 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
 
                                             var learns = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_Type == "crypto").ToList();
+                                            var ActivePayes = PaymentMethodUserRepo.Where(a => a.tbpu_Status && a.FK_User_ID == User.FK_User_ID).ToList();
+
+
                                             foreach (var item in learns)
                                             {
                                                 str.AppendLine(" <a href='" + item.ch_Link + "'>" + item.ch_Title + "</a>");
@@ -948,13 +915,18 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
                                             str.AppendLine("👥 اگه دوست داری اعتبار رایگان بگیری، کافیه چندتا از رفقاتو از بخش " + "<b>زیرمجموعه‌گیری</b>" + " دعوت کنی. هم خودت می‌بری، هم اونا! 🎁");
                                             str.AppendLine("");
+                                            var ActiveCrypto = ActivePayes.Where(a => a.tbPaymentMethods.tbpm_Key == "CryptoPlisio").Any();
+                                            if (ActiveCrypto)
+                                            {
+                                                str.AppendLine("<b>" + "اگر با ارزدیجیتال پرداخت کنی بهت 15 درصد شارژ بیشتر میدم ☺️" + "</b>");
+                                                str.AppendLine("");
+                                            }
                                             str.AppendLine("➖➖➖➖➖➖➖➖➖");
                                             str.AppendLine("");
                                             str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
 
 
-                                            var ActivePayes = PaymentMethodUserRepo.Where(a => a.tbpu_Status && a.FK_User_ID == User.FK_User_ID).ToList();
                                             foreach (var payment in ActivePayes)
                                             {
                                                 switch (payment.tbPaymentMethods.tbpm_Key)
@@ -969,6 +941,11 @@ namespace V2boardApi.Areas.api.Controllers
                                                         List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
                                                         row2.Add(InlineKeyboardButton.WithCallbackData("🏧 کارت به کارت ( واسط )", "InventoryIncreaseTetraPay"));
                                                         inlineKeyboards.Add(row2);
+                                                        break;
+                                                    case "CryptoPlisio":
+                                                        List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
+                                                        row3.Add(InlineKeyboardButton.WithCallbackData("💵 ارز دیجیتال ( بصرفه )", "InventoryIncreaseCryptoPlisio"));
+                                                        inlineKeyboards.Add(row3);
                                                         break;
 
                                                 }
@@ -1232,9 +1209,9 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-
-
+                                        var paymentMess = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                        tbDeposit.dw_message_id = paymentMess.MessageId;
+                                        await tbDepositLogRepo.SaveChangesAsync();
 
                                         return;
                                     }
@@ -1281,7 +1258,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             throw new Exception();
                                         }
 
-                                        var TaxId = Guid.NewGuid().ToString().Split('-')[0]+"#"+UserAcc.Tel_UserID;
+                                        var TaxId = Guid.NewGuid().ToString().Split('-')[0] + "#" + UserAcc.Tel_UserID;
 
                                         TetraPay tetraPay = new TetraPay(setting.tbValue);
 
@@ -1299,13 +1276,13 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             str.AppendLine("✅  تراکنش شما باموفقیت ثبت شد ");
                                             str.AppendLine();
-                                            str.AppendLine("کد پیگیری : "+"<code>"+ TaxId + "</code>");
+                                            str.AppendLine("کد پیگیری : " + "<code>" + TaxId + "</code>");
                                             str.AppendLine();
                                             str.AppendLine("👇 قبل از اینکه پول رو واریز کنی، اینا رو حتماً حواست باشه :");
                                             str.AppendLine();
                                             str.AppendLine("💰 مبلغ رو دقیق و بدون تغییر واریز کن؛ حتی اختلاف کم هم مشکل ایجاد می‌کنه.");
                                             str.AppendLine("🚫 لطفاً مبلغ رو خرد خرد نفرست؛ یک‌جا کامل واریز کن.");
-                                            str.AppendLine("🔄 فقط کارت‌به‌کارت انجام بده؛ پل یا واریز شِبا تأیید نمی‌شه.");
+                                            str.AppendLine("🔄 فقط کارت‌به‌کارت انجام بده؛ پل یا واریز پایا و شبا تأیید نمی‌شه.");
                                             str.AppendLine("⏳ هر تراکنش فقط 1 ساعت مهلت پرداخت داره");
                                             str.AppendLine();
                                             str.AppendLine("❗ یه نکته که خیلیا اشتباه می‌کنن :");
@@ -1322,7 +1299,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             tbDeposit.dw_Status = "FOR_PAY";
                                             tbDeposit.dw_TaxId = TaxId;
                                             tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
-                                            tbDeposit.dw_message_id = update.Message.MessageId;
+
                                             tbDeposit.dw_PayMethod = "Card";
                                             tbDeposit.dw_Authority = TetraRes.Authority;
                                             tbDeposit.FK_PayMethod_ID = TetraApi.tbPaymentMethods.tbpm_ID;
@@ -1330,10 +1307,10 @@ namespace V2boardApi.Areas.api.Controllers
                                             tbDepositLogRepo.Insert(tbDeposit);
                                             await tbDepositLogRepo.SaveChangesAsync();
 
-                                            await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreaseTetraPay", db, botName);
+                                            await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
                                             var Keyboard = Keyboards.GetPaymentButtonForIncreaseWalletTetraPay(TetraRes.payment_url_bot);
-                                            var reply_message = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId,replyMarkup: Keyboard);
+                                            var reply_message = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId, replyMarkup: Keyboard);
 
                                             await bot.Client.DeleteMessageAsync(UserAcc.Tel_UniqUserID, message1.MessageId);
 
@@ -1345,7 +1322,9 @@ namespace V2boardApi.Areas.api.Controllers
                                             stringBuilder.AppendLine();
                                             stringBuilder.AppendLine("🆔 @" + BotSettings.AdminUsername);
                                             var keys = Keyboards.GetHomeButton();
-                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, stringBuilder.ToString(), parseMode: ParseMode.Html, replyToMessageId: reply_message.MessageId, replyMarkup: keys);
+                                            var paymentMess = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, stringBuilder.ToString(), parseMode: ParseMode.Html, replyToMessageId: reply_message.MessageId, replyMarkup: keys);
+                                            tbDeposit.dw_message_id = paymentMess.MessageId;
+                                            await tbDepositLogRepo.SaveChangesAsync();
                                             return;
                                         }
                                         else
@@ -1359,11 +1338,122 @@ namespace V2boardApi.Areas.api.Controllers
                                             return;
                                         }
 
+                                    }
+                                    else
+                                    {
+                                        StringBuilder str = new StringBuilder();
+                                        str.AppendLine("❌ فرمت مبلغ اشتباه");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 5,000,000 تومان می باشد");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
+                                        str.AppendLine("");
+                                        str.AppendLine("❗️ مبلغ را با اعداد انگلیسی وارد کنید");
+                                        str.AppendLine("");
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreaseTetraPay", db, botName);
 
-
-
-
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
                                         return;
+                                    }
+                                }
+
+
+                                #endregion
+
+                                #region شارژ ارزدیجیتال
+
+
+                                if (UserAcc.Tel_Step == "Wait_For_Type_IncreaseCryptoPlisio")
+                                {
+
+                                    var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+
+                                    var price = 0;
+
+                                    int.TryParse(mess, out price);
+                                    if (price >= 50000 && price <= 5000000)
+                                    {
+                                        var TetraApi = User.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "CryptoPlisio").FirstOrDefault();
+
+                                        var setting = SettingRepo.Where(a => a.tbKey == "Plisio_Addr").FirstOrDefault();
+                                        if (setting == null)
+                                        {
+                                            logger.Error("عدم ثبت آدرس درگاه ارزدیجیتال");
+                                            throw new Exception();
+                                        }
+
+                                        var Panel_Addr = SettingRepo.Where(a => a.tbKey == "Panel_Addr").FirstOrDefault();
+
+                                        var TaxId = Guid.NewGuid().ToString().Split('-')[0] + "#" + UserAcc.Tel_UserID;
+                                        var url = Panel_Addr.tbValue + "/User/VerifyPlisio?json=true";
+                                        PlisioPay plisioPay = new PlisioPay(setting.tbValue, TetraApi.tbpu_ApiKey, url);
+
+                                        var usdt = Tools.Utility.GetPriceUSDT();
+                                        var fullprice = price/ usdt;
+                                        var teter = Convert.ToDecimal(fullprice);
+                                        if (teter < 1)
+                                        {
+                                            StringBuilder str2 = new StringBuilder();
+                                            str2.AppendLine("❌ مبلغ وارد شده کمتر از 1 دلار می باشد");
+                                            var reply_message = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                            return;
+                                        }
+
+                                        var plisioRes = await plisioPay.CreateInvoiceAsync(teter, "USD", TaxId, TaxId);
+                                        if (plisioRes.status == "success")
+                                        {
+                                            StringBuilder str = new StringBuilder();
+
+
+                                            str.AppendLine("✅  تراکنش شما باموفقیت ثبت شد ");
+                                            str.AppendLine();
+                                            str.AppendLine("کد پیگیری : " + "<code>" + TaxId + "</code>");
+                                            str.AppendLine();
+                                            str.AppendLine("💸 مبلغ : " + "<code>$" + plisioRes.data.invoice_total_sum + "</code>");
+                                            str.AppendLine();
+                                            str.AppendLine("⚠️  قبل از پرداخت به این نکات توجه کن 👇");
+                                            str.AppendLine();
+                                            str.AppendLine("این فاکتور فقط به مدت یکساعت فعال است");
+                                            str.AppendLine("🔄 تائید تراکنش ممکن است تا 30 دقیقه طول بکشد . کمی صبرکن");
+                                            str.AppendLine("🚫 پرداخت‌های کریپتو غیرقابل برگشت هستند. قبل از پرداخت، اطلاعات را کامل بررسی کنید.");
+                                            str.AppendLine("");
+                                            str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+
+                                            tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
+                                            tbDeposit.dw_Price = price * 10;
+                                            tbDeposit.dw_CreateDatetime = DateTime.Now;
+                                            tbDeposit.dw_Status = "FOR_PAY";
+                                            tbDeposit.dw_TaxId = TaxId;
+                                            tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
+
+                                            tbDeposit.FK_PayMethod_ID = TetraApi.tbPaymentMethods.tbpm_ID;
+
+                                            tbDepositLogRepo.Insert(tbDeposit);
+                                            await tbDepositLogRepo.SaveChangesAsync();
+
+                                            await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
+
+                                            var Keyboard = Keyboards.GetPaymentButtonForIncreaseWalletPlisoPay(plisioRes.data.invoice_url);
+                                            var reply_message = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId, replyMarkup: Keyboard);
+
+                                            await bot.Client.DeleteMessageAsync(UserAcc.Tel_UniqUserID, message1.MessageId);
+
+                                            tbDeposit.dw_message_id = reply_message.MessageId;
+                                            await tbDepositLogRepo.SaveChangesAsync();
+                                            return;
+                                        }
+                                        else
+                                        {
+
+                                            logger.Warn("ساخت تراکنش با خطا مواجه شد");
+
+                                            StringBuilder str = new StringBuilder();
+                                            str.Append("❌ ساخت تراکنش با خطا مواجه شد . با پشتیبانی ارتباط بگیرید");
+                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                            return;
+                                        }
+
                                     }
                                     else
                                     {
@@ -2450,6 +2540,43 @@ namespace V2boardApi.Areas.api.Controllers
                                     str.AppendLine("❗️ مبلغو بدون گذاشتن , وارد کن");
 
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreaseTetraPay", db, botName);
+
+                                    List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
+                                    List<KeyboardButton> row2 = new List<KeyboardButton>();
+                                    row2.Add(new KeyboardButton("⬅️ برگشت به صفحه اصلی"));
+                                    inlineKeyboards.Add(row2);
+
+                                    inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
+                                    await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                    await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                }
+
+                                #endregion
+
+                                #region Plisio
+
+                                if (callbackQuery.Data == "InventoryIncreaseCryptoPlisio")
+                                {
+
+                                    StringBuilder str = new StringBuilder();
+                                    str.AppendLine("◀️  برای افزایش شارژ کیف پولت از طریق ارزدیجیتال مبلغت رو به تومان وارد کن ");
+                                    str.AppendLine("");
+                                    str.AppendLine("مثال : 190000");
+                                    str.AppendLine("");
+                                    str.AppendLine("⚠️ توجه حداقل میزان شارژ کیف پول از طریق ارزدیجیتال 1 دلار میباشد");
+                                    str.AppendLine("");
+                                    str.AppendLine("🌐 بعضی از سایت های داخلی که میتونی ارز دیجیتال بخری 👇");
+                                    str.AppendLine("🔸 bitpin.ir");
+                                    str.AppendLine("🔹 webpurse.org");
+                                    str.AppendLine("🔸 pay98.app");
+                                    str.AppendLine("🔸 ok-ex.io");
+                                    str.AppendLine("🔹 nobitex.ir");
+                                    str.AppendLine("🔸 nikpardakht.com");
+                                    str.AppendLine("");
+                                    str.AppendLine("💰 قیمت دلار: " + "<code>" + Utility.GetPriceUSDT() + "</code>" + " تومان تا این لحظه");
+                                    str.AppendLine("");
+                                    str.AppendLine("🆔@" + BotSettings.Bot_ID);
+                                    await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreaseCryptoPlisio", db, botName);
 
                                     List<List<KeyboardButton>> inlineKeyboards = new List<List<KeyboardButton>>();
                                     List<KeyboardButton> row2 = new List<KeyboardButton>();

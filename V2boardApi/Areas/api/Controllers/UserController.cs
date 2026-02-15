@@ -398,7 +398,8 @@ namespace V2boardApi.Areas.api.Controllers
         [System.Web.Http.HttpPost]
         public async Task<IHttpActionResult> VerifyTetraPay(TetraRespModel model)
         {
-            var facotr = RepositoryDepositWallet.Where(a=> a.dw_Authority == model.authority && a.dw_Status == "FOR_PAY").FirstOrDefault();
+            logger.Info("Verify Tetra Called", model);
+            var facotr = RepositoryDepositWallet.Where(a => a.dw_Authority == model.authority && a.dw_Status == "FOR_PAY").FirstOrDefault();
             if (facotr != null)
             {
                 TransactionHanderService transactionHanderService = new TransactionHanderService();
@@ -409,7 +410,31 @@ namespace V2boardApi.Areas.api.Controllers
             {
                 return Content(HttpStatusCode.NotFound, "تراکنشی با این مشخصات یافت نشد");
             }
-            
+
+        }
+
+        [System.Web.Http.HttpPost]
+        public async Task<IHttpActionResult> VerifyPlisio(PlisioRespModel model)
+        {
+            logger.Info("Verify Plisio Called",model);
+            if (model.status == "completed")
+            {
+                var facotr = RepositoryDepositWallet.Where(a => a.dw_TaxId == model.order_number && a.dw_Status == "FOR_PAY").FirstOrDefault();
+                if (facotr != null)
+                {
+                    TransactionHanderService transactionHanderService = new TransactionHanderService();
+                    await transactionHanderService.CheckOrderTetraPay(facotr.dw_ID, facotr.tbTelegramUsers.tbUsers.PhoneNumber);
+                    return Ok();
+                }
+                else
+                {
+                    return Content(HttpStatusCode.NotFound, "تراکنشی با این مشخصات یافت نشد");
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Continue, model.status);
+            }
         }
     }
 

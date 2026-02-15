@@ -76,7 +76,7 @@ namespace V2boardApi.Tools
 
 
 
-                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY");
+                        var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_Price == pr && p.dw_Status == "FOR_PAY" && p.tbPaymentMethods.tbpm_Key == "CardToCard");
                         var botSetting = User.tbBotSettings.FirstOrDefault();
                         TelegramBotClient botClient = new TelegramBotClient(botSetting.Bot_Token);
 
@@ -373,7 +373,7 @@ namespace V2boardApi.Tools
                                 str.AppendLine("");
                                 str.AppendLine("توجه کن اگر اشتراک داری برو تو بخش تمدید و تمدید کن وگرنه اشتراکت تموم میشه و قطع میشی");
 
-                                
+
                                 await RepositoryDepositWallet.SaveChangesAsync();
                                 transaction.Commit();
                                 var keyboard = Keyboards.GetHomeButton();
@@ -713,9 +713,21 @@ namespace V2boardApi.Tools
                             else
                             {
 
-                                item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                                if (item.tbPaymentMethods.tbpm_Key == "CryptoPlisio")
+                                {
+                                    item.tbTelegramUsers.Tel_Wallet += (int)((item.dw_Price * 0.15) + item.dw_Price)/10;
+                                }
+                                else
+                                {
+                                    item.tbTelegramUsers.Tel_Wallet += item.dw_Price / 10;
+                                }
                                 StringBuilder str = new StringBuilder();
                                 str.AppendLine("✅ کیف پولتو شارژ کردم");
+                                str.AppendLine("");
+                                if (item.tbPaymentMethods.tbpm_Key == "CryptoPlisio")
+                                {
+                                    str.AppendLine("<b>"+"کیف پولت رو 15 درصد بیشتر شارژ کردم برو حالش رو ببر"+"</b>");
+                                }
                                 str.AppendLine("");
                                 str.AppendLine("💰 موجودی الانت : " + item.tbTelegramUsers.Tel_Wallet.Value.ConvertToMony() + " تومان");
                                 str.AppendLine("");
@@ -723,7 +735,7 @@ namespace V2boardApi.Tools
                                 str.AppendLine("");
                                 str.AppendLine("توجه کن اگر اشتراک داری برو تو بخش تمدید و تمدید کن وگرنه اشتراکت تموم میشه و قطع میشی");
 
-                                
+
                                 await RepositoryDepositWallet.SaveChangesAsync();
                                 transaction.Commit();
                                 var keyboard = Keyboards.GetHomeButton();

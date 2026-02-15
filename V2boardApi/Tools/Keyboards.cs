@@ -472,7 +472,29 @@ namespace V2boardBot.Models
         public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWalletTetraPay(string url)
         {
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
-            InlineKeyboardButton btn1 = new InlineKeyboardButton("💳 کارت به کارت ");
+            InlineKeyboardButton btn1 = new InlineKeyboardButton("✅ موارد فوق را خواندم . ادامه پرداخت ");
+
+            btn1.Pay = true;
+            btn1.Url = url;
+
+            row1.Add(btn1);
+
+            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+            inlineKeyboards.Add(row1);
+
+            var keyborad = new InlineKeyboardMarkup(inlineKeyboards);
+
+            return keyborad;
+        }
+
+        /// <summary>
+        /// تابع آوردن دکمه تائید پرداخت
+        /// </summary>
+        /// <returns></returns>
+        public static InlineKeyboardMarkup GetPaymentButtonForIncreaseWalletPlisoPay(string url)
+        {
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn1 = new InlineKeyboardButton("✅ پرداخت");
 
             btn1.Pay = true;
             btn1.Url = url;

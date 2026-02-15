@@ -316,6 +316,7 @@
           <Property Name="Tel_RegisterDate" Type="datetime" />
           <Property Name="Tel_Status" Type="int" Nullable="false" />
           <Property Name="Tel_GetedTestAccountUnlimited" Type="bit" Nullable="false" />
+          <Property Name="Tel_IsBlocked" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUseages">
           <Key>
@@ -1523,6 +1524,7 @@
           <NavigationProperty Name="tbTelegramUsers2" Relationship="SafeNetDBModel.FK_tbTelegramUsers_tbTelegramUsers" FromRole="tbTelegramUsers1" ToRole="tbTelegramUsers" />
           <NavigationProperty Name="tbUsers" Relationship="SafeNetDBModel.FK_tbTelegramUsers_tbUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
           <NavigationProperty Name="tbUsers1" Relationship="SafeNetDBModel.FK_tbUsers_tbTelegramUsers" FromRole="tbTelegramUsers" ToRole="tbUsers" />
+          <Property Name="Tel_IsBlocked" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="tbUseages">
           <Key>
@@ -2355,6 +2357,7 @@
           <EntitySetMapping Name="tbTelegramUsers">
             <EntityTypeMapping TypeName="SafeNetDBModel.tbTelegramUsers">
               <MappingFragment StoreEntitySet="tbTelegramUsers">
+                <ScalarProperty Name="Tel_IsBlocked" ColumnName="Tel_IsBlocked" />
                 <ScalarProperty Name="Tel_GetedTestAccountUnlimited" ColumnName="Tel_GetedTestAccountUnlimited" />
                 <ScalarProperty Name="Tel_Status" ColumnName="Tel_Status" />
                 <ScalarProperty Name="Tel_RegisterDate" ColumnName="Tel_RegisterDate" />
