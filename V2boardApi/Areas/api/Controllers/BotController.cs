@@ -43,6 +43,9 @@ using System.Text.RegularExpressions;
 using System.Net;
 using V2boardApi.PaymentMethods;
 using static V2boardApi.PaymentMethods.TetraPay;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 
 namespace V2boardApi.Areas.api.Controllers
@@ -421,44 +424,6 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                     }
 
-                                    if (mess == "/start" || mess.StartsWith("/start"))
-                                    {
-
-
-                                        inlineKeyboardMarkup = Keyboards.GetHomeButton();
-
-
-                                        StringBuilder st = new StringBuilder();
-
-                                        st.AppendLine("<b>" + " 🌍 خوش اومدی به دنیای اینترنت بدون محدودیت! " + "</b>");
-                                        st.AppendLine("");
-                                        st.AppendLine("اگه این اولین بارته، باید بدونی یه تجربه‌ی متفاوت در انتظارت ـه! 🔥");
-                                        st.AppendLine("");
-                                        st.AppendLine("✅ سرورهای ما توی چندین لوکیشن پرسرعت و باکیفیت فعالن:\r");
-                                        st.AppendLine("🇩🇪 آلمان | 🇺🇸 آمریکا | 🇫🇮 فنلاند | 🇹🇷 ترکیه\r\n🇳🇱 هلند | 🇫🇷 فرانسه | 🇬🇧 انگلیس");
-                                        st.AppendLine("");
-                                        st.AppendLine("✨ با هر اشتراک، می‌تونی بین این لوکیشن‌ها جابجا شی و همیشه بهترین پینگ و سرعت رو داشته باشی — مخصوصاً برای گیم، استریم و کارهای حرفه‌ای 🎮🎬💼");
-                                        st.AppendLine("");
-                                        st.AppendLine("🔒 بدون محدودیت اتصال\r\n🚀 سرعت بالا روی همه اینترنت‌ها\r\n\U0001f9e1 پشتیبانی همیشه در دسترس\r\n\r\n📢 تازه اگه هنوز مطمئن نیستی، می‌تونی یه اشتراک تست رایگان هم بگیری و امتحانش کنی!\r\nفقط چند ثانیه زمان می‌بره، ولی تجربه‌ش برات فرق می‌کنه 😉");
-                                        st.AppendLine("🆔 @" + BotSettings.Bot_ID);
-
-                                        Usr.Tel_RobotID = RobotIDforTimer;
-
-                                        Usr.FK_User_ID = BotSettings.tbUsers.User_ID;
-                                        tbTelegramUserRepository.Insert(Usr);
-                                        await tbTelegramUserRepository.SaveChangesAsync();
-                                        UserAcc = Usr;
-                                        var Path = HttpContext.Current.Server.MapPath("~/assets/img/TelegramUserProfiles/" + chatid + ".jpg");
-                                        await SaveUserProfilePicture(chatid, bot.Client, bot.Token, Path);
-                                        await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
-
-                                        var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-                                        return;
-
-                                    }
-
-
-
                                 }
                                 else
                                 {
@@ -558,6 +523,16 @@ namespace V2boardApi.Areas.api.Controllers
                                     st.AppendLine("با سرویس‌های ویژه ما، VPN سریع‌تر و تجربه‌ای بهتر در انتظار شماست.");
                                     st.AppendLine("");
                                     st.AppendLine("💼 هر لحظه و هر جا که بخواهید، به ما اعتماد کنید!");
+
+                                    var learns = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_Type == "crypto").ToList();
+                                    var ActivePayes = PaymentMethodUserRepo.Where(a => a.tbpu_Status && a.FK_User_ID == User.FK_User_ID).ToList();
+
+
+                                    foreach (var item in learns)
+                                    {
+                                        st.AppendLine(" <a href='" + item.ch_Link + "'>" + item.ch_Title + "</a>");
+                                    }
+
                                     st.AppendLine("");
                                     st.AppendLine("برای ادامه یکی از گزینه های زیر را انتخاب کنید 👇");
                                     st.AppendLine("");
@@ -1241,14 +1216,13 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (UserAcc.Tel_Step == "Wait_For_Type_IncreaseTetraPay")
                                 {
-
-                                    var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-
                                     var price = 0;
 
                                     int.TryParse(mess, out price);
-                                    if (price >= 50000 && price <= 5000000)
+                                    if (price >= 50000 && price <= 1000000)
                                     {
+                                        var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+
                                         var TetraApi = User.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "TetraPay").FirstOrDefault();
 
                                         var setting = SettingRepo.Where(a => a.tbKey == "TetraPay_Addr").FirstOrDefault();
@@ -1330,8 +1304,8 @@ namespace V2boardApi.Areas.api.Controllers
                                         else
                                         {
 
-                                            logger.Warn("ساخت تراکنش با خطا مواجه شد", model);
-
+                                            logger.Warn("ساخت تراکنش با خطا مواجه شد", TetraRes);
+                                            logger.Warn(JsonConvert.SerializeObject(TetraRes));
                                             StringBuilder str = new StringBuilder();
                                             str.Append("❌ ساخت تراکنش با خطا مواجه شد . با پشتیبانی ارتباط بگیرید");
                                             await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
@@ -1344,7 +1318,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("❌ فرمت مبلغ اشتباه");
                                         str.AppendLine("");
-                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 5,000,000 تومان می باشد");
+                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 1,000,000 تومان می باشد");
                                         str.AppendLine("");
                                         str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
                                         str.AppendLine("");
@@ -1367,13 +1341,14 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (UserAcc.Tel_Step == "Wait_For_Type_IncreaseCryptoPlisio")
                                 {
 
-                                    var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
 
                                     var price = 0;
 
                                     int.TryParse(mess, out price);
-                                    if (price >= 50000 && price <= 5000000)
+                                    if (price >= 200000 && price <= 5000000)
                                     {
+                                        var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+
                                         var TetraApi = User.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "CryptoPlisio").FirstOrDefault();
 
                                         var setting = SettingRepo.Where(a => a.tbKey == "Plisio_Addr").FirstOrDefault();
@@ -1446,7 +1421,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         else
                                         {
 
-                                            logger.Warn("ساخت تراکنش با خطا مواجه شد");
+                                            logger.Warn("ساخت تراکنش با خطا مواجه شد", plisioRes);
 
                                             StringBuilder str = new StringBuilder();
                                             str.Append("❌ ساخت تراکنش با خطا مواجه شد . با پشتیبانی ارتباط بگیرید");
@@ -1460,7 +1435,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("❌ فرمت مبلغ اشتباه");
                                         str.AppendLine("");
-                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 5,000,000 تومان می باشد");
+                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 200,000 تومان تا 5,000,000 تومان می باشد");
                                         str.AppendLine("");
                                         str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
                                         str.AppendLine("");
@@ -2561,7 +2536,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     StringBuilder str = new StringBuilder();
                                     str.AppendLine("◀️  برای افزایش شارژ کیف پولت از طریق ارزدیجیتال مبلغت رو به تومان وارد کن ");
                                     str.AppendLine("");
-                                    str.AppendLine("مثال : 190000");
+                                    str.AppendLine("مثال : 223000");
                                     str.AppendLine("");
                                     str.AppendLine("⚠️ توجه حداقل میزان شارژ کیف پول از طریق ارزدیجیتال 1 دلار میباشد");
                                     str.AppendLine("");
@@ -3225,24 +3200,6 @@ namespace V2boardApi.Areas.api.Controllers
                                 await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, str2.ToString(), true);
                                 await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
                             }
-
-                        }
-
-                        else
-                        {
-                            StringBuilder str2 = new StringBuilder();
-                            str2.AppendLine("⚠️ با عرض پوزش ربات برای مدت کمی از دسترس خارج شده لطفا بعدا تلاش کنید");
-                            str2.AppendLine("");
-                            str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                            if (update.CallbackQuery != null)
-                            {
-                                await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html);
-                            }
-                            else
-                            {
-                                await bot.Client.SendTextMessageAsync(update.Message.From.Id, str2.ToString(), parseMode: ParseMode.Html);
-                            }
-
 
                         }
 
