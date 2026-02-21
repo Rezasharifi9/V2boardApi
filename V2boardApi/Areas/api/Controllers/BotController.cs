@@ -117,7 +117,6 @@ namespace V2boardApi.Areas.api.Controllers
                         logger.Warn("ربات پیدا نشد");
                         return;
                     }
-
                     //if (bot.Started)
                     //{
                     if (update == null)
@@ -147,6 +146,7 @@ namespace V2boardApi.Areas.api.Controllers
                         nowPayment = new NowPayment(db, "https://api.nowpayments.io", BotSettings.NowPayment_API_KEY);
                         ZarinPal = new ZarinPalPayment(BotSettings.PaymentGateWay_Merchant_ID, BotSettings.PaymentGateWay_Key);
                         HubSmartAPI = new HubSmartAPI(BotSettings.HubSmart_API_KEY);
+                        RobotIDforTimer = BotSettings.Bot_ID;
                         var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
                         var tbServerRepository = new Repository<tbServers>(db);
                         var tbLinksRepository = new Repository<tbLinks>(db);
@@ -263,7 +263,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         var fileId = message.Photo.Last().FileId;
                                         var file = InputFile.FromFileId(fileId);
-                                        var Users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == RobotIDforTimer).ToList();
+                                        var Users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == BotSettings.Bot_ID).ToList();
                                         _ = Task.Run(async () =>
                                         {
                                             foreach (var item in Users)
@@ -303,7 +303,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         var fileId = message.Video.FileId;
                                         var file = InputFile.FromFileId(fileId);
-                                        var Users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == RobotIDforTimer).ToList();
+                                        var Users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == BotSettings.Bot_ID).ToList();
                                         _ = Task.Run(async () =>
                                         {
                                             foreach (var item in Users)
@@ -342,7 +342,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
 
                                         var newText = message.Text.Replace("/all", "");
-                                        var users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == RobotIDforTimer).ToList();
+                                        var users = BotSettings.tbUsers.tbTelegramUsers.Where(a => a.Tel_IsBlocked == false && a.Tel_RobotID == BotSettings.Bot_ID).ToList();
 
 
                                         _ = Task.Run(async () =>
@@ -387,29 +387,70 @@ namespace V2boardApi.Areas.api.Controllers
                             {
 
                                 #region چک کردن اینکه آیا کاربر وجود دارد در دیتابیس یا نه
-                                var User = await tbTelegramUserRepository.FirstOrDefaultAsync(p => p.Tel_UniqUserID == chatid.ToString() && p.tbUsers.Username == botName);
-                                if (User == null)
+                                var User1 = await tbTelegramUserRepository.FirstOrDefaultAsync(p => p.Tel_UniqUserID == chatid.ToString() && p.tbUsers.Username == botName);
+                                if (User1 != null)
+                                {
+                                    if (User1.Tel_RobotID == null)
+                                    {
+                                        User1.Tel_RobotID = RobotIDforTimer;
+                                        await tbTelegramUserRepository.SaveChangesAsync();
+                                    }
+                                    var edited = false;
+                                    if (message.From.Username != User1.Tel_Username)
+                                    {
+                                        User1.Tel_Username = message.From.Username;
+                                        edited = true;
+                                    }
+
+                                    if (message.From.LastName != User1.Tel_LastName)
+                                    {
+                                        User1.Tel_LastName = message.From.LastName;
+                                        edited = true;
+                                    }
+                                    if (message.From.FirstName != User1.Tel_FirstName)
+                                    {
+                                        User1.Tel_FirstName = message.From.FirstName;
+                                        edited = true;
+                                    }
+
+                                    if (User1.Tel_IsBlocked)
+                                    {
+                                        User1.Tel_IsBlocked = false;
+                                        edited = true;
+                                    }
+
+                                    if (edited)
+                                    {
+                                        await tbTelegramUserRepository.SaveChangesAsync();
+                                    }
+
+                                    UserAcc = User1;
+                                    await RealUser.SetUpdateMessageTime(User1.Tel_UniqUserID, db, DateTime.UtcNow, botName);
+                                    var Path = HttpContext.Current.Server.MapPath("~/assets/img/TelegramUserProfiles/" + chatid + ".jpg");
+                                    await SaveUserProfilePicture(chatid, bot.Client, bot.Token, Path);
+
+                                }
+                                else
                                 {
                                     tbTelegramUsers Usr = new tbTelegramUsers();
-                                    Usr.Tel_UniqUserID = chatid.ToString();
-                                    Usr.Tel_Step = "Start";
-                                    Usr.Tel_Wallet = 0;
-                                    Usr.Tel_Monthes = 1;
-                                    Usr.Tel_Traffic = 20;
-                                    Usr.Tel_Status = 1;
+                                    Usr.Tel_UniqUserID = message.From.Id.ToString();
                                     if (message.From.Username != null)
                                     {
                                         Usr.Tel_Username = message.From.Username;
-                                    }
 
+                                    }
                                     if (message.From.LastName != null)
                                     {
                                         Usr.Tel_LastName = message.From.LastName;
+
                                     }
+
                                     if (message.From.FirstName != null)
                                     {
                                         Usr.Tel_FirstName = message.From.FirstName;
+
                                     }
+
                                     if (mess != "/start")
                                     {
                                         var inites = mess.Split(' ');
@@ -424,48 +465,17 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                     }
 
+
+                                    Usr.Tel_RobotID = RobotIDforTimer;
+                                    Usr.Tel_Wallet = 0;
+                                    Usr.Tel_UpdateMessage = DateTime.UtcNow;
+                                    Usr.Tel_RegisterDate = DateTime.Now;
+                                    Usr.FK_User_ID = BotSettings.FK_User_ID;
+                                    tbTelegramUserRepository.Insert(Usr);
+                                    await tbTelegramUserRepository.SaveChangesAsync();
+                                    UserAcc = Usr;
                                 }
-                                else
-                                {
-                                    if (User.Tel_RobotID == null)
-                                    {
-                                        User.Tel_RobotID = RobotIDforTimer;
-                                        await tbTelegramUserRepository.SaveChangesAsync();
-                                    }
-                                    var edited = false;
-                                    if (message.From.Username != User.Tel_Username)
-                                    {
-                                        User.Tel_Username = message.From.Username;
-                                        edited = true;
-                                    }
 
-                                    if (message.From.LastName != User.Tel_LastName)
-                                    {
-                                        User.Tel_LastName = message.From.LastName;
-                                        edited = true;
-                                    }
-                                    if (message.From.FirstName != User.Tel_FirstName)
-                                    {
-                                        User.Tel_FirstName = message.From.FirstName;
-                                        edited = true;
-                                    }
-
-                                    if (User.Tel_IsBlocked)
-                                    {
-                                        User.Tel_IsBlocked = false;
-                                        edited = true;
-                                    }
-
-                                    if (edited)
-                                    {
-                                        await tbTelegramUserRepository.SaveChangesAsync();
-                                    }
-
-                                    UserAcc = User;
-                                    await RealUser.SetUpdateMessageTime(User.Tel_UniqUserID, db, DateTime.UtcNow, botName);
-                                    var Path = HttpContext.Current.Server.MapPath("~/assets/img/TelegramUserProfiles/" + chatid + ".jpg");
-                                    await SaveUserProfilePicture(chatid, bot.Client, bot.Token, Path);
-                                }
                                 #endregion
 
                                 #region چک کردن آیا کاربر در کانال عضو آست یا خیر
@@ -475,7 +485,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (BotSettings.RequiredJoinChannel == true)
                                     {
 
-                                        var joined = await bot.Client.GetChatMemberAsync("@" + BotSettings.ChannelID, Convert.ToInt64(UserAcc.Tel_UniqUserID));
+                                        var joined = await bot.Client.GetChatMemberAsync("@" + BotSettings.ChannelID, Convert.ToInt64(chatid));
 
                                         if (joined != null && (joined.Status == ChatMemberStatus.Left || joined.Status == ChatMemberStatus.Kicked))
                                         {
@@ -500,7 +510,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             buttons.Add(inlineKeyboardButton);
 
                                             var key = new InlineKeyboardMarkup(buttons);
-                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
+                                            await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
                                             return;
                                         }
                                     }
@@ -525,9 +535,9 @@ namespace V2boardApi.Areas.api.Controllers
                                     st.AppendLine("💼 هر لحظه و هر جا که بخواهید، به ما اعتماد کنید!");
 
                                     var learns = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_Type == "crypto").ToList();
-                                    var ActivePayes = PaymentMethodUserRepo.Where(a => a.tbpu_Status && a.FK_User_ID == User.FK_User_ID).ToList();
+                                    var ActivePayes = PaymentMethodUserRepo.Where(a => a.tbpu_Status && a.FK_User_ID == UserAcc.FK_User_ID).ToList();
 
-
+                                    st.AppendLine("");
                                     foreach (var item in learns)
                                     {
                                         st.AppendLine(" <a href='" + item.ch_Link + "'>" + item.ch_Title + "</a>");
@@ -540,8 +550,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
 
-
-                                    var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                                    var task = await bot.Client.SendTextMessageAsync(chatid, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html,disableWebPagePreview:true);
 
                                     if (BotSettings.IsNotActiveSell)
                                     {
@@ -550,7 +559,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         st2.AppendLine("<b>" + "❌ به اطلاع می‌رسانیم فروش در حال حاضر به‌صورت موقت متوقف شده است. ❌" + "</b>");
                                         st2.AppendLine("");
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st2.ToString(), parseMode: ParseMode.Html);
+                                        await bot.Client.SendTextMessageAsync(chatid, st2.ToString(), parseMode: ParseMode.Html);
 
                                     }
                                     return;
@@ -569,7 +578,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     st.AppendLine("برای ادامه یکی از گزینه های زیر را انتخاب کنید 👇");
                                     st.AppendLine("");
                                     st.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                    await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
+                                    await RealUser.SetEmptyState(chatid.ToString(), db, botName);
 
                                     var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
                                     return;
@@ -594,16 +603,16 @@ namespace V2boardApi.Areas.api.Controllers
                                         //await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectSubType", db, botName);
 
                                         var AccName = "";
-                                        if (User.Tel_Username != null)
+                                        if (UserAcc.Tel_Username != null)
                                         {
-                                            var Link = await tbLinksRepository.FirstOrDefaultAsync(a => a.tbL_Email.Contains(User.Tel_Username) && a.tbTelegramUsers.Tel_UniqUserID == UserAcc.Tel_UniqUserID);
+                                            var Link = await tbLinksRepository.FirstOrDefaultAsync(a => a.tbL_Email.Contains(UserAcc.Tel_Username) && a.tbTelegramUsers.Tel_UniqUserID == UserAcc.Tel_UniqUserID);
                                             if (Link != null)
                                             {
-                                                AccName = User.Tel_Username + Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                                AccName = UserAcc.Tel_Username + Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
                                             }
                                             else
                                             {
-                                                AccName = User.Tel_Username + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                                AccName = UserAcc.Tel_Username + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
                                             }
 
                                         }
@@ -729,7 +738,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 else if (mess == "🔄 تمدید اشتراک")
                                 {
                                     #region بخش نمایش لینک های موجود کاربر
-                                    await RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
+                                    await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
                                     var keyboard = Keyboards.GetServiceLinksKeyboard(UserAcc.Tel_UserID, tbLinksRepository);
                                     if (keyboard == null)
                                     {
@@ -878,7 +887,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
 
                                             var learns = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_Type == "crypto").ToList();
-                                            var ActivePayes = PaymentMethodUserRepo.Where(a => a.tbpu_Status && a.FK_User_ID == User.FK_User_ID).ToList();
+                                            var ActivePayes = PaymentMethodUserRepo.Where(a => a.tbpu_Status && a.FK_User_ID == UserAcc.FK_User_ID).ToList();
 
 
                                             foreach (var item in learns)
@@ -1071,13 +1080,13 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
 
-                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == User.Tel_UniqUserID && s.tbUsers.Username == botName).FirstOrDefault();
+                                        var tbTelegram = tbTelegramUserRepository.Where(s => s.Tel_UniqUserID == UserAcc.Tel_UniqUserID && s.tbUsers.Username == botName).FirstOrDefault();
                                         if (tbTelegram != null)
                                         {
                                             tbTelegram.Tel_GetedTestAccount = true;
                                         }
                                         tbTelegramUserRepository.Save();
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
                                     }
                                     else
                                     {
@@ -1085,7 +1094,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("❌ عزیزم شما یکبار فقط می توانید اشتراک تست دریافت کنید");
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString());
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString());
                                     }
                                 }
                                 #endregion
@@ -1097,7 +1106,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     var learn = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type == "buy_sub").FirstOrDefault();
                                     if (learn != null)
                                     {
-                                        await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, learn.ch_Link, disableWebPagePreview: false);
+                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, learn.ch_Link, disableWebPagePreview: false);
                                     }
                                     else
                                     {
@@ -1129,7 +1138,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         }
                                         StringBuilder str = new StringBuilder();
 
-                                        var TaxId = Guid.NewGuid().ToString().Split('-')[0] + "#" + User.Tel_UserID;
+                                        var TaxId = Guid.NewGuid().ToString().Split('-')[0] + "#" + UserAcc.Tel_UserID;
 
                                         var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
                                         var PaymentCard = BotSettings.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "CardToCard" && a.tbpu_Status).FirstOrDefault();
@@ -1223,7 +1232,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
 
-                                        var TetraApi = User.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "TetraPay").FirstOrDefault();
+                                        var TetraApi = UserAcc.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "TetraPay").FirstOrDefault();
 
                                         var setting = SettingRepo.Where(a => a.tbKey == "TetraPay_Addr").FirstOrDefault();
                                         if (setting == null)
@@ -1349,7 +1358,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
 
-                                        var TetraApi = User.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "CryptoPlisio").FirstOrDefault();
+                                        var TetraApi = UserAcc.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "CryptoPlisio").FirstOrDefault();
 
                                         var setting = SettingRepo.Where(a => a.tbKey == "Plisio_Addr").FirstOrDefault();
                                         if (setting == null)
@@ -1490,7 +1499,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
 
 
-                                            foreach (var item in User.tbOrders)
+                                            foreach (var item in UserAcc.tbOrders)
                                             {
                                                 item.AccountName = Link.tbL_Email;
                                             }
