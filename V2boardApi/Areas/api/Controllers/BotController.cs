@@ -1266,7 +1266,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("💰 مبلغ رو دقیق و بدون تغییر واریز کن؛ حتی اختلاف کم هم مشکل ایجاد می‌کنه.");
                                             str.AppendLine("🚫 لطفاً مبلغ رو خرد خرد نفرست؛ یک‌جا کامل واریز کن.");
                                             str.AppendLine("🔄 فقط کارت‌به‌کارت انجام بده؛ پل یا واریز پایا و شبا تأیید نمی‌شه.");
-                                            str.AppendLine("⏳ هر تراکنش فقط 1 ساعت مهلت پرداخت داره");
+                                            str.AppendLine("⏳ هر تراکنش فقط 1 ساعت مهلت پرداخت داره بعد از گذشت یکساعت از سیستم حذف میشه");
                                             str.AppendLine();
                                             str.AppendLine("❗ یه نکته که خیلیا اشتباه می‌کنن :");
                                             str.AppendLine("تو مبلغ رو به تومان وارد می‌کنی، ولی عددی که اعلام میشه ریاله. پس دقیقاً همون عدد ریالی رو واریز کن.");
@@ -1306,7 +1306,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             stringBuilder.AppendLine("🆔 @" + BotSettings.AdminUsername);
                                             var keys = Keyboards.GetHomeButton();
                                             var paymentMess = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, stringBuilder.ToString(), parseMode: ParseMode.Html, replyToMessageId: reply_message.MessageId, replyMarkup: keys);
-                                            tbDeposit.dw_message_id = paymentMess.MessageId;
+                                            tbDeposit.dw_message_id = reply_message.MessageId;
                                             await tbDepositLogRepo.SaveChangesAsync();
                                             return;
                                         }

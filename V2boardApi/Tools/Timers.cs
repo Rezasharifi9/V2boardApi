@@ -24,16 +24,18 @@ public class TimerService
     //private System.Threading.Timer CheckSubLimitedUser;
     private System.Threading.Timer DeleteTestAccount;
     private System.Threading.Timer DeleteFactores;
-    private System.Threading.Timer DeleteFactoresCard;
+    private System.Threading.Timer AlertDeleteFactoresCard;
+    private System.Threading.Timer RemoveFactoresCard;
     private tbServers Server;
     public TimerService()
     {
         // تنظیم تایمرها
         CheckLink = new System.Threading.Timer(async _ => await CheckSubTimerCallback(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
-        DeleteFactoresCard = new System.Threading.Timer(async _ => await CheckExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
+        AlertDeleteFactoresCard = new System.Threading.Timer(async _ => await CheckExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
         CheckRenewAccount = new System.Threading.Timer(async _ => await CheckRenewAccountFun(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(300000));
         //CheckSubLimitedUser = new System.Threading.Timer(async _ => await CheckSubLimitedUsers(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(180000));
         DeleteTestAccount = new System.Threading.Timer(async _ => await DeleteTestSub(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
+        RemoveFactoresCard = new System.Threading.Timer(async _ => await RemoveExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
         Server = HttpRuntime.Cache["Server"] as tbServers;
     }
 
@@ -217,7 +219,6 @@ public class TimerService
     }
 
     #endregion
-
 
 
     #region تابع حذف کردن اشتراکات تست
@@ -434,11 +435,10 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html,replyToMessageId: item.dw_message_id);
 
                         item.dw_Alerted = true;
 
-                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, (int)item.dw_message_id);
                     }
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -490,7 +490,6 @@ public class TimerService
 
                         item.dw_Alerted = true;
 
-                        await botClient.DeleteMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, (int)item.dw_message_id);
                     }
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -530,7 +529,92 @@ public class TimerService
 
     #endregion
 
+    #region  پاک کردن فاکتور های کارت به کارت
+    public async Task RemoveExpireFactores()
+    {
+        var DateNow = DateTime.Now.AddHours(-72);
 
+
+        using (Entities db = new Entities())
+        {
+            var CardToCardFactores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "CardToCard" && s.dw_Alerted == false).ToList();
+            foreach (var item in CardToCardFactores)
+            {
+                try
+                {
+                    db.tbDepositWallet_Log.Remove(item);
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
+                    // مثلا:
+                    foreach (var entry in ex.Entries)
+                    {
+                        if (entry.State == EntityState.Deleted)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری حذف شده باشد
+                            // اقدامات مناسب مانند نمایش پیام خطا
+                        }
+                        else if (entry.State == EntityState.Modified)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری تغییر کرده باشد
+                            // بازخوانی داده‌ها و تصمیم‌گیری برای ادامه کار
+                            entry.OriginalValues.SetValues(entry.GetDatabaseValues());
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                }
+
+            }
+
+
+            var TetraPayFactores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "TetraPay" && s.dw_Alerted == false).ToList();
+            foreach (var item in TetraPayFactores)
+            {
+                try
+                {
+
+                    db.tbDepositWallet_Log.Remove(item);
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    // مدیریت خطا، مانند لاگ کردن و اطلاع‌رسانی به کاربر
+                    // مثلا:
+                    foreach (var entry in ex.Entries)
+                    {
+                        if (entry.State == EntityState.Deleted)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری حذف شده باشد
+                            // اقدامات مناسب مانند نمایش پیام خطا
+                        }
+                        else if (entry.State == EntityState.Modified)
+                        {
+                            // داده ممکن است توسط فرآیند دیگری تغییر کرده باشد
+                            // بازخوانی داده‌ها و تصمیم‌گیری برای ادامه کار
+                            entry.OriginalValues.SetValues(entry.GetDatabaseValues());
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                }
+
+
+            }
+
+            db.SaveChanges();
+
+        }
+
+
+    }
+
+
+    #endregion
 
     #endregion
 }
