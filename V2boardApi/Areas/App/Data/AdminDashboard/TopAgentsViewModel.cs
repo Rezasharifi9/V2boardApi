@@ -8,7 +8,7 @@ namespace V2boardApi.Areas.App.Data.AdminDashboard
 {
     public class TopAgentsViewModel
     {
-        public List<int> Sells { get; set; }
+        public List<double> Sells { get; set; }
         public List<string> Agents { get; set; }
     }
 }

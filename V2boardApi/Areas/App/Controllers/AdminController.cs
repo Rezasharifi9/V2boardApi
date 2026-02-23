@@ -1584,7 +1584,7 @@ namespace V2boardApi.Areas.App.Controllers
                         TelegramBotClient bot = new TelegramBotClient(BotToken);
                         try
                         {
-                            var joined = bot.GetChatMemberAsync("@" + ChannelId, TelegramUserId);
+                            var joined = bot.GetChatMember("@" + ChannelId, TelegramUserId);
                             var s = joined.Result.Status;
 
                         }
@@ -1617,7 +1617,7 @@ namespace V2boardApi.Areas.App.Controllers
                     TelegramBotClient bot = new TelegramBotClient(BotToken);
                     try
                     {
-                        var res = bot.SendTextMessageAsync(TelegramUserId, "پیغام جهت صحت سنجی اطلاعات ثبت شده در تنظیمات می باشد");
+                        var res = bot.SendMessage(TelegramUserId, "پیغام جهت صحت سنجی اطلاعات ثبت شده در تنظیمات می باشد");
                         var s = res.Result;
                     }
                     catch (Exception ex)

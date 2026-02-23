@@ -102,7 +102,7 @@ namespace V2boardApi.Tools
                                         str1.AppendLine("");
                                         str1.AppendLine("🚀 @" + botSetting.Bot_ID);
 
-                                        await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                        await botClient.SendMessage(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
                                     }
                                 }
 
@@ -201,7 +201,7 @@ namespace V2boardApi.Tools
                                         str2.AppendLine("♨️ میتونی توی بخش مدیریت اشتراک ها ببینی که تمدید شده");
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
-                                        await botClient.SendTextMessageAsync(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
+                                        await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
 
                                         return true;
 
@@ -226,7 +226,7 @@ namespace V2boardApi.Tools
                                         str2.AppendLine("");
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
-                                        await botClient.SendTextMessageAsync(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
+                                        await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
 
                                         return true;
                                     }
@@ -323,8 +323,7 @@ namespace V2boardApi.Tools
 
                                     List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
                                     InlineKeyboardButton inlineKeyboard = new InlineKeyboardButton("🔗 اتصال به اشتراک");
-                                    WebAppInfo appInfo = new WebAppInfo();
-                                    appInfo.Url = SubLink;
+                                    WebAppInfo appInfo = new WebAppInfo(SubLink);
                                     inlineKeyboard.WebApp = appInfo;
                                     row2.Add(inlineKeyboard);
                                     inlineKeyboards.Add(row2);
@@ -344,17 +343,17 @@ namespace V2boardApi.Tools
 
                                     var keys = Keyboards.GetHomeButton();
 
-                                    //await botClient.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد", replyMarkup: keys);
+                                    //await botClient.SendMessage(UserAcc.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد", replyMarkup: keys);
 
-                                    await botClient.SendTextMessageAsync(Order.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد");
+                                    await botClient.SendMessage(Order.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد");
 
 
-                                    await botClient.SendPhotoAsync(
+                                    await botClient.SendPhoto(
                                       chatId: Order.tbTelegramUsers.Tel_UniqUserID,
                                       photo: image,
                                       caption: st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
 
-                                    await botClient.SendTextMessageAsync(Order.tbTelegramUsers.Tel_UniqUserID, "به منو اصلی بازگشتید 🏘", parseMode: ParseMode.Html, replyMarkup: keys);
+                                    await botClient.SendMessage(Order.tbTelegramUsers.Tel_UniqUserID, "به منو اصلی بازگشتید 🏘", parseMode: ParseMode.Html, replyMarkup: keys);
                                     await RealUser.SetEmptyState(Order.tbTelegramUsers.Tel_UniqUserID, db, Order.tbTelegramUsers.tbUsers.Username);
 
                                     return true;
@@ -381,7 +380,7 @@ namespace V2boardApi.Tools
                                 await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
 
 
-                                await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                await botClient.SendMessage(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
 
 
                                 return true;
@@ -452,7 +451,7 @@ namespace V2boardApi.Tools
                                         str1.AppendLine("");
                                         str1.AppendLine("🚀 @" + botSetting.Bot_ID);
 
-                                        await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                        await botClient.SendMessage(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
                                     }
                                 }
 
@@ -551,7 +550,7 @@ namespace V2boardApi.Tools
                                         str2.AppendLine("♨️ میتونی توی بخش مدیریت اشتراک ها ببینی که تمدید شده");
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
-                                        await botClient.SendTextMessageAsync(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
+                                        await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
 
                                         return true;
 
@@ -576,7 +575,7 @@ namespace V2boardApi.Tools
                                         str2.AppendLine("");
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
-                                        await botClient.SendTextMessageAsync(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
+                                        await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
 
                                         return true;
                                     }
@@ -673,8 +672,7 @@ namespace V2boardApi.Tools
 
                                     List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
                                     InlineKeyboardButton inlineKeyboard = new InlineKeyboardButton("🔗 اتصال به اشتراک");
-                                    WebAppInfo appInfo = new WebAppInfo();
-                                    appInfo.Url = SubLink;
+                                    WebAppInfo appInfo = new WebAppInfo(SubLink);
                                     inlineKeyboard.WebApp = appInfo;
                                     row2.Add(inlineKeyboard);
                                     inlineKeyboards.Add(row2);
@@ -694,17 +692,17 @@ namespace V2boardApi.Tools
 
                                     var keys = Keyboards.GetHomeButton();
 
-                                    //await botClient.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد", replyMarkup: keys);
+                                    //await botClient.SendMessage(UserAcc.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد", replyMarkup: keys);
 
-                                    await botClient.SendTextMessageAsync(Order.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد");
+                                    await botClient.SendMessage(Order.tbTelegramUsers.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد");
 
 
-                                    await botClient.SendPhotoAsync(
+                                    await botClient.SendPhoto(
                                       chatId: Order.tbTelegramUsers.Tel_UniqUserID,
                                       photo: image,
                                       caption: st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
 
-                                    await botClient.SendTextMessageAsync(Order.tbTelegramUsers.Tel_UniqUserID, "به منو اصلی بازگشتید 🏘", parseMode: ParseMode.Html, replyMarkup: keys);
+                                    await botClient.SendMessage(Order.tbTelegramUsers.Tel_UniqUserID, "به منو اصلی بازگشتید 🏘", parseMode: ParseMode.Html, replyMarkup: keys);
                                     await RealUser.SetEmptyState(Order.tbTelegramUsers.Tel_UniqUserID, db, Order.tbTelegramUsers.tbUsers.Username);
 
                                     return true;
@@ -743,7 +741,7 @@ namespace V2boardApi.Tools
                                 await RealUser.SetUserStep(item.tbTelegramUsers.Tel_UniqUserID, "Start", db, item.tbTelegramUsers.tbUsers.Username);
 
 
-                                await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                await botClient.SendMessage(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
 
 
                                 return true;

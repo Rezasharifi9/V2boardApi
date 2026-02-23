@@ -161,7 +161,7 @@ namespace V2boardApi.Areas.App.Controllers
                         TelegramBotClient botClient = new TelegramBotClient(BotSetting.Bot_Token);
                         foreach (var item in Use.tbTelegramUsers.ToList())
                         {
-                            botClient.SendTextMessageAsync(item.Tel_UniqUserID, message);
+                            botClient.SendMessage(item.Tel_UniqUserID, message);
                         }
                     }
                 }
@@ -249,8 +249,8 @@ namespace V2boardApi.Areas.App.Controllers
                     var server = RepositoryServers.Where(p => p.Robot_ID == TelegramUser.Tel_RobotID).First();
 
                     TelegramBotClient bot = new TelegramBotClient(server.Robot_Token);
-                    bot.SendTextMessageAsync(TelegramUser.Tel_UniqUserID, message);
-                    bot.CloseAsync();
+                    bot.SendMessage(TelegramUser.Tel_UniqUserID, message);
+                    bot.Close();
                     logger.Info("به کاربر تلرام " + TelegramUser.Tel_Username + " پیام ارسال شد");
                     return Content("1");
 

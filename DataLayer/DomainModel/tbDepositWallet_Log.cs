@@ -16,7 +16,7 @@ namespace DataLayer.DomainModel
     {
         public int dw_ID { get; set; }
         public Nullable<int> FK_TelegramUser_ID { get; set; }
-        public Nullable<int> dw_Price { get; set; }
+        public Nullable<double> dw_Price { get; set; }
         public string dw_Status { get; set; }
         public Nullable<System.DateTime> dw_CreateDatetime { get; set; }
         public string dw_payment_id { get; set; }

@@ -9,7 +9,7 @@ namespace V2boardApi.Areas.App.Data.RequestModels
     {
         public int id { get; set; }
         public string PlanName { get; set; }
-        public int DayesCount { get; set; }
+        public double DayesCount { get; set; }
         public double Traffic { get; set; }
         public string Price { get; set; }
         public int Status { get; set; }

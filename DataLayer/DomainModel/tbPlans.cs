@@ -28,8 +28,8 @@ namespace DataLayer.DomainModel
         public string Plan_Des { get; set; }
         public Nullable<int> FK_Server_ID { get; set; }
         public Nullable<bool> Status { get; set; }
-        public int PlanMonth { get; set; }
-        public int PlanVolume { get; set; }
+        public double PlanMonth { get; set; }
+        public double PlanVolume { get; set; }
         public int Price { get; set; }
         public Nullable<int> Group_Id { get; set; }
         public string Group_Name { get; set; }

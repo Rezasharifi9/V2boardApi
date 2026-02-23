@@ -15,9 +15,9 @@ namespace DataLayer.DomainModel
     {
         public string Username { get; set; }
         public Nullable<System.DateTime> OrderDate { get; set; }
-        public Nullable<int> PerYear { get; set; }
-        public Nullable<int> PerMonth { get; set; }
-        public Nullable<int> PerDay { get; set; }
-        public Nullable<int> Sales { get; set; }
+        public Nullable<double> PerYear { get; set; }
+        public Nullable<double> PerMonth { get; set; }
+        public Nullable<double> PerDay { get; set; }
+        public Nullable<double> Sales { get; set; }
     }
 }

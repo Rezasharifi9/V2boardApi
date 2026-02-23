@@ -38,14 +38,15 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using StackExchange.Redis;
 using V2boardBot.Tools;
-using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Net;
 using V2boardApi.PaymentMethods;
 using static V2boardApi.PaymentMethods.TetraPay;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.Ocsp;
+using Telegram.Bot.Serialization;
+using System.Text.Json;
+using Newtonsoft.Json.Linq;
 
 
 namespace V2boardApi.Areas.api.Controllers
@@ -100,10 +101,16 @@ namespace V2boardApi.Areas.api.Controllers
 
         [System.Web.Http.HttpPost]
 
-        public async Task Update(string botName, Update update)
+        public async Task<IHttpActionResult> Update([FromUri] string botName)
         {
             try
             {
+                Update update;
+
+                using (var stream = await Request.Content.ReadAsStreamAsync())
+                {
+                    update = JsonSerializer.Deserialize<Update>(stream, JsonBotAPI.Options);
+                }
 
                 using (Entities db = new Entities())
                 {
@@ -115,14 +122,14 @@ namespace V2boardApi.Areas.api.Controllers
                     if (bot == null)
                     {
                         logger.Warn("ربات پیدا نشد");
-                        return;
+                        return Ok();
                     }
                     //if (bot.Started)
                     //{
                     if (update == null)
                     {
                         logger.Warn("کلاس update پیدا نشد");
-                        return;
+                        return Ok();
                     }
                     var BotSettings = await BotSettingRepository.FirstOrDefaultAsync(p => p.tbUsers.Username == botName);
                     if (BotSettings.Enabled == false)
@@ -133,13 +140,13 @@ namespace V2boardApi.Areas.api.Controllers
                         str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
                         if (update.CallbackQuery != null)
                         {
-                            await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html);
+                            await bot.Client.SendMessage(update.CallbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html);
                         }
                         else
                         {
-                            await bot.Client.SendTextMessageAsync(update.Message.From.Id, str2.ToString(), parseMode: ParseMode.Html);
+                            await bot.Client.SendMessage(update.Message.From.Id, str2.ToString(), parseMode: ParseMode.Html);
                         }
-                        return;
+                        return Ok();
                     }
                     if (BotSettings.Enabled && BotSettings.tbUsers.Wallet <= BotSettings.tbUsers.Limit)
                     {
@@ -179,20 +186,20 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         var OrgMessage = mess.Split('=')[1];
 
-                                        await bot.Client.SendTextMessageAsync(TelegramUser.Tel_UniqUserID, OrgMessage, parseMode: ParseMode.Html);
-                                        await bot.Client.SendTextMessageAsync(chatid, "✅ پیام با موفقیت ارسال شد", parseMode: ParseMode.Html);
-                                        return;
+                                        await bot.Client.SendMessage(TelegramUser.Tel_UniqUserID, OrgMessage, parseMode: ParseMode.Html);
+                                        await bot.Client.SendMessage(chatid, "✅ پیام با موفقیت ارسال شد", parseMode: ParseMode.Html);
+                                        return Ok();
                                     }
                                     else
                                     {
-                                        await bot.Client.SendTextMessageAsync(chatid, "❌ کاربری با این آیدی یافت نشد", parseMode: ParseMode.Html);
-                                        return;
+                                        await bot.Client.SendMessage(chatid, "❌ کاربری با این آیدی یافت نشد", parseMode: ParseMode.Html);
+                                        return Ok();
                                     }
                                 }
                                 else
                                 {
-                                    await bot.Client.SendTextMessageAsync(chatid, "ادمین عزیز بعد از درج نام کاربری = گذاشته و سپس پیام خود را بنویسید", parseMode: ParseMode.Html);
-                                    return;
+                                    await bot.Client.SendMessage(chatid, "ادمین عزیز بعد از درج نام کاربری = گذاشته و سپس پیام خود را بنویسید", parseMode: ParseMode.Html);
+                                    return Ok();
                                 }
                             }
 
@@ -211,12 +218,12 @@ namespace V2boardApi.Areas.api.Controllers
                                         {
                                             StringBuilder st = new StringBuilder();
                                             st.Append("❗️فاکتوری برای این رسید یافت نشد یا قبلا تائید شده است");
-                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-                                            return;
+                                            await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyParameters: message.MessageId, parseMode: ParseMode.Html);
+                                            return Ok();
                                         }
 
                                         var fileId = message.Photo[message.Photo.Length - 1].FileId; // Get the highest quality photo
-                                        var filed = await bot.Client.GetFileAsync(fileId);
+                                        var filed = await bot.Client.GetFile(fileId);
 
                                         var file = InputFile.FromFileId(fileId);
 
@@ -246,8 +253,8 @@ namespace V2boardApi.Areas.api.Controllers
 
 
 
-                                        await bot.Client.SendPhotoAsync(BotSettings.AdminBot_ID, file, replyMarkup: key, parseMode: ParseMode.Html, caption: str.ToString());
-                                        return;
+                                        await bot.Client.SendPhoto(BotSettings.AdminBot_ID, file, replyMarkup: key, parseMode: ParseMode.Html, caption: str.ToString());
+                                        return Ok();
                                     }
 
                                     #endregion
@@ -271,7 +278,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 try
                                                 {
                                                     message.Caption = message.Caption.Replace("/all", "");
-                                                    await bot.Client.SendPhotoAsync(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
+                                                    await bot.Client.SendPhoto(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
                                                     await Task.Delay(35);
 
                                                 }
@@ -294,7 +301,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                         });
                                         BotSettingRepository.Save();
-                                        return;
+                                        return Ok();
                                     }
                                 }
                                 else if (update.Message.Type == MessageType.Video && message.Caption != null)
@@ -311,7 +318,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 try
                                                 {
                                                     message.Caption = message.Caption.Replace("/all", "");
-                                                    await bot.Client.SendVideoAsync(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
+                                                    await bot.Client.SendVideo(item.Tel_UniqUserID, file, caption: message.Caption, parseMode: ParseMode.Html);
                                                     await Task.Delay(35);
                                                 }
                                                 catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 403)
@@ -333,7 +340,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                         });
                                         BotSettingRepository.Save();
-                                        return;
+                                        return Ok();
                                     }
                                 }
                                 else if (update.Message.Type == MessageType.Text && message.Text != null)
@@ -351,7 +358,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             {
                                                 try
                                                 {
-                                                    await bot.Client.SendTextMessageAsync(
+                                                    await bot.Client.SendMessage(
                                                         chatId: item.Tel_UniqUserID,
                                                         text: newText
                                                     );
@@ -377,7 +384,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                         });
                                         BotSettingRepository.Save();
-                                        return;
+                                        return Ok();
                                     }
                                 }
 
@@ -471,6 +478,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     Usr.Tel_UpdateMessage = DateTime.UtcNow;
                                     Usr.Tel_RegisterDate = DateTime.Now;
                                     Usr.FK_User_ID = BotSettings.FK_User_ID;
+                                    Usr.Tel_Status = 1;
                                     tbTelegramUserRepository.Insert(Usr);
                                     await tbTelegramUserRepository.SaveChangesAsync();
                                     UserAcc = Usr;
@@ -485,7 +493,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     if (BotSettings.RequiredJoinChannel == true)
                                     {
 
-                                        var joined = await bot.Client.GetChatMemberAsync("@" + BotSettings.ChannelID, Convert.ToInt64(chatid));
+                                        var joined = await bot.Client.GetChatMember("@" + BotSettings.ChannelID, Convert.ToInt64(chatid));
 
                                         if (joined != null && (joined.Status == ChatMemberStatus.Left || joined.Status == ChatMemberStatus.Kicked))
                                         {
@@ -510,8 +518,8 @@ namespace V2boardApi.Areas.api.Controllers
                                             buttons.Add(inlineKeyboardButton);
 
                                             var key = new InlineKeyboardMarkup(buttons);
-                                            await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
-                                            return;
+                                            await bot.Client.SendMessage(chatid, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
+                                            return Ok();
                                         }
                                     }
                                 }
@@ -550,7 +558,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
 
-                                    var task = await bot.Client.SendTextMessageAsync(chatid, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html,disableWebPagePreview:true);
+                                    var task = await bot.Client.SendMessage(chatid, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyParameters: message.MessageId, parseMode: ParseMode.Html,linkPreviewOptions:new LinkPreviewOptions() { IsDisabled = true});
 
                                     if (BotSettings.IsNotActiveSell)
                                     {
@@ -559,10 +567,10 @@ namespace V2boardApi.Areas.api.Controllers
                                         st2.AppendLine("<b>" + "❌ به اطلاع می‌رسانیم فروش در حال حاضر به‌صورت موقت متوقف شده است. ❌" + "</b>");
                                         st2.AppendLine("");
 
-                                        await bot.Client.SendTextMessageAsync(chatid, st2.ToString(), parseMode: ParseMode.Html);
+                                        await bot.Client.SendMessage(chatid, st2.ToString(), parseMode: ParseMode.Html);
 
                                     }
-                                    return;
+                                    return Ok();
 
                                 }
 
@@ -580,8 +588,8 @@ namespace V2boardApi.Areas.api.Controllers
                                     st.AppendLine("🚀 @" + BotSettings.Bot_ID);
                                     await RealUser.SetEmptyState(chatid.ToString(), db, botName);
 
-                                    var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-                                    return;
+                                    var task = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup, replyParameters: message.MessageId, parseMode: ParseMode.Html);
+                                    return Ok();
                                 }
 
                                 #endregion
@@ -681,11 +689,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
 
                                         //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
 
-                                        return;
+                                        return Ok();
                                     }
                                     else
                                     {
@@ -697,7 +705,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
                                     }
                                 }
 
@@ -717,7 +725,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str2.AppendLine("");
                                         str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyToMessageId: message.MessageId, parseMode: ParseMode.Html); return;
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString(), replyParameters: message.MessageId, parseMode: ParseMode.Html); return Ok();
                                     }
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_AccountForShowInfo", db, botName);
                                     StringBuilder str = new StringBuilder();
@@ -727,8 +735,8 @@ namespace V2boardApi.Areas.api.Controllers
                                     str.AppendLine("اگه خواستی لینکت رو تغییر بدی، یا اسم اشتراکت رو عوض کنی، همه‌ش همین‌جاست – از همین بخش می‌تونی مدیریت کنی.\n");
                                     str.AppendLine("");
                                     str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                    var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, text: str.ToString(), replyToMessageId: message.MessageId, replyMarkup: keyboard, parseMode: ParseMode.Html);
-                                    return;
+                                    var editedMessage = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, text: str.ToString(), replyParameters: message.MessageId, replyMarkup: keyboard, parseMode: ParseMode.Html);
+                                    return Ok();
                                 }
                                 #endregion
 
@@ -748,8 +756,8 @@ namespace V2boardApi.Areas.api.Controllers
                                         str3.AppendLine("♨️ برو تو بخش تعرفه ها یه نگاه بنداز ببین کدوم بسته به دردت می‌خوره، بعد کیف پولتو شارژ کن و برو برا خرید!\r\n\r\n");
                                         str3.AppendLine("");
                                         str3.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str3.ToString(), parseMode: ParseMode.Html);
-                                        return;
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str3.ToString(), parseMode: ParseMode.Html);
+                                        return Ok();
                                     }
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db, botName);
 
@@ -759,8 +767,8 @@ namespace V2boardApi.Areas.api.Controllers
                                     str2.AppendLine("〰️〰️〰️〰️〰️");
                                     str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
-                                    var editedMessage = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), replyMarkup: keyboard, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-                                    return;
+                                    var editedMessage = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString(), replyMarkup: keyboard, replyParameters: message.MessageId, parseMode: ParseMode.Html);
+                                    return Ok();
                                     #endregion
 
                                 }
@@ -831,7 +839,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     str.AppendLine("");
                                     str.AppendLine("〰️〰️〰️〰️〰️");
                                     str.AppendLine("🚀@" + BotSettings.Bot_ID);
-                                    await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                    await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
 
                                 }
 
@@ -853,7 +861,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("اگر لینک اشتراکتو داری میتونی توی مرورگر باز کنی اونجا هم آموزش دادیم");
                                         str.AppendLine("");
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys, replyToMessageId: message.MessageId);
+                                        await bot.Client.SendMessage(chatid, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys, replyParameters: message.MessageId);
 
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlatform", db, botName);
                                     }
@@ -863,7 +871,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("❌ ربات فاقد آموزش می باشد لطفا به پشتیبانی پیام دهید");
                                         str.AppendLine("");
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                        await bot.Client.SendMessage(chatid, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId);
 
                                     }
 
@@ -945,7 +953,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Select_Way_To_Increase", db, botName);
 
-                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboard, disableWebPagePreview: true, replyToMessageId: message.MessageId);
+                                            await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboard, linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true });
 
                                         }
                                     }
@@ -959,8 +967,8 @@ namespace V2boardApi.Areas.api.Controllers
                                         //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
-                                        return;
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                        return Ok();
                                     }
                                 }
 
@@ -990,7 +998,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     str.AppendLine("");
                                     str.AppendLine("🆔 @" + BotSettings.Bot_ID);
 
-                                    await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                    await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
 
 
 
@@ -1086,7 +1094,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             tbTelegram.Tel_GetedTestAccount = true;
                                         }
                                         tbTelegramUserRepository.Save();
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
                                     }
                                     else
                                     {
@@ -1094,7 +1102,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("❌ عزیزم شما یکبار فقط می توانید اشتراک تست دریافت کنید");
                                         str.AppendLine("");
                                         str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString());
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString());
                                     }
                                 }
                                 #endregion
@@ -1106,12 +1114,12 @@ namespace V2boardApi.Areas.api.Controllers
                                     var learn = BotSettings.tbUsers.tbConnectionHelp.Where(s => s.ch_Type == "buy_sub").FirstOrDefault();
                                     if (learn != null)
                                     {
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, learn.ch_Link, disableWebPagePreview: false);
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, learn.ch_Link, linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true });
                                     }
                                     else
                                     {
                                         var keys = Keyboards.GetHomeButton();
-                                        await bot.Client.SendTextMessageAsync(chatid, "بازگشت به منو اصلی", parseMode: ParseMode.Html, replyMarkup: keys);
+                                        await bot.Client.SendMessage(chatid, "بازگشت به منو اصلی", parseMode: ParseMode.Html, replyMarkup: keys);
                                     }
                                 }
 
@@ -1178,6 +1186,8 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("<b>" + "هر تراکنش فقط ۲۴ ساعت اعتبار داره. اگه پیام \"منقضی شدن فاکتور\" برات اومد، دیگه هیچ مبلغی واریز نکن ❌ " + "</b>");
                                             str.AppendLine("");
                                             str.AppendLine("<b>" + "🔺 حواست باشه! اگه مبلغ اشتباه واریز بشه، امکان برگشت وجه وجود نداره 🙏" + "</b>");
+                                            str.AppendLine("");
+                                            str.AppendLine("<b> ⚠️ با اپلیکیشن های آپ و 780 واریز نکن این اپلیکیشن ها محدودیت واریزی دارند </b>");
                                         }
 
                                         tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
@@ -1187,17 +1197,19 @@ namespace V2boardApi.Areas.api.Controllers
                                         tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
                                         tbDeposit.dw_message_id = update.Message.MessageId;
                                         tbDeposit.dw_PayMethod = "Card";
-                                        tbDeposit.FK_PayMethod_ID = PaymentCard.tbpu_ID;
+                                        tbDeposit.FK_PayMethod_ID = PaymentCard.FK_PaymentMethod_ID;
+                                        tbDeposit.dw_TaxId = TaxId;
                                         tbDepositLogRepo.Insert(tbDeposit);
                                         await tbDepositLogRepo.SaveChangesAsync();
                                         str.AppendLine("");
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
-                                        var paymentMess = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                        var keys = Keyboards.GetCopyPriceAndCardNumberButton(fullPrice.ToString(), FirstCard.CardNumber);
+                                        var paymentMess = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId,replyMarkup: keys);
                                         tbDeposit.dw_message_id = paymentMess.MessageId;
                                         await tbDepositLogRepo.SaveChangesAsync();
 
-                                        return;
+                                        return Ok();
                                     }
                                     else
                                     {
@@ -1213,8 +1225,8 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db, botName);
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-                                        return;
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId);
+                                        return Ok();
                                     }
                                 }
 
@@ -1230,7 +1242,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     int.TryParse(mess, out price);
                                     if (price >= 50000 && price <= 1000000)
                                     {
-                                        var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                        var message1 = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyParameters: message.MessageId);
 
                                         var TetraApi = UserAcc.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "TetraPay").FirstOrDefault();
 
@@ -1293,9 +1305,9 @@ namespace V2boardApi.Areas.api.Controllers
                                             await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
                                             var Keyboard = Keyboards.GetPaymentButtonForIncreaseWalletTetraPay(TetraRes.payment_url_bot);
-                                            var reply_message = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId, replyMarkup: Keyboard);
+                                            var reply_message = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId, replyMarkup: Keyboard);
 
-                                            await bot.Client.DeleteMessageAsync(UserAcc.Tel_UniqUserID, message1.MessageId);
+                                            await bot.Client.DeleteMessage(UserAcc.Tel_UniqUserID, message1.MessageId);
 
                                             StringBuilder stringBuilder = new StringBuilder();
                                             stringBuilder.AppendLine();
@@ -1305,20 +1317,19 @@ namespace V2boardApi.Areas.api.Controllers
                                             stringBuilder.AppendLine();
                                             stringBuilder.AppendLine("🆔 @" + BotSettings.AdminUsername);
                                             var keys = Keyboards.GetHomeButton();
-                                            var paymentMess = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, stringBuilder.ToString(), parseMode: ParseMode.Html, replyToMessageId: reply_message.MessageId, replyMarkup: keys);
+                                            var paymentMess = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, stringBuilder.ToString(), parseMode: ParseMode.Html, replyParameters: reply_message.MessageId, replyMarkup: keys);
                                             tbDeposit.dw_message_id = reply_message.MessageId;
                                             await tbDepositLogRepo.SaveChangesAsync();
-                                            return;
+                                            return Ok();
                                         }
                                         else
                                         {
 
                                             logger.Warn("ساخت تراکنش با خطا مواجه شد", TetraRes);
-                                            logger.Warn(JsonConvert.SerializeObject(TetraRes));
                                             StringBuilder str = new StringBuilder();
                                             str.Append("❌ ساخت تراکنش با خطا مواجه شد . با پشتیبانی ارتباط بگیرید");
-                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-                                            return;
+                                            await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId);
+                                            return Ok();
                                         }
 
                                     }
@@ -1336,8 +1347,8 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreaseTetraPay", db, botName);
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-                                        return;
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId);
+                                        return Ok();
                                     }
                                 }
 
@@ -1356,7 +1367,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     int.TryParse(mess, out price);
                                     if (price >= 200000 && price <= 5000000)
                                     {
-                                        var message1 = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                        var message1 = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, "در حال ساخت تراکنش ...", parseMode: ParseMode.Html, replyParameters: message.MessageId);
 
                                         var TetraApi = UserAcc.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "CryptoPlisio").FirstOrDefault();
 
@@ -1380,8 +1391,8 @@ namespace V2boardApi.Areas.api.Controllers
                                         {
                                             StringBuilder str2 = new StringBuilder();
                                             str2.AppendLine("❌ مبلغ وارد شده کمتر از 1 دلار می باشد");
-                                            var reply_message = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-                                            return;
+                                            var reply_message = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId);
+                                            return Ok();
                                         }
 
                                         var plisioRes = await plisioPay.CreateInvoiceAsync(teter, "USD", TaxId, TaxId);
@@ -1419,13 +1430,13 @@ namespace V2boardApi.Areas.api.Controllers
                                             await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
                                             var Keyboard = Keyboards.GetPaymentButtonForIncreaseWalletPlisoPay(plisioRes.data.invoice_url);
-                                            var reply_message = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId, replyMarkup: Keyboard);
+                                            var reply_message = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId, replyMarkup: Keyboard);
 
-                                            await bot.Client.DeleteMessageAsync(UserAcc.Tel_UniqUserID, message1.MessageId);
+                                            await bot.Client.DeleteMessage(UserAcc.Tel_UniqUserID, message1.MessageId);
 
                                             tbDeposit.dw_message_id = reply_message.MessageId;
                                             await tbDepositLogRepo.SaveChangesAsync();
-                                            return;
+                                            return Ok();
                                         }
                                         else
                                         {
@@ -1434,8 +1445,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             StringBuilder str = new StringBuilder();
                                             str.Append("❌ ساخت تراکنش با خطا مواجه شد . با پشتیبانی ارتباط بگیرید");
-                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-                                            return;
+                                            await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId);
+                                            return Ok();
                                         }
 
                                     }
@@ -1453,8 +1464,8 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreaseTetraPay", db, botName);
 
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
-                                        return;
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId);
+                                        return Ok();
                                     }
                                 }
 
@@ -1476,8 +1487,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                 StringBuilder str1 = new StringBuilder();
                                                 str1.AppendLine("❌ نام اشتراک نمی تواند حاوی کاراکتر @ یا $ باشد");
-                                                await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
-                                                return;
+                                                await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                                return Ok();
                                             }
 
                                             var OldName = UserAcc.Tel_Data;
@@ -1510,9 +1521,9 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("✅ نام اشتراک شما با موفقیت تغییر یافت");
                                             str.AppendLine("");
                                             str.AppendLine("❗️ برای نمایش جزئیات مجدد وارد بخش مدیریت اشتراک ها بشید");
-                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
+                                            await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html);
                                             await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
-                                            return;
+                                            return Ok();
                                         }
                                         else
                                         {
@@ -1521,7 +1532,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             str1.AppendLine("");
                                             str1.AppendLine("📝 لطفا نام جدید مورد نظر خود مجدد را وارد نمائید");
 
-                                            await bot.Client.SendTextMessageAsync(message.From.Id, str1.ToString(), replyToMessageId: message.MessageId);
+                                            await bot.Client.SendMessage(message.From.Id, str1.ToString(), replyParameters: message.MessageId);
                                         }
                                     }
                                     else
@@ -1532,7 +1543,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str1.AppendLine("📝 لطفا نام جدید مورد نظر خود مجدد را وارد نمائید");
 
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForName", db, botName);
-                                        await bot.Client.SendTextMessageAsync(message.From.Id, str1.ToString(), replyToMessageId: message.MessageId);
+                                        await bot.Client.SendMessage(message.From.Id, str1.ToString(), replyParameters: message.MessageId);
                                     }
                                 }
 
@@ -1566,7 +1577,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 str.AppendLine("");
                                 str.AppendLine("🆔 @" + BotSettings.AdminUsername);
 
-                                await bot.Client.SendTextMessageAsync(chatid, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: message.MessageId);
+                                await bot.Client.SendMessage(chatid, str.ToString(), parseMode: ParseMode.Html, replyParameters: message.MessageId);
                             }
 
                             #endregion
@@ -1593,7 +1604,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         if (btn == "accept")
                                         {
 
-                                            var Deposit = await tbDepositLogRepo.WhereAsync(p => p.tbTelegramUsers.Tel_UniqUserID == id && p.dw_Status == "FOR_PAY");
+                                            var Deposit = await tbDepositLogRepo.WhereAsync(p => p.tbTelegramUsers.Tel_UniqUserID == id && p.dw_Status == "FOR_PAY" && p.tbTelegramUsers.Tel_RobotID == BotSettings.Bot_ID);
 
                                             int itemsPerRow = 2; // تعداد دکمه‌ها در هر سطر
                                             List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
@@ -1613,7 +1624,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             {
                                                 StringBuilder str = new StringBuilder();
                                                 str.AppendLine("❌  فاکتوری برای این کاربر یافت نشد");
-                                                await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html);
+                                                await bot.Client.SendMessage(update.CallbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html);
                                             }
                                             else
                                             {
@@ -1622,9 +1633,9 @@ namespace V2boardApi.Areas.api.Controllers
                                                 str.AppendLine(" لیست فاکتور های ساخته شده :");
                                                 str.AppendLine("");
                                                 str.AppendLine("❗️ روی فاکتور پرداخت شده کلیک کنید");
-                                                await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str.ToString(), replyMarkup: key, parseMode: ParseMode.Html);
+                                                await bot.Client.SendMessage(update.CallbackQuery.From.Id, str.ToString(), replyMarkup: key, parseMode: ParseMode.Html);
                                             }
-                                            return;
+                                            return Ok();
                                         }
                                         else if (btn == "Faccept")
                                         {
@@ -1635,13 +1646,13 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var res = await service.CheckOrder(Deposit.dw_Price.ToString(), Deposit.tbTelegramUsers.tbUsers.PhoneNumber);
                                                 if (res)
                                                 {
-                                                    await bot.Client.SendTextMessageAsync(BotSettings.AdminBot_ID, "✅ تراکنش با موفقیت تایید شد");
+                                                    await bot.Client.SendMessage(BotSettings.AdminBot_ID, "✅ تراکنش با موفقیت تایید شد");
                                                 }
                                                 else
                                                 {
-                                                    await bot.Client.SendTextMessageAsync(BotSettings.AdminBot_ID, "❌ تائید تراکنش با خطا مواجه شد");
+                                                    await bot.Client.SendMessage(BotSettings.AdminBot_ID, "❌ تائید تراکنش با خطا مواجه شد");
                                                 }
-                                                return;
+                                                return Ok();
                                             }
                                         }
                                     }
@@ -1676,6 +1687,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 Usr.Tel_RobotID = RobotIDforTimer;
                                 Usr.Tel_Wallet = 0;
                                 Usr.Tel_UpdateMessage = DateTime.UtcNow;
+                                Usr.Tel_Status = 1;
                                 tbTelegramUserRepository.Insert(Usr);
                                 await tbTelegramUserRepository.SaveChangesAsync();
                                 UserAcc = Usr;
@@ -1704,7 +1716,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 if (callbackQuery.Data == "Joined")
                                 {
 
-                                    var joined = await bot.Client.GetChatMemberAsync("@" + BotSettings.ChannelID, Convert.ToInt64(UserAcc.Tel_UniqUserID));
+                                    var joined = await bot.Client.GetChatMember("@" + BotSettings.ChannelID, Convert.ToInt64(UserAcc.Tel_UniqUserID));
 
                                     if (joined != null && (joined.Status == ChatMemberStatus.Member || joined.Status == ChatMemberStatus.Administrator || joined.Status == ChatMemberStatus.Creator))
                                     {
@@ -1729,16 +1741,16 @@ namespace V2boardApi.Areas.api.Controllers
                                         st.AppendLine("🚀@" + BotSettings.Bot_ID);
                                         await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
-                                        var task = await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), null, null, null, null, null, null, null, null, inlineKeyboardMarkup);
+                                        var task = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboardMarkup);
 
-                                        return;
+                                        return Ok();
 
 
                                     }
                                     else
                                     {
-                                        await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ با عرض پوزش : کاربر گرامی هنوز در کانال عضو نشده اید", true);
-                                        return;
+                                        await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "⚠️ با عرض پوزش : کاربر گرامی هنوز در کانال عضو نشده اید", true);
+                                        return Ok();
                                     }
 
                                 }
@@ -1746,15 +1758,15 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     if (BotSettings.ChannelID != null)
                                     {
-                                        var joined = await bot.Client.GetChatMemberAsync("@" + BotSettings.ChannelID, Convert.ToInt64(UserAcc.Tel_UniqUserID));
+                                        var joined = await bot.Client.GetChatMember("@" + BotSettings.ChannelID, Convert.ToInt64(UserAcc.Tel_UniqUserID));
                                         if (joined != null && (joined.Status == ChatMemberStatus.Member || joined.Status == ChatMemberStatus.Administrator || joined.Status == ChatMemberStatus.Creator))
                                         {
 
                                         }
                                         else
                                         {
-                                            await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ با عرض پوزش : کاربر گرامی برای استفاده از خدمات ما باید در کانال ما عضو باشید", true);
-                                            return;
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "⚠️ با عرض پوزش : کاربر گرامی برای استفاده از خدمات ما باید در کانال ما عضو باشید", true);
+                                            return Ok();
                                         }
                                     }
 
@@ -1820,7 +1832,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                     TelegramBotClient botClient = new TelegramBotClient(BotSettings.Bot_Token);
                                                     await tbDepositLogRepo.SaveChangesAsync();
-                                                    await botClient.SendTextMessageAsync(tbDepositLog.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                                    await botClient.SendMessage(tbDepositLog.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
 
                                                     if (BotSettings.InvitePercent != null)
                                                     {
@@ -1836,7 +1848,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                             str1.AppendLine("");
                                                             str1.AppendLine("🚀 @" + BotSettings.Bot_ID);
 
-                                                            await botClient.SendTextMessageAsync(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                                            await botClient.SendMessage(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
                                                         }
                                                     }
 
@@ -1844,15 +1856,15 @@ namespace V2boardApi.Areas.api.Controllers
 
 
                                                     logger.Info("فاکتور به مبلغ " + tbDepositLog.dw_Price + " با موفقیت پرداخت شد");
-                                                    return;
+                                                    return Ok();
                                                 }
                                                 else
                                                 {
                                                     StringBuilder str = new StringBuilder();
                                                     str.AppendLine("❌ تراکنشت تو سیستم ثبت نشده یا قبلا تائید شده");
 
-                                                    await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, str.ToString(), true);
-                                                    return;
+                                                    await bot.Client.AnswerCallbackQuery(callbackQuery.Id, str.ToString(), true);
+                                                    return Ok();
                                                 }
 
                                             }
@@ -1861,8 +1873,8 @@ namespace V2boardApi.Areas.api.Controllers
                                                 StringBuilder str = new StringBuilder();
                                                 str.AppendLine("❌ تراکنشت هنوز تو سیستم ثبت نشده چند لحظه بعد مجدد تلاش کن");
 
-                                                await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, str.ToString(), true);
-                                                return;
+                                                await bot.Client.AnswerCallbackQuery(callbackQuery.Id, str.ToString(), true);
+                                                return Ok();
                                             }
                                         }
 
@@ -1879,24 +1891,24 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         inlineKeyboardMarkup = Keyboards.GetHomeButton();
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db, botName);
-                                        var editedMessage = await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, "لطفا یکی از گزینه های زیر را انتخاب کنید", replyMarkup: inlineKeyboardMarkup);
-                                        return;
+                                        var editedMessage = await bot.Client.SendMessage(callbackQuery.From.Id, "لطفا یکی از گزینه های زیر را انتخاب کنید", replyMarkup: inlineKeyboardMarkup);
+                                        return Ok();
                                     }
                                     if (!string.IsNullOrEmpty(callbackQuery.Message.Text))
                                     {
                                         inlineKeyboardMarkup = Keyboards.GetHomeButton();
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db, botName);
-                                        var editedMessage = await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, "لطفا یکی از گزینه های زیر را انتخاب کنید");
-                                        return;
+                                        var editedMessage = await bot.Client.EditMessageText(callbackQuery.From.Id, callbackQuery.Message.MessageId, "لطفا یکی از گزینه های زیر را انتخاب کنید");
+                                        return Ok();
 
                                     }
                                     else
                                     {
                                         inlineKeyboardMarkup = Keyboards.GetHomeButton();
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db, botName);
-                                        await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
-                                        await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, "لطفا یکی از گزینه های زیر را انتخاب کنید", replyMarkup: inlineKeyboardMarkup);
-                                        return;
+                                        await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                        await bot.Client.SendMessage(callbackQuery.From.Id, "لطفا یکی از گزینه های زیر را انتخاب کنید", replyMarkup: inlineKeyboardMarkup);
+                                        return Ok();
                                     }
 
                                 }
@@ -1907,12 +1919,12 @@ namespace V2boardApi.Areas.api.Controllers
                                         callbackQuery.Data = callback[1];
                                         var mess = BotMessages.SendSelectUser(BotSettings, callbackQuery);
 
-                                        await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, mess.text, parseMode: ParseMode.Html, replyMarkup: mess.keyboard);
+                                        await bot.Client.EditMessageText(callbackQuery.From.Id, callbackQuery.Message.MessageId, mess.text, parseMode: ParseMode.Html, replyMarkup: mess.keyboard);
 
                                         await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectDevice", db, botName);
 
 
-                                        return;
+                                        return Ok();
                                     }
                                 }
 
@@ -1934,8 +1946,8 @@ namespace V2boardApi.Areas.api.Controllers
                                                 str2.AppendLine("");
                                                 str2.AppendLine("〰️〰️〰️〰️〰️");
                                                 str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                                await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str2.ToString());
-                                                return;
+                                                await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString());
+                                                return Ok();
                                             }
                                             await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db, botName);
 
@@ -1945,34 +1957,34 @@ namespace V2boardApi.Areas.api.Controllers
                                             str3.AppendLine("〰️〰️〰️〰️〰️");
                                             str3.AppendLine("🚀 @" + BotSettings.Bot_ID);
 
-                                            await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, str3.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-                                            return;
+                                            await bot.Client.EditMessageText(callbackQuery.From.Id, callbackQuery.Message.MessageId, str3.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                            return Ok();
                                             #endregion
                                         }
                                         var model = BotMessages.SendAccpetPolicySub(BotSettings);
 
-                                        await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, model.text, parseMode: ParseMode.Html, replyMarkup: model.keyboard);
-                                        return;
+                                        await bot.Client.EditMessageText(callbackQuery.From.Id, callbackQuery.Message.MessageId, model.text, parseMode: ParseMode.Html, replyMarkup: model.keyboard);
+                                        return Ok();
                                     }
                                     if (User.Tel_Step == "WaitForSelectPlan")
                                     {
                                         var type = BotMessages.SendSelectSubType(BotSettings);
-                                        await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                        await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
                                         await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "WaitForSelectAccount", db, botName);
-                                        return;
+                                        return Ok();
                                     }
                                     if (User.Tel_Step == "WaitForPay")
                                     {
                                         var type = BotMessages.SendSelectSubType(BotSettings);
-                                        await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                        await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
                                         await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "WaitForSelectPlan", db, botName);
-                                        return;
+                                        return Ok();
                                     }
 
                                     inlineKeyboardMarkup = Keyboards.GetHomeButton();
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Start", db, botName);
-                                    await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
-                                    return;
+                                    await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                    return Ok();
                                 }
 
                                 #endregion
@@ -2087,8 +2099,7 @@ namespace V2boardApi.Areas.api.Controllers
 
 
                                             InlineKeyboardButton inlineKeyboard = new InlineKeyboardButton("🔗 اتصال به اشتراک");
-                                            WebAppInfo appInfo = new WebAppInfo();
-                                            appInfo.Url = SubLink;
+                                            WebAppInfo appInfo = new WebAppInfo(SubLink);
                                             inlineKeyboard.WebApp = appInfo;
                                             row2.Add(inlineKeyboard);
 
@@ -2108,22 +2119,22 @@ namespace V2boardApi.Areas.api.Controllers
                                             var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
                                             await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Back_ToUserLinks", db, botName);
 
-                                            //await bot.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                            //await bot.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
 
                                             // Send the QR code image as a message
-                                            await bot.Client.SendPhotoAsync(
+                                            await bot.Client.SendPhoto(
                                                 chatId: callbackQuery.From.Id,
                                                 photo: image,
                                                 caption: st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard
                                             );
 
 
-                                            //var editedMessage = await bot.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, st.ToString(), ParseMode.Html, null, null, null, default);
+                                            //var editedMessage = await bot.EditMessageText(callbackQuery.From.Id, callbackQuery.Message.MessageId, st.ToString(), ParseMode.Html, null, null, null, default);
 
                                         }
                                         reader.Close();
                                         await mySql.CloseAsync();
-                                        return;
+                                        return Ok();
                                     }
 
 
@@ -2179,11 +2190,11 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             Link.tbL_Token = token;
                                             await tbLinksRepository.SaveChangesAsync();
-                                            await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                            await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
                                             var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
                                             reader.Close();
                                             await mySql.CloseAsync();
-                                            var res = await bot.Client.SendPhotoAsync(
+                                            var res = await bot.Client.SendPhoto(
                                                  chatId: callbackQuery.From.Id,
                                                  photo: image,
                                                  caption: st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard
@@ -2220,7 +2231,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         st.AppendLine("");
                                         st.AppendLine("〰️〰️〰️〰️〰️");
                                         st.AppendLine("🚀@" + BotSettings.Bot_ID);
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboard);
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboard);
                                     }
                                 }
 
@@ -2245,7 +2256,7 @@ namespace V2boardApi.Areas.api.Controllers
     .Where(x => x.Length > 0)
     .ToArray();
 
-                                            await bot.Client.SendTextMessageAsync(
+                                            await bot.Client.SendMessage(
                                                 callbackQuery.From.Id,
                                                 "🔷 ————- لیست سرور ها ————- 🔷",
                                                 parseMode: ParseMode.Html
@@ -2261,7 +2272,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                 var html = $"<pre><code>{WebUtility.HtmlEncode(finalText)}</code></pre>";
 
-                                                await bot.Client.SendTextMessageAsync(
+                                                await bot.Client.SendMessage(
                                                     callbackQuery.From.Id,
                                                     html,
                                                     parseMode: ParseMode.Html
@@ -2271,7 +2282,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             var emList = lines.Where(x => x.Contains("EM")).ToList(); // بهتره شرط دقیق‌تر باشه
                                             if (emList.Count > 0)
                                             {
-                                                await bot.Client.SendTextMessageAsync(
+                                                await bot.Client.SendMessage(
                                                     callbackQuery.From.Id,
                                                     "🔻 ————- این کانفیگ ها در شرایط اضطراری و درصورت برقراری نبودن سایر سرور ها استفاده شود ————- 🔻",
                                                     parseMode: ParseMode.Html
@@ -2279,7 +2290,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                 foreach (var item in emList)
                                                 {
-                                                    await bot.Client.SendTextMessageAsync(
+                                                    await bot.Client.SendMessage(
                                                         callbackQuery.From.Id,
                                                         $"<pre><code>{WebUtility.HtmlEncode(item)}</code></pre>",
                                                         parseMode: ParseMode.Html
@@ -2287,7 +2298,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 }
                                             }
 
-                                            await bot.Client.SendTextMessageAsync(
+                                            await bot.Client.SendMessage(
                                                 callbackQuery.From.Id,
                                                 "👆👆 لطفا تمامی سرور ها رو تک به تک به گوشیتون اضافه کنید 💢",
                                                 parseMode: ParseMode.Html
@@ -2360,7 +2371,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
-                                            await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                            await bot.Client.SendMessage(callbackQuery.From.Id, st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
                                             await mySqlEntities.CloseAsync();
                                         }
 
@@ -2385,10 +2396,10 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("⚠️ نکته : نام اشتراک باید انگلیسی باشد");
                                         str.AppendLine("⚠️ نام اشتراک باید حداقل 4 حرف و حداکثر 20 حرف باشد");
 
-                                        await bot.Client.DeleteMessageAsync(UserAcc.Tel_UniqUserID, callbackQuery.Message.MessageId);
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, text: str.ToString(), parseMode: ParseMode.Html);
+                                        await bot.Client.DeleteMessage(UserAcc.Tel_UniqUserID, callbackQuery.Message.MessageId);
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, text: str.ToString(), parseMode: ParseMode.Html);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForName", db, bot.Name, callback[1]);
-                                        return;
+                                        return Ok();
                                     }
                                 }
 
@@ -2411,7 +2422,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
                                             str.AppendLine("〰️〰️〰️〰️〰️");
                                             str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                            await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys);
+                                            await bot.Client.SendMessage(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys);
 
                                             await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlatform", db, botName);
                                         }
@@ -2422,7 +2433,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
                                             str.AppendLine("〰️〰️〰️〰️〰️");
                                             str.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                            await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html);
+                                            await bot.Client.SendMessage(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html);
 
                                         }
                                     }
@@ -2441,7 +2452,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         var Learn = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_ID == id).FirstOrDefault();
                                         if (Learn != null)
                                         {
-                                            await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, Learn.ch_Link, disableWebPagePreview: false);
+                                            await bot.Client.SendMessage(User.Tel_UniqUserID, Learn.ch_Link, linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true });
                                         }
 
                                     }
@@ -2464,7 +2475,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("📲 لطفا با توجه به نوع دستگاه خود یکی از گزینه های زیر را انتخاب کنید");
-                                        await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys);
+                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyMarkup: Keys);
 
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectPlatform", db, botName);
 
@@ -2500,12 +2511,12 @@ namespace V2boardApi.Areas.api.Controllers
                                         inlineKeyboards.Add(row2);
 
                                         inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
-                                        await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
-                                        await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                        await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                        await bot.Client.SendMessage(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
                                     }
                                     else
                                     {
-                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "😔❤️ اوه عزیزم خیلی ببخشید این روش فعلا در دسترس نیست لطفا از روش دیگه استفاده کن ", showAlert: true);
+                                        await bot.Client.AnswerCallbackQuery(update.CallbackQuery.Id, "😔❤️ اوه عزیزم خیلی ببخشید این روش فعلا در دسترس نیست لطفا از روش دیگه استفاده کن ", showAlert: true);
                                     }
 
                                 }
@@ -2531,8 +2542,8 @@ namespace V2boardApi.Areas.api.Controllers
                                     inlineKeyboards.Add(row2);
 
                                     inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
-                                    await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
-                                    await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                    await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                    await bot.Client.SendMessage(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
                                 }
 
                                 #endregion
@@ -2568,8 +2579,8 @@ namespace V2boardApi.Areas.api.Controllers
                                     inlineKeyboards.Add(row2);
 
                                     inlineKeyboardMarkup = Keyboards.BasicKeyboard(inlineKeyboards);
-                                    await bot.Client.DeleteMessageAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId);
-                                    await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
+                                    await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
+                                    await bot.Client.SendMessage(callbackQuery.From.Id, str.ToString(), parseMode: ParseMode.Html, replyMarkup: inlineKeyboardMarkup);
                                 }
 
                                 #endregion
@@ -2590,11 +2601,11 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("لینک دعوت شما 👇");
                                         str.AppendLine("🔗 https://t.me/" + callbackQuery.Message.From.Username + "?start=" + callbackQuery.From.Id);
 
-                                        await bot.Client.EditMessageTextAsync(callbackQuery.From.Id, callbackQuery.Message.MessageId, str.ToString(), parseMode: ParseMode.Html);
+                                        await bot.Client.EditMessageText(callbackQuery.From.Id, callbackQuery.Message.MessageId, str.ToString(), parseMode: ParseMode.Html);
                                     }
                                     else
                                     {
-                                        await bot.Client.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "⚠️ این روش موقتا از دسترس خارج شده لطفا از روش کارت به کارت استفاده کنید");
+                                        await bot.Client.AnswerCallbackQuery(update.CallbackQuery.Id, "⚠️ این روش موقتا از دسترس خارج شده لطفا از روش کارت به کارت استفاده کنید");
                                     }
 
                                 }
@@ -2643,8 +2654,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         var keys = Keyboards.GetAccpetBuyFromWallet(LinkPlanId, callback[2]);
 
-                                        await bot.Client.EditMessageTextAsync(User.Tel_UniqUserID, update.CallbackQuery.Message.MessageId, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keys);
-                                        return;
+                                        await bot.Client.EditMessageText(User.Tel_UniqUserID, update.CallbackQuery.Message.MessageId, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keys);
+                                        return Ok();
                                     }
                                 }
 
@@ -2658,6 +2669,123 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (callback.Length == 3)
                                 {
+                                    if (callback[0] == "ConfirmPay")
+                                    {
+                                        var accountName = callback[2];
+                                        var planId = Convert.ToInt32(callback[1]);
+
+                                        var Plan = RepositoryLinkUserAndPlan.Where(a => a.Link_PU_ID == planId).FirstOrDefault();
+                                        var Account = tbLinksRepository.Where(a => a.tbL_Email == accountName).FirstOrDefault();
+
+                                        var ActivePay = BotSettings.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "CardToCard").FirstOrDefault();
+
+                                        var Price = Plan.L_SellPrice.Value;
+                                        if (BotSettings.Present_Discount != null && BotSettings.Present_Discount != 0)
+                                        {
+                                            Price -= (int)(Price * BotSettings.Present_Discount);
+                                        }
+
+                                        Random ran = new Random();
+                                        var RanNumber = ran.Next(1, 999);
+
+                                        var fullPrice = (Price * 10);
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            fullPrice += RanNumber;
+                                        }
+                                        StringBuilder str = new StringBuilder();
+
+                                        var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
+                                        var TaxId = Guid.NewGuid().ToString().Split('-')[0] + "#" + UserAcc.Tel_UserID;
+                                        str.AppendLine("✅  تراکنش شما باموفقیت ثبت شد ");
+                                        str.AppendLine();
+                                        str.AppendLine("کد پیگیری : " + "<code>" + TaxId + "</code>");
+                                        str.AppendLine();
+                                        str.AppendLine("💳 لطفاً مبلغ " + "<code>" + fullPrice.ConvertToMony() + "</code>" + " ریال رو به شماره کارت زیر واریز کن :");
+                                        str.AppendLine("");
+                                        str.AppendLine(FirstCard.CardNumber);
+                                        str.AppendLine("به نام : " + FirstCard.InTheNameOf);
+                                        str.AppendLine("");
+                                        str.AppendLine("🔹 روی مبلغ کلیک کن تا خودش کپی بشه — لازم نیست حفظش کنی 😌");
+                                        if ((bool)BotSettings.IsActiveSendReceipt && (bool)BotSettings.IsActiveCardToCard)
+                                        {
+                                            str.AppendLine("🔹 حتماً مبلغ رو دقیقاً با سه رقم آخر واریز کن. اگه مبلغ رو دقیق نزنی، ربات نمی‌تونه تراکنشت رو تشخیص بده ❗️");
+                                            str.AppendLine("");
+                                            str.AppendLine("📸 اگه به هر دلیلی پرداختت به‌صورت خودکار تأیید نشد، کافیه رسید واریزی رو به‌صورت عکس (نه فایل) برای ربات بفرستی.");
+                                        }
+                                        else
+                                        {
+                                            if ((bool)BotSettings.IsActiveCardToCard)
+                                            {
+                                                str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
+                                            }
+                                            if ((bool)BotSettings.IsActiveSendReceipt)
+                                            {
+                                                str.AppendLine("");
+                                                str.Append("✅");
+                                                str.AppendLine("بعد واریزی حتما رسید را برای ربات بفرستید");
+                                            }
+                                        }
+                                        str.AppendLine("");
+                                        if (BotSettings.IsActiveCardToCard == true)
+                                        {
+                                            str.AppendLine("⚠️ نکته مهم:\r\n");
+                                            str.AppendLine("<b>" + "هر فاکتور فقط ۲۴ ساعت اعتبار داره. اگه پیام \"منقضی شدن فاکتور\" برات اومد، دیگه هیچ مبلغی واریز نکن ❌ " + "</b>");
+                                            str.AppendLine("");
+                                            str.AppendLine("<b>" + "🔺 حواست باشه! اگه مبلغ اشتباه واریز بشه، امکان برگشت وجه وجود نداره 🙏" + "</b>");
+                                            str.AppendLine("");
+                                            str.AppendLine("<b> ⚠️ با اپلیکیشن های آپ و 780 واریز نکن این اپلیکیشن ها محدودیت واریزی دارند </b>");
+                                        }
+
+                                        tbOrders order = new tbOrders();
+                                        order.Order_Guid = Guid.NewGuid();
+                                        order.AccountName = accountName;
+                                        order.OrderDate = DateTime.Now;
+                                        order.OrderStatus = "FOR_PAY";
+                                        order.Order_Price = Price;
+                                        order.Traffic = Plan.tbPlans.PlanVolume;
+                                        order.Month = Plan.tbPlans.PlanMonth;
+                                        order.PriceWithOutDiscount = Plan.L_SellPrice.Value;
+                                        order.V2_Plan_ID = Plan.tbPlans.Plan_ID_V2;
+                                        order.FK_Tel_UserID = UserAcc.Tel_UserID;
+                                        order.FK_Link_Plan_ID = Plan.Link_PU_ID;
+                                        order.Tel_RenewedDate = DateTime.Now;
+
+                                        if (Account != null)
+                                        {
+                                            order.OrderType = "تمدید";
+
+                                        }
+                                        else
+                                        {
+                                            order.OrderType = "جدید";
+
+                                        }
+
+
+                                        tbDepositWallet_Log tbDeposit = new tbDepositWallet_Log();
+                                        tbDeposit.dw_Price = fullPrice;
+                                        tbDeposit.dw_CreateDatetime = DateTime.Now;
+                                        tbDeposit.dw_Status = "FOR_PAY";
+                                        tbDeposit.FK_TelegramUser_ID = UserAcc.Tel_UserID;
+                                        tbDeposit.dw_PayMethod = "Card";
+                                        tbDeposit.FK_PayMethod_ID = ActivePay.FK_PaymentMethod_ID;
+                                        tbDeposit.dw_TaxId = TaxId;
+                                       
+                                        order.tbDepositWallet_Log.Add(tbDeposit);
+
+                                        tbOrdersRepository.Insert(order);
+                                        await tbOrdersRepository.SaveChangesAsync();
+                                        str.AppendLine("");
+                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
+                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
+                                        var keys = Keyboards.GetCopyPriceAndCardNumberButton(fullPrice.ToString(), FirstCard.CardNumber);
+                                        var btnres = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html,replyMarkup: keys);
+                                        tbDeposit.dw_message_id = btnres.MessageId;
+                                        await tbOrdersRepository.SaveChangesAsync();
+
+                                    }
+                                    else
                                     if (callback[0] == "AccpetWallet")
                                     {
 
@@ -2678,12 +2806,12 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             if (AgentWallet > UserAgent.Limit)
                                             {
-                                                await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ متاسفانه فعلا امکان ایجاد یا تمدید اشتراک نمی باشد لطفا با پشتیبانی ارتباط بگیرید", true);
-                                                return;
+                                                await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "⚠️ متاسفانه فعلا امکان ایجاد یا تمدید اشتراک نمی باشد لطفا با پشتیبانی ارتباط بگیرید", true);
+                                                return Ok();
                                             }
                                             else
                                             {
-                                                UserAgent.Wallet += FinalPrice.Value;
+                                                UserAgent.Wallet += (int)FinalPrice.Value;
                                             }
                                         }
                                         else if (UserAgent.Role == 2)
@@ -2691,8 +2819,8 @@ namespace V2boardApi.Areas.api.Controllers
                                             var AgentWallet = UserAgent.Wallet + Plan.L_SellPrice;
                                             if (AgentWallet > UserAgent.Limit)
                                             {
-                                                await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "⚠️ متاسفانه فعلا امکان ایجاد یا تمدید اشتراک نمی باشد لطفا با پشتیبانی ارتباط بگیرید", true);
-                                                return;
+                                                await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "⚠️ متاسفانه فعلا امکان ایجاد یا تمدید اشتراک نمی باشد لطفا با پشتیبانی ارتباط بگیرید", true);
+                                                return Ok();
                                             }
                                             else
                                             {
@@ -2711,7 +2839,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         {
                                             Price -= (int)(Price * BotSettings.Present_Discount);
                                         }
-                                        int PirceWithoutDiscount = Plan.L_SellPrice.Value;
+                                        double PirceWithoutDiscount = Plan.L_SellPrice.Value;
                                         if (Wallet >= Price)
                                         {
                                             var Link = await tbLinksRepository.FirstOrDefaultAsync(p => p.tbL_Email == AccountName);
@@ -2812,12 +2940,12 @@ namespace V2boardApi.Areas.api.Controllers
                                                     str2.AppendLine("♨️ میتونی توی بخش مدیریت اشتراک ها ببینی که تمدید شده");
                                                     await RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
                                                     var kyes = Keyboards.GetHomeButton();
-                                                    await bot.Client.SendTextMessageAsync(callbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
-                                                    await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
+                                                    await bot.Client.SendMessage(callbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
+                                                    await bot.Client.DeleteMessage(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
 
 
                                                     await BotSettingRepository.SaveChangesAsync();
-                                                    return;
+                                                    return Ok();
                                                 }
                                                 else
                                                 {
@@ -2848,14 +2976,14 @@ namespace V2boardApi.Areas.api.Controllers
                                                     str.AppendLine("♨️ بعد از اینکه بسته فعلیت تموم بشه خودم جایگزین میکنم تو نگران نباش و به کارت برس");
                                                     str.AppendLine("");
                                                     await RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
-                                                    await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
+                                                    await bot.Client.DeleteMessage(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
                                                     var kyes = Keyboards.GetHomeButton();
-                                                    await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, str.ToString(), replyMarkup: kyes, parseMode: ParseMode.Html);
+                                                    await bot.Client.SendMessage(User.Tel_UniqUserID, str.ToString(), replyMarkup: kyes, parseMode: ParseMode.Html);
 
                                                     await BotSettingRepository.SaveChangesAsync();
                                                 }
                                                 await mySql.CloseAsync();
-                                                return;
+                                                return Ok();
                                             }
                                             else
                                             {
@@ -2996,8 +3124,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                 List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
                                                 InlineKeyboardButton inlineKeyboard = new InlineKeyboardButton("🔗 اتصال به اشتراک");
-                                                WebAppInfo appInfo = new WebAppInfo();
-                                                appInfo.Url = SubLink;
+                                                WebAppInfo appInfo = new WebAppInfo(SubLink);
                                                 inlineKeyboard.WebApp = appInfo;
                                                 row2.Add(inlineKeyboard);
                                                 inlineKeyboards.Add(row2);
@@ -3012,21 +3139,21 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                 var keys = Keyboards.GetHomeButton();
 
-                                                //await botClient.SendTextMessageAsync(UserAcc.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد", replyMarkup: keys);
+                                                //await botClient.SendMessage(UserAcc.Tel_UniqUserID, "✅ اکانت شما با موفقیت ایجاد شد", replyMarkup: keys);
 
-                                                await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "✅ اکانت شما با موفقیت ایجاد شد", true);
+                                                await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "✅ اکانت شما با موفقیت ایجاد شد", true);
 
-                                                await bot.Client.SendPhotoAsync(
+                                                await bot.Client.SendPhoto(
                                                   chatId: UserAcc.Tel_UniqUserID,
                                                   photo: image,
                                                   caption: st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
 
-                                                await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, "به منو اصلی بازگشتید 🏘", parseMode: ParseMode.Html, replyMarkup: keys);
-                                                await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
+                                                await bot.Client.SendMessage(User.Tel_UniqUserID, "به منو اصلی بازگشتید 🏘", parseMode: ParseMode.Html, replyMarkup: keys);
+                                                await bot.Client.DeleteMessage(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
                                                 await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
                                                 await BotSettingRepository.SaveChangesAsync();
-                                                return;
+                                                return Ok();
 
                                             }
                                         }
@@ -3037,8 +3164,8 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
                                             str.AppendLine("⚠️ برو تو بخش کیف پول من و از اونجا کیف پولتو شارژ کن بعد برگرد . من منتظرتم 😉");
 
-                                            await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, str.ToString(), true);
-                                            return;
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, str.ToString(), true);
+                                            return Ok();
                                         }
                                     }
                                 }
@@ -3116,11 +3243,11 @@ namespace V2boardApi.Areas.api.Controllers
                                     //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
 
 
-                                    await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
+                                    await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
 
                                     //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
 
-                                    return;
+                                    return Ok();
                                 }
 
                                 #endregion
@@ -3146,14 +3273,14 @@ namespace V2boardApi.Areas.api.Controllers
                                             inlineKeyboards.Add(row1);
 
                                             var inlineKeyboard = new InlineKeyboardMarkup(inlineKeyboards);
-                                            await bot.Client.SendTextMessageAsync(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: inlineKeyboard);
+                                            await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: inlineKeyboard);
                                         }
                                         else
                                         {
                                             StringBuilder str2 = new StringBuilder();
                                             str2.AppendLine("⚠️ بعد از اتمام حجم یا زمان اشتراک امکان حذف اشتراک فعال می شود");
 
-                                            await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, str2.ToString(), true);
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, str2.ToString(), true);
                                         }
                                     }
                                 }
@@ -3176,10 +3303,10 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
                                             await mySql.OpenAsync();
-                                            await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "✅ اشتراک با موفقیت حذف شد", true);
-                                            await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "✅ اشتراک با موفقیت حذف شد", true);
+                                            await bot.Client.DeleteMessage(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
                                             var kyes = Keyboards.GetHomeButton();
-                                            await bot.Client.SendTextMessageAsync(User.Tel_UniqUserID, "🏘 به منو اصلی بازگشتید", replyMarkup: kyes, parseMode: ParseMode.Html);
+                                            await bot.Client.SendMessage(User.Tel_UniqUserID, "🏘 به منو اصلی بازگشتید", replyMarkup: kyes, parseMode: ParseMode.Html);
 
                                             var Disc1 = new Dictionary<string, object>();
                                             Disc1.Add("@email", callback[1]);
@@ -3187,7 +3314,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             var Reader = await mySql.GetDataAsync("delete from v2_user where email =@email", Disc1);
                                             await Reader.ReadAsync();
                                             await mySql.CloseAsync();
-                                            return;
+                                            return Ok();
 
 
                                         }
@@ -3206,8 +3333,8 @@ namespace V2boardApi.Areas.api.Controllers
                                 str2.AppendLine("");
                                 str2.AppendLine("♨️ لطفا مراحل را مجدد از اول طی کنید");
 
-                                await bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, str2.ToString(), true);
-                                await bot.Client.DeleteMessageAsync(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
+                                await bot.Client.AnswerCallbackQuery(callbackQuery.Id, str2.ToString(), true);
+                                await bot.Client.DeleteMessage(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
                             }
 
                         }
@@ -3221,11 +3348,11 @@ namespace V2boardApi.Areas.api.Controllers
                         str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
                         if (update.CallbackQuery != null)
                         {
-                            await bot.Client.SendTextMessageAsync(update.CallbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html);
+                            await bot.Client.SendMessage(update.CallbackQuery.From.Id, str2.ToString(), parseMode: ParseMode.Html);
                         }
                         else
                         {
-                            await bot.Client.SendTextMessageAsync(update.Message.From.Id, str2.ToString(), parseMode: ParseMode.Html);
+                            await bot.Client.SendMessage(update.Message.From.Id, str2.ToString(), parseMode: ParseMode.Html);
                         }
                     }
                 }
@@ -3235,7 +3362,7 @@ namespace V2boardApi.Areas.api.Controllers
                 logger.Error(ex, "خطا در برقراری ارتباط سرور تلگرام");
             }
 
-            return;
+            return Ok();
         }
 
 
@@ -3278,12 +3405,12 @@ namespace V2boardApi.Areas.api.Controllers
 
             if (!System.IO.File.Exists(path))
             {
-                var userProfilePhotos = await bot.GetUserProfilePhotosAsync(userId);
+                var userProfilePhotos = await bot.GetUserProfilePhotos(userId);
 
                 if (userProfilePhotos.TotalCount > 0)
                 {
                     var photo = userProfilePhotos.Photos.First()[0];
-                    var file = await bot.GetFileAsync(photo.FileId);
+                    var file = await bot.GetFile(photo.FileId);
 
                     var fileUrl = $"https://api.telegram.org/file/bot{token}/{file.FilePath}";
                     var httpClient = new HttpClient();

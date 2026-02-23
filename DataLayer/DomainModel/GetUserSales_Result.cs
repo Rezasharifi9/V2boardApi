@@ -15,7 +15,7 @@ namespace DataLayer.DomainModel
     {
         public Nullable<long> Id { get; set; }
         public string Username { get; set; }
-        public Nullable<int> SalePrice { get; set; }
+        public Nullable<double> SalePrice { get; set; }
         public Nullable<System.DateTime> CreateDate { get; set; }
     }
 }

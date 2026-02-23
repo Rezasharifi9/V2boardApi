@@ -63,7 +63,7 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
-                
+
                 var draw = Request.Form.GetValues("draw").FirstOrDefault();
                 var start = Request.Form.GetValues("start").FirstOrDefault();
                 var length = Request.Form.GetValues("length").FirstOrDefault();
@@ -102,7 +102,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 searchQuery += $" AND (";
                                 var Counter = 1;
 
-                                searchQuery += $"email LIKE '%@{user.Username}%' OR  ";
+                                searchQuery += $"email LIKE '%@{user.Username}' OR  ";
 
                                 foreach (var item in user.tbUsers1)
                                 {
@@ -110,11 +110,11 @@ namespace V2boardApi.Areas.App.Controllers
 
                                     if (Counter == user.tbUsers1.Count)
                                     {
-                                        searchQuery += $"email LIKE '%@{item.Username}%')";
+                                        searchQuery += $"email LIKE '%@{item.Username}')";
                                     }
                                     else
                                     {
-                                        searchQuery += $"email LIKE '%@{item.Username}%' OR  ";
+                                        searchQuery += $"email LIKE '%@{item.Username}' OR  ";
                                     }
                                     Counter++;
 
@@ -124,7 +124,7 @@ namespace V2boardApi.Areas.App.Controllers
                             }
                             else
                             {
-                                searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                                searchQuery += $" AND email LIKE '%@{user.Username}'";
                             }
 
                         }
@@ -145,11 +145,11 @@ namespace V2boardApi.Areas.App.Controllers
 
                                     if (Counter == user.tbUsers1.Count)
                                     {
-                                        searchQuery += $"email LIKE '%@{item.Username}%')";
+                                        searchQuery += $"email LIKE '%@{item.Username}')";
                                     }
                                     else
                                     {
-                                        searchQuery += $"email LIKE '%@{item.Username}%' OR  ";
+                                        searchQuery += $"email LIKE '%@{item.Username}' OR  ";
                                     }
                                     Counter++;
 
@@ -159,7 +159,7 @@ namespace V2boardApi.Areas.App.Controllers
                             }
                             else
                             {
-                                searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                                searchQuery += $" AND email LIKE '%@{user.Username}'";
                             }
                         }
                     }
@@ -170,18 +170,18 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         searchQuery += $" AND (";
                         var Counter = 1;
-                        searchQuery += $"email LIKE '%@{user.Username}%' OR  ";
+                        searchQuery += $"email LIKE '%@{user.Username}' OR  ";
                         foreach (var item in user.tbUsers1)
                         {
 
 
                             if (Counter == user.tbUsers1.Count)
                             {
-                                searchQuery += $"email LIKE '%@{item.Username}%')";
+                                searchQuery += $"email LIKE '%@{item.Username}')";
                             }
                             else
                             {
-                                searchQuery += $"email LIKE '%@{item.Username}%' OR  ";
+                                searchQuery += $"email LIKE '%@{item.Username}' OR  ";
                             }
                             Counter++;
 
@@ -191,7 +191,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     else
                     {
-                        searchQuery += $" AND email LIKE '%@{user.Username}%'";
+                        searchQuery += $" AND email LIKE '%@{user.Username}'";
                     }
                 }
 
@@ -256,7 +256,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                                 var PlanId = reader.GetInt64(reader.GetOrdinal("plan_id"));
                                 var Plan = await plansRepository.FirstOrDefaultAsync(s => s.Plan_ID_V2 == PlanId);
-                                if(Plan == null)
+                                if (Plan == null)
                                 {
                                     getuserData.PlanName = reader.GetString(reader.GetOrdinal("name"));
                                 }
@@ -452,7 +452,7 @@ namespace V2boardApi.Areas.App.Controllers
                                         if (user.tbUsers2 != null)
                                         {
                                             var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.User_ID);
-                                            user.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + ((int)plan.device_limit * linkGroupUser.PriceForUser);
+                                            user.Wallet += (int)((plan.PlanVolume * linkGroupUser.PriceForGig) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser));
                                         }
                                         else
                                         {
@@ -472,7 +472,7 @@ namespace V2boardApi.Areas.App.Controllers
                                             {
                                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
 
-                                                user.tbUsers2.Wallet += (plan.PlanVolume * (linkGroupUser.PriceForGig)) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + ((int)plan.device_limit * linkGroupUser.PriceForUser); ;
+                                                user.tbUsers2.Wallet += (int)((plan.PlanVolume * linkGroupUser.PriceForGig) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser));
                                             }
                                         }
                                         else
@@ -509,7 +509,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     }
                                     else
                                     {
-                                        Disc3.Add("@device_limit", plan.device_limit+1);
+                                        Disc3.Add("@device_limit", plan.device_limit + 1);
                                         DeviceLimit = ",@device_limit";
                                         DeviceLimitCol = ",device_limit";
                                     }
@@ -583,7 +583,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         #region افزودن لاگ تمدید یا ساخت کاربر
-        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, int planVolume, int planMonth,string subToken=null)
+        private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, double planVolume, double planMonth, string subToken = null)
         {
             try
             {
@@ -596,7 +596,7 @@ namespace V2boardApi.Areas.App.Controllers
                 tbLogs.PlanName = planName;
                 tbLogs.PlanVolume = planVolume;
                 tbLogs.PlanMonth = planMonth;
-                tbLogs.SubToken = subToken; 
+                tbLogs.SubToken = subToken;
                 logsRepository.Insert(tbLogs);
                 logger.Info("لاگ ساخت اشتراک اضافه شد");
                 return logsRepository.Save();
@@ -823,7 +823,7 @@ namespace V2boardApi.Areas.App.Controllers
                             {
                                 var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.User_ID);
 
-                                user.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + ((int)Plan.device_limit * linkGroupUser.PriceForUser);
+                                user.Wallet += (int)((Plan.PlanVolume * linkGroupUser.PriceForGig) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + (Plan.device_limit * linkGroupUser.PriceForUser));
                             }
                             else
                             {
@@ -842,7 +842,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
                                 {
                                     var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
-                                    user.tbUsers2.Wallet += (Plan.PlanVolume * (linkGroupUser.PriceForGig)) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + ((int)Plan.device_limit * linkGroupUser.PriceForUser);
+                                    user.tbUsers2.Wallet += (Plan.PlanVolume * linkGroupUser.PriceForGig) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + ((double)Plan.device_limit * linkGroupUser.PriceForUser);
                                 }
                             }
                             else
@@ -952,9 +952,9 @@ namespace V2boardApi.Areas.App.Controllers
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                 await mySql.OpenAsync();
 
-                var reader1 = await mySql.GetDataAsync("select token from v2_user where id="+user_id);
+                var reader1 = await mySql.GetDataAsync("select token from v2_user where id=" + user_id);
                 var OldToken = "";
-                if(await reader1.ReadAsync())
+                if (await reader1.ReadAsync())
                 {
                     OldToken = reader1.GetBodyDefinition("token");
                 }
@@ -965,7 +965,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var reader = await mySql.GetDataAsync(query);
                 reader.Close();
                 var Logs = await logsRepository.WhereAsync(s => s.SubToken == OldToken);
-                foreach(var item in Logs)
+                foreach (var item in Logs)
                 {
                     item.SubToken = token;
                 }
@@ -1038,12 +1038,12 @@ namespace V2boardApi.Areas.App.Controllers
                                     var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.User_ID);
                                     if (log.PlanVolume != null)
                                     {
-                                        var s = ((int)log.PlanVolume * (linkGroupUser.PriceForGig)) + ((int)log.PlanMonth * linkGroupUser.PriceForMonth) + ((int)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
+                                        var s = (log.PlanVolume * (linkGroupUser.PriceForGig)) + (log.PlanMonth * linkGroupUser.PriceForMonth) + ((double)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
                                         userAccount.Wallet -= s;
                                     }
                                     else
                                     {
-                                        userAccount.Wallet -= (log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth) + ((int)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
+                                        userAccount.Wallet -= (int)((log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth)) + ((int)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
                                     }
                                 }
                                 else
@@ -1060,14 +1060,8 @@ namespace V2boardApi.Areas.App.Controllers
                                     {
                                         var groupId = log.tbLinkUserAndPlans.tbPlans.Group_Id;
                                         var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.tbUsers2.User_ID);
-                                        if (log.PlanVolume != null)
-                                        {
-                                            userAccount.tbUsers2.Wallet -= ((int)log.PlanVolume * (linkGroupUser.PriceForGig)) + ((int)log.PlanMonth * linkGroupUser.PriceForMonth);
-                                        }
-                                        else
-                                        {
-                                            userAccount.tbUsers2.Wallet -= ((int)log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth) + ((int)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
-                                        }
+                                        userAccount.tbUsers2.Wallet -= (log.PlanVolume * linkGroupUser.PriceForGig) + (log.PlanMonth * linkGroupUser.PriceForMonth);
+
                                     }
                                 }
                                 else

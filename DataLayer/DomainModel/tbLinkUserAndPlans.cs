@@ -25,7 +25,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> L_FK_U_ID { get; set; }
         public Nullable<int> L_FK_P_ID { get; set; }
         public Nullable<bool> L_Status { get; set; }
-        public Nullable<int> L_SellPrice { get; set; }
+        public Nullable<double> L_SellPrice { get; set; }
         public bool L_ShowInBot { get; set; }
     
         public virtual tbPlans tbPlans { get; set; }

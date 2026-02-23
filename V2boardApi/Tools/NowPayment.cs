@@ -113,7 +113,7 @@ namespace V2boardBot.Tools
         //        var ConvertPrice = payment.pay_amount.ToString().Replace(".", "_");
 
         //        var key = Keyboards.GetPaymentButtonForIncreaseWallet(payment.payment_id, payment.pay_address, ConvertPrice);
-        //        bot.EditMessageTextAsync(tel_uniq_id, message.MessageId, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
+        //        bot.EditMessageText(tel_uniq_id, message.MessageId, str.ToString(), parseMode: ParseMode.Html, replyMarkup: key);
         //    }
         //    else
         //    {
@@ -147,14 +147,14 @@ namespace V2boardBot.Tools
 
 
         //                tbDepositLogRepo.Save();
-        //                bot.SendTextMessageAsync(Tel_uniq_userid, str.ToString(), parseMode: ParseMode.Html);
+        //                bot.SendMessage(Tel_uniq_userid, str.ToString(), parseMode: ParseMode.Html);
         //                return;
         //            }
         //            else
         //            {
         //                StringBuilder str = new StringBuilder();
         //                str.AppendLine("❌ تراکنش شما هنوز در سیستم ثبت نشده اگر پرداخت کرده اید 2 دقیقه دیگر مجدد تلاش کنید");
-        //                bot.AnswerCallbackQueryAsync(update.CallbackQuery.Id, str.ToString(), showAlert: true);
+        //                bot.AnswerCallbackQuery(update.CallbackQuery.Id, str.ToString(), showAlert: true);
         //                return;
         //            }
 

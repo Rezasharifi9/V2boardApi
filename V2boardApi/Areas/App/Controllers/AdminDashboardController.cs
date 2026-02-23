@@ -110,7 +110,7 @@ namespace V2boardApi.Areas.App.Controllers
 
 
             topAgentsView.Sells = UserSales.Select(a=> a.Sale.Value).ToList();
-            topAgentsView.Sells.AddRange(MasterSales.Select(a => a.Sale.Value).ToList());
+            topAgentsView.Sells.AddRange((IEnumerable<double>)MasterSales.Select(a => a.Sale.Value).ToList());
 
 
             return Json(new { data = topAgentsView }, JsonRequestBehavior.AllowGet);
@@ -152,7 +152,7 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 var PersianMonth = Utility.GetMonthName(FirstMonth);
 
-                var Sales = BotSells.Where(a => Convert.ToDateTime(a.OrderDate) >= FirstMonth && Convert.ToDateTime(a.OrderDate) <= LastMonth).Sum(a => a.SalePrice.Value);
+                double Sales = BotSells.Where(a => Convert.ToDateTime(a.OrderDate) >= FirstMonth && Convert.ToDateTime(a.OrderDate) <= LastMonth).Sum(a => a.SalePrice.Value);
                 Sales+= UserSales.Where(s => s.CreateDate >= FirstMonth && s.CreateDate<=LastMonth).Sum(a => a.SalePrice.Value);
                 Sales+= MasterSales.Where(s => s.CreateDate >= FirstMonth && s.CreateDate <= LastMonth).Sum(a => a.SalePrice.Value);
 

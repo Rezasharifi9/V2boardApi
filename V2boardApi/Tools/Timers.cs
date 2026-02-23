@@ -110,13 +110,13 @@ public class TimerService
 
                                                                         try
                                                                         {
-                                                                            await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                            await bot.Client.SendMessage(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
                                                                         }
                                                                         catch
                                                                         {
                                                                             continue;
                                                                         }
-                                                                        await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                        await bot.Client.SendMessage(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
                                                                         link.tbL_Warning = true;
                                                                         await tbTelegramUserRepository.SaveChangesAsync();
                                                                     }
@@ -143,7 +143,7 @@ public class TimerService
                                                                             st.AppendLine("🚀@" + BotSetting.Bot_ID);
                                                                             try
                                                                             {
-                                                                                await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                                await bot.Client.SendMessage(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
                                                                             }
                                                                             catch
                                                                             {
@@ -173,7 +173,7 @@ public class TimerService
                                                                     st.AppendLine("🚀@" + BotSetting.Bot_ID);
                                                                     try
                                                                     {
-                                                                        await bot.Client.SendTextMessageAsync(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
+                                                                        await bot.Client.SendMessage(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
                                                                     }
                                                                     catch
                                                                     {
@@ -372,7 +372,7 @@ public class TimerService
 
 
 
-                                            await bot.Client.SendTextMessageAsync(Link.tbTelegramUsers.Tel_UniqUserID, "✅ اشتراک شما با موفقیت تمدید شد از بخش مدیریت اشتراک ها جزئیات اشتراک را می توانید مشاهده کنید");
+                                            await bot.Client.SendMessage(Link.tbTelegramUsers.Tel_UniqUserID, "✅ اشتراک شما با موفقیت تمدید شد از بخش مدیریت اشتراک ها جزئیات اشتراک را می توانید مشاهده کنید");
                                             var InlineKeyboardMarkup = Keyboards.GetHomeButton();
                                             Link.tbL_Warning = false;
                                             Link.tb_AutoRenew = false;
@@ -435,7 +435,7 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html,replyToMessageId: item.dw_message_id);
+                        await botClient.SendMessage(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html,replyParameters: item.dw_message_id);
 
                         item.dw_Alerted = true;
 
@@ -486,7 +486,7 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.SendTextMessageAsync(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyToMessageId: item.dw_message_id);
+                        await botClient.SendMessage(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: item.dw_message_id);
 
                         item.dw_Alerted = true;
 

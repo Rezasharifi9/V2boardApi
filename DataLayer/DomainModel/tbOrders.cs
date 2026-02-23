@@ -28,12 +28,12 @@ namespace DataLayer.DomainModel
         public string OrderStatus { get; set; }
         public string OrderType { get; set; }
         public Nullable<System.Guid> Order_Guid { get; set; }
-        public Nullable<int> Order_Price { get; set; }
-        public Nullable<int> PriceWithOutDiscount { get; set; }
+        public Nullable<double> Order_Price { get; set; }
+        public Nullable<double> PriceWithOutDiscount { get; set; }
         public Nullable<int> FK_Tel_UserID { get; set; }
         public string payment_id { get; set; }
-        public Nullable<int> Traffic { get; set; }
-        public Nullable<int> Month { get; set; }
+        public double Traffic { get; set; }
+        public double Month { get; set; }
         public Nullable<System.DateTime> Tel_RenewedDate { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

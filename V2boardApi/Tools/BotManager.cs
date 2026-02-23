@@ -11,6 +11,8 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.Services.Description;
 using Telegram.Bot;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types.Enums;
 using static System.Net.WebRequestMethods;
 
 namespace V2boardApi.Tools
@@ -114,7 +116,7 @@ namespace V2boardApi.Tools
             //}
 
             //var url = method + "://" + HttpContext.Current.Request.Url.Authority;
-            //var url = "https://c4f4-38-180-218-144.ngrok-free.app";
+            //var url = "https://53bb-38-180-218-144.ngrok-free.app";
 
 
             var url = "https://";
@@ -131,10 +133,10 @@ namespace V2boardApi.Tools
 
             var botClient = bot.Client;
 
-            await botClient.DeleteWebhookAsync(true).ConfigureAwait(false);
+            await botClient.DeleteWebhook(true).ConfigureAwait(false);
 
             var webhookUrl = $"{url}/Bot/Update/?botName={name}";
-            await botClient.SetWebhookAsync(webhookUrl);
+            await botClient.SetWebhook(webhookUrl);
 
             return true;
         }

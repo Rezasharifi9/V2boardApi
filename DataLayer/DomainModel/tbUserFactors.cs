@@ -15,7 +15,7 @@ namespace DataLayer.DomainModel
     public partial class tbUserFactors
     {
         public int tbUf_ID { get; set; }
-        public Nullable<int> tbUf_Value { get; set; }
+        public Nullable<double> tbUf_Value { get; set; }
         public Nullable<System.DateTime> tbUf_CreateTime { get; set; }
         public Nullable<int> FK_User_ID { get; set; }
         public Nullable<int> tbUf_Status { get; set; }

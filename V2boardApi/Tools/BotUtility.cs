@@ -19,7 +19,7 @@ namespace V2boardApi.Tools
         public async Task GetUserProfilePictureAsync(long userId)
         {
             // دریافت عکس‌های پروفایل کاربر
-            var userProfilePhotos = await botClient.GetUserProfilePhotosAsync(userId);
+            var userProfilePhotos = await botClient.GetUserProfilePhotos(userId);
 
             // بررسی اینکه آیا کاربر عکس پروفایل دارد یا خیر
             if (userProfilePhotos.TotalCount > 0)
@@ -28,7 +28,7 @@ namespace V2boardApi.Tools
                 var photo = userProfilePhotos.Photos.First()[0];
 
                 // دریافت فایل عکس
-                var file = await botClient.GetFileAsync(photo.FileId);
+                var file = await botClient.GetFile(photo.FileId);
 
                 // ساخت URL برای دانلود عکس
                 var fileUrl = $"https://api.telegram.org/file/bot{Token}/{file.FilePath}";

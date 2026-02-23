@@ -26,7 +26,7 @@ namespace V2boardApi.Tools
         /// <returns></returns>
         public async Task<bool> SendMessage(string message,ParseMode parseMode)
         {
-            await bot.SendTextMessageAsync(message, AdminID, parseMode: parseMode);
+            await bot.SendMessage(message, AdminID, parseMode: parseMode);
             return true;
         }
     }

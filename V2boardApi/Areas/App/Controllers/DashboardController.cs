@@ -85,9 +85,9 @@ namespace V2boardApi.Areas.App.Controllers
             var FirstMonth = persianCalendar.ToDateTime(Year, Month,1,0,0,0,0);
 
 
-            var SellMonth = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= FirstMonth).Sum(s => s.SalePrice);
-            SellMonth += db.GetUserSales().Where(s => s.CreateDate >= FirstMonth).Sum(s => s.SalePrice);
-            SellMonth += db.GetMasterUserSales().Where(s => s.CreateDate >= FirstMonth).Sum(s => s.SalePrice);
+            double SellMonth = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= FirstMonth).Sum(s => s.SalePrice.Value);
+            SellMonth += db.GetUserSales().Where(s => s.CreateDate >= FirstMonth).Sum(s => s.SalePrice.Value);
+            SellMonth += db.GetMasterUserSales().Where(s => s.CreateDate >= FirstMonth).Sum(s => s.SalePrice.Value);
 
             var ThisWeekSale = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= startOfThisWeek).Sum(s => s.SalePrice);
             ThisWeekSale += db.GetUserSales().Where(s => s.CreateDate >= startOfThisWeek).Sum(s => s.SalePrice);
@@ -106,7 +106,7 @@ namespace V2boardApi.Areas.App.Controllers
 
 
 
-            wkData.SellAvg = SellMonth.Value / PassedDayes;
+            wkData.SellAvg = SellMonth / PassedDayes;
 
 
 

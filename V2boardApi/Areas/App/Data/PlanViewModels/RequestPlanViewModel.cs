@@ -16,10 +16,10 @@ namespace V2boardApi.Areas.App.Data.PlanViewModels
 
         [Required(ErrorMessage = "ترافیک را وارد کنید")]
         [Range(0.1,1000,ErrorMessage ="مقدار ترافیک نمی تواند کمتر از 0.1 و بیشتر از 1000 گیگ باشد")]
-        public int planTraffic { get; set; }
+        public double planTraffic { get; set; }
 
         [Range(0,360,ErrorMessage ="زمان تعرفه نمی تواند بزرگتر از 360 روز باشد")]
-        public Nullable<int> planTime { get; set; }
+        public Nullable<double> planTime { get; set; }
 
         [Required(ErrorMessage ="قیمت تعرفه را وارد کنید")]
         public string planPrice { get; set; }

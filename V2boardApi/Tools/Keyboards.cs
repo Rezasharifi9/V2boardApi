@@ -597,17 +597,20 @@ namespace V2boardBot.Models
         public static InlineKeyboardMarkup GetAccpetBuyFromWallet(int planId, string AccountName)
         {
             List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+
+            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn2 = new InlineKeyboardButton("💳 پرداخت مستقیم");
+            btn2.CallbackData = "ConfirmPay%" + planId + "%" + AccountName;
+            row2.Add(btn2);
+            btns.Add(row2);
+
             List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
             InlineKeyboardButton btn = new InlineKeyboardButton("💰 پرداخت از کیف پول");
             btn.CallbackData = "AccpetWallet%" + planId + "%" + AccountName;
             row1.Add(btn);
             btns.Add(row1);
 
-            //List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
-            //InlineKeyboardButton btn2 = new InlineKeyboardButton("💳 پرداخت مستقیم");
-            //btn2.CallbackData = "ConfirmPay%" + planId + "%" + AccountName;
-            //row2.Add(btn2);
-            //btns.Add(row2);
+
 
             List<InlineKeyboardButton> row3 = new List<InlineKeyboardButton>();
             InlineKeyboardButton btn3 = new InlineKeyboardButton("🔙 برگشت");
@@ -719,5 +722,29 @@ namespace V2boardBot.Models
 
             return keyborad;
         }
+
+        /// <summary>
+        /// تابع آوردن دکمه کپی مبلغ و شماره کارت
+        /// </summary>
+        /// <returns></returns>
+        public static InlineKeyboardMarkup GetCopyPriceAndCardNumberButton(string price,string cardNumber)
+        {
+            List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+
+            InlineKeyboardButton btn =  InlineKeyboardButton.WithCopyText("📋 کپی شماره کارت",cardNumber);
+            InlineKeyboardButton btn2 = InlineKeyboardButton.WithCopyText("📋 کپی مبلغ (ریال)", price);
+
+            row1.Add(btn);
+            row1.Add(btn2);
+            
+
+            
+            btns.Add(row1);
+            var keyborad = new InlineKeyboardMarkup(btns);
+
+            return keyborad;
+        }
+
     }
 }

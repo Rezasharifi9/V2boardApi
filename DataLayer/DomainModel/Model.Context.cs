@@ -163,35 +163,5 @@ namespace DataLayer.DomainModel
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("NLog_AddEntry_p", machineNameParameter, loggedParameter, levelParameter, messageParameter, loggerParameter, propertiesParameter, exceptionParameter, ipAddressParameter, requestDataParameter, responseDataParameter, userIdParameter, userNameParameter, userRoleParameter, requestUrlParameter, httpMethodParameter, requestHeadersParameter, userAgentParameter, executionTimeParameter, sessionIdParameter, actionNameParameter, controllerNameParameter, customDataParameter);
         }
-    
-        public virtual int SqlQueryNotificationStoredProcedure_2d2da058_e278_4966_9e25_793e672ed0fe()
-        {
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SqlQueryNotificationStoredProcedure_2d2da058_e278_4966_9e25_793e672ed0fe");
-        }
-    
-        public virtual int SqlQueryNotificationStoredProcedure_4ffd34bb_37a2_4227_8286_fc1e19e68f11()
-        {
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SqlQueryNotificationStoredProcedure_4ffd34bb_37a2_4227_8286_fc1e19e68f11");
-        }
-    
-        public virtual int SqlQueryNotificationStoredProcedure_90a52481_b600_46ad_a1e7_d3a4b4f41c26()
-        {
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SqlQueryNotificationStoredProcedure_90a52481_b600_46ad_a1e7_d3a4b4f41c26");
-        }
-    
-        public virtual int SqlQueryNotificationStoredProcedure_a18aa4bb_45b7_493a_9d09_f78f1462150b()
-        {
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SqlQueryNotificationStoredProcedure_a18aa4bb_45b7_493a_9d09_f78f1462150b");
-        }
-    
-        public virtual int SqlQueryNotificationStoredProcedure_a28a156b_096d_4328_a3f8_bff243f47f1b()
-        {
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SqlQueryNotificationStoredProcedure_a28a156b_096d_4328_a3f8_bff243f47f1b");
-        }
-    
-        public virtual int SqlQueryNotificationStoredProcedure_e1259852_46ea_4433_b261_181d7c332764()
-        {
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("SqlQueryNotificationStoredProcedure_e1259852_46ea_4433_b261_181d7c332764");
-        }
     }
 }
