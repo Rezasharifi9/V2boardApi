@@ -77,7 +77,7 @@ namespace V2boardApi.Areas.App.Controllers
                                 var reader = await sqlEntities.GetDataAsync(query);
                                 while (await reader.ReadAsync())
                                 {
-                                    var str = "upload=" + reader.GetBodyDefinition("u") + ";download=" + reader.GetBodyDefinition("d") + ";total=" + reader.GetBodyDefinition("transfer_enable") + ";expire=" + reader.GetBodyDefinition("expired_at");
+                                    var str = "upload=" + reader["u"] + ";download=" + reader["d"] + ";total=" + reader["transfer_enable"] + ";expire=" + reader["expired_at"];
                                     var name = reader.GetString("email").Split('@')[0];
                                     var base64 = Utility.Base64Encode(name.Split('$')[0]);
 
@@ -165,7 +165,7 @@ namespace V2boardApi.Areas.App.Controllers
                             getUserData.Name = reader.GetString("email").Split('@')[0];
                             getUserData.IsBanned = reader.GetBoolean("banned");
                             getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetDouble("transfer_enable")).ToString() + " GB";
-                            var exp = reader.GetBodyDefinition("expired_at");
+                            var exp = reader["expired_at"];
                             if (exp != "")
                             {
                                 var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));

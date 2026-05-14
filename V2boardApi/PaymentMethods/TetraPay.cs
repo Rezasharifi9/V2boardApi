@@ -1,9 +1,12 @@
 ﻿using DataLayer.DomainModel;
+using DataLayer.Repository;
+using MihaZupan;
 using MySqlX.XDevAPI.Common;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -13,10 +16,31 @@ namespace V2boardApi.PaymentMethods
 {
     public class TetraPay
     {
+        private Repository<tbSocks5> Socks5Repository { get; set; }
         public HttpClient HttpClient { get; set; }
         public TetraPay(string BaseUrl)
         {
-            HttpClient = new HttpClient();
+            
+            Socks5Repository = new Repository<tbSocks5>();
+
+            var AcitveProxy = Socks5Repository.Where(a=> a.IsActive == true).FirstOrDefault();
+            if(AcitveProxy!=null)
+            {
+                var proxy = new HttpToSocks5Proxy(AcitveProxy.tbsck_ip, AcitveProxy.tbsck_port.Value, AcitveProxy.tbsck_username, AcitveProxy.tbsck_password);
+
+                var handler = new HttpClientHandler
+                {
+                    Proxy = proxy,
+                    UseProxy = true
+                };
+
+                HttpClient = new HttpClient(handler);
+            }
+            else
+            {
+                HttpClient = new HttpClient();
+            }
+
             HttpClient.BaseAddress = new Uri(BaseUrl);
 
         }

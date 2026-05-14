@@ -150,8 +150,8 @@ namespace V2boardApi.Areas.App.Controllers
                     user.profile = item.Profile_Filename;
                     user.username = item.Username;
                     user.status = 1;
-                    user.sumSellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => (int)s.SalePrice).Sum().ConvertToMony() + " تومان";
-                    user.sellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => (int)s.SalePrice).Count();
+                    user.sumSellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => (long)s.SalePrice).Sum().ConvertToMony() + " تومان";
+                    user.sellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => (long)s.SalePrice).Count();
                     if (item.Wallet >= item.Limit)
                     {
                         user.status = 3;
@@ -1369,7 +1369,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                         var reader2 = await mySql.GetDataAsync(Query);
                         await reader2.ReadAsync();
-                        var Data = reader2.GetBodyDefinition("Used");
+                        var Data = reader2["Used"];
                         if (Data != "")
                         {
                             used += Convert.ToInt64(Data);

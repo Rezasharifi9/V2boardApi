@@ -295,8 +295,8 @@ namespace V2boardApi.Areas.App.Controllers
                     account.V2boardUsername = link.tbL_Email.Split('@')[0];
                     account.State = 1;
                     account.TotalVolume = Utility.ConvertByteToGB(Reader.GetInt64("transfer_enable")) + " GB";
-                    var exp = Reader.GetBodyDefinition("expired_at");
-                    var OnlineTime = Reader.GetBodyDefinition("t");
+                    var exp = Reader["expired_at"]?.ToString();
+                    var OnlineTime = Reader["t"]?.ToString();
                     if (exp != "")
                     {
                         var e = Convert.ToInt64(exp);

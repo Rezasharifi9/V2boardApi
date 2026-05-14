@@ -218,6 +218,9 @@ $(function () {
     });
 
 
+
+
+
     // Filter form control to default size
     // ? setTimeout used for multilingual table initialization
     setTimeout(() => {

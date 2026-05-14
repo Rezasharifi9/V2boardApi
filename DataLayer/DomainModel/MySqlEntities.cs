@@ -1,99 +1,80 @@
-﻿using MySql.Data.MySqlClient;
+﻿using MySqlConnector; // نام فضای نام تغییری نکرده یا به این تغییر یافته
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace DataLayer.DomainModel
 {
     public class MySqlEntities : IDisposable
     {
-        private readonly string _connection;
-        private LinkedList<MySqlConnection> connectionPool = new LinkedList<MySqlConnection>();
+        private readonly string _connectionString;
         public MySqlConnection MySqlConnection { get; private set; }
-        private bool disposed = false; // برای پیگیری وضعیت Dispose
+        private bool _disposed = false;
 
         public MySqlEntities(string connectionString)
         {
-            _connection = connectionString;
-            MySqlConnection = new MySqlConnection(_connection);
+            _connectionString = connectionString;
+            // در کتابخانه مدرن، کانکشن همینجا ساخته می‌شود
+            MySqlConnection = new MySqlConnection(_connectionString);
         }
 
         public async Task OpenAsync()
         {
-            await MySqlConnection.OpenAsync().ConfigureAwait(false);
-            connectionPool.AddLast(MySqlConnection);
+            if (MySqlConnection.State != ConnectionState.Open)
+            {
+                await MySqlConnection.OpenAsync().ConfigureAwait(false);
+            }
         }
 
-        public async Task<MySqlDataReader> GetDataAsync(string query, Dictionary<string, object> parameters)
+        public async Task<MySqlDataReader> GetDataAsync(string query, Dictionary<string, object> parameters = null)
         {
-            using (var sqlCommand = new MySqlCommand(query, MySqlConnection))
+            // اطمینان از باز بودن کانکشن قبل از اجرای دستور
+            await OpenAsync();
+
+            var sqlCommand = new MySqlCommand(query, MySqlConnection);
+
+            if (parameters != null)
             {
-                // اضافه کردن پارامترها به پرس‌وجو
                 foreach (var param in parameters)
                 {
                     sqlCommand.Parameters.AddWithValue(param.Key, param.Value);
                 }
-
-                var reader = await sqlCommand.ExecuteReaderAsync().ConfigureAwait(false);
-                return (MySqlDataReader)reader;
             }
+
+            // CommandBehavior.CloseConnection باعث می‌شود وقتی Reader بسته شد، کانکشن هم بسته شود
+            // اما چون شما از یک کلاس سراسری استفاده می‌کنید، فعلاً معمولی برمی‌گردانیم
+            return await sqlCommand.ExecuteReaderAsync().ConfigureAwait(false);
         }
+
+        // متد دوم را با استفاده از متد اول خلاصه می‌کنیم (DRY Principle)
         public async Task<MySqlDataReader> GetDataAsync(string query)
         {
-            using (var sqlCommand = new MySqlCommand(query, MySqlConnection))
-            {
-                var reader = await sqlCommand.ExecuteReaderAsync().ConfigureAwait(false);
-                return (MySqlDataReader)reader;
-            }
+            return await GetDataAsync(query, null);
         }
 
         public async Task CloseAsync()
         {
-            if (MySqlConnection != null && MySqlConnection.State == System.Data.ConnectionState.Open)
+            if (MySqlConnection != null)
             {
                 await MySqlConnection.CloseAsync().ConfigureAwait(false);
             }
-
-            if (connectionPool.Count > 0)
-            {
-                connectionPool.Remove(MySqlConnection);
-                await MySqlConnection.ClearPoolAsync(MySqlConnection).ConfigureAwait(false);
-            }
-
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            Dispose();
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    // آزادسازی منابع مدیریتی
                     if (MySqlConnection != null)
                     {
-                        if (MySqlConnection.State == System.Data.ConnectionState.Open)
-                        {
-                            MySqlConnection.CloseAsync().ConfigureAwait(false);
-                        }
                         MySqlConnection.Dispose();
                         MySqlConnection = null;
                     }
-
-                    if (connectionPool != null)
-                    {
-                        foreach (var connection in connectionPool)
-                        {
-                            connection.Dispose();
-                        }
-                        connectionPool.Clear();
-                        connectionPool = null;
-                    }
                 }
-
-                // آزادسازی منابع غیرمدیریتی (در صورت وجود)
-                disposed = true;
+                _disposed = true;
             }
         }
 

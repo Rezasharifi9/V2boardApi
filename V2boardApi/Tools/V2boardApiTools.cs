@@ -15,7 +15,7 @@ namespace V2boardApi.Tools
         private static tbServers Server;
         private static string BaseUrl;
         private static string Token;
-        private static bool IsInit;
+        private static bool IsInit = false;
         public static void init()
         {
             Server = HttpRuntime.Cache["Server"] as tbServers;
@@ -52,7 +52,7 @@ namespace V2boardApi.Tools
                 }
                 else
                 {
-                    throw new ArgumentException("Init Function is not run");
+                    return null;
                 }
             }
             catch
@@ -93,7 +93,7 @@ namespace V2boardApi.Tools
             }
             else
             {
-                throw new ArgumentException("Init Function is not run");
+                return new List<SubInfo>();
             }
 
         }

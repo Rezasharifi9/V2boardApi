@@ -14,6 +14,7 @@ using V2boardBot.Models;
 using System.Linq;
 using System.Web;
 using NLog;
+using MySqlConnector;
 
 public class TimerService
 {
@@ -32,7 +33,7 @@ public class TimerService
         // تنظیم تایمرها
         CheckLink = new System.Threading.Timer(async _ => await CheckSubTimerCallback(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
         AlertDeleteFactoresCard = new System.Threading.Timer(async _ => await CheckExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
-        CheckRenewAccount = new System.Threading.Timer(async _ => await CheckRenewAccountFun(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(300000));
+        CheckRenewAccount = new System.Threading.Timer(async _ => await CheckRenewAccountFun(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(60000));
         //CheckSubLimitedUser = new System.Threading.Timer(async _ => await CheckSubLimitedUsers(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(180000));
         DeleteTestAccount = new System.Threading.Timer(async _ => await DeleteTestSub(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
         RemoveFactoresCard = new System.Threading.Timer(async _ => await RemoveExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
@@ -87,11 +88,11 @@ public class TimerService
                                                                 var bannd = reader.GetBoolean("banned");
                                                                 if (!bannd)
                                                                 {
-                                                                    var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
+                                                                    var vol = reader.GetInt64("transfer_enable") - (reader.GetInt64("d") + reader.GetInt64("u"));
 
                                                                     var d = Utility.ConvertByteToGB(vol);
 
-                                                                    if (d <= 1)
+                                                                    if (d <= 0.2)
                                                                     {
                                                                         StringBuilder st = new StringBuilder();
                                                                         if (link.tbL_Email.Split('@')[0].Contains('$'))
@@ -121,7 +122,7 @@ public class TimerService
                                                                         await tbTelegramUserRepository.SaveChangesAsync();
                                                                     }
 
-                                                                    var exp = reader.GetBodyDefinition("expired_at");
+                                                                    var exp = reader["expired_at"]?.ToString();
                                                                     if (exp != "")
                                                                     {
                                                                         var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
@@ -241,7 +242,7 @@ public class TimerService
 
                     string query = "DELETE FROM v2_user WHERE ((v2_user.d + v2_user.u) > v2_user.transfer_enable OR expired_at < UNIX_TIMESTAMP()) AND email LIKE @BotID";
 
-                    using (var command = new MySqlCommand(query, mySql.MySqlConnection))
+                    using (var command = new MySqlConnector.MySqlCommand(query, mySql.MySqlConnection))
                     {
                         command.Parameters.AddWithValue("@BotID", item.Bot_ID + "%");
 
@@ -295,12 +296,12 @@ public class TimerService
                                 var Read = await Reader.ReadAsync();
                                 if (Read)
                                 {
-                                    var d = Reader.GetDouble("d");
-                                    var u = Reader.GetDouble("u");
-                                    var totalUsed = Reader.GetDouble("transfer_enable");
+                                    var d = Reader.GetInt64("d");
+                                    var u = Reader.GetInt64("u");
+                                    var totalUsed = Reader.GetInt64("transfer_enable");
 
                                     var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
-                                    var exp2 = Reader.GetBodyDefinition("expired_at");
+                                    var exp2 = Reader["expired_at"]?.ToString();
                                     var Ended = false;
                                     if (!string.IsNullOrWhiteSpace(exp2))
                                     {
@@ -311,7 +312,7 @@ public class TimerService
                                             Ended = true;
                                         }
                                     }
-                                    if (total <= 0.2)
+                                    if (total <= 0.03)
                                     {
                                         Ended = true;
                                     }

@@ -59,6 +59,8 @@
         <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUsers_tbTelegramUsers" ManuallyRouted="false" />
         <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUserFactors_tbUsers" ManuallyRouted="false" />
         <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUsers_tbUsers" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSocks5" Width="1.5" PointX="5.375" PointY="0.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentLinks" Width="1.5" PointX="5.375" PointY="3.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

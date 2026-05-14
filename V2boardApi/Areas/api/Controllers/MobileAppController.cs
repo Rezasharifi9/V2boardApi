@@ -74,7 +74,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                 if (await reader.ReadAsync())
                 {
-                    var ExpireTime = reader.GetBodyDefinition("expired_at");
+                    var ExpireTime = reader["expired_at"];
                     var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(ExpireTime));
                     var UsedVolume = Utility.ConvertByteToGB(reader.GetDouble("d") + reader.GetDouble("u"));
                     var TotalVolume = reader.GetInt64("transfer_enable");

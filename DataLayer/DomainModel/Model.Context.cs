@@ -50,6 +50,8 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbUseages> tbUseages { get; set; }
         public virtual DbSet<tbUserFactors> tbUserFactors { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
+        public virtual DbSet<tbSocks5> tbSocks5 { get; set; }
+        public virtual DbSet<tbPaymentLinks> tbPaymentLinks { get; set; }
     
         public virtual ObjectResult<GetBotSales_Result> GetBotSales()
         {

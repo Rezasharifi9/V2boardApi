@@ -227,6 +227,18 @@ namespace V2boardApi.Tools
 
             return formattedNumber;
         }
+        /// <summary>
+        /// جدا جدا کردن سه رقم سه رقم برای پول
+        /// </summary>
+        /// <param name="mony"></param>
+        /// <returns></returns>
+        public static string ConvertToMony(this long mony)
+        {
+            // تبدیل عدد به رشته و اضافه کردن جداکننده
+            string formattedNumber = String.Format("{0:#,0}", mony);
+
+            return formattedNumber;
+        }
         public static string ConvertToMony(this double mony)
         {
             // تبدیل عدد به رشته و اضافه کردن جداکننده

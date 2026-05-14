@@ -374,16 +374,16 @@ namespace V2boardApi.Areas.App.Controllers
                         plan.Plan_Name = reader.GetString("name");
                         plan.Group_Id = reader.GetInt32("groupId");
                         plan.Group_Name = reader.GetString("groupName");
-                        var speedLimit = reader.GetBodyDefinition("speed_limit");
+                        var speedLimit = reader["speed_limit"];
                         if (speedLimit != "")
                         {
                             plan.Speed_limit = Convert.ToInt16(speedLimit);
 
                         }
-                        var Month_Price = reader.GetBodyDefinition("month_price");
-                        var quarter_price = reader.GetBodyDefinition("quarter_price");
-                        var half_year_price = reader.GetBodyDefinition("half_year_price");
-                        var year_price = reader.GetBodyDefinition("year_price");
+                        var Month_Price = reader["month_price"];
+                        var quarter_price = reader["quarter_price"];
+                        var half_year_price = reader["half_year_price"];
+                        var year_price = reader["year_price"];
                         if (Month_Price != "")
                         {
                             plan.Price = Convert.ToInt32(Month_Price) / 100;
@@ -426,10 +426,10 @@ namespace V2boardApi.Areas.App.Controllers
                         planD.Plan_ID_V2 = id;
                         planD.PlanVolume = reader.GetInt32("transfer_enable");
                         planD.Plan_Name = reader.GetString("name");
-                        var Month_Price = reader.GetBodyDefinition("month_price");
-                        var quarter_price = reader.GetBodyDefinition("quarter_price");
-                        var half_year_price = reader.GetBodyDefinition("half_year_price");
-                        var year_price = reader.GetBodyDefinition("year_price");
+                        var Month_Price = reader["month_price"];
+                        var quarter_price = reader["quarter_price"];
+                        var half_year_price = reader["half_year_price"];
+                        var year_price = reader["year_price"];
                         if (Month_Price != "")
                         {
                             planD.Price = Convert.ToInt32(Month_Price) / 100;
@@ -465,7 +465,7 @@ namespace V2boardApi.Areas.App.Controllers
                         }
                         planD.Group_Id = reader.GetInt32("groupId");
                         planD.Group_Name = reader.GetString("groupName");
-                        var speedLimit = reader.GetBodyDefinition("speed_limit");
+                        var speedLimit = reader["speed_limit"];
                         if (speedLimit != "")
                         {
                             planD.Speed_limit = Convert.ToInt16(speedLimit);

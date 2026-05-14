@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="V2boardSiteSharifiModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="V2boardSiteSharifiModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="NLog">
           <Key>
             <PropertyRef Name="ID" />
@@ -214,6 +214,20 @@
           <Property Name="Month" Type="float" Nullable="false" />
           <Property Name="Tel_RenewedDate" Type="datetime" />
         </EntityType>
+        <EntityType Name="tbPaymentLinks">
+          <Key>
+            <PropertyRef Name="py_id" />
+          </Key>
+          <Property Name="py_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="py_hash" Type="varchar" MaxLength="250" Nullable="false" />
+          <Property Name="py_authority" Type="varchar" MaxLength="250" Nullable="false" />
+          <Property Name="py_amount" Type="int" Nullable="false" />
+          <Property Name="py_createdate" Type="datetime" Nullable="false" />
+          <Property Name="py_desc" Type="nvarchar" MaxLength="250" />
+          <Property Name="py_status" Type="bit" Nullable="false" />
+          <Property Name="py_link_web" Type="varchar" MaxLength="500" Nullable="false" />
+          <Property Name="py_link_bot" Type="varchar" MaxLength="500" Nullable="false" />
+        </EntityType>
         <EntityType Name="tbPaymentMethods">
           <Key>
             <PropertyRef Name="tbpm_ID" />
@@ -293,6 +307,17 @@
           </Key>
           <Property Name="tbKey" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="tbValue" Type="varchar" MaxLength="150" />
+        </EntityType>
+        <EntityType Name="tbSocks5">
+          <Key>
+            <PropertyRef Name="tbsck_id" />
+          </Key>
+          <Property Name="tbsck_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tbsck_ip" Type="varchar" MaxLength="50" />
+          <Property Name="tbsck_port" Type="int" />
+          <Property Name="tbsck_username" Type="varchar" MaxLength="50" />
+          <Property Name="tbsck_password" Type="varchar" MaxLength="50" />
+          <Property Name="IsActive" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="tbTelegramUsers">
           <Key>
@@ -810,12 +835,14 @@
           <EntitySet Name="tbNotifications" EntityType="Self.tbNotifications" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbNotificationUser" EntityType="Self.tbNotificationUser" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbPaymentLinks" EntityType="Self.tbPaymentLinks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPaymentMethods" EntityType="Self.tbPaymentMethods" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPaymentMethodUser" EntityType="Self.tbPaymentMethodUser" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPlans" EntityType="Self.tbPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServerGroups" EntityType="Self.tbServerGroups" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbServers" EntityType="Self.tbServers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbSettings" EntityType="Self.tbSettings" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbSocks5" EntityType="Self.tbSocks5" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbTelegramUsers" EntityType="Self.tbTelegramUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
@@ -945,8 +972,7 @@
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="V2boardSiteSharifiModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -1951,6 +1977,8 @@
             <Parameter Name="controllerName" Mode="In" Type="String" />
             <Parameter Name="customData" Mode="In" Type="String" />
           </FunctionImport>
+          <EntitySet Name="tbSocks5" EntityType="V2boardSiteSharifiModel.tbSocks5" />
+          <EntitySet Name="tbPaymentLinks" EntityType="V2boardSiteSharifiModel.tbPaymentLinks" />
         </EntityContainer>
         <ComplexType Name="GetBotSales_Result">
           <Property Type="String" Name="OrderDate" Nullable="true" MaxLength="10" />
@@ -1977,6 +2005,31 @@
           <Property Type="Double" Name="SalePrice" Nullable="true" />
           <Property Type="DateTime" Name="CreateDate" Nullable="true" />
         </ComplexType>
+        <EntityType Name="tbSocks5">
+          <Key>
+            <PropertyRef Name="tbsck_id" />
+          </Key>
+          <Property Name="tbsck_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbsck_ip" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="tbsck_port" Type="Int32" />
+          <Property Name="tbsck_username" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="tbsck_password" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="IsActive" Type="Boolean" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbPaymentLinks">
+          <Key>
+            <PropertyRef Name="py_id" />
+          </Key>
+          <Property Name="py_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="py_hash" Type="String" Nullable="false" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="py_authority" Type="String" Nullable="false" MaxLength="250" FixedLength="false" Unicode="false" />
+          <Property Name="py_amount" Type="Int32" Nullable="false" />
+          <Property Name="py_createdate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="py_desc" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="py_status" Type="Boolean" Nullable="false" />
+          <Property Name="py_link_web" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="py_link_bot" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="false" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2415,6 +2468,33 @@
             </ResultMapping>
           </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="NLog_AddEntry_p" FunctionName="V2boardSiteSharifiModel.Store.NLog_AddEntry_p" />
+          <EntitySetMapping Name="tbSocks5">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbSocks5">
+              <MappingFragment StoreEntitySet="tbSocks5">
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="tbsck_password" ColumnName="tbsck_password" />
+                <ScalarProperty Name="tbsck_username" ColumnName="tbsck_username" />
+                <ScalarProperty Name="tbsck_port" ColumnName="tbsck_port" />
+                <ScalarProperty Name="tbsck_ip" ColumnName="tbsck_ip" />
+                <ScalarProperty Name="tbsck_id" ColumnName="tbsck_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbPaymentLinks">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbPaymentLinks">
+              <MappingFragment StoreEntitySet="tbPaymentLinks">
+                <ScalarProperty Name="py_link_bot" ColumnName="py_link_bot" />
+                <ScalarProperty Name="py_link_web" ColumnName="py_link_web" />
+                <ScalarProperty Name="py_status" ColumnName="py_status" />
+                <ScalarProperty Name="py_desc" ColumnName="py_desc" />
+                <ScalarProperty Name="py_createdate" ColumnName="py_createdate" />
+                <ScalarProperty Name="py_amount" ColumnName="py_amount" />
+                <ScalarProperty Name="py_authority" ColumnName="py_authority" />
+                <ScalarProperty Name="py_hash" ColumnName="py_hash" />
+                <ScalarProperty Name="py_id" ColumnName="py_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

@@ -20,6 +20,12 @@ namespace DataLayer.DomainModel
     [MetadataType(typeof(tbServersMetaData))]
     public partial class tbServers
     {
-        public string ConnectionString { get { return "Server=" + ServerIP + ";User ID=" + Username + ";Password=" + Password + ";Database=" + DataBaseName + ""; } }
+        public string ConnectionString
+        {
+            get
+            {
+                return $"Server={ServerIP};Port=3306;Database={DataBaseName};Uid={Username};Pwd={Password};SslMode=None;AllowPublicKeyRetrieval=True;";
+            }
+        }
     }
 }

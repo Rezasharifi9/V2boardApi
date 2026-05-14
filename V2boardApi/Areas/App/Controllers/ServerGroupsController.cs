@@ -209,7 +209,7 @@ namespace V2boardApi.Areas.App.Controllers
                     while (await reader.ReadAsync())
                     {
 
-                        var name = reader.GetBodyDefinition("name");
+                        var name = reader["name"]?.ToString();
                         var id = reader.GetInt32("id");
                         var group = await serverGroup_Repo.FirstOrDefaultAsync(s => s.V2_Group_Id == id);
                         if (group != null)

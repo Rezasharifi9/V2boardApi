@@ -2,7 +2,6 @@
 using DataLayer.DomainModel;
 using DataLayer.Repository;
 using DeviceDetectorNET.Class;
-using MySql.Data.MySqlClient;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -460,6 +459,8 @@ namespace V2boardApi.Areas.api.Controllers
 
                                     if (mess != "/start")
                                     {
+                                        
+
                                         var inites = mess.Split(' ');
                                         if (inites.Count() == 2)
                                         {
@@ -470,8 +471,13 @@ namespace V2boardApi.Areas.api.Controllers
                                                 Usr.Tel_Parent_ID = Parent.Tel_UserID;
                                             }
                                         }
-                                    }
+                                        else
+                                        {
+                                            return Ok();
+                                        }
 
+                                        
+                                    }
 
                                     Usr.Tel_RobotID = RobotIDforTimer;
                                     Usr.Tel_Wallet = 0;
@@ -1010,6 +1016,13 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (mess == "🎁 اشتراک تست")
                                 {
+                                    StringBuilder str2 = new StringBuilder();
+                                    str2.AppendLine("❌ عزیزم متاسفانه در شرایط فعلی امکان دریافت اشتراک تست فراهم نمی باشد");
+                                    str2.AppendLine("");
+                                    str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                    await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString());
+                                    return Ok();
+
                                     if (UserAcc.Tel_GetedTestAccount == false || UserAcc.Tel_GetedTestAccount == null)
                                     {
 
@@ -1134,7 +1147,7 @@ namespace V2boardApi.Areas.api.Controllers
                                     var price = 0;
 
                                     int.TryParse(mess, out price);
-                                    if (price >= 50000 && price <= 5000000)
+                                    if (price >= 50000 && price <= 10000000)
                                     {
                                         Random ran = new Random();
                                         var RanNumber = ran.Next(1, 999);
@@ -1216,7 +1229,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("❌ فرمت مبلغ اشتباه");
                                         str.AppendLine("");
-                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 5,000,000 تومان می باشد");
+                                        str.AppendLine("❗️ نکته : بازه مبلغ واریزی بین 50,000 تومان تا 10,000,000 تومان می باشد");
                                         str.AppendLine("");
                                         str.AppendLine("❗️ مبلغ را بدون گذاشتن , وارد کنید");
                                         str.AppendLine("");
@@ -2007,15 +2020,15 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder st = new StringBuilder();
                                         while (await reader.ReadAsync())
                                         {
-                                            var ExpireTime = reader.GetBodyDefinition("expired_at");
+                                            var ExpireTime = reader["expired_at"];
                                             var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(ExpireTime));
 
 
                                             var Status = "فعال";
-                                            var re = Utility.ConvertByteToGB(reader.GetDouble("d") + reader.GetDouble("u"));
+                                            var re = Utility.ConvertByteToGB(reader.GetInt64("d") + reader.GetInt64("u"));
                                             var UsedVol = Math.Round(re, 2) + " گیگابایت";
 
-                                            var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
+                                            var vol = reader.GetInt64("transfer_enable") - (reader.GetInt64("d") + reader.GetInt64("u"));
                                             if (vol <= 0)
                                             {
                                                 Status = "اتمام حجم";
@@ -2452,7 +2465,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         var Learn = BotSettings.tbUsers.tbConnectionHelp.Where(p => p.ch_ID == id).FirstOrDefault();
                                         if (Learn != null)
                                         {
-                                            await bot.Client.SendMessage(User.Tel_UniqUserID, Learn.ch_Link, linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true });
+                                            await bot.Client.SendMessage(User.Tel_UniqUserID, Learn.ch_Link, linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = false });
                                         }
 
                                     }
@@ -2500,7 +2513,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         StringBuilder str = new StringBuilder();
                                         str.AppendLine("◀️  لطفا مبلغ تعرفه یا هر مبلغی رو که میخای وارد کن ");
                                         str.AppendLine("");
-                                        str.AppendLine("❗️ توجه کن : بازه مبلغ واریزیت باید بین 50,000 تومان تا 1,000,000 تومان باشه");
+                                        str.AppendLine("❗️ توجه کن : بازه مبلغ واریزیت باید بین 50,000 تومان تا 10,000,000 تومان باشه");
                                         str.AppendLine("❗️ مبلغو بدون گذاشتن , وارد کن");
 
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Type_IncreasePrice", db, botName);
@@ -2857,14 +2870,14 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var Ended = false;
                                                 while (await Reader.ReadAsync())
                                                 {
-                                                    var d = Reader.GetDouble("d");
-                                                    var u = Reader.GetDouble("u");
-                                                    var totalUsed = Reader.GetDouble("transfer_enable");
+                                                    var d = Reader.GetInt64("d");
+                                                    var u = Reader.GetInt64("u");
+                                                    var totalUsed = Reader.GetInt64("transfer_enable");
 
                                                     var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
-                                                    var exp2 = Reader.GetBodyDefinition("expired_at");
+                                                    var exp2 = Reader["expired_at"];
 
-                                                    if (!string.IsNullOrWhiteSpace(exp2))
+                                                    if (!string.IsNullOrWhiteSpace(exp2?.ToString()))
                                                     {
                                                         var expireTime = DateTime.Now.AddHours(-2);
                                                         var ExpireDate = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp2));
@@ -2873,7 +2886,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                             Ended = true;
                                                         }
                                                     }
-                                                    if (total <= 0.2)
+                                                    if (total <= 0.02)
                                                     {
                                                         Ended = true;
                                                     }
@@ -3382,7 +3395,7 @@ namespace V2boardApi.Areas.api.Controllers
                     await mysql.CloseAsync();
                     return true;
                 }
-                var ExpireTime = reader.GetBodyDefinition("expired_at");
+                var ExpireTime = reader["expired_at"];
                 if (ExpireTime != "")
                 {
                     var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(ExpireTime));

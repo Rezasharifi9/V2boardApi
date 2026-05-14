@@ -73,6 +73,7 @@ namespace V2boardApi.Areas.api.Controllers
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
         private Repository<tbLinks> RepositoryLinks { get; set; }
         private Repository<tbDepositWallet_Log> RepositoryDepositWallet { get; set; }
+        private Repository<tbPaymentLinks> RepositoryPayLinks { get; set; }
         private Repository<tbTelegramUsers> RepositoryTelegramUser { get; set; }
         private Repository<tbUserFactors> RepositoryFactor { get; set; }
         private Repository<tbServerGroups> RepositoryServerGroups { get; set; }
@@ -91,6 +92,7 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryTelegramUser = new Repository<tbTelegramUsers>(db);
             RepositoryFactor = new Repository<tbUserFactors>(db);
             RepositoryServerGroups = new Repository<tbServerGroups>(db);
+            RepositoryPayLinks = new Repository<tbPaymentLinks>();
             Timer = new System.Timers.Timer();
             Timer.Elapsed += Timer_Elapsed;
 
@@ -409,6 +411,26 @@ namespace V2boardApi.Areas.api.Controllers
             else
             {
                 return Content(HttpStatusCode.NotFound, "تراکنشی با این مشخصات یافت نشد");
+            }
+
+        }
+
+        [System.Web.Http.HttpPost]
+        public async Task<IHttpActionResult> VerifyTetraPayLink(TetraRespModel model)
+        {
+            logger.Info("Verify Tetra Link Called", model);
+            var PayStatus = RepositoryPayLinks.Where(a => a.py_authority == model.authority && !a.py_status).FirstOrDefault();
+            if (PayStatus != null)
+            {
+                PayStatus.py_status = true;
+                logger.Info("Verify Tetra Pay With Tracking ID : " + PayStatus.py_hash);
+                await RepositoryPayLinks.SaveChangesAsync();
+                return Ok();
+            }
+            else
+            {
+                logger.Warn("Not Found Tetra Pay With Authority : " + model.authority);
+                return Content(HttpStatusCode.NotFound, "Not Found Tetra Pay With Authority : " + model.authority);
             }
 
         }

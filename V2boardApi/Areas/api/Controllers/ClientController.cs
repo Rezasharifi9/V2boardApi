@@ -26,12 +26,18 @@ using Mysqlx.Expr;
 using System.Windows.Forms;
 using System.Buffers.Text;
 using static System.Windows.Forms.LinkLabel;
+using DeviceDetectorNET.Class.Device;
+using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Fluent;
 
 namespace V2boardApi.Areas.api.Controllers
 {
     [EnableCors(origins: "*", "*", "*")]
+    [LogActionFilter]
     public class ClientController : Controller
     {
+        private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private Repository<tbServers> RepositoryServer { get; set; }
         private Entities db;
         private Repository<tbUsers> RepositoryUser { get; set; }
@@ -50,7 +56,6 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryLinks = new Repository<tbLinks>(db);
         }
 
-
         public async Task<ActionResult> subscribe(string token)
         {
             try
@@ -58,7 +63,8 @@ namespace V2boardApi.Areas.api.Controllers
                 var UserAgent = Request.UserAgent.ToLower();
                 var host = Request.Url.Host;
                 var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(host)).FirstOrDefault();
-                if (UserAgent.StartsWith("hiddify") || UserAgent.Contains("wing") || UserAgent.Contains("nekoray") || UserAgent.Contains("surfboard") || UserAgent.Contains("nekobox") || UserAgent.Contains("v2ray") || UserAgent.Contains("v2box") || UserAgent.Contains("foxray") || UserAgent.Contains("fair") || UserAgent.Contains("str") || UserAgent.Contains("shadow") || UserAgent.Contains("v2rayn") || UserAgent.StartsWith("safenet") || UserAgent.StartsWith("happ"))
+
+                if (!(UserAgent.Contains("chrome") || UserAgent.Contains("firefox") || UserAgent.Contains("safari") || UserAgent.Contains("edg") || UserAgent.Contains("samsung")))
                 {
                     if (server != null)
                     {
@@ -79,7 +85,7 @@ namespace V2boardApi.Areas.api.Controllers
                                 var reader = await sqlEntities.GetDataAsync(query);
                                 while (await reader.ReadAsync())
                                 {
-                                    var str = "upload=" + reader.GetBodyDefinition("u") + ";download=" + reader.GetBodyDefinition("d") + ";total=" + reader.GetBodyDefinition("transfer_enable") + ";expire=" + reader.GetBodyDefinition("expired_at");
+                                    var str = "upload=" + reader["u"] + ";download=" + reader["d"] + ";total=" + reader["transfer_enable"] + ";expire=" + reader["expired_at"];
                                     var name = reader.GetString("email").Split('@')[0];
                                     var base64 = Utility.Base64Encode(name.Split('$')[0]);
 
@@ -157,7 +163,7 @@ namespace V2boardApi.Areas.api.Controllers
                                             }
                                         }
                                     }
-                                    var exipre = reader.GetBodyDefinition("expired_at");
+                                    var exipre = reader["expired_at"];
                                     if (exipre != null)
                                     {
                                         var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exipre));
@@ -274,12 +280,13 @@ namespace V2boardApi.Areas.api.Controllers
                             getUserData.IsActive = 1;
                             getUserData.Name = reader.GetString("email").Split('@')[0];
                             getUserData.IsBanned = reader.GetBoolean("banned");
-                            getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetDouble("transfer_enable")).ToString() + " GB";
-                            var exp = reader.GetBodyDefinition("expired_at");
-                            if (exp != "")
+                            getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetInt64("transfer_enable")).ToString() + " GB";
+                            var exp = reader["expired_at"]?.ToString();
+                            logger.Info(exp);
+                            if (!string.IsNullOrEmpty(exp))
                             {
                                 var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
-                                var onlineTime = Utility.ConvertSecondToDatetime(reader.GetDouble("expired_at"));
+                                var onlineTime = Utility.ConvertSecondToDatetime(reader.GetInt64("expired_at"));
                                 if (onlineTime <= DateTime.Now.AddMinutes(-2))
                                 {
                                     getUserData.IsOnline = true;
@@ -306,10 +313,10 @@ namespace V2boardApi.Areas.api.Controllers
 
                             getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
 
-                            var re = Utility.ConvertByteToGB(reader.GetDouble("d") + reader.GetDouble("u"));
+                            var re = Utility.ConvertByteToGB(reader.GetInt64("d") + reader.GetInt64("u"));
                             getUserData.UsedVolume = Math.Round(re, 2) + " GB";
 
-                            var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
+                            var vol = reader.GetInt64("transfer_enable") - (reader.GetInt64("d") + reader.GetInt64("u"));
 
                             if (vol <= 0)
                             {
@@ -353,6 +360,7 @@ namespace V2boardApi.Areas.api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Warn(ex.Message+"|" + ex.StackTrace, ex);
                 return HttpNotFound();
             }
 

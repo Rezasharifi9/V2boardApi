@@ -102,7 +102,11 @@ namespace V2boardApi.Tools
                                         str1.AppendLine("");
                                         str1.AppendLine("🚀 @" + botSetting.Bot_ID);
 
-                                        await botClient.SendMessage(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                        try
+                                        {
+                                            await botClient.SendMessage(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                        }
+                                        catch { }
                                     }
                                 }
 
@@ -129,12 +133,12 @@ namespace V2boardApi.Tools
                                     var Ended = false;
                                     while (await Reader.ReadAsync())
                                     {
-                                        var d = Reader.GetDouble("d");
-                                        var u = Reader.GetDouble("u");
-                                        var totalUsed = Reader.GetDouble("transfer_enable");
+                                        var d = Reader.GetInt64("d");
+                                        var u = Reader.GetInt64("u");
+                                        var totalUsed = Reader.GetInt64("transfer_enable");
 
                                         var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
-                                        var exp2 = Reader.GetBodyDefinition("expired_at");
+                                        var exp2 = Reader["expired_at"]?.ToString();
 
                                         if (!string.IsNullOrWhiteSpace(exp2))
                                         {
@@ -451,7 +455,11 @@ namespace V2boardApi.Tools
                                         str1.AppendLine("");
                                         str1.AppendLine("🚀 @" + botSetting.Bot_ID);
 
-                                        await botClient.SendMessage(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                        try
+                                        {
+                                            await botClient.SendMessage(parent.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                        }
+                                        catch { }
                                     }
                                 }
 
@@ -483,7 +491,7 @@ namespace V2boardApi.Tools
                                         var totalUsed = Reader.GetDouble("transfer_enable");
 
                                         var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
-                                        var exp2 = Reader.GetBodyDefinition("expired_at");
+                                        var exp2 = Reader["expired_at"]?.ToString();
 
                                         if (!string.IsNullOrWhiteSpace(exp2))
                                         {
