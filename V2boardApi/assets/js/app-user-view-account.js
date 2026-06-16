@@ -179,11 +179,12 @@ $(function () {
         var dt_invoice = dt_invoice_table.DataTable({
             ajax: '/App/Admin/Factors?user_id=' + getUrlParameter("user_id"), // JSON file to add data
             columns: [
-                // columns according to JSON
-                { data: '' },
+                { data: 'factor_id' },
                 { data: 'PayDate' },
                 { data: 'Price' },
+                { data: 'PayStatus' },
                 { data: 'action' }
+                
             ],
             columnDefs: [
                 {
@@ -216,6 +217,21 @@ $(function () {
                     }
                 },
                 {
+                    // Price
+                    targets: 3,
+                    render: function (data, type, full, meta) {
+                        var $balance = full['PayStatus'];
+                        if ($balance === 1) {
+                            var $badge_class = 'bg-label-warning';
+                            return '<span class="badge ' + $badge_class + '" > در انتظار پرداخت </span>';
+                        } else if ($balance === 3) {
+                            var $badge_class = 'bg-label-info';
+                            return '<span class="badge ' + $badge_class + '" > کسر از بدهی </span>';
+                        }
+
+                    }
+                },
+                {
                     // Actions
                     targets: -1,
                     title: 'عملیات',
@@ -223,17 +239,7 @@ $(function () {
                     render: function (data, type, full, meta) {
                         return (
                             '<div class="d-flex align-items-center">' +
-                            '<a href="javascript:;" class="text-body" data-bs-toggle="tooltip" title="ارسال ایمیل"><i class="ti ti-mail me-2 ti-sm"></i></a>' +
-                            '<a href="app-invoice-preview.html" class="text-body" data-bs-toggle="tooltip" title="نمایش"><i class="ti ti-eye mx-2 ti-sm"></i></a>' +
-                            '<div class="d-inline-block">' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow text-body" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>' +
-                            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
-                            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
-                            '<div class="dropdown-divider"></div>' +
-                            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
-                            '</ul>' +
-                            '</div>' +
+                            '<a href="/App/UserFactors/Invoice?id=' + full['factor_id'] +'" class="text-body" data-bs-toggle="tooltip" title="پرداخت"><i class="ti ti-checkup-list mx-2 ti-sm"></i></a>' +
                             '</div>'
                         );
                     }

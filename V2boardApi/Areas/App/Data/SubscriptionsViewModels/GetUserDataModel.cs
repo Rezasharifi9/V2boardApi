@@ -14,6 +14,7 @@ namespace V2boardApi.Areas.App.Data.SubscriptionsViewModels
         public string ExpireDate { get; set; }
         public string PlanName { get; set; }
         public string SubLink { get; set; }
+        public string BackupLink { get; set; }
         public string RemainingVolume { get; set; }
         public bool CanEdit { get; set; }
         public bool IsBanned { get; set; }

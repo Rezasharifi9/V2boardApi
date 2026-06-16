@@ -1016,12 +1016,12 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 if (mess == "🎁 اشتراک تست")
                                 {
-                                    StringBuilder str2 = new StringBuilder();
-                                    str2.AppendLine("❌ عزیزم متاسفانه در شرایط فعلی امکان دریافت اشتراک تست فراهم نمی باشد");
-                                    str2.AppendLine("");
-                                    str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
-                                    await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString());
-                                    return Ok();
+                                    //StringBuilder str2 = new StringBuilder();
+                                    //str2.AppendLine("❌ عزیزم متاسفانه در شرایط فعلی امکان دریافت اشتراک تست فراهم نمی باشد");
+                                    //str2.AppendLine("");
+                                    //str2.AppendLine("🚀 @" + BotSettings.Bot_ID);
+                                    //await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString());
+                                    //return Ok();
 
                                     if (UserAcc.Tel_GetedTestAccount == false || UserAcc.Tel_GetedTestAccount == null)
                                     {
@@ -1030,7 +1030,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         await mySql.OpenAsync();
                                         var Disc1 = new Dictionary<string, object>();
                                         Disc1.Add("@v2board_id", V2boardPlanId);
-                                        long tran = Utility.ConvertGBToByte(1);
+                                        long tran = Utility.ConvertGBToByte(0.5);
                                         int grid = BotSettings.GroupId_test.Value;
                                         string create = DateTime.Now.ConvertDatetimeToSecond().ToString();
                                         string token = Guid.NewGuid().ToString().Split('-')[0] + Guid.NewGuid().ToString().Split('-')[1] + Guid.NewGuid().ToString().Split('-')[2];
@@ -1084,7 +1084,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         str.AppendLine("");
                                         str.AppendLine("💢 شناسه اشتراک : " + FullName.Split('@')[0]);
                                         str.AppendLine("");
-                                        str.AppendLine("🚦 حجم کل : 1 گیگابایت");
+                                        str.AppendLine("🚦 حجم کل : 0.5 گیگابایت");
                                         str.AppendLine("⏳ مدت زمان : یک روز");
                                         str.AppendLine("");
                                         str.AppendLine("🔗 لینک اتصال: ");
@@ -1802,6 +1802,160 @@ namespace V2boardApi.Areas.api.Controllers
                             {
                                 await RealUser.SetUpdateMessageTime(User.Tel_UniqUserID, db, DateTime.UtcNow, botName);
 
+                                #region نمایش کانفیگ
+                                if (callback.Length == 2)
+                                {
+                                    if (callback[0] == "GetConfig")
+                                    {
+                                        
+                                        HttpClient client = new HttpClient();
+                                        client.BaseAddress = new Uri(BotSettings.tbUsers.tbServers.ServerAddress + "/api/v1/");
+                                        client.DefaultRequestHeaders.UserAgent.TryParseAdd("Happ/3.8.1");
+                                        var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + callback[1]);
+                                        if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                                        {
+                                            var result = await res.Result.Content.ReadAsStringAsync();
+                                            var Base64 = Utility.Base64Decode(result);
+                                            var lines = Base64.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
+
+                                            await bot.Client.SendMessage(
+                                                callbackQuery.From.Id,
+                                                "🔷 ————- لیست سرور ها ————- 🔷",
+                                                parseMode: ParseMode.Html
+                                            );
+
+                                            var normal = lines.Where(x => !x.Contains("EM")).ToList(); // بهتره شرط دقیق‌تر باشه
+                                            const int chunkSize = 5;
+
+                                            for (int offset = 0; offset < normal.Count; offset += chunkSize)
+                                            {
+                                                var chunk = normal.Skip(offset).Take(chunkSize);
+                                                var finalText = string.Join("\n", chunk);
+
+                                                var html = $"<pre><code>{WebUtility.HtmlEncode(finalText)}</code></pre>";
+
+                                                await bot.Client.SendMessage(
+                                                    callbackQuery.From.Id,
+                                                    html,
+                                                    parseMode: ParseMode.Html
+                                                );
+                                            }
+
+                                            var emList = lines.Where(x => x.Contains("EM")).ToList(); // بهتره شرط دقیق‌تر باشه
+                                            if (emList.Count > 0)
+                                            {
+                                                await bot.Client.SendMessage(
+                                                    callbackQuery.From.Id,
+                                                    "🔻 ————- این کانفیگ ها در شرایط اضطراری و درصورت برقراری نبودن سایر سرور ها استفاده شود ————- 🔻",
+                                                    parseMode: ParseMode.Html
+                                                );
+
+                                                foreach (var item in emList)
+                                                {
+                                                    await bot.Client.SendMessage(
+                                                        callbackQuery.From.Id,
+                                                        $"<pre><code>{WebUtility.HtmlEncode(item)}</code></pre>",
+                                                        parseMode: ParseMode.Html
+                                                    );
+                                                }
+                                            }
+
+                                            await bot.Client.SendMessage(
+                                                callbackQuery.From.Id,
+                                                "👆👆 لطفا تمامی سرور ها رو تک به تک به گوشیتون اضافه کنید 💢",
+                                                parseMode: ParseMode.Html
+                                            );
+                                        }
+                                        else
+                                        {
+
+                                            await bot.Client.SendMessage(
+                                                callbackQuery.From.Id,
+                                                "❌ لینک مورد نظر یافت نشد . لطفا گزینه \"تغییر لینک\" را بزنید سپس مجدد امتحان کنید",
+                                                parseMode: ParseMode.Html
+                                            );
+
+                                            var result = await res.Result.Content.ReadAsStringAsync();
+                                            logger.Error(result);
+                                        }
+                                    }
+                                }
+
+                                if (callback.Length == 2)
+                                {
+                                    if (callback[0] == "Usage")
+                                    {
+                                        var Email = callback[1];
+
+                                        var Link = UserAcc.tbLinks.Where(p => p.tbL_Email == Email).FirstOrDefault();
+
+                                        if (Link != null)
+                                        {
+                                            MySqlEntities mySqlEntities = new MySqlEntities(Link.tbServers.ConnectionString);
+                                            await mySqlEntities.OpenAsync();
+
+                                            var unixTtime = Utility.ConvertDatetimeToSecond(DateTime.Now.AddDays(-30));
+                                            var query = "SELECT v2_stat_user.*,v2_user.email FROM `v2_stat_user` join v2_user on v2_stat_user.user_id = v2_user.id where email=@email and v2_stat_user.updated_at >=@unixTtime";
+                                            var Disc1 = new Dictionary<string, object>();
+                                            Disc1.Add("@email", Email);
+                                            Disc1.Add("@unixTtime", unixTtime);
+                                            var reader = await mySqlEntities.GetDataAsync(query, Disc1);
+
+                                            List<UseageViewModel> Useages = new List<UseageViewModel>();
+
+
+                                            while (await reader.ReadAsync())
+                                            {
+                                                UseageViewModel model = new UseageViewModel();
+                                                var d = reader.GetInt64("d");
+                                                var u = reader.GetInt64("u");
+
+                                                var total = d + u;
+
+                                                var UnixDate = reader.GetInt64("updated_at");
+
+                                                var Date = Utility.ConvertSecondToDatetime(UnixDate);
+
+                                                model.Date = Date;
+                                                model.Used = Utility.ConvertByteToMG(total);
+
+                                                Useages.Add(model);
+
+                                            }
+
+
+                                            var finalMdoel = Useages.GroupBy(p => p.Date.Date).Select(p => new { Date = p.Key, Used = p.Sum(s => s.Used) }).OrderByDescending(p => p.Date).ToList();
+
+                                            StringBuilder st = new StringBuilder();
+                                            st.AppendLine("📈 <b>تاریخچه مصرف 30 روز گذشته شما :</b>");
+                                            st.AppendLine("");
+                                            st.AppendLine("<b>تاریخ     حجم مصرفی</b>");
+                                            foreach (var item in finalMdoel)
+                                            {
+                                                st.AppendLine(Utility.ConvertDateTimeToShamsi2(item.Date) + " " + " | " + " " + Math.Round(item.Used, 0) + " مگابایت");
+                                            }
+                                            st.AppendLine("");
+                                            st.AppendLine("〰️〰️〰️〰️〰️");
+                                            st.AppendLine("🚀@" + BotSettings.Bot_ID);
+
+                                            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+                                            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+                                            row1.Add(InlineKeyboardButton.WithCallbackData("⬅️ برگشت ", "backToInfo"));
+                                            inlineKeyboards.Add(row1);
+
+                                            var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
+
+                                            await bot.Client.SendMessage(callbackQuery.From.Id, st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                            await mySqlEntities.CloseAsync();
+                                        }
+
+
+
+                                    }
+                                }
+
+                                #endregion
+
                                 #region چک کردن وضعیت پرداخت آرانکس
 
                                 var btnpay = update.CallbackQuery.Data.Split('%');
@@ -2093,6 +2247,16 @@ namespace V2boardApi.Areas.api.Controllers
                                             st.AppendLine("");
                                             st.AppendLine("🔗 لینک اشتراک : " + "<code>" + SubLink + "</code>");
                                             st.AppendLine("");
+                                            if (BotSettings.tbUsers.tbServers.BackupSubAddr != null)
+                                            {
+                                                st.AppendLine("");
+                                                st.AppendLine("📈 <strong>لینک پشتیبان  : </strong>");
+                                                st.AppendLine("");
+                                                var SupportLink = "https://" + BotSettings.tbUsers.tbServers.BackupSubAddr + "/api/v1/client/subscribe?token=" + Link.tbL_Token;
+                                                st.AppendLine("<code>" + SupportLink + "</code>");
+                                                st.AppendLine("");
+                                                st.AppendLine("در صورت وارد نشدن لینک اصلی از لینک پشتیبان استفاده کنید");
+                                            }
                                             st.AppendLine("");
                                             st.AppendLine("❗ توجه: در صورت تغییر لینک اتصال، لینک قبلی به طور خودکار قطع می‌شود. برای اتصال مجدد، از لینک جدید استفاده کنید");
                                             st.AppendLine("");
@@ -2245,151 +2409,6 @@ namespace V2boardApi.Areas.api.Controllers
                                         st.AppendLine("〰️〰️〰️〰️〰️");
                                         st.AppendLine("🚀@" + BotSettings.Bot_ID);
                                         await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, st.ToString(), replyMarkup: inlineKeyboard);
-                                    }
-                                }
-
-                                #endregion
-
-                                #region نمایش کانفیگ
-                                if (callback.Length == 2)
-                                {
-                                    if (callback[0] == "GetConfig")
-                                    {
-                                        HttpClient client = new HttpClient();
-                                        client.BaseAddress = new Uri(Server.ServerAddress + "/api/v1/");
-                                        client.DefaultRequestHeaders.UserAgent.TryParseAdd("Happ/3.8.1");
-                                        var res = client.GetAsync(client.BaseAddress + "client/subscribe?token=" + callback[1]);
-                                        if (res.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                                        {
-                                            var result = await res.Result.Content.ReadAsStringAsync();
-                                            var Base64 = Utility.Base64Decode(result);
-                                            var lines = Base64
-    .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries)
-    .Select(x => x.Trim())
-    .Where(x => x.Length > 0)
-    .ToArray();
-
-                                            await bot.Client.SendMessage(
-                                                callbackQuery.From.Id,
-                                                "🔷 ————- لیست سرور ها ————- 🔷",
-                                                parseMode: ParseMode.Html
-                                            );
-
-                                            var normal = lines.Where(x => !x.Contains("EM")).ToList(); // بهتره شرط دقیق‌تر باشه
-                                            const int chunkSize = 5;
-
-                                            for (int offset = 0; offset < normal.Count; offset += chunkSize)
-                                            {
-                                                var chunk = normal.Skip(offset).Take(chunkSize);
-                                                var finalText = string.Join("\n", chunk);
-
-                                                var html = $"<pre><code>{WebUtility.HtmlEncode(finalText)}</code></pre>";
-
-                                                await bot.Client.SendMessage(
-                                                    callbackQuery.From.Id,
-                                                    html,
-                                                    parseMode: ParseMode.Html
-                                                );
-                                            }
-
-                                            var emList = lines.Where(x => x.Contains("EM")).ToList(); // بهتره شرط دقیق‌تر باشه
-                                            if (emList.Count > 0)
-                                            {
-                                                await bot.Client.SendMessage(
-                                                    callbackQuery.From.Id,
-                                                    "🔻 ————- این کانفیگ ها در شرایط اضطراری و درصورت برقراری نبودن سایر سرور ها استفاده شود ————- 🔻",
-                                                    parseMode: ParseMode.Html
-                                                );
-
-                                                foreach (var item in emList)
-                                                {
-                                                    await bot.Client.SendMessage(
-                                                        callbackQuery.From.Id,
-                                                        $"<pre><code>{WebUtility.HtmlEncode(item)}</code></pre>",
-                                                        parseMode: ParseMode.Html
-                                                    );
-                                                }
-                                            }
-
-                                            await bot.Client.SendMessage(
-                                                callbackQuery.From.Id,
-                                                "👆👆 لطفا تمامی سرور ها رو تک به تک به گوشیتون اضافه کنید 💢",
-                                                parseMode: ParseMode.Html
-                                            );
-                                        }
-                                    }
-                                }
-
-                                if (callback.Length == 2)
-                                {
-                                    if (callback[0] == "Usage")
-                                    {
-                                        var Email = callback[1];
-
-                                        var Link = UserAcc.tbLinks.Where(p => p.tbL_Email == Email).FirstOrDefault();
-
-                                        if (Link != null)
-                                        {
-                                            MySqlEntities mySqlEntities = new MySqlEntities(Link.tbServers.ConnectionString);
-                                            await mySqlEntities.OpenAsync();
-
-                                            var unixTtime = Utility.ConvertDatetimeToSecond(DateTime.Now.AddDays(-30));
-                                            var query = "SELECT v2_stat_user.*,v2_user.email FROM `v2_stat_user` join v2_user on v2_stat_user.user_id = v2_user.id where email=@email and v2_stat_user.updated_at >=@unixTtime";
-                                            var Disc1 = new Dictionary<string, object>();
-                                            Disc1.Add("@email", Email);
-                                            Disc1.Add("@unixTtime", unixTtime);
-                                            var reader = await mySqlEntities.GetDataAsync(query, Disc1);
-
-                                            List<UseageViewModel> Useages = new List<UseageViewModel>();
-
-
-                                            while (await reader.ReadAsync())
-                                            {
-                                                UseageViewModel model = new UseageViewModel();
-                                                var d = reader.GetInt64("d");
-                                                var u = reader.GetInt64("u");
-
-                                                var total = d + u;
-
-                                                var UnixDate = reader.GetInt64("updated_at");
-
-                                                var Date = Utility.ConvertSecondToDatetime(UnixDate);
-
-                                                model.Date = Date;
-                                                model.Used = Utility.ConvertByteToMG(total);
-
-                                                Useages.Add(model);
-
-                                            }
-
-
-                                            var finalMdoel = Useages.GroupBy(p => p.Date.Date).Select(p => new { Date = p.Key, Used = p.Sum(s => s.Used) }).OrderByDescending(p => p.Date).ToList();
-
-                                            StringBuilder st = new StringBuilder();
-                                            st.AppendLine("📈 <b>تاریخچه مصرف 30 روز گذشته شما :</b>");
-                                            st.AppendLine("");
-                                            st.AppendLine("<b>تاریخ     حجم مصرفی</b>");
-                                            foreach (var item in finalMdoel)
-                                            {
-                                                st.AppendLine(Utility.ConvertDateTimeToShamsi2(item.Date) + " " + " | " + " " + Math.Round(item.Used, 0) + " مگابایت");
-                                            }
-                                            st.AppendLine("");
-                                            st.AppendLine("〰️〰️〰️〰️〰️");
-                                            st.AppendLine("🚀@" + BotSettings.Bot_ID);
-
-                                            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
-                                            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
-                                            row1.Add(InlineKeyboardButton.WithCallbackData("⬅️ برگشت ", "backToInfo"));
-                                            inlineKeyboards.Add(row1);
-
-                                            var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
-
-                                            await bot.Client.SendMessage(callbackQuery.From.Id, st.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
-                                            await mySqlEntities.CloseAsync();
-                                        }
-
-
-
                                     }
                                 }
 
@@ -3105,7 +3124,16 @@ namespace V2boardApi.Areas.api.Controllers
                                                 var SubLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + token;
                                                 st.AppendLine("<code>" + SubLink + "</code>");
                                                 st.AppendLine("");
-
+                                                if (BotSettings.tbUsers.tbServers.BackupSubAddr != null)
+                                                {
+                                                    st.AppendLine("");
+                                                    st.AppendLine("📈 <strong>لینک پشتیبان  : </strong>");
+                                                    st.AppendLine("");
+                                                    var SupportLink = "https://" + BotSettings.tbUsers.tbServers.BackupSubAddr + "/api/v1/client/subscribe?token=" + token;
+                                                    st.AppendLine("<code>" + SupportLink + "</code>");
+                                                    st.AppendLine("");
+                                                    st.AppendLine("در صورت وارد نشدن لینک اصلی از لینک پشتیبان استفاده کنید");
+                                                }
                                                 st.AppendLine("◀️ روی لینک کلیک کنی خودش کپی میشه و میتونی توی نرم افزار اضافه اش کنی");
                                                 st.AppendLine("");
                                                 st.AppendLine("◀️ جزئیات اشتراک رو میتونی داخل بخش مدیریت اشتراک ها ببینی");
@@ -3306,7 +3334,8 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     if (callback[0] == "DeleteLink")
                                     {
-                                        var Link = User.tbLinks.Where(p => p.tbL_Email == callback[1]).FirstOrDefault();
+                                        var LinkEmail = callback[1];
+                                        var Link = User.tbLinks.Where(p => p.tbL_Email == LinkEmail).FirstOrDefault();
                                         if (Link != null)
                                         {
 
@@ -3388,7 +3417,7 @@ namespace V2boardApi.Areas.api.Controllers
             var reader = await mysql.GetDataAsync("select * from v2_user where email = @email", Disc1);
             if (await reader.ReadAsync())
             {
-                var vol = reader.GetInt64("transfer_enable") - (reader.GetDouble("d") + reader.GetDouble("u"));
+                var vol = reader.GetInt64("transfer_enable") - (reader.GetInt64("d") + reader.GetInt64("u"));
                 if (vol <= 0)
                 {
                     reader.Close();

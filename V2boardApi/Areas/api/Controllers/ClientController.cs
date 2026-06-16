@@ -45,6 +45,7 @@ namespace V2boardApi.Areas.api.Controllers
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbOrders> RepositoryOrders { get; set; }
         private Repository<tbLinks> RepositoryLinks { get; set; }
+        private static tbServers server;
         public ClientController()
         {
             db = new Entities();
@@ -54,6 +55,7 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryUser = new Repository<tbUsers>(db);
             RepositoryOrders = new Repository<tbOrders>(db);
             RepositoryLinks = new Repository<tbLinks>(db);
+            server = HttpRuntime.Cache["Server"] as tbServers;
         }
 
         public async Task<ActionResult> subscribe(string token)
@@ -62,7 +64,6 @@ namespace V2boardApi.Areas.api.Controllers
             {
                 var UserAgent = Request.UserAgent.ToLower();
                 var host = Request.Url.Host;
-                var server = RepositoryServer.table.Where(p => p.SubAddress.Contains(host)).FirstOrDefault();
 
                 if (!(UserAgent.Contains("chrome") || UserAgent.Contains("firefox") || UserAgent.Contains("safari") || UserAgent.Contains("edg") || UserAgent.Contains("samsung")))
                 {

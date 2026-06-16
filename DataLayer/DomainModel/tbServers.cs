@@ -43,6 +43,7 @@ namespace DataLayer.DomainModel
         public Nullable<int> PricePerMonth { get; set; }
         public string BotbaseAddress { get; set; }
         public string ApiToken_V2board { get; set; }
+        public string BackupSubAddr { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbLinks> tbLinks { get; set; }

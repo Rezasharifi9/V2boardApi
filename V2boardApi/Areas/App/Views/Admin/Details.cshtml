@@ -71,14 +71,14 @@
                 }
             </li>
             <li class="nav-item">
-                @if (ViewBag.Type == "Plans")
+                @if (ViewBag.Type == "Plans" && (Role == "1" || Role == "3"))
                 {
                     <a class="nav-link active" href="@Url.Action("Details","Admin",new {area="App",type="Plans",user_id=Model})">
                         <i class="ti ti-category-2 ti-xs me-1"></i>
                         تعرفه ها
                     </a>
                 }
-                else
+                else if ((Role == "1" || Role == "3"))
                 {
                     <a class="nav-link" href="@Url.Action("Details","Admin",new {area="App",type="Plans",user_id=Model})">
                         <i class="ti ti-category-2 ti-xs me-1"></i>
@@ -134,8 +134,9 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>تاریخ پرداخت</th>
-                                <th>مبلغ پرداختی</th>
+                                <th>تاریخ</th>
+                                <th>مبلغ</th>
+                                <th>وضعیت</th>
                                 <th>عملیات</th>
                             </tr>
                         </thead>
@@ -162,7 +163,7 @@
 
                     <div class="col-4 col-md-4">
                         <label class="form-label" for="userPlanPrice">قیمت فروش نماینده <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="  قیمت فروش نماینده به مشتریان ( الزامی نیست )"></i></label>
-                        <input class="form-control" id="userPlanPrice" name="userPlanPrice" onkeyup="separateDigits(this)" placeholder="50,000"  />
+                        <input class="form-control" id="userPlanPrice" name="userPlanPrice" onkeyup="separateDigits(this)" placeholder="50,000" />
                     </div>
                     <div class="col-4 col-md-4">
                         <button class="btn btn-outline-success" style="margin-top:29px;" type="submit">ثبت</button>
@@ -278,7 +279,7 @@
     }*@
 <!--/ Edit Setting Modal -->
 <!-- Edit Wallet Modal -->
-@Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
+@*@Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })*@
 
 <!--/ Edit Wallet Modal -->
 
@@ -305,27 +306,42 @@
 
     <script src="../../assets/js/modal-edit-wallet.js"></script>
     <script src="../../assets/js/app-user-view.js"></script>
-    <script src="../../assets/js/app-user-view-account.js"></script>
+    <script src="../../assets/js/app-user-view-account.js?v1"></script>
 
 
 
     <script>
 
-                $(function () {
 
-                    $("#planGroup").wrap('<div class="position-relative"></div>').select2({
-                        placeholder: 'انتخاب دسته بندی',
-                        dropdownParent: $("#planGroup").parent(),
-                        allowClear: false
-                    });
+        $(function () {
 
-                    Groups("#planGroup");
-                    $('[data-bs-toggle="popover"]').tooltip();
+            $("#planGroup").wrap('<div class="position-relative"></div>').select2({
+                placeholder: 'انتخاب دسته بندی',
+                dropdownParent: $("#planGroup").parent(),
+                allowClear: false
+            });
 
-                    debugger
+            Groups("#planGroup");
+            $('[data-bs-toggle="popover"]').tooltip();
 
-
+            debugger;
+            var IsShowSweetalert = '@TempData["TimeForPay"]';
+            console.log(IsShowSweetalert);
+            if (IsShowSweetalert == 'True') {
+                Swal.fire({
+                    title: "فاکتور ایجاد شد",
+                    text: "فاکتور شما با موفقیت ایجاد شد مهلت پرداخت یکساعت می باشد",
+                    icon: 'info',
+                    confirmButtonText: 'باشه',
+                    customClass: {
+                        confirmButton: 'btn btn-success waves-effect waves-light'
+                    }
                 });
+            }
+
+
+
+        });
 
         $("#botSettingTab").on('click', function () {
             var plan_id = $("#plan_id").val();

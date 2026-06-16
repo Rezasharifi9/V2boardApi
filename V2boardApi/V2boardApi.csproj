@@ -442,6 +442,7 @@
     <Compile Include="Models\ServerGroups\List_Model.cs" />
     <Compile Include="Models\ServerGroups\UserGroupsViewModel.cs" />
     <Compile Include="Models\tbUserNotificationList_ViewModel.cs" />
+    <Compile Include="Models\UserInvoiceViewModel.cs" />
     <Compile Include="PaymentMethods\PlisioPay.cs" />
     <Compile Include="PaymentMethods\TetraPay.cs" />
     <Compile Include="Tools\AuthorizeApp.cs" />
@@ -488,6 +489,7 @@
   <ItemGroup>
     <Content Include="assets\audio\Water_Lily.mp3" />
     <Content Include="assets\css\demo.css" />
+    <Content Include="assets\css\Invoice.css" />
     <Content Include="assets\css\rtl.css" />
     <Content Include="assets\fonts\farsi-fonts\font.css" />
     <Content Include="assets\fonts\farsi-fonts\woff2\iransansx-black.woff2" />
@@ -555,14 +557,19 @@
     <Content Include="assets\img\customizer\default.svg" />
     <Content Include="assets\img\customizer\expanded-dark.svg" />
     <Content Include="assets\img\customizer\expanded.svg" />
+    <Content Include="assets\img\customizer\facebook.png" />
     <Content Include="assets\img\customizer\hidden-dark.svg" />
     <Content Include="assets\img\customizer\hidden.svg" />
     <Content Include="assets\img\customizer\horizontal-fixed-dark.svg" />
     <Content Include="assets\img\customizer\horizontal-fixed.svg" />
     <Content Include="assets\img\customizer\horizontal-static-dark.svg" />
     <Content Include="assets\img\customizer\horizontal-static.svg" />
+    <Content Include="assets\img\customizer\instagram.png" />
+    <Content Include="assets\img\customizer\item-2.jpg" />
+    <Content Include="assets\img\customizer\item.jpg" />
     <Content Include="assets\img\customizer\light-dark.svg" />
     <Content Include="assets\img\customizer\light.svg" />
+    <Content Include="assets\img\customizer\logo.png" />
     <Content Include="assets\img\customizer\ltr-dark.svg" />
     <Content Include="assets\img\customizer\ltr.svg" />
     <Content Include="assets\img\customizer\rtl-dark.svg" />
@@ -575,6 +582,7 @@
     <Content Include="assets\img\customizer\sticky.svg" />
     <Content Include="assets\img\customizer\system-dark.svg" />
     <Content Include="assets\img\customizer\system.svg" />
+    <Content Include="assets\img\customizer\twitter.png" />
     <Content Include="assets\img\customizer\vertical-dark.svg" />
     <Content Include="assets\img\customizer\vertical.svg" />
     <Content Include="assets\img\customizer\wide-dark.svg" />
@@ -1901,6 +1909,7 @@
     <Content Include="Areas\App\Views\AdminDashboard\Index.cshtml" />
     <Content Include="Areas\App\Views\AdminDashboard\_SalesSummaryReport.cshtml" />
     <Content Include="Areas\App\Views\PaymentLinks\Index.cshtml" />
+    <Content Include="Areas\App\Views\UserFactors\Invoice.cshtml" />
     <None Include="Jsons\fqrjldna.json" />
     <Content Include="Reports\Report.mrt" />
     <Content Include="Key\license.key" />

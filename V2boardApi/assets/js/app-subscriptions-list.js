@@ -298,6 +298,7 @@ $(function () {
                     render: function (data, type, full, meta) {
                         var user_id = full["id"];
                         var $link = full["SubLink"];
+                        var $Suplink = full["BackupLink"];
                         var $IsActive = full["IsActive"];
                         var $DayCount = full["DaysLeft"];
                         var $Volume = full["RemainingVolume"];
@@ -333,11 +334,13 @@ $(function () {
 
                         return (
                             '<div class="d-flex align-items-center">' +
-                            '<button data-bs-toggle="popover" title="QR Code" onclick="ShowQRCode(\'' + $link + '\')" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
+                            '<button data-bs-toggle="popover" title="QR Code Link" onclick="ShowQRCode(\'' + $link + '\')" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
+                            '<button data-bs-toggle="popover" title="QR Code Backup Link" onclick="ShowQRCode(\'' + $Suplink + '\')" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
                             '<a href="javascript:;" class="text-primary dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical ti-sm mx-1"></i></a>' +
                             '<div class="dropdown-menu dropdown-menu-start m-0">' +
                             '<button  data-id="' + full["DaysLeft"] + '" data-id2="' + user_id + '" data-id3="' + $Volume + '" class="dropdown-item item-refresh">تمدید</button>' +
-                            '<button  onclick="copyToClipboard(\'' + $link + '\')"  class="dropdown-item item-copy">کپی</button>' +
+                            '<button  onclick="copyToClipboard(\'' + $link + '\')"  class="dropdown-item item-copy">کپی لینک اصلی</button>' +
+                            '<button  onclick="copyToClipboard(\'' + $Suplink + '\')"  class="dropdown-item item-copy">کپی لینک پشتیبان</button>' +
                             '<button  data-id="' + user_id + '" class="dropdown-item item-unlink">تغییر لینک</button>' +
                             '<button  data-id="' + user_id + '" class="dropdown-item item-changename" data-id2="' + full["Name"] + '">تغییر نام</button>' +
                             '<button class="dropdown-item item-history" data-id="' + user_id + '">تاریخچه مصرف</button>' +

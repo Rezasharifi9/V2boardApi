@@ -1,13 +1,16 @@
 ﻿using Antlr.Runtime.Misc;
 using DataLayer.DomainModel;
 using DataLayer.Repository;
+using MySqlX.XDevAPI.Common;
 using NLog;
+using Org.BouncyCastle.Asn1.X509;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.Xml;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -15,6 +18,7 @@ using System.Web.Mvc;
 using Telegram.Bot.Types;
 using V2boardApi.Areas.App.Data.UserFactors;
 using V2boardApi.Areas.App.Data.UserFactorsViewModels;
+using V2boardApi.Models;
 using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
@@ -322,6 +326,50 @@ namespace V2boardApi.Areas.App.Controllers
 
 
             return Json(new { data = List_Factor }, JsonRequestBehavior.AllowGet);
+        }
+
+        [V2boardApi.Tools.AuthorizeApp(Roles = "2,3,4")]
+        public ActionResult Invoice(int id)
+        {
+            var Admin = RepositoryUsers.Where(q => q.Role == 1).FirstOrDefault();
+            var UserID = JwtToken.GetUser_ID();
+            var Factor = RepositoryFactors.Where(q => q.tbUf_ID == id).FirstOrDefault();
+            if(!((Factor.tbUsers.User_ID.ToString() == UserID) || Factor.tbUsers.tbUsers1.Where(q => q.User_ID.ToString() == UserID).Any()))
+            {
+                return RedirectToAction("Login", "Admin", new { area = "App" });
+            }
+
+            var ActiveCard = Admin.tbBankCardNumbers.Where(q => q.Active == true).FirstOrDefault();
+
+            UserInvoiceViewModel model = new UserInvoiceViewModel();
+            model.invoice_id = id;
+            model.Card_FullName = ActiveCard.InTheNameOf;
+            model.Card_Number = Regex.Replace(ActiveCard.CardNumber, ".{4}", "$0-").TrimEnd('-');
+            model.Date = Utility.ConvertDateTimeToShamsi(DateTime.Now);
+            
+            if (Factor.tbUsers.FullName != null)
+            {
+                model.FullName = Factor.tbUsers.FullName;
+            }
+            else
+            {
+                model.FullName = "#";
+            }
+            model.Amount = Factor.tbUf_Value.Value.ConvertToMony();
+            model.PayAmount = Factor.tbUf_Value.Value.ConvertToMony();
+            if(Factor.tbUf_Status == 3)
+            {
+                model.PayStatus = true;
+            }
+            else
+            {
+                model.PayStatus = false;
+            }
+
+
+            model.Desc = "اشتراک های ساخته شده";
+
+            return View(model);
         }
     }
 }

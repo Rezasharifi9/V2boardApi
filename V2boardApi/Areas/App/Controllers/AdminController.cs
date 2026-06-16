@@ -85,11 +85,21 @@ namespace V2boardApi.Areas.App.Controllers
 
         }
 
+        public ActionResult UserProfile()
+        {
+            var Us = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            if (Us != null)
+            {
+                return RedirectToAction("Details", new { type = "history", user_id = Us.User_ID });
+            }
+            return Content("NotFound");
+        }
+
         #region تغییر پروفایل
         [System.Web.Mvc.Authorize]
         public ActionResult _Profile()
         {
-            var Us = db.tbUsers.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            var Us = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
             if (Us != null)
             {
                 return PartialView(Us);
@@ -407,11 +417,48 @@ namespace V2boardApi.Areas.App.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [AuthorizeApp(Roles = "1,3,4")]
-        public ActionResult Details(int user_id, string type = "history")
+        //[AuthorizeApp(Roles = "1,3,4")]
+        public ActionResult Details(int? user_id, string type = "history")
         {
-            ViewBag.Type = type;
-            return View(user_id);
+
+            var UserData = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            if (UserData != null)
+            {
+                if(UserData.Role == 2)
+                {
+                    ViewBag.Type = type;
+                    return View(UserData.User_ID);
+                }
+                else if(UserData.Role == 3)
+                {
+                    if(UserData.User_ID == user_id)
+                    {
+                        ViewBag.Type = type;
+                        return View(user_id);
+                    }
+                    if (user_id != null)
+                    {
+                        var Exists = UserData.tbUsers1.Where(a => a.User_ID == user_id).FirstOrDefault();
+                        if (Exists != null)
+                        {
+                            ViewBag.Type = type;
+                            return View(user_id);
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.Type = type;
+                        return View(user_id);
+                    }
+                }
+                else if (UserData.Role == 1)
+                {
+                    ViewBag.Type = type;
+                    return View(user_id);
+                }
+            }
+
+            return Content("NotFound");
         }
 
 
@@ -420,7 +467,7 @@ namespace V2boardApi.Areas.App.Controllers
         #region کارت جزئیات کاربر
 
         //نمایش پروفایل کاربر
-        [AuthorizeApp(Roles = "1,3,4")]
+        //[AuthorizeApp(Roles = "1,3,4")]
         public ActionResult _UserCard(int userid)
         {
             var user = new tbUsers();
@@ -711,8 +758,17 @@ namespace V2boardApi.Areas.App.Controllers
             var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
             if (user != null)
             {
-                var Count = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now && s.tbNotiUser_Seen == false).Count();
-                return Content(Count.ToString());
+                var Noti = user.tbNotificationUser.Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now && s.tbNotiUser_Seen == false).FirstOrDefault();
+
+
+                if(Noti!= null)
+                {
+                    return Json(new { title = Noti.tbNotifications.tbNoti_Title, message = Noti.tbNotifications.tbNoti_Text, count = 1 }, JsonRequestBehavior.AllowGet) ;
+                }
+                else
+                {
+                    return Json(new { title = "", message = "", count = 0 },JsonRequestBehavior.AllowGet);
+                }
             }
             else
             {
@@ -773,6 +829,65 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 return Content("Error");
             }
+        }
+
+        #endregion
+
+        #region ساخت فاکتور جهت پرداخت خودکار بدهی
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "3,2,4")]
+        public ActionResult CreateFactoryForPay()
+        {
+
+            try
+            {
+                var user = RepositoryUser.table.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+
+                if (user != null)
+                {
+                    if (user.Wallet > 0)
+                    {
+                        var factors = user.tbUserFactors.Where(a => a.tbUf_Status == 1).ToList();
+                        foreach (var item in factors)
+                        {
+                            user.tbUserFactors.Remove(item);
+                        }
+
+                        Random ran = new Random();
+
+                        var Dept = user.Wallet;
+
+                        var PayAmount = (Dept * 10) + ran.Next(1, 999);
+
+                        tbUserFactors userFactor = new tbUserFactors();
+                        userFactor.tbUf_CreateTime = DateTime.Now;
+                        userFactor.tbUf_Status = 1;
+                        userFactor.tbUf_Value = PayAmount;
+                        user.tbUserFactors.Add(userFactor);
+                        RepositoryUser.Save();
+
+                        logger.Info("کاربر فاکتور به مبلغ : " + PayAmount + " جهت پرداخت بدهی ساخت");
+
+                        TempData["TimeForPay"] = true;
+                        return RedirectToAction("Details", new { area = "App", type = "Factors", user_id = user.User_ID });
+                    }
+                    else
+                    {
+                        return RedirectToAction("Details", new { area = "App", type = "Factors", user_id = user.User_ID });
+                    }
+                }
+
+                return MessageBox.Warning("خطا", "خطا در ساخت فاکتور");
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ساخت فاکتور");
+                return MessageBox.Warning("خطا", "خطا در ساخت فاکتور");
+
+            }
+
         }
 
         #endregion
@@ -1060,7 +1175,7 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region نمایش لاگ ایجاد یا تمدید کاربر عمده 
-        [AuthorizeApp(Roles = "1,3,4")]
+        //[AuthorizeApp(Roles = "1,3,4")]
         public ActionResult GetUserAccountLog(int user_id)
         {
             try
@@ -1106,21 +1221,23 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region فاکتور های پرداخت شده کاربر 
-        [AuthorizeApp(Roles = "1,3,4")]
+        #region فاکتور های کاربر 
+        [AuthorizeApp(Roles = "1,3,4,2")]
         public ActionResult Factors(int user_id)
         {
 
             var User = RepositoryUser.Where(p => p.User_ID == user_id).FirstOrDefault();
             if (User != null)
             {
-                var Factors = User.tbUserFactors.ToList();
+                var Factors = User.tbUserFactors.OrderByDescending(a=> a.tbUf_CreateTime).ToList();
                 List<UserFactorResponseModel> Factores = new List<UserFactorResponseModel>();
                 foreach (var item in Factors)
                 {
                     UserFactorResponseModel factor = new UserFactorResponseModel();
                     factor.PayDate = item.tbUf_CreateTime.Value.ConvertDateTimeToShamsi2();
                     factor.Price = item.tbUf_Value.Value.ConvertToMony();
+                    factor.PayStatus = item.tbUf_Status.Value;
+                    factor.factor_id = item.tbUf_ID;
                     Factores.Add(factor);
                 }
 

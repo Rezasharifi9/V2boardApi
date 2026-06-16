@@ -300,8 +300,18 @@ namespace V2boardApi.Tools
                                     st.AppendLine("");
                                     var SubLink = "https://" + Order.tbTelegramUsers.tbUsers.tbServers.SubAddress + "/api/v1/client/subscribe?token=" + token;
                                     st.AppendLine("<code>" + SubLink + "</code>");
+                                    if (Order.tbTelegramUsers.tbUsers.tbServers.BackupSubAddr != null)
+                                    {
+                                        st.AppendLine("");
+                                        st.AppendLine("📈 <strong>لینک پشتیبان  : </strong>");
+                                        st.AppendLine("");
+                                        var SupportLink = "https://" + Order.tbTelegramUsers.tbUsers.tbServers.BackupSubAddr + "/api/v1/client/subscribe?token=" + token;
+                                        st.AppendLine("<code>" + SupportLink + "</code>");
+                                        st.AppendLine("");
+                                        st.AppendLine("در صورت وارد نشدن لینک اصلی از لینک پشتیبان استفاده کنید");
+                                    }
+                                    
                                     st.AppendLine("");
-
                                     st.AppendLine("◀️ روی لینک کلیک کنی خودش کپی میشه و میتونی توی نرم افزار اضافه اش کنی");
                                     st.AppendLine("");
                                     st.AppendLine("◀️ جزئیات اشتراک رو میتونی داخل بخش مدیریت اشتراک ها ببینی");
@@ -397,6 +407,37 @@ namespace V2boardApi.Tools
 
 
                         }
+
+                        var UserFactor = RepositoryFactor.Where(q => q.tbUf_Status == 1 && q.tbUf_Value == pr).FirstOrDefault();
+                        if(UserFactor != null)
+                        {
+                            string result = UserFactor.tbUf_Value.Value.ToString().Substring(0, UserFactor.tbUf_Value.Value.ToString().Length - 3) + "000";
+
+                            UserFactor.tbUf_Status = 3;
+                            UserFactor.tbUsers.Wallet -= (Convert.ToDouble(result) / 10);
+
+
+                            var TelegramUser = RepositoryTelegramUser.Where(q => q.Tel_Username == UserFactor.tbUsers.TelegramID).FirstOrDefault();
+                            if (TelegramUser != null)
+                            {
+                                StringBuilder str1 = new StringBuilder();
+                                str1.AppendLine("نماینده گرامی");
+                                str1.AppendLine("");
+                                str1.AppendLine("✅ پرداختی شما با موفقیت تائید شد");
+                                str1.AppendLine("");
+                                str1.AppendLine("🚀 @" + botSetting.Bot_ID);
+
+                                try
+                                {
+                                    await botClient.SendMessage(TelegramUser.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                                }
+                                catch { }
+                            }
+                            RepositoryFactor.Save();
+                            transaction.Commit();
+                            return true;
+                        }
+
                         return false;
                     }
                     else

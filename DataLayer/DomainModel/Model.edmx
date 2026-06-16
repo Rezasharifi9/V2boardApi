@@ -288,6 +288,7 @@
           <Property Name="DataBaseName" Type="varchar" MaxLength="450" />
           <Property Name="Status" Type="bit" />
           <Property Name="SubAddress" Type="varchar" MaxLength="250" />
+          <Property Name="BackupSubAddr" Type="varchar" MaxLength="250" />
           <Property Name="BotID" Type="bigint" />
           <Property Name="Robot_ID" Type="varchar" MaxLength="50" />
           <Property Name="Robot_Token" Type="varchar(max)" />
@@ -1296,6 +1297,7 @@
           <NavigationProperty Name="tbPlans" Relationship="Self.FK_tbPlans_tbServers" FromRole="tbServers" ToRole="tbPlans" />
           <NavigationProperty Name="tbUseages" Relationship="Self.FK_tbUseages_tbServers" FromRole="tbServers" ToRole="tbUseages" />
           <NavigationProperty Name="tbUsers" Relationship="Self.FK_tbUsers_tbServers" FromRole="tbServers" ToRole="tbUsers" />
+          <Property Name="BackupSubAddr" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="tbSettings">
           <Key>
@@ -2313,6 +2315,7 @@
           <EntitySetMapping Name="tbServers">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbServers">
               <MappingFragment StoreEntitySet="tbServers">
+                <ScalarProperty Name="BackupSubAddr" ColumnName="BackupSubAddr" />
                 <ScalarProperty Name="ServerID" ColumnName="ServerID" />
                 <ScalarProperty Name="ServerAddress" ColumnName="ServerAddress" />
                 <ScalarProperty Name="ServerIP" ColumnName="ServerIP" />
