@@ -43,6 +43,7 @@ using Org.BouncyCastle.Utilities;
 using Newtonsoft.Json.Linq;
 using StackExchange.Redis;
 using System.Security.Cryptography;
+using System.Security.Claims;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -899,13 +900,83 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpGet]
         public ActionResult Login()
         {
-            var isTrue = RepositoryUser.table.Where(p => p.IsNotActiveSell ==true && p.Role == 1 && p.Status == true).Any();
+            var isTrue = RepositoryUser.table.Where(p => p.IsNotActiveSell == true && p.Role == 1 && p.Status == true).Any();
             if (isTrue)
             {
                 ViewBag.IsNotActiveSell = true;
-                return View();
             }
+
+            var principal = AuthSession.GetValidPrincipal(Request);
+            if (principal != null)
+            {
+                int userId;
+                if (int.TryParse(principal.FindFirst(ClaimTypes.Name)?.Value, out userId))
+                {
+                    var user = RepositoryUser.table.FirstOrDefault(p => p.User_ID == userId && p.Status == true);
+                    if (user != null && (user.tbUsers2 == null || user.tbUsers2.Status == true))
+                    {
+                        ViewBag.CanContinue = true;
+                        ViewBag.ContinueUserName = string.IsNullOrWhiteSpace(user.FullName) ? user.Username : user.FullName;
+                        ViewBag.ContinueRedirectUrl = user.Role == 1
+                            ? Url.Action("Index", "Admin")
+                            : Url.Action("Index", "Subscriptions");
+                    }
+                }
+            }
+            else if (Request.Cookies["Token"] != null)
+            {
+                AuthSession.ClearLoginCookies(Response);
+            }
+
             return View();
+        }
+
+        [System.Web.Mvc.HttpPost]
+        public ActionResult ContinueLogin()
+        {
+            try
+            {
+                var principal = AuthSession.GetValidPrincipal(Request);
+                if (principal == null)
+                {
+                    AuthSession.ClearLoginCookies(Response);
+                    return MessageBox.Warning("هشدار", "نشست شما منقضی شده است. لطفاً دوباره وارد شوید");
+                }
+
+                int userId;
+                if (!int.TryParse(principal.FindFirst(ClaimTypes.Name)?.Value, out userId))
+                {
+                    AuthSession.ClearLoginCookies(Response);
+                    return MessageBox.Warning("هشدار", "نشست نامعتبر است. لطفاً دوباره وارد شوید");
+                }
+
+                var user = RepositoryUser.table.FirstOrDefault(p => p.User_ID == userId);
+                if (user == null || !user.Status.Value)
+                {
+                    AuthSession.ClearLoginCookies(Response);
+                    return MessageBox.Warning("هشدار", "حساب کاربری شما غیرفعال شده است");
+                }
+
+                if (user.tbUsers2 != null && !user.tbUsers2.Status.Value)
+                {
+                    AuthSession.ClearLoginCookies(Response);
+                    return MessageBox.Warning("هشدار", "حساب کاربری شما غیرفعال شده است");
+                }
+
+                FormsAuthentication.SetAuthCookie(user.Username, true);
+
+                var redirectUrl = user.Role == 1
+                    ? Url.Action("Index", "Admin")
+                    : Url.Action("Index", "Subscriptions");
+
+                logger.Info("ورود با ادامه نشست ذخیره‌شده");
+                return Json(new { status = "success", redirectURL = redirectUrl });
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ادامه نشست ورود");
+                return MessageBox.Error("خطا", "خطا در برقراری ارتباط با سرور");
+            }
         }
         /// <summary>
         /// تابع لاگین از سمت پنل ادمین
@@ -913,7 +984,7 @@ namespace V2boardApi.Areas.App.Controllers
         /// <param name="loginModel"></param>
         /// <returns></returns>
         [System.Web.Http.HttpPost]
-        public async Task<ActionResult> Login(string userUsername, string userPassword, bool userRemember)
+        public async Task<ActionResult> Login(string userUsername, string userPassword)
         {
             try
             {
@@ -1105,27 +1176,8 @@ namespace V2boardApi.Areas.App.Controllers
 
                     User.Token = (userUsername + userPassword).ToSha256();
 
-                    var token = JwtToken.GenerateToken(User.User_ID.ToString(), User.Role.ToString(), JwtToken.GetSecretKey(), 1440);
-
-
-                    HttpCookie Role = new HttpCookie("Role");
-                    Role.Expires = DateTime.Now.AddDays(1);
-                    Role.Value = User.Role.ToString();
-                    Role.SameSite = SameSiteMode.Strict;
-                    Response.Cookies.Remove("Role");
-                    Response.Cookies.Add(Role);
-
-
-                    HttpCookie Token = new HttpCookie("Token");
-                    Token.Expires = DateTime.Now.AddDays(1);
-                    Token.Value = token;
-                    Token.Secure = false;
-                    Token.HttpOnly = true;
-                    Token.SameSite = SameSiteMode.Strict;
-                    Response.Cookies.Remove("Token");
-                    Response.Cookies.Add(Token);
-
-                    FormsAuthentication.SetAuthCookie(User.Username, userRemember);
+                    var token = JwtToken.GenerateToken(User.User_ID.ToString(), User.Role.ToString(), JwtToken.GetSecretKey(), AuthSession.ExpireMinutes);
+                    AuthSession.SetLoginCookies(Response, User, token);
 
                     logger.Info("ورود موفق");
                     RepositoryUser.Save();
@@ -1163,11 +1215,7 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.Authorize]
         public ActionResult LogOut()
         {
-
-            Response.Cookies.Remove("Token");
-            Response.Cookies.Remove("Role");
-
-            FormsAuthentication.SignOut();
+            AuthSession.ClearLoginCookies(Response);
             logger.Info("خروج موفق");
             return RedirectToAction("Login", "Admin");
         }
@@ -1624,7 +1672,79 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1")]
         public ActionResult Settings(int user_id)
         {
+            
             return View();
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpGet]
+        public ActionResult _GetSettlementSetting(int user_id)
+        {
+            Task.Run(() => SettlementService.ProcessAllAgents());
+            var user = RepositoryUser.Where(s => s.User_ID == user_id).FirstOrDefault();
+            if (user == null)
+                return Content("کاربر یافت نشد");
+            return PartialView(user);
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> SaveSettlementSetting(int user_id, bool settlementEnabled = false,
+            string settlementType = "Weekly", int? settlementDayOfWeek = 6, int? settlementDayOfMonth = 1,
+            string settlementStartDate = null)
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+                if (user == null)
+                    return MessageBox.Warning("ناموفق", "کاربر یافت نشد");
+
+                user.Settlement_Enabled = settlementEnabled;
+                user.Settlement_Type = string.Equals(settlementType, "Monthly", StringComparison.OrdinalIgnoreCase) ? "Monthly" : "Weekly";
+                user.Settlement_DayOfWeek = settlementDayOfWeek ?? (int)DayOfWeek.Saturday;
+                user.Settlement_DayOfMonth = Math.Max(1, Math.Min(31, settlementDayOfMonth ?? 1));
+
+                if (!string.IsNullOrWhiteSpace(settlementStartDate))
+                {
+                    try
+                    {
+                        user.Settlement_StartDate = DateTime.Parse(settlementStartDate.Trim(), CultureInfo.GetCultureInfo("fa-IR"));
+                    }
+                    catch
+                    {
+                        var parts = settlementStartDate.Split('/');
+                        if (parts.Length == 3)
+                        {
+                            var pc = new PersianCalendar();
+                            user.Settlement_StartDate = pc.ToDateTime(
+                                int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), 0, 0, 0, 0);
+                        }
+                    }
+                }
+                else if (settlementEnabled && !user.Settlement_StartDate.HasValue)
+                {
+                    user.Settlement_StartDate = DateTime.Now.Date;
+                }
+
+                user.Settlement_LastPreWarning = null;
+                user.Settlement_LastOverdueWarning = null;
+
+                if (!settlementEnabled && user.Settlement_IsBlocked)
+                {
+                    await SettlementService.UnblockAgentSubscriptions(user, db);
+                    user.Settlement_IsBlocked = false;
+                }
+
+                await RepositoryUser.SaveChangesAsync();
+                logger.Info("تنظیمات تسویه نماینده " + user.Username + " ذخیره شد");
+                return Toaster.Success("موفق", "تنظیمات تسویه با موفقیت ذخیره شد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ذخیره تنظیمات تسویه");
+                return MessageBox.Error("ناموفق", "خطا در ذخیره تنظیمات تسویه");
+            }
         }
         #endregion
 
@@ -2179,6 +2299,7 @@ namespace V2boardApi.Areas.App.Controllers
                         SelectUserViewModel userselect = new SelectUserViewModel();
                         userselect.id = User.User_ID;
                         userselect.username = User.Username;
+                        userselect.debt = User.Wallet;
                         SelectUsers.Add(userselect);
                     }
 

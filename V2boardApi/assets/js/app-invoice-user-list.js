@@ -91,7 +91,7 @@ $(function () {
                         console.log($balance);
                         if ($balance === 1) {
                             var $badge_class = 'bg-label-warning';
-                            return '<span class="badge ' + $badge_class + '" > تائید توسط کاربر </span>';
+                            return '<span class="badge ' + $badge_class + '" > در انتظار پرداخت </span>';
                         }
                         else if ($balance === 2) {
                             var $badge_class = 'bg-label-success';

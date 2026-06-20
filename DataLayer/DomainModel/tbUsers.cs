@@ -55,6 +55,14 @@ namespace DataLayer.DomainModel
         public bool GeneralAgent { get; set; }
         public Nullable<System.DateTime> Register_Date { get; set; }
         public bool IsNotActiveSell { get; set; }
+        public bool Settlement_Enabled { get; set; }
+        public string Settlement_Type { get; set; }
+        public Nullable<System.DateTime> Settlement_StartDate { get; set; }
+        public Nullable<int> Settlement_DayOfWeek { get; set; }
+        public Nullable<int> Settlement_DayOfMonth { get; set; }
+        public Nullable<System.DateTime> Settlement_LastPreWarning { get; set; }
+        public Nullable<System.DateTime> Settlement_LastOverdueWarning { get; set; }
+        public bool Settlement_IsBlocked { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbBankCardNumbers> tbBankCardNumbers { get; set; }

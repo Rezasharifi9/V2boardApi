@@ -40,18 +40,20 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbNotifications> tbNotifications { get; set; }
         public virtual DbSet<tbNotificationUser> tbNotificationUser { get; set; }
         public virtual DbSet<tbOrders> tbOrders { get; set; }
+        public virtual DbSet<tbPaymentLinks> tbPaymentLinks { get; set; }
         public virtual DbSet<tbPaymentMethods> tbPaymentMethods { get; set; }
         public virtual DbSet<tbPaymentMethodUser> tbPaymentMethodUser { get; set; }
         public virtual DbSet<tbPlans> tbPlans { get; set; }
         public virtual DbSet<tbServerGroups> tbServerGroups { get; set; }
         public virtual DbSet<tbServers> tbServers { get; set; }
         public virtual DbSet<tbSettings> tbSettings { get; set; }
+        public virtual DbSet<tbSocks5> tbSocks5 { get; set; }
         public virtual DbSet<tbTelegramUsers> tbTelegramUsers { get; set; }
         public virtual DbSet<tbUseages> tbUseages { get; set; }
+        public virtual DbSet<tbPanelChangelogVersions> tbPanelChangelogVersions { get; set; }
+        public virtual DbSet<tbPanelChangelogItems> tbPanelChangelogItems { get; set; }
         public virtual DbSet<tbUserFactors> tbUserFactors { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
-        public virtual DbSet<tbSocks5> tbSocks5 { get; set; }
-        public virtual DbSet<tbPaymentLinks> tbPaymentLinks { get; set; }
     
         public virtual ObjectResult<GetBotSales_Result> GetBotSales()
         {

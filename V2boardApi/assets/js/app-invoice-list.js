@@ -4,15 +4,71 @@
 
 'use strict';
 let fv, fv_edit;
+let factorDatePicker = null;
+
+function formatMoney(value) {
+    var num = Math.round(value || 0);
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function updateAgentDebtInfo() {
+    var userId = $('#usersSelect').val();
+    var debtValue = usersDebtMap[userId];
+
+    if (userId && userId !== '0' && debtValue !== undefined) {
+        var formatted = formatMoney(debtValue);
+        $('#agentDebtInfo')
+            .removeClass('d-none')
+            .html('بدهی نماینده: <strong>' + formatted + '</strong> ءتء');
+        $('#factorPrice').val(formatted);
+        if (fv) {
+            fv.revalidateField('factorPrice');
+        }
+    } else {
+        $('#agentDebtInfo').addClass('d-none').text('');
+        $('#factorPrice').val('');
+    }
+}
+
+function prepareFactorModal() {
+    $('#usersSelect').val(null).trigger('change');
+    $('#agentDebtInfo').addClass('d-none').text('');
+    $('#factorPrice').val('');
+    $('#factorDescription').val('');
+    $('#factorFile').val('');
+    $('#factorDebt').prop('checked', false);
+
+    if (factorDatePicker) {
+        factorDatePicker.setDate(new Date(), true);
+    }
+}
+
 $(function () {
+
+    var flatpickrDate = document.querySelector('#factorDate');
+    if (flatpickrDate) {
+        factorDatePicker = flatpickrDate.flatpickr({
+            enableTime: true,
+            time_24hr: true,
+            monthSelectorType: 'static',
+            locale: 'fa',
+            dateFormat: 'Y/m/d H:i',
+            altInput: true,
+            altFormat: 'j F Y - H:i',
+            defaultDate: new Date(),
+            disableMobile: true
+        });
+    }
 
     $("#usersSelect").wrap('<div class="position-relative"></div>').select2({
         placeholder: 'انتخاب نماینده',
         dropdownParent: $("#usersSelect").parent(),
-        allowClear: false
+        allowClear: true
     });
 
     GetUsersSelect('#usersSelect');
+
+    $('#usersSelect').on('change', updateAgentDebtInfo);
 
     var maxlengthInput = $('.bootstrap-maxlength-example'),
         formRepeater = $('.form-repeater');
@@ -129,7 +185,7 @@ $(function () {
                         console.log($balance);
                         if ($balance === 1) {
                             var $badge_class = 'bg-label-warning';
-                            return '<span class="badge ' + $badge_class + '" > تائید توسط کاربر </span>';
+                            return '<span class="badge ' + $badge_class + '" > در انتظار پرداخت </span>';
                         }
                         else if ($balance === 2) {
                             var $badge_class = 'bg-label-success';
@@ -149,12 +205,20 @@ $(function () {
                     searchable: false,
                     orderable: false,
                     render: function (data, type, full, meta) {
-                        return (
+                        var actions =
                             '<div class="d-flex align-items-center">' +
-                            '<a href="/App/UserFactors/download?factor_id=' + full['ID'] + '" data-bs-toggle="popover" title="دانلود رسید" class="btn btn-sm btn-icon"/><i class="text-primary ti ti-download"></i>' +
+                            '<a href="/App/UserFactors/download?factor_id=' + full['ID'] + '" data-bs-toggle="popover" title="دانلود رسید" class="btn btn-sm btn-icon"/><i class="text-primary ti ti-download"></i></a>';
+
+                        if (full['Status'] === 1) {
+                            actions +=
+                                '<a href="javascript:;" data-bs-toggle="popover" title="تائید تراکنش" class="btn btn-sm btn-icon accept-factor" data-id="' + full['ID'] + '" data-price="' + full['Price'] + '"><i class="text-success ti ti-checklist"></i></a>';
+                        }
+
+                        actions +=
                             '<a href="javascript:;" data-bs-toggle="popover" title="حذف رسید" class="btn btn-sm btn-icon delete-record" data-id="' + full['ID'] + '"/><i class="text-primary ti ti-trash"></i>' +
-                            '</div>'
-                        );
+                            '</div>';
+
+                        return actions;
 
                         //return (
                         //    '<div class="d-flex align-items-center">' +
@@ -190,9 +254,10 @@ $(function () {
             // Buttons with Dropdown
             buttons: [
                 {
-                    text: '<i class="ti ti-plus me-md-1"></i><span class="d-md-inline-block d-none">افزودن پرداخت</span>',
+                    text: '<i class="ti ti-plus me-md-1"></i><span class="d-md-inline-block d-none">افزودن فاکتور</span>',
                     className: 'btn btn-primary waves-effect waves-light',
                     action: function (e, dt, button, config) {
+                        prepareFactorModal();
                         $("#modalAddFactor").modal("show");
                     }
                 }
@@ -257,6 +322,7 @@ $(function () {
             if (res.status == "success") {
 
                 document.getElementById('factorForm').reset();
+                prepareFactorModal();
                 $("#modalAddFactor").modal("hide");
                 dt_invoice.ajax.reload(null, false);
 
@@ -268,6 +334,38 @@ $(function () {
         });
     });
 
+    // Accept pending payment factor
+    $('.invoice-list-table tbody').on('click', '.accept-factor', function () {
+        var factor_id = $(this).attr("data-id");
+        var data_price = $(this).attr("data-price");
+
+        Swal.fire({
+            title: 'هشدار',
+            text: "مطمئنی میخای فاکتور به مبلغ " + data_price + " را تائید کنی ؟؟",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+                BodyBlockUI();
+
+                AjaxPost("/App/UserFactors/AcceptFactor?factor_id=" + factor_id).then(res => {
+                    BodyUnblockUI();
+                    eval(res.data);
+                    if (res.status == "success") {
+                        dt_invoice.ajax.reload(null, false);
+                    }
+                });
+            }
+        });
+    });
+
     // Delete Record
     $('.invoice-list-table tbody').on('click', '.delete-record', function () {
 
@@ -275,7 +373,7 @@ $(function () {
 
         Swal.fire({
             title: 'هشدار',
-            text: "مطمئنی میخای فاکتور پرداخت رو حذف کنی ؟",
+            text: "مطمئنی میخای فاکتور رو حذف کنی ؟",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'بله',

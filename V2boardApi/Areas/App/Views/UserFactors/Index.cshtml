@@ -23,10 +23,10 @@
 </style>
 
 <h4 class="py-3 mb-4">
-    پرداخت ها
+    فاکتورها
 </h4>
 <h6>
-    در این صفحه می توانید پرداخت های نمایندگان را مدیریت کنید
+    در این صفحه می توانید فاکتورهای نمایندگان را مدیریت کنید
 </h6>
 <!-- Invoice List Widget -->
 @Html.Action("_GeneralInfoPayment", "UserFactors", new { area = "App" })
@@ -55,7 +55,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content section-block">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalCenterTitle">اطلاعات پرداخت</h5>
+                <h5 class="modal-title" id="modalCenterTitle">اطلاعات فاکتور</h5>
                 <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <form class="add-new-user pt-0" id="factorForm" enctype="multipart/form-data">
@@ -68,7 +68,7 @@
                             <select id="usersSelect" class="select2 form-select" name="usersSelect">
                                 <option value="0">در حال بارگزاری ...</option>
                             </select>
-
+                            <small id="agentDebtInfo" class="text-muted mt-1 d-block d-none"></small>
                         </div>
                         <div class="col-md-6 message-text">
                             <label class="form-label" for="factorDate">تاریخ<span class="text-danger"> * </span></label>
@@ -158,53 +158,36 @@
     <script src="../../assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js"></script>
     <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
     <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+    <script>
+        var usersDebtMap = {};
+
+        function GetUsersSelect(selectId) {
+            var $select = $(selectId);
+            $.ajax({
+                url: '/App/Admin/GetUsersSelect',
+                type: 'get',
+                dataType: 'json',
+                async: true,
+                success: function (res) {
+                    $select.empty();
+                    usersDebtMap = {};
+
+                    if (res && res.data) {
+                        $.each(res.data, function (index, item) {
+                            usersDebtMap[item.id] = item.debt || 0;
+                            var newOption = new Option(item.username, item.id, false, false);
+                            $select.append(newOption);
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('An error occurred: ' + status + ' ' + error);
+                }
+            });
+        }
+    </script>
     <!-- Page JS -->
-    <script src="~/assets/js/app-invoice-list.js"></script>
+    <script src="~/assets/js/app-invoice-list.js?v=20250619"></script>
 
 
 }
-<script src="~/Scripts/jquery-3.4.1.min.js"></script>
-<script>
-
-
-    $(function () {
-
-        var flatpickrDate = document.querySelector('#factorDate');
-        if (flatpickrDate) {
-            flatpickrDate.flatpickr({
-                enableTime: true,
-                monthSelectorType: 'static',
-                locale: 'fa',
-                altFormat: 'Y/m/d',
-                disableMobile: true,
-            });
-        }
-
-    });
-
-    function GetUsersSelect(selectId) {
-        var $select = $(selectId);
-        $.ajax({
-            url: "/App/Admin/GetUsersSelect",
-            type: "get",
-            dataType: "json",
-            async: true,
-            success: function (res) {
-                console.log(res);
-                // پاک کردن گزینه‌های قبلی
-                $select.empty();
-
-                // افزودن گزینه‌های جدید
-                $.each(res.data, function (index, item) {
-                    var newOption = new Option(item.username, item.id, false, false);
-                    $select.append(newOption);
-                });
-            },
-            error: function (xhr, status, error) {
-                console.error("An error occurred: " + status + " " + error);
-            }
-        });
-
-    }
-
-</script>

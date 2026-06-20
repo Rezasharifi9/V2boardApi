@@ -5,62 +5,62 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="61ab93f3291f4a6eb957e0787146daf3" Name="Diagram1">
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.NLog" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.sysdiagrams" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbBankCardNumbers" Width="1.5" PointX="11.25" PointY="19.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbBotSettings" Width="1.5" PointX="14.25" PointY="23.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbConnectionHelp" Width="1.5" PointX="11.25" PointY="22.375" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbDepositWallet_Log" Width="1.5" PointX="18.75" PointY="31.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinks" Width="1.5" PointX="3" PointY="24.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="14.25" PointY="19.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinkUserAndPlans" Width="1.5" PointX="11.25" PointY="25.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLogs" Width="1.5" PointX="13.5" PointY="35.375" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbNotifications" Width="1.5" PointX="12" PointY="42.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbNotificationUser" Width="1.5" PointX="14.25" PointY="31.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbOrders" Width="1.5" PointX="16.5" PointY="29.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentMethods" Width="1.5" PointX="16.5" PointY="34.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentMethodUser" Width="1.5" PointX="16.5" PointY="24.5" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPlans" Width="1.5" PointX="6" PointY="24.625" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbServerGroups" Width="1.5" PointX="12" PointY="16" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbServers" Width="1.5" PointX="0.75" PointY="24.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSettings" Width="1.5" PointX="2.75" PointY="3.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbTelegramUsers" Width="1.5" PointX="11.25" PointY="32" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUseages" Width="1.5" PointX="3" PointY="36" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUserFactors" Width="1.5" PointX="11.25" PointY="38.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUsers" Width="1.5" PointX="9" PointY="22.75" IsExpanded="true" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBankCardNumbers_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBotSettings_tbBotSettings" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBotSettings_tbPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBotSettings_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbConnectionHelp_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPaymentMethodUser_tbConnectionHelp" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbOrders" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbPaymentMethods" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinks_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinks_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinkServerGroupWithUsers_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinkUserAndPlans_tbPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinkUserAndPlans_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLogs_tbLinkUserAndPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbOrders_tbLinkUserAndPlans" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbNotificationUser_tbNotifications" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbNotificationUser_tbUsers1" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbOrders_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPaymentMethodUser_tbPaymentMethods" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPaymentMethodUser_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPlans_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPlans_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUseages_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUsers_tbServers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbTelegramUsers_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbTelegramUsers_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUsers_tbTelegramUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUserFactors_tbUsers" ManuallyRouted="false" />
-        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUsers_tbUsers" ManuallyRouted="false" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSocks5" Width="1.5" PointX="5.375" PointY="0.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentLinks" Width="1.5" PointX="5.375" PointY="3.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.NLog" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.sysdiagrams" Width="1.5" PointX="2.75" PointY="0.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbBankCardNumbers" Width="1.5" PointX="11.25" PointY="32" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbBotSettings" Width="1.5" PointX="14.25" PointY="17.5" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbConnectionHelp" Width="1.5" PointX="11.25" PointY="25.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbDepositWallet_Log" Width="1.5" PointX="18.75" PointY="35.625" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinks" Width="1.5" PointX="3" PointY="24.875" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="14.25" PointY="29.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinkUserAndPlans" Width="1.5" PointX="14.25" PointY="25.5" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLogs" Width="1.5" PointX="16.5" PointY="29.375" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbNotifications" Width="1.5" PointX="15" PointY="13.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbNotificationUser" Width="1.5" PointX="17.25" PointY="21.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbOrders" Width="1.5" PointX="16.5" PointY="34.125" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentLinks" Width="1.5" PointX="2.75" PointY="3.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentMethods" Width="1.5" PointX="16.5" PointY="39.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentMethodUser" Width="1.5" PointX="16.5" PointY="25.625" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPlans" Width="1.5" PointX="6" PointY="24.625" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbServerGroups" Width="1.5" PointX="12" PointY="29" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbServers" Width="1.5" PointX="0.75" PointY="24.125" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSettings" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSocks5" Width="1.5" PointX="4.75" PointY="3.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbTelegramUsers" Width="1.5" PointX="11.25" PointY="35.25" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUseages" Width="1.5" PointX="3" PointY="52.5" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUserFactors" Width="1.5" PointX="11.25" PointY="19.125" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUsers" Width="1.5" PointX="9" PointY="22" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBankCardNumbers_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBotSettings_tbBotSettings" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBotSettings_tbPlans" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBotSettings_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbConnectionHelp_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPaymentMethodUser_tbConnectionHelp" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbOrders" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbPaymentMethods" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbTelegramUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinks_tbServers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinks_tbTelegramUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinkServerGroupWithUsers_tbServerGroups" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinkServerGroupWithUsers_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinkUserAndPlans_tbPlans" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLinkUserAndPlans_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbLogs_tbLinkUserAndPlans" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbOrders_tbLinkUserAndPlans" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbNotificationUser_tbNotifications" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbNotificationUser_tbUsers1" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbOrders_tbTelegramUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPaymentMethodUser_tbPaymentMethods" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPaymentMethodUser_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPlans_tbServers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbPlans_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUseages_tbServers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUsers_tbServers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbTelegramUsers_tbTelegramUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbTelegramUsers_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUsers_tbTelegramUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUserFactors_tbUsers" />
+        <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbUsers_tbUsers" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

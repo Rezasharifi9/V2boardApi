@@ -9,5 +9,6 @@ namespace V2boardApi.Areas.App.Data.UsersViewModels
     {
         public int id { get; set; }
         public string username { get; set; }
+        public double debt { get; set; }
     }
 }

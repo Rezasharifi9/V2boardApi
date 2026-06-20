@@ -1,0 +1,58 @@
+@model V2boardApi.Areas.App.Data.SubscriptionsViewModels.SubUsageHistoryResultViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>تاریخچه مصرف @(Model.SubName)</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; margin: 24px; color: #333; }
+        h1 { font-size: 20px; margin-bottom: 8px; }
+        .meta { margin-bottom: 16px; color: #666; font-size: 13px; }
+        .summary { margin-bottom: 20px; padding: 12px; background: #f5f5f9; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #eee; }
+        @@media print { body { margin: 12px; } }
+    </style>
+</head>
+<body>
+    <h1>تاریخچه مصرف @(string.IsNullOrWhiteSpace(Model.SubName) ? "" : "- " + Model.SubName)</h1>
+    @if (Model.Summary != null)
+    {
+        <div class="meta">بازه: @Model.Summary.FromDate تا @Model.Summary.ToDate</div>
+        <div class="summary">
+            <div>مجموع دانلود: <strong>@Model.Summary.TotalDownload</strong></div>
+            <div>مجموع آپلود: <strong>@Model.Summary.TotalUpload</strong></div>
+            <div>مجموع مصرف: <strong>@Model.Summary.Total</strong></div>
+        </div>
+    }
+    <table>
+        <thead>
+            <tr>
+                <th>تاریخ</th>
+                <th>دانلود</th>
+                <th>آپلود</th>
+                <th>مجموع</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Items != null)
+            {
+                foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.Date</td>
+                        <td>@item.Download</td>
+                        <td>@item.Upload</td>
+                        <td>@item.Total</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <script>window.onload = function () { window.print(); };</script>
+</body>
+</html>

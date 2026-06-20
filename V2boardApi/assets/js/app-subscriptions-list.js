@@ -1,47 +1,5 @@
 ﻿
-// Color constant
-const chartColors = {
-    column: {
-        series1: '#826af9',
-        series2: '#d2b0ff',
-        bg: '#f8d3ff'
-    },
-    donut: {
-        series1: '#fee802',
-        series2: '#3fd0bd',
-        series3: '#826bf8',
-        series4: '#2b9bf4'
-    },
-    area: {
-        series1: '#29dac7',
-        series2: '#60f2ca',
-        series3: '#a5f8cd'
-    }
-};
-
-
-
-
 $(function () {
-
-    let cardColor, headingColor, labelColor, borderColor, legendColor;
-
-    if (isDarkStyle) {
-        cardColor = config.colors_dark.cardColor;
-        headingColor = config.colors_dark.headingColor;
-        labelColor = config.colors_dark.textMuted;
-        legendColor = config.colors_dark.bodyColor;
-        borderColor = config.colors_dark.borderColor;
-    } else {
-        cardColor = config.colors.cardColor;
-        headingColor = config.colors.headingColor;
-        labelColor = config.colors.textMuted;
-        legendColor = config.colors.bodyColor;
-        borderColor = config.colors.borderColor;
-    }
-
-
-    const lineChartEl = document.querySelector('#lineChart');
 
     var dt_basic_table = $('.datatables-plan'),
         select2 = $('#userPlan'),
@@ -328,8 +286,8 @@ $(function () {
 
 
                         var menu = "";
-                        if (Role == "1" || Role == "4") {
-                            menu += '<button data-id="' + user_id + '" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit" type="buttton"><i class="text-primary ti ti-pencil"></i></button>';
+                        if (Role == "1") {
+                            menu += '<button data-id="' + user_id + '" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit" type="button"><i class="text-primary ti ti-pencil"></i></button>';
                         }
 
                         return (
@@ -338,12 +296,14 @@ $(function () {
                             '<button data-bs-toggle="popover" title="QR Code Backup Link" onclick="ShowQRCode(\'' + $Suplink + '\')" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
                             '<a href="javascript:;" class="text-primary dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical ti-sm mx-1"></i></a>' +
                             '<div class="dropdown-menu dropdown-menu-start m-0">' +
-                            '<button  data-id="' + full["DaysLeft"] + '" data-id2="' + user_id + '" data-id3="' + $Volume + '" class="dropdown-item item-refresh">تمدید</button>' +
+                            (Role == "1" ? '<button data-id="' + user_id + '" class="dropdown-item item-edit">ویرایش</button>' : '') +
+                            '<button data-id="' + user_id + '" class="dropdown-item item-refresh">تمدید</button>' +
+                            '<button data-id="' + user_id + '" data-name="' + $Name + '" class="dropdown-item item-packages">بسته‌های فعال</button>' +
                             '<button  onclick="copyToClipboard(\'' + $link + '\')"  class="dropdown-item item-copy">کپی لینک اصلی</button>' +
                             '<button  onclick="copyToClipboard(\'' + $Suplink + '\')"  class="dropdown-item item-copy">کپی لینک پشتیبان</button>' +
                             '<button  data-id="' + user_id + '" class="dropdown-item item-unlink">تغییر لینک</button>' +
                             '<button  data-id="' + user_id + '" class="dropdown-item item-changename" data-id2="' + full["Name"] + '">تغییر نام</button>' +
-                            '<button class="dropdown-item item-history" data-id="' + user_id + '">تاریخچه مصرف</button>' +
+                            '<button class="dropdown-item item-history" data-id="' + user_id + '" data-name="' + $Name + '">تاریخچه مصرف</button>' +
                             '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state + '</button>' +
                             '<div class="dropdown-divider"></div>' +
                             '<li><button data-used="' + $UsedVolume + '" data-id="' + user_id + '"data-user="' + $Name + '"  data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
@@ -412,6 +372,30 @@ $(function () {
     }
 
     //مربوط به نمایش مودال ویرایش اشتراک
+    var expirePickerInstance = null;
+
+    function initExpirePicker(defaultDate) {
+        var pickerEl = document.querySelector('#expire-picker');
+        if (!pickerEl || typeof flatpickr === 'undefined') return;
+
+        if (expirePickerInstance) {
+            expirePickerInstance.destroy();
+            expirePickerInstance = null;
+        }
+
+        var opts = {
+            disableMobile: "true",
+            altInput: true,
+            altFormat: 'j F Y',
+            dateFormat: 'Y/m/d',
+            locale: 'fa'
+        };
+        if (defaultDate) {
+            opts.defaultDate = defaultDate;
+        }
+        expirePickerInstance = flatpickr(pickerEl, opts);
+    }
+
     $('body').on('click', '.item-edit', function () {
 
 
@@ -429,30 +413,17 @@ $(function () {
 
                 $("#modalEditSub input[name='user_id']").val(user_id);
                 var data = res.data;
+                var expireDate = '';
                 for (var key in data) {
                     if (data.hasOwnProperty(key)) {
-                        var input = $('#modalEditSub input[name=' + key + ']');
-
                         if (key == "userExpire") {
-                            picker = document.querySelector('#expire-picker'),
-
-                                picker.flatpickr({
-                                    disableMobile: "true",
-                                    altInput: true,
-                                    altFormat: 'j F Y',
-                                    dateFormat: 'Y/m/d',
-                                    locale: 'fa',
-                                    defaultDate: data[key]
-
-                                });
+                            expireDate = data[key];
+                        } else {
+                            $('#modalEditSub input[name=' + key + ']').val(data[key]);
                         }
-                        else {
-                            input.val(data[key]);
-                        }
-
-
                     }
                 }
+                initExpirePicker(expireDate);
 
             }
             else {
@@ -465,34 +436,59 @@ $(function () {
 
     });
 
-    //مربوط به مودال تمدید اشتراک
+    //مربوط به مودال تمدید (رزرو بسته)
     $('body').on('click', '.item-refresh', function () {
+        $(".dtr-bs-modal").modal("hide");
+        var user_id = $(this).attr("data-id");
+        $("#modalRenew").modal("show");
+        $("#modalRenew input[name='user_id']").val(user_id);
+    });
 
-        var DayLeft = $(this).attr("data-id");
-        var Volume = $(this).attr("data-id3");
+    //نمایش بسته‌های فعال و رزرو
+    $('body').on('click', '.item-packages', function () {
+        $(".dtr-bs-modal").modal("hide");
+        var user_id = $(this).attr("data-id");
+        var subName = $(this).attr("data-name");
 
-        if ((DayLeft == -1 && Volume <= 2) || (((DayLeft > -1) && DayLeft <= 2) || Volume <= 2)) {
-
-            $(".dtr-bs-modal").modal("hide");
-
-            var user_id = $(this).attr("data-id2");
-
-            $("#modalRenew").modal("show");
-
-            $("#modalRenew input[name='user_id']").val(user_id);
-        }
-        else {
-            if (DayLeft == -1) {
-                showToast("هشدار", "امکان تمدید برای حجم باقی مانده کمتر از 2 گیگ فعال می شود ", "text-warning");
+        BodyBlockUI();
+        AjaxGet('/App/Subscriptions/GetSubscriptionPackages?user_id=' + user_id).then(res => {
+            BodyUnblockUI();
+            if (res.status !== "success") {
+                showToast("خطا", res.message || "خطا در دریافت اطلاعات", "text-danger");
+                return;
             }
-            else {
-                showToast("هشدار", "امکان تمدید تا " + (DayLeft - 2) + " روز دیگر یا حجم باقی مانده کمتر از " + (2) + " گیگ" + " فعال می شود", "text-warning");
+
+            $('#packagesSubName').text(res.data.subscriptionName || subName);
+            var current = res.data.current;
+            var currentBadge = current.status === 'فعال' ? 'bg-label-success' : 'bg-label-warning';
+            $('#packagesCurrentBody').html(
+                '<tr>' +
+                '<td>' + current.planName + '</td>' +
+                '<td>' + current.totalVolumeGb + '</td>' +
+                '<td>' + current.remainingVolumeGb + '</td>' +
+                '<td>' + current.expireDate + '</td>' +
+                '<td><span class="badge ' + currentBadge + '">' + current.status + '</span></td>' +
+                '</tr>'
+            );
+
+            var reservedHtml = '';
+            if (res.data.reserved && res.data.reserved.length > 0) {
+                res.data.reserved.forEach(function (item) {
+                    var months = item.months == 0 ? 'نامحدود' : item.months;
+                    reservedHtml += '<tr>' +
+                        '<td>' + item.planName + '</td>' +
+                        '<td>' + item.volumeGb + '</td>' +
+                        '<td>' + months + '</td>' +
+                        '<td>' + item.reservedDate + '</td>' +
+                        '<td><span class="badge bg-label-warning">' + item.status + '</span></td>' +
+                        '</tr>';
+                });
+            } else {
+                reservedHtml = '<tr><td colspan="5" class="text-center text-muted">بسته رزروی وجود ندارد</td></tr>';
             }
-        }
-
-
-
-
+            $('#packagesReservedBody').html(reservedHtml);
+            $("#modalPackages").modal("show");
+        });
     });
 
     //مربوط به مسدود و رفع مسدود اشتراک
@@ -631,146 +627,195 @@ $(function () {
     });
 
     //تاریخچه مصرف کاربران
-    $('body').on('click', '.item-history', function () {
+    var dtUsageHistory = null;
+    var currentUsageUserId = null;
+    var currentUsageSubName = '';
+    var usageFromPicker = null;
+    var usageToPicker = null;
 
-        BodyBlockUI();
-        var user_id = $(this).attr("data-id");
+    function updateUsageHistorySummary(summary) {
+        if (!summary) {
+            $('#usageHistorySummary').addClass('d-none');
+            return;
+        }
 
-        $(".dtr-bs-modal").modal("hide");
+        $('#usageSummaryDownload').text(summary.TotalDownload || '-');
+        $('#usageSummaryUpload').text(summary.TotalUpload || '-');
+        $('#usageSummaryTotal').text(summary.Total || '-');
+        $('#usageSummaryRange').text((summary.FromDate || '-') + ' تا ' + (summary.ToDate || '-'));
+        $('#usageHistorySummary').removeClass('d-none');
+    }
 
-        $.ajax({
-            url: "/App/Subscriptions/GetSubUseage?user_id=" + user_id,
-            type: "get",
-            dataType: "json",
-            success: function (res) {
-                $("#modalHistoryUse").modal("show");
-                BodyUnblockUI();
-                if (res.status == "success") {
+    function setDefaultUsageDateRange() {
+        var now = new Date();
+        var from = new Date();
+        from.setDate(from.getDate() - 30);
 
-                    // رند کردن مقادیر به دو رقم اعشار
-                    res.data.Used = res.data.Used.map(function (value) {
-                        return Math.round(value * 100) / 100;
-                    });
+        if (usageFromPicker) {
+            usageFromPicker.setDate(from, false);
+        }
+        if (usageToPicker) {
+            usageToPicker.setDate(now, false);
+        }
+    }
 
-                    var lineChartConfig = {
-                        chart: {
-                            height: 500,
-                            type: 'line',
-                            parentHeightOffset: 0,
-                            zoom: {
-                                enabled: true,
-                                type: 'x', // زوم فقط روی محور x
-                                autoScaleYaxis: true
-                            },
-                            toolbar: {
-                                show: true
-                            },
-                            pan: {
-                                enabled: true,
-                                mode: 'x', // فقط روی محور x
-                                threshold: 10 // حساسیت بالا برای دستگاه‌های لمسی
-                            }
-                        },
-                        series: [
-                            {
-                                data: res.data.Used,
-                            }
-                        ],
-                        markers: {
-                            strokeWidth: 7,
-                            strokeOpacity: 1,
-                            strokeColors: [cardColor],
-                            colors: [config.colors.warning]
-                        },
-                        dataLabels: {
-                            enabled: true
-                        },
-                        stroke: {
-                            curve: 'straight'
-                        },
-                        colors: [config.colors.warning],
-                        grid: {
-                            borderColor: borderColor,
-                            xaxis: {
-                                lines: {
-                                    show: true
-                                }
-                            },
-                            padding: {
-                                top: -20
-                            }
-                        },
-                        tooltip: {
-                            custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-                                return '<div class="px-3 py-2">' + '<span>' + series[seriesIndex][dataPointIndex] + ' GB</span>' + '</div>';
-                            }
-                        },
-                        xaxis: {
-                            categories: res.data.Date,
-                            axisBorder: {
-                                show: false
-                            },
-                            axisTicks: {
-                                show: false
-                            },
-                            labels: {
-                                style: {
-                                    colors: labelColor,
-                                    fontSize: '13px'
-                                }
-                            },
-                            min: 1,
-                            max: 14
-                        },
-                        yaxis: {
-                            labels: {
-                                style: {
-                                    colors: labelColor,
-                                    fontSize: '13px'
-                                }
-                            }
-                        },
-                        responsive: [
-                            {
-                                breakpoint: 480, // در اندازه‌های صفحه نمایش کمتر از 480 پیکسل
-                                options: {
-                                    chart: {
-                                        height: 300 // تنظیم ارتفاع کمتر برای صفحات کوچکتر
-                                    },
-                                    dataLabels: {
-                                        enabled: false // غیرفعال کردن لیبل‌ها برای صفحه‌های کوچک
-                                    },
-                                    xaxis: {
-                                        labels: {
-                                            show: true,
-                                            style: {
-                                                fontSize: '10px' // کوچک‌تر کردن فونت در دستگاه‌های موبایل
-                                            }
-                                        }
-                                    },
-                                    yaxis: {
-                                        labels: {
-                                            style: {
-                                                fontSize: '10px' // کوچک‌تر کردن فونت در دستگاه‌های موبایل
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    };
+    function initUsageDatePickers() {
+        var fromEl = document.querySelector('#usageHistoryFromDate');
+        var toEl = document.querySelector('#usageHistoryToDate');
 
+        if (fromEl && !usageFromPicker) {
+            usageFromPicker = flatpickr(fromEl, {
+                disableMobile: true,
+                locale: 'fa',
+                altInput: true,
+                altFormat: 'j F Y',
+                dateFormat: 'Y/m/d'
+            });
+        }
 
+        if (toEl && !usageToPicker) {
+            usageToPicker = flatpickr(toEl, {
+                disableMobile: true,
+                locale: 'fa',
+                altInput: true,
+                altFormat: 'j F Y',
+                dateFormat: 'Y/m/d'
+            });
+        }
+    }
 
-                    if (typeof lineChartEl !== undefined && lineChartEl !== null) {
-                        const lineChart = new ApexCharts(lineChartEl, lineChartConfig);
-                        lineChart.render();
+    function destroyUsageHistoryTable() {
+        if (dtUsageHistory) {
+            dtUsageHistory.destroy();
+            dtUsageHistory = null;
+        }
+        updateUsageHistorySummary(null);
+    }
+
+    function loadUsageHistoryTable() {
+        if (!currentUsageUserId) {
+            return;
+        }
+
+        var fromDate = $('#usageHistoryFromDate').val();
+        var toDate = $('#usageHistoryToDate').val();
+        var url = '/App/Subscriptions/GetSubUseage?user_id=' + currentUsageUserId;
+
+        if (fromDate) {
+            url += '&fromDate=' + encodeURIComponent(fromDate);
+        }
+        if (toDate) {
+            url += '&toDate=' + encodeURIComponent(toDate);
+        }
+
+        destroyUsageHistoryTable();
+
+        dtUsageHistory = $('.usage-history-table').DataTable({
+            ajax: {
+                url: url,
+                dataSrc: function (json) {
+                    if (!json || json.status !== 'success') {
+                        updateUsageHistorySummary(null);
+                        if (json && json.message) {
+                            showToast('خطا', json.message, 'text-danger');
+                        }
+                        return [];
                     }
 
+                    updateUsageHistorySummary(json.summary);
+                    return json.data || [];
                 }
-            }
+            },
+            columns: [
+                {
+                    data: 'Date',
+                    render: function (data, type, full) {
+                        if (type === 'sort' || type === 'type') {
+                            return full.DateSort || 0;
+                        }
+                        return data;
+                    }
+                },
+                { data: 'Download' },
+                { data: 'Upload' },
+                { data: 'Total' }
+            ],
+            order: [[0, 'desc']],
+            dom:
+                '<"row mx-2"' +
+                '<"col-sm-12 col-md-6"l>' +
+                '<"col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center"f>' +
+                '>t' +
+                '<"row mx-2"' +
+                '<"col-sm-12 col-md-6"i>' +
+                '<"col-sm-12 col-md-6"p>' +
+                '>',
+            language: {
+                sLengthMenu: '_MENU_',
+                search: '',
+                searchPlaceholder: 'جستجو در جدول...',
+                paginate: {
+                    first: 'اولین',
+                    last: 'آخرین',
+                    next: 'بعدی',
+                    previous: 'قبلی'
+                },
+                info: 'نمایش _START_ تا _END_ از _TOTAL_ ورودی',
+                lengthMenu: 'نمایش _MENU_ ورودی',
+                zeroRecords: 'موردی یافت نشد',
+                infoEmpty: 'هیچ موردی موجود نیست',
+                infoFiltered: '(فیلتر شده از _MAX_ ورودی)',
+                loadingRecords: 'در حال بارگزاری ...'
+            },
+            displayLength: 10,
+            lengthMenu: [10, 25, 50, 100]
         });
+    }
 
+    initUsageDatePickers();
+
+    $('body').on('click', '.item-history', function () {
+        currentUsageUserId = $(this).attr('data-id');
+        currentUsageSubName = $(this).attr('data-name') || '';
+
+        $('.dtr-bs-modal').modal('hide');
+        $('#usageHistoryUserName').text(currentUsageSubName ? '(' + currentUsageSubName + ')' : '');
+        setDefaultUsageDateRange();
+        $('#modalHistoryUse').modal('show');
+        loadUsageHistoryTable();
+    });
+
+    $('#btnSearchUsageHistory').on('click', function () {
+        loadUsageHistoryTable();
+    });
+
+    $('#btnExportUsageHistoryPdf').on('click', function () {
+        if (!currentUsageUserId) {
+            return;
+        }
+
+        var fromDate = $('#usageHistoryFromDate').val();
+        var toDate = $('#usageHistoryToDate').val();
+        var url = '/App/Subscriptions/ExportSubUsagePdf?user_id=' + currentUsageUserId;
+
+        if (fromDate) {
+            url += '&fromDate=' + encodeURIComponent(fromDate);
+        }
+        if (toDate) {
+            url += '&toDate=' + encodeURIComponent(toDate);
+        }
+        if (currentUsageSubName) {
+            url += '&subName=' + encodeURIComponent(currentUsageSubName);
+        }
+
+        window.open(url, '_blank');
+    });
+
+    $('#modalHistoryUse').on('hidden.bs.modal', function () {
+        destroyUsageHistoryTable();
+        currentUsageUserId = null;
+        currentUsageSubName = '';
+        $('#usageHistoryUserName').text('');
     });
 
 
@@ -996,7 +1041,7 @@ $(function () {
 
         blockUI("#modalRenew .section-block");
 
-        AjaxFormPost('/App/Subscriptions/Renew', "#RenewUserForm").then(res => {
+        AjaxFormPost('/App/Subscriptions/ReservePackage', "#RenewUserForm").then(res => {
             UnblockUI("#modalRenew .section-block");
             eval(res.data);
             if (res.status == "success") {
@@ -1011,8 +1056,6 @@ $(function () {
     });
 
     // پایان فرم تمدید اشتراک
-
-
 
     //فرم مربوط به تغییر نام اشتراک
 

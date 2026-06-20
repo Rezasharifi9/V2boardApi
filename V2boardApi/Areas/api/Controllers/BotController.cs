@@ -2706,6 +2706,34 @@ namespace V2boardApi.Areas.api.Controllers
                                         var accountName = callback[2];
                                         var planId = Convert.ToInt32(callback[1]);
 
+                                        await BotInvoiceGuard.ExpireOldPendingInvoicesAsync(tbOrdersRepository, tbDepositLogRepo, UserAcc.Tel_UserID);
+
+                                        var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
+                                        var blockingOrder = BotInvoiceGuard.GetBlockingPendingOrder(tbOrdersRepository, UserAcc.Tel_UserID, planId);
+                                        if (blockingOrder != null)
+                                        {
+                                            var pendingDeposit = BotInvoiceGuard.GetPendingDeposit(tbDepositLogRepo, blockingOrder.Order_ID);
+                                            if (pendingDeposit != null && FirstCard != null)
+                                            {
+                                                var invoiceText = BotInvoiceGuard.BuildCardToCardPaymentMessage(
+                                                    pendingDeposit.dw_TaxId,
+                                                    pendingDeposit.dw_Price.Value,
+                                                    FirstCard.CardNumber,
+                                                    FirstCard.InTheNameOf,
+                                                    BotSettings.IsActiveCardToCard == true,
+                                                    BotSettings.IsActiveSendReceipt == true,
+                                                    BotSettings.Bot_ID);
+
+                                                await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
+                                                var keyss = Keyboards.GetCopyPriceAndCardNumberButton(pendingDeposit.dw_Price.Value.ToString(), FirstCard.CardNumber);
+                                                var btnress = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, invoiceText, parseMode: ParseMode.Html, replyMarkup: keyss);
+                                                pendingDeposit.dw_message_id = btnress.MessageId;
+                                                await tbDepositLogRepo.SaveChangesAsync();
+                                                await bot.Client.AnswerCallbackQuery(callbackQuery.Id);
+                                                return Ok();
+                                            }
+                                        }
+
                                         var Plan = RepositoryLinkUserAndPlan.Where(a => a.Link_PU_ID == planId).FirstOrDefault();
                                         var Account = tbLinksRepository.Where(a => a.tbL_Email == accountName).FirstOrDefault();
 
@@ -2725,49 +2753,16 @@ namespace V2boardApi.Areas.api.Controllers
                                         {
                                             fullPrice += RanNumber;
                                         }
-                                        StringBuilder str = new StringBuilder();
 
-                                        var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
                                         var TaxId = Guid.NewGuid().ToString().Split('-')[0] + "#" + UserAcc.Tel_UserID;
-                                        str.AppendLine("✅  تراکنش شما باموفقیت ثبت شد ");
-                                        str.AppendLine();
-                                        str.AppendLine("کد پیگیری : " + "<code>" + TaxId + "</code>");
-                                        str.AppendLine();
-                                        str.AppendLine("💳 لطفاً مبلغ " + "<code>" + fullPrice.ConvertToMony() + "</code>" + " ریال رو به شماره کارت زیر واریز کن :");
-                                        str.AppendLine("");
-                                        str.AppendLine(FirstCard.CardNumber);
-                                        str.AppendLine("به نام : " + FirstCard.InTheNameOf);
-                                        str.AppendLine("");
-                                        str.AppendLine("🔹 روی مبلغ کلیک کن تا خودش کپی بشه — لازم نیست حفظش کنی 😌");
-                                        if ((bool)BotSettings.IsActiveSendReceipt && (bool)BotSettings.IsActiveCardToCard)
-                                        {
-                                            str.AppendLine("🔹 حتماً مبلغ رو دقیقاً با سه رقم آخر واریز کن. اگه مبلغ رو دقیق نزنی، ربات نمی‌تونه تراکنشت رو تشخیص بده ❗️");
-                                            str.AppendLine("");
-                                            str.AppendLine("📸 اگه به هر دلیلی پرداختت به‌صورت خودکار تأیید نشد، کافیه رسید واریزی رو به‌صورت عکس (نه فایل) برای ربات بفرستی.");
-                                        }
-                                        else
-                                        {
-                                            if ((bool)BotSettings.IsActiveCardToCard)
-                                            {
-                                                str.AppendLine("❗️حتما حتما مبلغ را دقیق با سه رقم اخر واریز کنید در غیر اینصورت ربات واریزی شمارو تشخیص نمی دهد");
-                                            }
-                                            if ((bool)BotSettings.IsActiveSendReceipt)
-                                            {
-                                                str.AppendLine("");
-                                                str.Append("✅");
-                                                str.AppendLine("بعد واریزی حتما رسید را برای ربات بفرستید");
-                                            }
-                                        }
-                                        str.AppendLine("");
-                                        if (BotSettings.IsActiveCardToCard == true)
-                                        {
-                                            str.AppendLine("⚠️ نکته مهم:\r\n");
-                                            str.AppendLine("<b>" + "هر فاکتور فقط ۲۴ ساعت اعتبار داره. اگه پیام \"منقضی شدن فاکتور\" برات اومد، دیگه هیچ مبلغی واریز نکن ❌ " + "</b>");
-                                            str.AppendLine("");
-                                            str.AppendLine("<b>" + "🔺 حواست باشه! اگه مبلغ اشتباه واریز بشه، امکان برگشت وجه وجود نداره 🙏" + "</b>");
-                                            str.AppendLine("");
-                                            str.AppendLine("<b> ⚠️ با اپلیکیشن های آپ و 780 واریز نکن این اپلیکیشن ها محدودیت واریزی دارند </b>");
-                                        }
+                                        var str = BotInvoiceGuard.BuildCardToCardPaymentMessage(
+                                            TaxId,
+                                            fullPrice,
+                                            FirstCard.CardNumber,
+                                            FirstCard.InTheNameOf,
+                                            BotSettings.IsActiveCardToCard == true,
+                                            BotSettings.IsActiveSendReceipt == true,
+                                            BotSettings.Bot_ID);
 
                                         tbOrders order = new tbOrders();
                                         order.Order_Guid = Guid.NewGuid();
@@ -2808,11 +2803,9 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         tbOrdersRepository.Insert(order);
                                         await tbOrdersRepository.SaveChangesAsync();
-                                        str.AppendLine("");
-                                        str.AppendLine("🆔 @" + BotSettings.Bot_ID);
                                         await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
                                         var keys = Keyboards.GetCopyPriceAndCardNumberButton(fullPrice.ToString(), FirstCard.CardNumber);
-                                        var btnres = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html,replyMarkup: keys);
+                                        var btnres = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str, parseMode: ParseMode.Html, replyMarkup: keys);
                                         tbDeposit.dw_message_id = btnres.MessageId;
                                         await tbOrdersRepository.SaveChangesAsync();
 

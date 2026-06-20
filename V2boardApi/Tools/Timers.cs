@@ -27,6 +27,7 @@ public class TimerService
     private System.Threading.Timer DeleteFactores;
     private System.Threading.Timer AlertDeleteFactoresCard;
     private System.Threading.Timer RemoveFactoresCard;
+    private System.Threading.Timer CheckSettlement;
     private tbServers Server;
     public TimerService()
     {
@@ -37,6 +38,7 @@ public class TimerService
         //CheckSubLimitedUser = new System.Threading.Timer(async _ => await CheckSubLimitedUsers(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(180000));
         DeleteTestAccount = new System.Threading.Timer(async _ => await DeleteTestSub(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
         RemoveFactoresCard = new System.Threading.Timer(async _ => await RemoveExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
+        CheckSettlement = new System.Threading.Timer(async _ => await SettlementService.ProcessAllAgents(), null, TimeSpan.FromMinutes(5), TimeSpan.FromHours(1));
         Server = HttpRuntime.Cache["Server"] as tbServers;
     }
 
@@ -277,122 +279,52 @@ public class TimerService
 
                 if (Order.Count >= 1)
                 {
-                    var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
                     var tbLinksRepository = new Repository<tbLinks>(db);
-                    var tbUsersRepository = new Repository<tbUsers>(db);
-                    var tbPlanRepository = new Repository<tbPlans>(db);
                     MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
 
                     await mySql.OpenAsync();
                     foreach (var item in Order)
                     {
-                        var bot = BotManager.GetBot(item.tbTelegramUsers.tbUsers.Username);
-                        if (bot != null)
+                        var disc = new Dictionary<string, object> { { "@email", item.AccountName } };
+                        using (var reader = await mySql.GetDataAsync("select u,d,transfer_enable,expired_at from v2_user where email = @email", disc))
                         {
-                            var Disc = new Dictionary<string, object>();
-                            Disc.Add("@email", item.AccountName);
-                            using (var Reader = await mySql.GetDataAsync("select * from v2_user where email = @email", Disc))
+                            if (!await reader.ReadAsync())
+                                continue;
+
+                            var d = reader.GetInt64("d");
+                            var u = reader.GetInt64("u");
+                            var transferEnable = reader.GetInt64("transfer_enable");
+                            var expiredAt = reader["expired_at"];
+                            reader.Close();
+
+                            if (!SubscriptionPackageHelper.IsPackageEnded(transferEnable, d, u, expiredAt))
+                                continue;
+
+                            var applied = await SubscriptionPackageHelper.ApplyReservedOrderAsync(
+                                item, mySql, tbOrdersRepository, tbLinksRepository);
+
+                            if (!applied)
+                                continue;
+
+                            try
                             {
-                                var Read = await Reader.ReadAsync();
-                                if (Read)
+                                var agentUsername = item.AccountName.Contains("@")
+                                    ? item.AccountName.Split('@')[1]
+                                    : item.tbTelegramUsers?.tbUsers?.Username;
+
+                                if (!string.IsNullOrEmpty(agentUsername))
                                 {
-                                    var d = Reader.GetInt64("d");
-                                    var u = Reader.GetInt64("u");
-                                    var totalUsed = Reader.GetInt64("transfer_enable");
-
-                                    var total = Math.Round(Utility.ConvertByteToGB(totalUsed - (d + u)), 2);
-                                    var exp2 = Reader["expired_at"]?.ToString();
-                                    var Ended = false;
-                                    if (!string.IsNullOrWhiteSpace(exp2))
+                                    var bot = BotManager.GetBot(agentUsername);
+                                    var link = tbLinksRepository.Where(p => p.tbL_Email == item.AccountName).FirstOrDefault();
+                                    if (bot != null && link?.tbTelegramUsers != null)
                                     {
-                                        var expireTime = DateTime.Now;
-                                        var ExpireDate = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp2)).AddHours(-3);
-                                        if (ExpireDate <= expireTime)
-                                        {
-                                            Ended = true;
-                                        }
-                                    }
-                                    if (total <= 0.03)
-                                    {
-                                        Ended = true;
-                                    }
-                                    Reader.Close();
-                                    if (Ended)
-                                    {
-
-
-                                        var Link = item.tbTelegramUsers.tbLinks.Where(p => p.tbL_Email == item.AccountName).FirstOrDefault();
-                                        if (Link != null)
-                                        {
-                                            var t = Utility.ConvertGBToByte(Convert.ToInt64(item.Traffic));
-
-                                            string exp = DateTime.Now.AddDays((int)item.Month * 30).ConvertDatetimeToSecond().ToString();
-                                            Link.tbL_Warning = false;
-
-
-                                            var Disc1 = new Dictionary<string, object>();
-                                            Disc1.Add("@plan_id", item.V2_Plan_ID);
-                                            Disc1.Add("@transfer_enable", t);
-                                            Disc1.Add("@expired_at", exp);
-                                            Disc1.Add("@email", item.AccountName);
-
-                                            var reader2 = await mySql.GetDataAsync("select group_id from v2_plan where id =" + item.V2_Plan_ID);
-                                            while (await reader2.ReadAsync())
-                                            {
-                                                var grid = reader2.GetInt32("group_id");
-
-                                                Disc1.Add("@group_id", grid);
-                                            }
-                                            reader2.Close();
-
-                                            var DeviceLimit_Structur = "";
-                                            var DeviceLimit_data = "";
-
-
-                                            if (item.tbLinkUserAndPlans != null)
-                                            {
-                                                var Plan = item.tbLinkUserAndPlans.tbPlans;
-                                                if (Plan.device_limit != null)
-                                                {
-                                                    DeviceLimit_Structur = ",device_limit=" + (Plan.device_limit + 1);
-                                                    //Disc1.Add("@device_limit", Plan.device_limit);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                DeviceLimit_Structur = ",device_limit=20";
-                                            }
-
-
-
-                                            var Query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id" + DeviceLimit_Structur + ",group_id=@group_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";
-
-                                            var reader = await mySql.GetDataAsync(Query, Disc1);
-                                            var result = reader.ReadAsync();
-                                            reader.Close();
-
-
-
-                                            await bot.Client.SendMessage(Link.tbTelegramUsers.Tel_UniqUserID, "✅ اشتراک شما با موفقیت تمدید شد از بخش مدیریت اشتراک ها جزئیات اشتراک را می توانید مشاهده کنید");
-                                            var InlineKeyboardMarkup = Keyboards.GetHomeButton();
-                                            Link.tbL_Warning = false;
-                                            Link.tb_AutoRenew = false;
-                                            item.OrderStatus = "FINISH";
-                                            item.Tel_RenewedDate = DateTime.Now;
-                                            await tbLinksRepository.SaveChangesAsync();
-                                            await tbUsersRepository.SaveChangesAsync();
-                                            await tbOrdersRepository.SaveChangesAsync();
-                                            await tbTelegramUserRepository.SaveChangesAsync();
-
-                                        }
+                                        await bot.Client.SendMessage(link.tbTelegramUsers.Tel_UniqUserID,
+                                            "✅ بسته رزرو شده شما فعال شد. از بخش مدیریت اشتراک‌ها جزئیات را مشاهده کنید.");
                                     }
                                 }
-                                Reader.Close();
                             }
-
-
+                            catch { }
                         }
-
                     }
 
                     await mySql.CloseAsync();

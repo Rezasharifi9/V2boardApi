@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.Xml;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -130,6 +131,7 @@ namespace V2boardApi.Areas.App.Controllers
                 using (var tr = db.Database.BeginTransaction())
                 {
                     var UserAgent = await RepositoryUsers.FirstOrDefaultAsync(s => s.User_ID == usersSelect);
+                    var agentDebtBefore = UserAgent.Wallet;
                     tbUserFactors userFactor = new tbUserFactors();
                     userFactor.FK_User_ID = usersSelect;
                     userFactor.tbUf_Value = int.Parse(factorPrice.ToString(), NumberStyles.Currency);
@@ -173,6 +175,28 @@ namespace V2boardApi.Areas.App.Controllers
                     await RepositoryFactors.SaveChangesAsync();
                     await RepositoryUsers.SaveChangesAsync();
                     tr.Commit();
+
+                    if (UserAgent.Settlement_Enabled &&
+                        (userFactor.tbUf_Status == 3 || PayedFactores.Any(f => f.tbUf_Status == 3)))
+                        await SettlementService.OnAgentPaymentConfirmed(UserAgent, db);
+
+                    var invoiceAmount = userFactor.tbUf_Value.Value;
+                    var shouldNotifyAgent = userFactor.tbUf_Status == 3 &&
+                        (factorDebt || invoiceAmount >= agentDebtBefore);
+
+                    if (shouldNotifyAgent)
+                    {
+                        var telegramMsg = new StringBuilder();
+                        telegramMsg.AppendLine("نماینده گرامی");
+                        telegramMsg.AppendLine("");
+                        telegramMsg.AppendLine("✅ فاکتور شما با موفقیت ثبت گردید و از بدهی کسر شد.");
+                        telegramMsg.AppendLine("");
+                        telegramMsg.AppendLine("💰 مبلغ: " + userFactor.tbUf_Value.Value.ConvertToMony());
+                        if (UserAgent.Wallet > 0)
+                            telegramMsg.AppendLine("📊 بدهی باقی‌مانده: " + UserAgent.Wallet.ConvertToMony());
+                        await SettlementService.SendAgentTelegramMessage(UserAgent, telegramMsg.ToString());
+                    }
+
                     logger.Warn("پرداخت جدید اضافه گردید");
                     return Toaster.Success("موفق", "فاکتور با موفقیت اضافه گردید");
                 }
@@ -180,7 +204,7 @@ namespace V2boardApi.Areas.App.Controllers
             catch (Exception ex)
             {
                 logger.Error(ex, "خطا در ثبت پرداخت جدید");
-                return MessageBox.Error("خطا", "خطا در ثبت پرداخت");
+                return MessageBox.Error("خطا", "خطا در ثبت فاکتور");
             }
 
 
@@ -250,6 +274,40 @@ namespace V2boardApi.Areas.App.Controllers
 
         }
 
+        [System.Web.Mvc.HttpPost]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> AcceptFactor(int factor_id)
+        {
+            try
+            {
+                var UserID = JwtToken.GetUser_ID();
+                var factor = RepositoryFactors.Where(s =>
+                    s.tbUf_ID == factor_id &&
+                    s.tbUsers.Parent_ID.ToString() == UserID &&
+                    s.tbUf_Status == 1).FirstOrDefault();
+
+                if (factor == null)
+                    return MessageBox.Warning("ناموفق", "این فاکتور قبلا تائید شده یا یافت نشد");
+
+                var admin = RepositoryUsers.Where(u => u.Role == 1).FirstOrDefault();
+                var activeCard = admin?.tbBankCardNumbers?.FirstOrDefault(c => c.Active);
+                if (activeCard == null || string.IsNullOrEmpty(activeCard.phoneNumber))
+                    return MessageBox.Warning("ناموفق", "شماره همراه دارنده کارت در تنظیمات کارت بانکی ثبت نشده است");
+
+                TransactionHanderService service = new TransactionHanderService();
+                var res = await service.CheckOrder(factor.tbUf_Value.ToString(), activeCard.phoneNumber);
+                if (res)
+                    return Toaster.Success("موفق", "تراکنش با موفقیت تائید شد");
+
+                return MessageBox.Warning("ناموفق", "تائید تراکنش با خطا مواجه شد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "تائید فاکتور نماینده با خطا مواجه شد");
+                return MessageBox.Error("ناموفق", "خطا در تائید فاکتور");
+            }
+        }
+
         [System.Web.Mvc.HttpGet]
         [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult delete(int factor_id)
@@ -263,7 +321,7 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     if (Factor.tbUf_Status == 3)
                     {
-                        return MessageBox.Warning("ناموفق", "شما امکان حذف پرداخت در وضعیت کسر از بدهی را ندارید");
+                        return MessageBox.Warning("ناموفق", "شما امکان حذف فاکتور در وضعیت کسر از بدهی را ندارید");
 
                     }
                     else
@@ -273,12 +331,12 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                 }
                 logger.Warn("پرداخت حذف گردید");
-                return Toaster.Success("موفق", "پرداخت ثبت شده با موفقیت حذف گردید");
+                return Toaster.Success("موفق", "فاکتور با موفقیت حذف گردید");
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "خطا در حذف پرداخت");
-                return MessageBox.Error("خطا", "خطا در حذف پرداخت");
+                return MessageBox.Error("خطا", "خطا در حذف فاکتور");
             }
         }
 

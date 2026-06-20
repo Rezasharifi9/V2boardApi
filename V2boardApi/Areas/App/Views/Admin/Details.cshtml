@@ -17,6 +17,8 @@
     <link href="../../assets/vendor/libs/select2/select2.css" rel="stylesheet" />
     <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
     <link href="../../assets/vendor/css/pages/page-user-view.css" rel="stylesheet" />
+    <link href="../../assets/libs/jalali-datepicker/jalalidatepicker.css" rel="stylesheet" />
+    <link href="../../assets/libs/flatpickr/flatpickr.css" rel="stylesheet" />
 }
 @{
     var Role = V2boardApi.Tools.JwtToken.GetUserRole();
@@ -197,6 +199,12 @@
                         <li class="nav-item">
                             <button aria-selected="false" class="nav-link active" data-bs-target="#form-tabs-account" data-bs-toggle="tab" role="tab" onclick="AgentTab()">نمایندگی</button>
                         </li>
+                        @if (Role == "1")
+                        {
+                        <li class="nav-item">
+                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-settlement" data-bs-toggle="tab" role="tab">تسویه</button>
+                        </li>
+                        }
                         <li class="nav-item">
                             <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-social" data-bs-toggle="tab" role="tab" id="botSettingTab">ربات</button>
                         </li>
@@ -254,6 +262,13 @@
                             </table>
                         </div>
                     </div>
+                    @if (Role == "1")
+                    {
+                    <div class="tab-pane fade" id="form-tabs-settlement" role="tabpanel">
+                        <h6 class="mb-3">تنظیمات تسویه بدهی نماینده</h6>
+                        @Html.Action("_GetSettlementSetting", "Admin", new { area = "App", user_id = Model })
+                    </div>
+                    }
                     <div class="tab-pane fade" id="form-tabs-social" role="tabpanel">
                         @Html.Action("_GetBotSetting", "Admin", new { area = "App", user_id = Model })
                     </div>
@@ -299,6 +314,9 @@
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
     <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+    <script src="../../assets/libs/jdate/jdate.js"></script>
+    <script src="../../assets/libs/flatpickr/flatpickr-jalali.js"></script>
+    <script src="../../assets/libs/flatpickr/l10n/fa.js"></script>
 }
 
 
@@ -503,6 +521,67 @@
 
                     });
                 });
+
+        // --- تنظیمات تسویه ---
+        var settlementPickerInstance = null;
+
+        function toggleSettlementFields() {
+            var type = $("#settlementType").val();
+            if (type === "Monthly") {
+                $("#settlementWeekDayWrap").addClass("d-none");
+                $("#settlementMonthDayWrap").removeClass("d-none");
+            } else {
+                $("#settlementWeekDayWrap").removeClass("d-none");
+                $("#settlementMonthDayWrap").addClass("d-none");
+            }
+        }
+
+        function initSettlementPicker() {
+            var pickerEl = document.querySelector('#settlement-start-picker');
+            if (!pickerEl || typeof flatpickr === 'undefined') return;
+
+            if (settlementPickerInstance) {
+                settlementPickerInstance.destroy();
+                settlementPickerInstance = null;
+            }
+
+            var $form = $('#settlementSettingForm');
+            var startDate = $form.data('start-date') || pickerEl.value || '';
+            var opts = {
+                disableMobile: "true",
+                altInput: true,
+                altFormat: 'j F Y',
+                dateFormat: 'Y/m/d',
+                locale: 'fa'
+            };
+            if (startDate) {
+                opts.defaultDate = startDate;
+            }
+            settlementPickerInstance = flatpickr(pickerEl, opts);
+        }
+
+        function initSettlementTab() {
+            if (!$('#settlementSettingForm').length) return;
+
+            toggleSettlementFields();
+            initSettlementPicker();
+        }
+
+        $(document).on('change', '#settlementType', toggleSettlementFields);
+
+        $('button[data-bs-target="#form-tabs-settlement"]').on('shown.bs.tab', function () {
+            initSettlementTab();
+        });
+
+        $(document).on('click', '#saveSettlementSetting', function () {
+            AjaxFormPost('/App/Admin/SaveSettlementSetting', '#settlementSettingForm').then(function (res) {
+                if (res && res.data) eval(res.data);
+            });
+        });
+
+        if ($('#form-tabs-settlement').hasClass('active') || window.location.search.indexOf('type=Settings') > -1) {
+            setTimeout(initSettlementTab, 300);
+        }
     </script>
 
 }

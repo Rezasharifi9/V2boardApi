@@ -34,6 +34,8 @@ namespace V2boardApi.Areas.App.Controllers
         private Repository<tbLinkUserAndPlans> linkUserAndPlansRepository { get; set; }
         private Repository<tbServers> serverRepository { get; set; }
         private Repository<tbLinkServerGroupWithUsers> linkUserGroupRepository { get; set; }
+        private Repository<tbOrders> ordersRepository { get; set; }
+        private Repository<tbLinks> linksRepository { get; set; }
         private Entities db { get; set; }
         public SubscriptionsController()
         {
@@ -45,6 +47,8 @@ namespace V2boardApi.Areas.App.Controllers
             serverRepository = new Repository<tbServers>(db);
             linkUserGroupRepository = new Repository<tbLinkServerGroupWithUsers>(db);
             groupsRepository = new Repository<tbServerGroups>(db);
+            ordersRepository = new Repository<tbOrders>(db);
+            linksRepository = new Repository<tbLinks>(db);
             //V2boardApiTools.init();
         }
 
@@ -629,7 +633,7 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ویرایش اشتراک
 
-        [AuthorizeApp(Roles = "1,3,4")]
+        [AuthorizeApp(Roles = "1")]
         public async Task<ActionResult> Edit(int user_id)
         {
             var user = usersRepository.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
@@ -668,7 +672,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
 
-        [AuthorizeApp(Roles = "1,3,4")]
+        [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(int user_id, string userSubname, string userSpeed, string userExpire, double userTraffic)
@@ -683,32 +687,23 @@ namespace V2boardApi.Areas.App.Controllers
                     MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString);
                     await mysql.OpenAsync();
 
-                    var Miladi = new DateTime();
-                    if (userExpire != "")
+                    DateTime? miladi = null;
+                    if (!string.IsNullOrWhiteSpace(userExpire))
                     {
-                        try
-                        {
-                            Miladi = Convert.ToDateTime(userExpire, CultureInfo.GetCultureInfo("fa-IR"));
-                            Miladi = Miladi.AddHours(12);
-                        }
-                        catch (Exception ex)
+                        DateTime parsed;
+                        if (!Utility.TryParseShamsiDate(userExpire, out parsed))
                         {
                             return MessageBox.Warning("هشدار", "لطفا تاریخ را صحیح وارد کنید");
                         }
+                        miladi = parsed.AddHours(12);
                     }
 
-                    string Speed = null;
                     string MiliSecoundTime = null;
-                    if (Miladi != default(DateTime))
+                    if (miladi.HasValue)
                     {
-                        double MiliSecoundTime1 = Utility.ConvertDatetimeToSecond(Miladi);
-                        MiliSecoundTime = MiliSecoundTime1.ToString();
+                        MiliSecoundTime = Utility.ConvertDatetimeToSecond(miladi.Value).ToString();
                     }
 
-                    if (userSpeed != "")
-                    {
-                        Speed = userSpeed;
-                    }
                     string name = "";
                     string username = "";
                     var transfe_enable = Utility.ConvertGBToByte(userTraffic);
@@ -720,20 +715,39 @@ namespace V2boardApi.Areas.App.Controllers
                         username = read["email"]?.ToString().Split('@')[1];
                         read.Close();
                     }
+
                     if ((name + "@" + username) != userSubname)
                     {
                         var log = await logsRepository.FirstOrDefaultAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
-                        log.FK_NameUser_ID = userSubname.Split('@')[0];
+                        if (log != null)
+                        {
+                            log.FK_NameUser_ID = userSubname.Split('@')[0];
+                        }
                     }
-
 
                     var Disc1 = new Dictionary<string, object>();
                     Disc1.Add("@userSubname", userSubname);
-                    Disc1.Add("@Speed", Speed);
-                    Disc1.Add("@MiliSecoundTime", MiliSecoundTime);
                     Disc1.Add("@transfe_enable", transfe_enable);
 
-                    var Query = "update v2_user set v2_user.email=@userSubname, v2_user.speed_limit=@Speed, v2_user.expired_at=@MiliSecoundTime, v2_user.transfer_enable=@transfe_enable where v2_user.id=" + user_id;
+                    var updateParts = new List<string>
+                    {
+                        "email=@userSubname",
+                        "transfer_enable=@transfe_enable"
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(userSpeed))
+                    {
+                        updateParts.Add("speed_limit=@Speed");
+                        Disc1.Add("@Speed", userSpeed);
+                    }
+
+                    if (MiliSecoundTime != null)
+                    {
+                        updateParts.Add("expired_at=@MiliSecoundTime");
+                        Disc1.Add("@MiliSecoundTime", MiliSecoundTime);
+                    }
+
+                    var Query = "update v2_user set " + string.Join(", ", updateParts) + " where id=" + user_id;
 
                     try
                     {
@@ -797,156 +811,272 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region تمدید اکانت
+        #region تمدید اکانت (رزرو بسته)
         [System.Web.Http.HttpPost]
         [AuthorizeApp(Roles = "1,2,3,4")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Renew(int user_id, int userPlan)
+        public Task<ActionResult> Renew(int user_id, int userPlan)
         {
+            return ReservePackage(user_id, userPlan);
+        }
 
+        #endregion
+
+        #region رزرو بسته
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        public async Task<ActionResult> GetSubscriptionPackages(int user_id)
+        {
             try
             {
-                var user = usersRepository.table.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
-                if (user != null)
+                var user = usersRepository.table.FirstOrDefault(p => p.Username == User.Identity.Name);
+                if (user?.tbServers == null)
+                    return Json(new { status = "error", message = "خطا در دریافت اطلاعات سرور" }, JsonRequestBehavior.AllowGet);
+
+                MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
+                await mySql.OpenAsync();
+
+                var disc = new Dictionary<string, object> { { "@id", user_id } };
+                var reader = await mySql.GetDataAsync(
+                    "SELECT v2.email, v2.u, v2.d, v2.transfer_enable, v2.expired_at, pl.name AS plan_name " +
+                    "FROM v2_user v2 JOIN v2_plan pl ON v2.plan_id = pl.id WHERE v2.id = @id", disc);
+
+                if (!await reader.ReadAsync())
                 {
-                    if ((user.Limit - user.Wallet) >= 0)
-                    {
-                        var Server = user.tbServers;
-
-
-                        var Plan = plansRepository.table.Where(p => p.Plan_ID == userPlan && p.FK_Server_ID == Server.ServerID && p.Status == true).FirstOrDefault();
-                        if ((Plan.Price + user.Wallet) > user.Limit)
-                        {
-                            return Toaster.Success("موفق", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
-                        }
-
-                        var t = Utility.ConvertGBToByte(System.Convert.ToInt64(Plan.PlanVolume));
-                        string exp = "";
-                        if (Plan.PlanMonth == 0)
-                        {
-                            exp = null;
-                        }
-                        else
-                        {
-                            exp = DateTime.Now.AddDays(Plan.PlanMonth * 30).ConvertDatetimeToSecond().ToString();
-                        }
-                        //چک می کنیم اگر نماینده بود از بر اساس محاسبات نماینده کل از کیف پولش کسر میکنیم
-                        if (user.Role == 3)
-                        {
-                            if (user.tbUsers2 != null)
-                            {
-                                var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.User_ID);
-
-                                user.Wallet += (int)((Plan.PlanVolume * linkGroupUser.PriceForGig) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + (Plan.device_limit * linkGroupUser.PriceForUser));
-                            }
-                            else
-                            {
-                                return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
-                            }
-                        }
-                        //چک می کنیم اگر نماینده معمولی بود هزینه رو بر اساس محاسبات نماینده کل از کیف پول نماینده کل کسر میکنیم
-                        if (user.Role == 2)
-                        {
-                            if (user.tbUsers2 != null)
-                            {
-                                if (user.tbUsers2.Wallet >= user.tbUsers2.Limit)
-                                {
-                                    return MessageBox.Warning("هشدار", "فروش موقتا توسط ادمین متوقف شده است لطفا با پشتیبانی ارتباط بگیرید !!");
-                                }
-                                if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
-                                {
-                                    var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == Plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
-                                    user.tbUsers2.Wallet += (Plan.PlanVolume * linkGroupUser.PriceForGig) + (Plan.PlanMonth * linkGroupUser.PriceForMonth) + ((double)Plan.device_limit * linkGroupUser.PriceForUser);
-                                }
-                            }
-                            else
-                            {
-                                return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
-                            }
-                        }
-
-                        var Disc1 = new Dictionary<string, object>();
-                        Disc1.Add("@Plan_ID_V2", Plan.Plan_ID_V2);
-                        Disc1.Add("@transfer_enable", t);
-                        Disc1.Add("@exp", exp);
-
-                        var group = await groupsRepository.FirstOrDefaultAsync(s => s.Group_Id == Plan.Group_Id);
-
-                        Disc1.Add("@group", group.V2_Group_Id);
-
-                        var DeviceLimit = "";
-
-                        if (Plan.device_limit == null || Plan.device_limit.Value == 0)
-                        {
-
-                        }
-                        else
-                        {
-                            Disc1.Add("@device_limit", Plan.device_limit + 1);
-                            DeviceLimit = ",device_limit=@device_limit ";
-                        }
-
-
-                        var Query = "update v2_user set u=0,d=0, plan_id=@Plan_ID_V2,group_id=@group, transfer_enable = @transfer_enable , expired_at = @exp " + DeviceLimit + " where id =" + user_id;
-
-                        MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
-                        await mySql.OpenAsync();
-                        var reader = await mySql.GetDataAsync(Query, Disc1);
-                        reader.Read();
-                        reader.Close();
-
-                        var Query2 = "SELECT email,token FROM `v2_user` WHERE id=" + user_id;
-
-                        var reader2 = await mySql.GetDataAsync(Query2);
-                        if (await reader2.ReadAsync())
-                        {
-                            var link = linkUserAndPlansRepository.table.Where(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == Plan.Plan_ID && p.L_Status == true).FirstOrDefault();
-
-                            if (user.Role == 2)
-                            {
-                                user.Wallet += link.tbPlans.Price;
-                            }
-
-                            AddLog(Resource.LogActions.U_Edited, link.Link_PU_ID, reader2.GetString("email").Split('@')[0], (int)Plan.Price, Plan.Plan_Name, Plan.PlanVolume, Plan.PlanMonth, reader2["token"]?.ToString());
-                        }
-                        reader2.Close();
-
-                        await mySql.CloseAsync();
-
-                        linkUserAndPlansRepository.Save();
-                        usersRepository.Save();
-                        logger.Info("اشتراک با موفقیت تمدید شد");
-                        return Toaster.Success("موفق", "اشتراک با موفقیت تمدید شد");
-
-
-                    }
-                    else
-                    {
-                        var Count = user.Limit;
-
-                        StringBuilder str = new StringBuilder();
-                        str.Append(" شما اجازه ساخت بیشتر از مبلغ ");
-                        str.Append(string.Format("{0:C0}", Count).Replace("$", ""));
-                        str.Append(" تومان");
-                        str.Append(" را ندارید");
-                        str.Append(" لطفا بدهی خود را پرداخت کنید تا محدودیت 0 شود ");
-
-                        return Toaster.Success("موفق", str.ToString());
-                    }
-
-                }
-                else
-                {
-                    return Toaster.Success("ناموفق", "خطا در تمدید اشتراک");
+                    reader.Close();
+                    await mySql.CloseAsync();
+                    return Json(new { status = "error", message = "اشتراک یافت نشد" }, JsonRequestBehavior.AllowGet);
                 }
 
+                var email = reader.GetString("email");
+                var subName = email.Split('@')[0];
+                var download = reader.GetInt64("d");
+                var upload = reader.GetInt64("u");
+                var transferEnable = reader.GetInt64("transfer_enable");
+                var remainingGb = Math.Round(Utility.ConvertByteToGB(transferEnable - (download + upload)), 2);
+                var totalGb = Math.Round(Utility.ConvertByteToGB(transferEnable), 2);
+                var planName = reader.GetString("plan_name");
+                var expiredAt = reader["expired_at"];
+                reader.Close();
+                await mySql.CloseAsync();
+
+                string expireText = "بدون محدودیت";
+                if (expiredAt != null && !string.IsNullOrWhiteSpace(expiredAt.ToString()))
+                {
+                    var expDate = Utility.ConvertSecondToDatetime(Convert.ToInt64(expiredAt));
+                    expireText = expDate.ConvertDateTimeToShamsi4();
+                }
+
+                var isEnded = SubscriptionPackageHelper.IsPackageEnded(transferEnable, download, upload, expiredAt);
+                var currentStatus = isEnded ? "در انتظار تعویض" : "فعال";
+
+                var reserved = ordersRepository
+                    .Where(o => o.AccountName == email && o.OrderStatus == "FOR_RESERVE")
+                    .OrderBy(o => o.OrderDate)
+                    .ToList()
+                    .Select(o =>
+                    {
+                        var pName = o.tbLinkUserAndPlans?.tbPlans?.Plan_Name;
+                        if (string.IsNullOrEmpty(pName) && o.V2_Plan_ID.HasValue)
+                        {
+                            var p = plansRepository.Where(pl => pl.Plan_ID_V2 == o.V2_Plan_ID).FirstOrDefault();
+                            pName = p?.Plan_Name ?? "بسته رزرو";
+                        }
+                        return new
+                        {
+                            orderId = o.Order_ID,
+                            planName = pName ?? "بسته رزرو",
+                            volumeGb = o.Traffic,
+                            months = o.Month,
+                            reservedDate = o.OrderDate?.ConvertDateTimeToShamsi4() ?? "-",
+                            status = "در صف رزرو"
+                        };
+                    }).ToList();
+
+                return Json(new
+                {
+                    status = "success",
+                    data = new
+                    {
+                        subscriptionName = subName,
+                        current = new
+                        {
+                            planName,
+                            totalVolumeGb = totalGb,
+                            remainingVolumeGb = remainingGb,
+                            expireDate = expireText,
+                            status = currentStatus
+                        },
+                        reserved
+                    }
+                }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "تمدید اشتراک با خطا مواجه شد");
-                return Toaster.Success("ناموفق", "خطا در تمدید اشتراک");
+                logger.Error(ex, "خطا در دریافت بسته‌های اشتراک");
+                return Json(new { status = "error", message = "خطا در دریافت اطلاعات بسته‌ها" }, JsonRequestBehavior.AllowGet);
             }
+        }
 
+        [System.Web.Http.HttpPost]
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ReservePackage(int user_id, int userPlan)
+        {
+            try
+            {
+                var user = usersRepository.table.FirstOrDefault(p => p.Username == User.Identity.Name);
+                if (user == null)
+                    return Toaster.Error("ناموفق", "کاربر یافت نشد");
+
+                if ((user.Limit - user.Wallet) < 0)
+                {
+                    return Toaster.Success("موفق", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
+                }
+
+                var plan = plansRepository.table
+                    .FirstOrDefault(p => p.Plan_ID == userPlan && p.FK_Server_ID == user.tbServers.ServerID && p.Status == true);
+
+                if (plan == null)
+                    return MessageBox.Warning("هشدار", "تعرفه انتخابی معتبر نیست");
+
+                if ((plan.Price + user.Wallet) > user.Limit)
+                    return Toaster.Success("موفق", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
+
+                var linkPlan = linkUserAndPlansRepository.table
+                    .FirstOrDefault(p => p.L_FK_U_ID == user.User_ID && p.L_FK_P_ID == plan.Plan_ID && p.L_Status == true);
+
+                if (linkPlan == null)
+                    return MessageBox.Warning("هشدار", "تعرفه برای حساب شما فعال نیست");
+
+                if (user.Role == 3)
+                {
+                    if (user.tbUsers2 == null)
+                        return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+
+                    var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.User_ID);
+                    user.Wallet += (int)((plan.PlanVolume * linkGroupUser.PriceForGig) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser));
+                }
+
+                if (user.Role == 2)
+                {
+                    if (user.tbUsers2 == null)
+                        return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+
+                    if (user.tbUsers2.Wallet >= user.tbUsers2.Limit)
+                        return MessageBox.Warning("هشدار", "فروش موقتا توسط ادمین متوقف شده است لطفا با پشتیبانی ارتباط بگیرید !!");
+
+                    if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
+                    {
+                        var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
+                        user.tbUsers2.Wallet += (plan.PlanVolume * linkGroupUser.PriceForGig) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + ((double)plan.device_limit * linkGroupUser.PriceForUser);
+                    }
+                }
+
+                MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
+                await mySql.OpenAsync();
+
+                var disc = new Dictionary<string, object> { { "@id", user_id } };
+                var reader = await mySql.GetDataAsync(
+                    "SELECT email,u,d,transfer_enable,expired_at,token FROM v2_user WHERE id=@id", disc);
+
+                if (!await reader.ReadAsync())
+                {
+                    reader.Close();
+                    await mySql.CloseAsync();
+                    return MessageBox.Warning("هشدار", "اشتراک یافت نشد");
+                }
+
+                var email = reader.GetString("email");
+                var download = reader.GetInt64("d");
+                var upload = reader.GetInt64("u");
+                var transferEnable = reader.GetInt64("transfer_enable");
+                var expiredAt = reader["expired_at"];
+                var subToken = reader["token"]?.ToString();
+                var subName = email.Split('@')[0];
+                reader.Close();
+
+                var packageEnded = SubscriptionPackageHelper.IsPackageEnded(transferEnable, download, upload, expiredAt);
+                var link = linksRepository.Where(l => l.tbL_Email == email).FirstOrDefault();
+
+                if (packageEnded)
+                {
+                    var t = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume));
+                    object expValue = null;
+                    if (plan.PlanMonth != 0)
+                        expValue = DateTime.Now.AddDays(plan.PlanMonth * 30).ConvertDatetimeToSecond().ToString();
+
+                    var discUp = new Dictionary<string, object>
+                    {
+                        { "@Plan_ID_V2", plan.Plan_ID_V2 },
+                        { "@transfer_enable", t },
+                        { "@exp", expValue }
+                    };
+
+                    var group = await groupsRepository.FirstOrDefaultAsync(s => s.Group_Id == plan.Group_Id);
+                    discUp.Add("@group", group.V2_Group_Id);
+
+                    var deviceLimit = "";
+                    if (plan.device_limit != null && plan.device_limit.Value != 0)
+                    {
+                        discUp.Add("@device_limit", plan.device_limit + 1);
+                        deviceLimit = ",device_limit=@device_limit ";
+                    }
+
+                    var query = "update v2_user set u=0,d=0, plan_id=@Plan_ID_V2,group_id=@group, transfer_enable = @transfer_enable , expired_at = @exp " + deviceLimit + " where id =" + user_id;
+                    var updateReader = await mySql.GetDataAsync(query, discUp);
+                    updateReader.Read();
+                    updateReader.Close();
+                    await mySql.CloseAsync();
+
+                    if (user.Role == 2)
+                        user.Wallet += linkPlan.tbPlans.Price;
+
+                    AddLog(Resource.LogActions.U_Edited, linkPlan.Link_PU_ID, subName, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, subToken);
+                    usersRepository.Save();
+                    linkUserAndPlansRepository.Save();
+
+                    logger.Info("بسته اشتراک بلافاصله فعال شد (بسته قبلی تمام شده بود)");
+                    return Toaster.Success("موفق", "بسته فعلی تمام شده بود و بسته جدید بلافاصله فعال شد");
+                }
+
+                var order = new tbOrders
+                {
+                    Order_Guid = Guid.NewGuid(),
+                    AccountName = email,
+                    OrderDate = DateTime.Now,
+                    OrderType = "تمدید",
+                    OrderStatus = "FOR_RESERVE",
+                    Traffic = plan.PlanVolume,
+                    Month = plan.PlanMonth,
+                    V2_Plan_ID = plan.Plan_ID_V2,
+                    FK_Link_Plan_ID = linkPlan.Link_PU_ID,
+                    FK_Tel_UserID = link?.FK_TelegramUserID,
+                    Order_Price = plan.Price,
+                    PriceWithOutDiscount = plan.Price
+                };
+
+                ordersRepository.Insert(order);
+
+                if (user.Role == 2)
+                    user.Wallet += linkPlan.tbPlans.Price;
+
+                ordersRepository.Save();
+                usersRepository.Save();
+                linkUserAndPlansRepository.Save();
+                await mySql.CloseAsync();
+
+                AddLog("رزرو بسته", linkPlan.Link_PU_ID, subName, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, subToken);
+
+                logger.Info("بسته برای اشتراک رزرو شد");
+                return Toaster.Success("موفق", "بسته با موفقیت رزرو شد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "رزرو بسته اشتراک با خطا مواجه شد");
+                return Toaster.Error("ناموفق", "خطا در رزرو بسته");
+            }
         }
 
         #endregion
@@ -1256,65 +1386,178 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
-        #region دریافت تاریخچه اشتراک
+        #region دریافت تاریخچه مصرف اشتراک
 
         [System.Web.Http.HttpGet]
         [AuthorizeApp(Roles = "1,2,3,4")]
-        public async Task<ActionResult> GetSubUseage(int user_id)
+        public async Task<ActionResult> GetSubUseage(int user_id, string fromDate = null, string toDate = null)
         {
-            var user = await usersRepository.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
-
             try
             {
-
-                MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString);
-                await mysql.OpenAsync();
-
-                var reader = await mysql.GetDataAsync("select * from v2_stat_user where user_id=" + user_id);
-                UsagesModel Useage = new UsagesModel();
-                Useage.Date = new List<string>();
-                Useage.Used = new List<float>();
-
-                var OldDate = "";
-                var Counter = -1;
-                while (reader.Read())
-                {
-                    UsagesModel model = new UsagesModel();
-                    var d = reader.GetInt64("d");
-                    var u = reader.GetInt64("u");
-
-                    var total = d + u;
-
-                    var UnixDate = reader.GetInt64("updated_at");
-
-                    var Datetime = Utility.ConvertSecondToDatetime(UnixDate);
-
-                    var Date = Utility.ConvertDateTimeToMonthAndDay(Datetime);
-                    var Used = Utility.ConvertByteToGB(total);
-                    if (Date != OldDate)
-                    {
-                        Useage.Date.Add(Date);
-                        var use = (float)Math.Round(Used, 2, MidpointRounding.AwayFromZero);
-                        Useage.Used.Add(use);
-                        Counter++;
-                        OldDate = Date;
-                    }
-                    else
-                    {
-                        var use = (float)Math.Round(Used, 2, MidpointRounding.AwayFromZero);
-                        Useage.Used[Counter] += use;
-                    }
-
-                }
-                await mysql.CloseAsync();
-
-                return Json(new { status = "success", data = Useage }, JsonRequestBehavior.AllowGet);
-
+                var result = await BuildUsageHistoryAsync(user_id, fromDate, toDate);
+                return Json(new { status = "success", data = result.Items, summary = result.Summary }, JsonRequestBehavior.AllowGet);
+            }
+            catch (ArgumentException ex)
+            {
+                return Json(new { status = "error", message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "دریافت تاریخچه مصرف اشتراک با خطا مواجه شد");
-                return MessageBox.Success("خطا", "نمایش نمودار با خطا مواجه شد");
+                return Json(new { status = "error", message = "نمایش تاریخچه مصرف با خطا مواجه شد" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [System.Web.Http.HttpGet]
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        public async Task<ActionResult> ExportSubUsagePdf(int user_id, string fromDate = null, string toDate = null, string subName = null)
+        {
+            try
+            {
+                var result = await BuildUsageHistoryAsync(user_id, fromDate, toDate);
+                result.SubName = subName;
+
+                try
+                {
+                    var pdfBytes = UsageHistoryPdfHelper.Export(result);
+                    var safeName = string.IsNullOrWhiteSpace(subName) ? "subscription" : subName.Replace("@", "_");
+                    var fileName = "usage-history-" + safeName + "-" + DateTime.Now.ToString("yyyyMMddHHmm") + ".pdf";
+                    return File(pdfBytes, "application/pdf", fileName);
+                }
+                catch (Exception pdfEx)
+                {
+                    logger.Warn(pdfEx, "خروجی Stimulsoft PDF ناموفق بود، نسخه چاپی HTML باز می‌شود");
+                    return View("SubUsageHistoryExport", result);
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                return Content(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خروجی PDF تاریخچه مصرف با خطا مواجه شد");
+                return Content("خطا در تهیه خروجی PDF");
+            }
+        }
+
+        private async Task<SubUsageHistoryResultViewModel> BuildUsageHistoryAsync(int user_id, string fromDate, string toDate)
+        {
+            var user = await usersRepository.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+            if (user == null)
+                throw new InvalidOperationException("کاربر یافت نشد");
+
+            var end = DateTime.Now.Date.AddDays(1).AddSeconds(-1);
+            var start = DateTime.Now.Date.AddDays(-30);
+
+            if (!string.IsNullOrWhiteSpace(fromDate))
+                start = ParsePersianDate(fromDate).Date;
+
+            if (!string.IsNullOrWhiteSpace(toDate))
+                end = ParsePersianDate(toDate).Date.AddDays(1).AddSeconds(-1);
+
+            if (start > end)
+                throw new ArgumentException("بازه تاریخ نامعتبر است");
+
+            var startUnix = (long)Utility.ConvertDatetimeToSecond(start);
+            var endUnix = (long)Utility.ConvertDatetimeToSecond(end);
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@userId", user_id },
+                { "@startUnix", startUnix },
+                { "@endUnix", endUnix }
+            };
+
+            var query = "SELECT d, u, updated_at FROM v2_stat_user WHERE user_id=@userId AND updated_at >= @startUnix AND updated_at <= @endUnix ORDER BY updated_at DESC";
+
+            using (MySqlEntities mysql = new MySqlEntities(user.tbServers.ConnectionString))
+            {
+                await mysql.OpenAsync();
+
+                var reader = await mysql.GetDataAsync(query, parameters);
+                var dayGroups = new Dictionary<DateTime, Tuple<long, long>>();
+
+                while (await reader.ReadAsync())
+                {
+                    var d = reader.GetInt64("d");
+                    var u = reader.GetInt64("u");
+                    var unixDate = reader.GetInt64("updated_at");
+                    var day = Utility.ConvertSecondToDatetime(unixDate).Date;
+
+                    if (!dayGroups.ContainsKey(day))
+                        dayGroups[day] = Tuple.Create(0L, 0L);
+
+                    var current = dayGroups[day];
+                    dayGroups[day] = Tuple.Create(current.Item1 + d, current.Item2 + u);
+                }
+
+                reader.Close();
+                await mysql.CloseAsync();
+
+                long totalDownloadBytes = 0;
+                long totalUploadBytes = 0;
+
+                foreach (var group in dayGroups.Values)
+                {
+                    totalDownloadBytes += group.Item1;
+                    totalUploadBytes += group.Item2;
+                }
+
+                var totalDownloadGb = Math.Round(Utility.ConvertByteToGB(totalDownloadBytes), 2, MidpointRounding.AwayFromZero);
+                var totalUploadGb = Math.Round(Utility.ConvertByteToGB(totalUploadBytes), 2, MidpointRounding.AwayFromZero);
+                var totalGb = Math.Round(totalDownloadGb + totalUploadGb, 2, MidpointRounding.AwayFromZero);
+
+                var items = dayGroups
+                    .OrderByDescending(x => x.Key)
+                    .Select(g =>
+                    {
+                        var downloadGb = Math.Round(Utility.ConvertByteToGB(g.Value.Item1), 2, MidpointRounding.AwayFromZero);
+                        var uploadGb = Math.Round(Utility.ConvertByteToGB(g.Value.Item2), 2, MidpointRounding.AwayFromZero);
+                        var rowTotalGb = Math.Round(downloadGb + uploadGb, 2, MidpointRounding.AwayFromZero);
+
+                        return new SubUsageHistoryItemViewModel
+                        {
+                            Date = g.Key.ConvertDateTimeToShamsi5(),
+                            DateSort = (long)Utility.ConvertDatetimeToSecond(g.Key),
+                            Download = downloadGb.ConvertToMony() + " GB",
+                            Upload = uploadGb.ConvertToMony() + " GB",
+                            Total = rowTotalGb.ConvertToMony() + " GB"
+                        };
+                    })
+                    .ToList();
+
+                return new SubUsageHistoryResultViewModel
+                {
+                    Items = items,
+                    Summary = new SubUsageHistorySummaryViewModel
+                    {
+                        FromDate = start.ConvertDateTimeToShamsi5(),
+                        ToDate = end.Date.ConvertDateTimeToShamsi5(),
+                        TotalDownload = totalDownloadGb.ConvertToMony() + " GB",
+                        TotalUpload = totalUploadGb.ConvertToMony() + " GB",
+                        Total = totalGb.ConvertToMony() + " GB"
+                    }
+                };
+            }
+        }
+
+        private static DateTime ParsePersianDate(string date)
+        {
+            try
+            {
+                return DateTime.Parse(date.Trim(), CultureInfo.GetCultureInfo("fa-IR"));
+            }
+            catch
+            {
+                var parts = date.Split('/');
+                if (parts.Length == 3)
+                {
+                    var pc = new System.Globalization.PersianCalendar();
+                    return pc.ToDateTime(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), 0, 0, 0, 0);
+                }
+
+                throw;
             }
         }
 

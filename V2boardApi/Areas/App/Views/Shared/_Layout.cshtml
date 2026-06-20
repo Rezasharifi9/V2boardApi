@@ -95,7 +95,7 @@
                         <li class="menu-item" style="">
                             <a class="menu-link" href="@Url.Action("UserAgent","UserFactors",new {area="App"})">
                                 <i class="menu-icon tf-icons ti ti-report-money"></i>
-                                <div>پرداخت ها</div>
+                                <div>فاکتورها</div>
                             </a>
                         </li>
                     }
@@ -129,7 +129,7 @@
                             <li class="menu-item" style="">
                                 <a class="menu-link" href="@Url.Action("Index","UserFactors",new {area="App"})">
                                     <i class="menu-icon tf-icons ti ti-report-money"></i>
-                                    <div>پرداخت ها</div>
+                                    <div>فاکتورها</div>
                                 </a>
                             </li>
                         }
@@ -212,6 +212,18 @@
                 <div>چت آنلاین</div>
             </a>
         </li>*@
+                    @if (Role == "1" || Role == "2" || Role == "3" || Role == "4")
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">سیستم</span>
+                        </li>
+                        <li class="menu-item" style="">
+                            <a class="menu-link" href="@Url.Action("Index","Changelog",new {area="App"})">
+                                <i class="menu-icon tf-icons ti ti-versions"></i>
+                                <div>تغییرات نسخه <span class="badge badge-center rounded-pill bg-primary ms-1" style="font-size:10px;">@V2boardApi.Tools.PanelChangelogService.GetCurrentVersion()</span></div>
+                            </a>
+                        </li>
+                    }
                 </ul>
 
                 

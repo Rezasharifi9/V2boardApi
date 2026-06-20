@@ -434,6 +434,8 @@ namespace V2boardApi.Tools
                                 catch { }
                             }
                             RepositoryFactor.Save();
+                            if (UserFactor.tbUsers.Settlement_Enabled)
+                                await SettlementService.OnAgentPaymentConfirmed(UserFactor.tbUsers, db);
                             transaction.Commit();
                             return true;
                         }

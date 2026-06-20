@@ -56,8 +56,25 @@
                         متأسفانه فروش اشتراک به‌صورت موقت متوقف شده است.
                     </div>
                 }
+
+                @if (ViewBag.CanContinue == true)
+                {
+                    <div class="card mb-3" id="continueSessionCard">
+                        <div class="card-body">
+                            <h5 class="mb-3">نشست فعال</h5>
+                            <p class="mb-4">می‌توانید بدون وارد کردن رمز عبور وارد پنل شوید.</p>
+                            <button class="btn btn-primary d-grid w-100 mb-3" id="btnContinueLogin" type="button">
+                                ادامه دادن با @ViewBag.ContinueUserName
+                            </button>
+                            <button class="btn btn-label-secondary d-grid w-100" id="btnUseAnotherAccount" type="button">
+                                ورود با حساب دیگر
+                            </button>
+                        </div>
+                    </div>
+                }
+
                 <!-- Login -->
-                <div class="card">
+                <div class="card" id="loginFormCard" style="@(ViewBag.CanContinue == true ? "display:none;" : "")">
                     <div class="card-body">
                         <h4 class="mb-1 pt-2">خوش آمدید! 👋</h4>
                         <p class="mb-4">لطفا به حساب کاربری خود وارد شوید تا از امکانات سامانه استفاده کنید.</p>
@@ -78,12 +95,6 @@
                                     <span class="input-group-text cursor-pointer">
                                         <i class="ti ti-eye-off"></i>
                                     </span>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" id="userRemember" name="userRemember" type="checkbox" value="false" />
-                                    <label class="form-check-label" for="userRemember"> مرا به خاطر بسپار</label>
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -141,11 +152,34 @@
     <script src="../../assets/js/pages-auth.js"></script>
 
     <script>
+        $(function () {
+            $('#btnContinueLogin').on('click', function () {
+                BodyBlockUI();
+                $.ajax({
+                    url: "/App/Admin/ContinueLogin",
+                    type: "post",
+                    dataType: "json",
+                    success: function (res) {
+                        BodyUnblockUI();
+                        if (res.status == "success") {
+                            location.replace(res.redirectURL);
+                        } else {
+                            eval(res.data);
+                            $('#continueSessionCard').hide();
+                            $('#loginFormCard').show();
+                        }
+                    },
+                    error: function () {
+                        BodyUnblockUI();
+                    }
+                });
+            });
 
-
-
-
-
+            $('#btnUseAnotherAccount').on('click', function () {
+                $('#continueSessionCard').hide();
+                $('#loginFormCard').show();
+            });
+        });
     </script>
 </body>
 

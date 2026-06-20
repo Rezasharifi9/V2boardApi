@@ -375,6 +375,37 @@ namespace V2boardApi.Tools
             }
         }
 
+        public static bool TryParseShamsiDate(string input, out DateTime result)
+        {
+            result = default(DateTime);
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            input = input.Trim();
+            try
+            {
+                result = DateTime.Parse(input, CultureInfo.GetCultureInfo("fa-IR"));
+                return true;
+            }
+            catch
+            {
+                try
+                {
+                    var parts = input.Split(new[] { '/', '-' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length == 3)
+                    {
+                        var pc = new PersianCalendar();
+                        result = pc.ToDateTime(
+                            int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), 0, 0, 0, 0);
+                        return true;
+                    }
+                }
+                catch { }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// تبدیل میلی ثانیه به تاریخ شمسی
         /// </summary>

@@ -1,0 +1,68 @@
+@model DataLayer.DomainModel.tbUsers
+@using V2boardApi.Tools
+@{
+    var type = Model.Settlement_Type ?? "Weekly";
+    var isMonthly = string.Equals(type, "Monthly", StringComparison.OrdinalIgnoreCase);
+    var startDate = Model.Settlement_StartDate.HasValue
+        ? Utility.ConvertDatetimeToShamsiDate(Model.Settlement_StartDate.Value).Split(' ')[0]
+        : "";
+    var dayOfWeek = Model.Settlement_DayOfWeek ?? (int)System.DayOfWeek.Saturday;
+    var dayOfMonth = Model.Settlement_DayOfMonth ?? 1;
+}
+
+<form class="row g-3" id="settlementSettingForm"
+      data-start-date="@startDate"
+      data-initial-type="@type">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="user_id" value="@Model.User_ID" />
+
+    <div class="col-12">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="settlementEnabled" name="settlementEnabled" value="true"
+                   @(Model.Settlement_Enabled ? "checked" : "") />
+            <label class="form-check-label" for="settlementEnabled">فعال‌سازی تسویه دوره‌ای</label>
+        </div>
+        <small class="text-muted">در صورت عدم پرداخت به‌موقع، اشتراک‌های زیرمجموعه مسدود می‌شوند.</small>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <label class="form-label" for="settlementType">دوره تسویه</label>
+        <select class="form-select" id="settlementType" name="settlementType">
+            <option value="Weekly" @(isMonthly ? "" : "selected")>هفتگی</option>
+            <option value="Monthly" @(isMonthly ? "selected" : "")>ماهانه</option>
+        </select>
+    </div>
+
+    <div class="col-12 col-md-4 @(isMonthly ? "d-none" : "")" id="settlementWeekDayWrap">
+        <label class="form-label" for="settlementDayOfWeek">روز هفته</label>
+        <select class="form-select" id="settlementDayOfWeek" name="settlementDayOfWeek">
+            <option value="6" @(dayOfWeek == 6 ? "selected" : "")>شنبه</option>
+            <option value="0" @(dayOfWeek == 0 ? "selected" : "")>یکشنبه</option>
+            <option value="1" @(dayOfWeek == 1 ? "selected" : "")>دوشنبه</option>
+            <option value="2" @(dayOfWeek == 2 ? "selected" : "")>سه‌شنبه</option>
+            <option value="3" @(dayOfWeek == 3 ? "selected" : "")>چهارشنبه</option>
+            <option value="4" @(dayOfWeek == 4 ? "selected" : "")>پنجشنبه</option>
+            <option value="5" @(dayOfWeek == 5 ? "selected" : "")>جمعه</option>
+        </select>
+    </div>
+
+    <div class="col-12 col-md-4 @(isMonthly ? "" : "d-none")" id="settlementMonthDayWrap">
+        <label class="form-label" for="settlementDayOfMonth">روز تسویه هر ماه</label>
+        <select class="form-select" id="settlementDayOfMonth" name="settlementDayOfMonth">
+            @for (int d = 1; d <= 31; d++)
+            {
+                <option value="@d" @(dayOfMonth == d ? "selected" : "")>@d</option>
+            }
+        </select>
+        <small class="text-muted">مثلاً 15 یعنی پانزدهم هر ماه</small>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <label class="form-label" for="settlement-start-picker">تاریخ شروع</label>
+        <input class="form-control" id="settlement-start-picker" placeholder="1403/01/01" type="text" name="settlementStartDate" value="@startDate" />
+    </div>
+
+    <div class="col-12">
+        <button type="button" class="btn btn-primary" id="saveSettlementSetting">ذخیره تنظیمات تسویه</button>
+    </div>
+</form>

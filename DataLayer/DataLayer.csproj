@@ -212,6 +212,8 @@
     <Compile Include="DomainModel\tbUseages.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbPanelChangelogItems.cs" />
+    <Compile Include="DomainModel\tbPanelChangelogVersions.cs" />
     <Compile Include="DomainModel\tbUserFactors.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>

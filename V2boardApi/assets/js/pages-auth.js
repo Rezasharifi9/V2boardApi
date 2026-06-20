@@ -48,14 +48,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             var username = $("input[name='userUsername']").val();
             var password = $("input[name='userPassword']").val();
-            var remember = $("input[name='userRemember']").val();
 
             BodyBlockUI();
             $.ajax({
                 url: "/App/Admin/Login",
                 type: "post",
                 dataType: "json",
-                data: { userUsername: username, userPassword: password, userRemember: remember },
+                data: { userUsername: username, userPassword: password },
                 success: function (res) {
                     BodyUnblockUI();
                     if (res.status == "success") {
@@ -83,15 +82,5 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   })();
 
-});
-
-$("#userRemember").change(function () {
-
-    if ($(this).is(":checked")) {
-        $(this).val(true);
-    }
-    else {
-        $(this).val(false);
-    }
 });
          
