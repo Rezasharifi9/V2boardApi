@@ -17,6 +17,8 @@ namespace V2boardApi.Tools
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
+            StimulsoftBootstrap.EnsureInitialized();
+
             var table = new DataTable("UsageHistory");
             table.Columns.Add("Date", typeof(string));
             table.Columns.Add("Download", typeof(string));
@@ -29,7 +31,11 @@ namespace V2boardApi.Tools
                     table.Rows.Add(item.Date, item.Download, item.Upload, item.Total);
             }
 
-            var report = new StiReport();
+            var report = new StiReport
+            {
+                CalculationMode = StiCalculationMode.Interpretation,
+                ScriptLanguage = StiReportLanguageType.CSharp
+            };
             report.Pages.Clear();
             var page = new StiPage();
             report.Pages.Add(page);
@@ -94,7 +100,7 @@ namespace V2boardApi.Tools
                 var cell = new StiText
                 {
                     ClientRectangle = new RectangleD(i * colWidth, 0, colWidth, 0.35),
-                    Text = "{" + fields[i] + "}",
+                    Text = "{UsageHistory." + fields[i] + "}",
                     HorAlignment = StiTextHorAlignment.Center,
                     VertAlignment = StiVertAlignment.Center,
                     Font = new Font("Tahoma", 8.5f)

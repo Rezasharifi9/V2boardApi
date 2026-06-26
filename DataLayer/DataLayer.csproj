@@ -182,6 +182,9 @@
     <Compile Include="DomainModel\tbOrders.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbPanelChangelogSeen.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbPaymentLinks.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
@@ -212,8 +215,12 @@
     <Compile Include="DomainModel\tbUseages.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
-    <Compile Include="DomainModel\tbPanelChangelogItems.cs" />
-    <Compile Include="DomainModel\tbPanelChangelogVersions.cs" />
+    <Compile Include="DomainModel\tbPanelChangelogItems.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbPanelChangelogVersions.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbUserFactors.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>

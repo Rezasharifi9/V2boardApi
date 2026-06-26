@@ -11,22 +11,24 @@ namespace DataLayer.DomainModel
 {
     using System;
     using System.Collections.Generic;
-
+    
     public partial class tbPanelChangelogVersions
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public tbPanelChangelogVersions()
         {
             this.tbPanelChangelogItems = new HashSet<tbPanelChangelogItems>();
         }
-
+    
         public int tbPclv_ID { get; set; }
         public string tbPclv_Version { get; set; }
         public string tbPclv_ReleaseDate { get; set; }
         public int tbPclv_SortOrder { get; set; }
         public bool tbPclv_IsCurrent { get; set; }
         public bool tbPclv_IsActive { get; set; }
-        public DateTime tbPclv_CreatedAt { get; set; }
-
+        public System.DateTime tbPclv_CreatedAt { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbPanelChangelogItems> tbPanelChangelogItems { get; set; }
     }
 }

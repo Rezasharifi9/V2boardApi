@@ -25,18 +25,63 @@ $(function () {
     }
 
 
-    var Role = "";
-    if (document.cookie.split(';').length != 0) {
-        var Cookies = document.cookie.split(';');
-        var RoleCookie = Cookies.find(cookie => cookie.trim().startsWith("Role="));
-        if (RoleCookie) {
-            Role = RoleCookie.split('=')[1];
-        }
-    } else {
-        Role = document.cookie;
-        Role = Role.split('=')[1];
+    var Role = (typeof window.UserRole !== 'undefined' ? String(window.UserRole) : '').trim();
 
+    function updateSubscriptionSummary(summary) {
+        var $box = $('#subscriptionFilterSummary');
+        if (!summary) {
+            $box.addClass('d-none');
+            return;
+        }
+        $('#summaryAgentName').text(summary.agentUsername || '-');
+        $('#summaryTotalCount').text(summary.totalCount);
+        $('#summaryAmountLabel').text(summary.amountLabel || 'جمع مبلغ');
+        $('#summaryTotalAmount').text((summary.totalAmountFormatted || '0') + ' تومان');
+        var fromDate = $('#filterFromDate').val();
+        var toDate = $('#filterToDate').val();
+        $('#summaryDateRange').text(fromDate && toDate ? fromDate + ' تا ' + toDate : '-');
+        $box.removeClass('d-none');
     }
+
+    if (typeof flatpickr !== 'undefined') {
+        var fpOpts = {
+            disableMobile: "true",
+            altInput: true,
+            altFormat: 'j F Y',
+            dateFormat: 'Y/m/d',
+            locale: 'fa'
+        };
+        flatpickr('#filterFromDate', fpOpts);
+        flatpickr('#filterToDate', fpOpts);
+    }
+
+    if (window.ShowAgentFilter && $('#filterAgentSelect').length) {
+        var $agentSelect = $('#filterAgentSelect');
+        if (!$agentSelect.parent().hasClass('position-relative')) {
+            $agentSelect.wrap('<div class="position-relative"></div>');
+        }
+        $agentSelect.select2({
+            placeholder: Role === '1' ? 'همه نمایندگان' : 'انتخاب نماینده زیرمجموعه',
+            dropdownParent: $agentSelect.parent(),
+            allowClear: true
+        });
+        if (typeof GetUsersSelectForSubscriptions === 'function') {
+            GetUsersSelectForSubscriptions('#filterAgentSelect');
+        }
+    }
+
+    $('#btnApplySubscriptionFilters').on('click', function () {
+        if (dt_basic) dt_basic.ajax.reload();
+    });
+
+    $('#btnClearSubscriptionFilters').on('click', function () {
+        $('#filterAgentSelect').val('').trigger('change');
+        $('#filterFromDate').val('');
+        $('#filterToDate').val('');
+        $('#filterSortMode').val('');
+        $('#subscriptionFilterSummary').addClass('d-none');
+        if (dt_basic) dt_basic.ajax.reload();
+    });
 
     // DataTable with buttons
     // --------------------------------------------------------------------
@@ -46,6 +91,16 @@ $(function () {
             ajax: {
                 url: '/App/Subscriptions/GetAll',
                 type: 'POST',
+                data: function (d) {
+                    d.filterAgentId = $('#filterAgentSelect').val() || '';
+                    d.filterFromDate = $('#filterFromDate').val() || '';
+                    d.filterToDate = $('#filterToDate').val() || '';
+                    d.filterSortLowVolume = $('#filterSortMode').val() === 'lowVolume' ? '1' : '0';
+                },
+                dataSrc: function (json) {
+                    updateSubscriptionSummary(json.summary);
+                    return json.data;
+                },
                 error: function (jqXHR, textStatus, errorThrown) {
 
                     location.replace(location.href);
@@ -368,7 +423,7 @@ $(function () {
                 }
             }
         });
-        $('div.head-label').html('<h5 class="card-title mb-0">فاکتور ها</h5>');
+        $('div.head-label').html('<h5 class="card-title mb-0">اشتراک‌ها</h5>');
     }
 
     //مربوط به نمایش مودال ویرایش اشتراک
@@ -445,10 +500,12 @@ $(function () {
     });
 
     //نمایش بسته‌های فعال و رزرو
-    $('body').on('click', '.item-packages', function () {
-        $(".dtr-bs-modal").modal("hide");
-        var user_id = $(this).attr("data-id");
-        var subName = $(this).attr("data-name");
+    var currentPackagesUserId = null;
+    var currentPackagesSubName = '';
+
+    function loadPackagesModal(user_id, subName) {
+        currentPackagesUserId = user_id;
+        currentPackagesSubName = subName || '';
 
         BodyBlockUI();
         AjaxGet('/App/Subscriptions/GetSubscriptionPackages?user_id=' + user_id).then(res => {
@@ -458,7 +515,7 @@ $(function () {
                 return;
             }
 
-            $('#packagesSubName').text(res.data.subscriptionName || subName);
+            $('#packagesSubName').text(res.data.subscriptionName || currentPackagesSubName);
             var current = res.data.current;
             var currentBadge = current.status === 'فعال' ? 'bg-label-success' : 'bg-label-warning';
             $('#packagesCurrentBody').html(
@@ -481,13 +538,101 @@ $(function () {
                         '<td>' + months + '</td>' +
                         '<td>' + item.reservedDate + '</td>' +
                         '<td><span class="badge bg-label-warning">' + item.status + '</span></td>' +
+                        '<td class="text-nowrap">' +
+                        '<button type="button" class="btn btn-sm btn-success btn-activate-reserved me-1" data-order-id="' + item.orderId + '">فعال‌سازی</button>' +
+                        '<button type="button" class="btn btn-sm btn-label-danger btn-cancel-reserved" data-order-id="' + item.orderId + '">حذف</button>' +
+                        '</td>' +
                         '</tr>';
                 });
             } else {
-                reservedHtml = '<tr><td colspan="5" class="text-center text-muted">بسته رزروی وجود ندارد</td></tr>';
+                reservedHtml = '<tr><td colspan="6" class="text-center text-muted">بسته رزروی وجود ندارد</td></tr>';
             }
             $('#packagesReservedBody').html(reservedHtml);
             $("#modalPackages").modal("show");
+        });
+    }
+
+    $('body').on('click', '.item-packages', function () {
+        $(".dtr-bs-modal").modal("hide");
+        var user_id = $(this).attr("data-id");
+        var subName = $(this).attr("data-name");
+        loadPackagesModal(user_id, subName);
+    });
+
+    function postReservedPackageAction(url, orderId) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    orderId: orderId,
+                    __RequestVerificationToken: $('#packagesActionForm input[name="__RequestVerificationToken"]').val()
+                },
+                success: resolve,
+                error: reject
+            });
+        });
+    }
+
+    $('body').on('click', '.btn-activate-reserved', function () {
+        var orderId = $(this).data('order-id');
+        Swal.fire({
+            text: 'آیا مطمئن هستید می‌خواهید اشتراک را فعال کنید؟',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'بله، فعال می‌کنم',
+            cancelButtonText: 'انصراف',
+            customClass: {
+                confirmButton: 'btn btn-success me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (!result.value) return;
+
+            BodyBlockUI();
+            postReservedPackageAction('/App/Subscriptions/ActivateReservedPackage', orderId).then(function (res) {
+                BodyUnblockUI();
+                eval(res.data);
+                if (res.status === 'success' && currentPackagesUserId) {
+                    loadPackagesModal(currentPackagesUserId, currentPackagesSubName);
+                    if (dt_basic) dt_basic.ajax.reload(null, false);
+                }
+            }).catch(function () {
+                BodyUnblockUI();
+                showToast('خطا', 'خطا در فعال‌سازی اشتراک', 'text-danger');
+            });
+        });
+    });
+
+    $('body').on('click', '.btn-cancel-reserved', function () {
+        var orderId = $(this).data('order-id');
+        Swal.fire({
+            text: 'آیا مطمئن هستید می‌خواهید حذف کنید؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله، حذف می‌کنم',
+            cancelButtonText: 'انصراف',
+            customClass: {
+                confirmButton: 'btn btn-danger me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (!result.value) return;
+
+            BodyBlockUI();
+            postReservedPackageAction('/App/Subscriptions/CancelReservedPackage', orderId).then(function (res) {
+                BodyUnblockUI();
+                eval(res.data);
+                if (res.status === 'success' && currentPackagesUserId) {
+                    loadPackagesModal(currentPackagesUserId, currentPackagesSubName);
+                    if (dt_basic) dt_basic.ajax.reload(null, false);
+                }
+            }).catch(function () {
+                BodyUnblockUI();
+                showToast('خطا', 'خطا در حذف اشتراک', 'text-danger');
+            });
         });
     });
 

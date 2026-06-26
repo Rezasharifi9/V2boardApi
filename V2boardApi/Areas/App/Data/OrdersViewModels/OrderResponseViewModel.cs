@@ -16,5 +16,6 @@ namespace V2boardApi.Areas.App.Data.OrdersViewModels
         public string Price { get; set; }
         public string ActiveDate { get; set; }
         public int Status { get; set; }
+        public int OrderId { get; set; }
     }
 }

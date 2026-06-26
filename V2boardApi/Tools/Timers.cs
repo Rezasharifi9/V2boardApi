@@ -28,6 +28,9 @@ public class TimerService
     private System.Threading.Timer AlertDeleteFactoresCard;
     private System.Threading.Timer RemoveFactoresCard;
     private System.Threading.Timer CheckSettlement;
+    private System.Threading.Timer DailySalesReportTimer;
+    private static readonly object DailyReportLock = new object();
+    private static DateTime? _lastDailyReportDate;
     private tbServers Server;
     public TimerService()
     {
@@ -39,8 +42,39 @@ public class TimerService
         DeleteTestAccount = new System.Threading.Timer(async _ => await DeleteTestSub(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
         RemoveFactoresCard = new System.Threading.Timer(async _ => await RemoveExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
         CheckSettlement = new System.Threading.Timer(async _ => await SettlementService.ProcessAllAgents(), null, TimeSpan.FromMinutes(5), TimeSpan.FromHours(1));
+        DailySalesReportTimer = new System.Threading.Timer(async _ => await CheckDailySalesReport(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         Server = HttpRuntime.Cache["Server"] as tbServers;
     }
+
+    #region گزارش فروش روزانه — هر شب ساعت 23:59
+
+    private async Task CheckDailySalesReport()
+    {
+        try
+        {
+            var now = DateTime.Now;
+            if (now.Hour != 23 || now.Minute != 59)
+                return;
+
+            lock (DailyReportLock)
+            {
+                if (_lastDailyReportDate == now.Date)
+                    return;
+                _lastDailyReportDate = now.Date;
+            }
+
+            if (Server == null)
+                Server = HttpRuntime.Cache["Server"] as tbServers;
+
+            await DailySalesReportService.SendDailyReportsAsync(Server);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "خطا در زمان‌بندی گزارش فروش روزانه");
+        }
+    }
+
+    #endregion
 
 
     #region چک کردن کاربری که حجمش نزدیک به اتمام برای اطلاع دادن 
@@ -48,161 +82,103 @@ public class TimerService
     {
         try
         {
+            if (Server == null)
+                return;
 
-            if (Server != null)
+            using (Entities db = new Entities())
             {
-                using (Entities db = new Entities())
-                {
-                    var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
-                    var Users = await tbTelegramUserRepository.GetAllAsync();
-                    var tbOrdersRepository = new Repository<tbOrders>(db);
+                var tbTelegramUserRepository = new Repository<tbTelegramUsers>(db);
+                var tbOrdersRepository = new Repository<tbOrders>(db);
+                var users = await tbTelegramUserRepository.GetAllAsync();
 
-                    MySqlEntities mySql = new MySqlEntities(Server.ConnectionString);
+                using (var mySql = new MySqlEntities(Server.ConnectionString))
+                {
                     await mySql.OpenAsync();
-                    foreach (var item in Users.ToList())
+                    foreach (var item in users.ToList())
                     {
                         try
                         {
-                            if (item.tbUsers != null)
+                            if (item.tbUsers?.tbBotSettings == null)
+                                continue;
+
+                            var botSetting = item.tbUsers.tbBotSettings.FirstOrDefault();
+                            if (botSetting?.Bot_Token == null || botSetting.Enabled != true)
+                                continue;
+
+                            var bot = BotManager.GetBot(item.tbUsers.Username);
+                            if (bot == null)
+                                continue;
+
+                            foreach (var link in item.tbLinks.Where(p => p.tb_AutoRenew != true).ToList())
                             {
-                                if (item.tbUsers.tbBotSettings != null)
+                                var reservedOrders = await tbOrdersRepository.WhereAsync(
+                                    p => p.AccountName == link.tbL_Email && p.OrderStatus == "FOR_RESERVE");
+                                var hasReservedPackage = reservedOrders.Count > 0;
+                                if (hasReservedPackage)
                                 {
-                                    var BotSetting = item.tbUsers.tbBotSettings.FirstOrDefault();
-                                    if (BotSetting != null)
+                                    if (SubscriptionReserveWarnHelper.GetMask(link) != 0)
                                     {
-                                        if (BotSetting.Bot_Token != null && BotSetting.Enabled == true)
+                                        link.tbL_ReserveWarnMask = 0;
+                                        await tbTelegramUserRepository.SaveChangesAsync();
+                                    }
+                                    continue;
+                                }
+
+                                var queryParams = new Dictionary<string, object> { { "@email", link.tbL_Email } };
+                                using (var reader = await mySql.GetDataAsync(
+                                    "select u,d,transfer_enable,banned,expired_at from v2_user where email=@email",
+                                    queryParams))
+                                {
+                                    if (!await reader.ReadAsync())
+                                        continue;
+
+                                    var isBanned = reader.GetBoolean("banned");
+                                    var remainingBytes = reader.GetInt64("transfer_enable")
+                                        - (reader.GetInt64("d") + reader.GetInt64("u"));
+                                    var remainingGb = Utility.ConvertByteToGB(remainingBytes);
+
+                                    DateTime? expireDate = null;
+                                    var exp = reader["expired_at"]?.ToString();
+                                    if (!string.IsNullOrEmpty(exp))
+                                        expireDate = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
+
+                                    reader.Close();
+
+                                    var warnings = SubscriptionReserveWarnHelper.GetPendingWarnings(
+                                        link, remainingGb, expireDate, isBanned, false);
+
+                                    if (warnings.Count == 0)
+                                        continue;
+
+                                    var sent = new List<ReserveWarnItem>();
+                                    foreach (var warning in warnings)
+                                    {
+                                        try
                                         {
-                                            var bot = BotManager.GetBot(item.tbUsers.Username);
-                                            if (bot != null)
-                                            {
-                                                foreach (var link in item.tbLinks.Where(p => p.tbL_Warning == false && p.tb_AutoRenew == false).ToList())
-                                                {
-                                                    var Order = await tbOrdersRepository.WhereAsync(p => p.AccountName == link.tbL_Email && p.OrderStatus == "FOR_RESERVE");
-                                                    if (Order.Count == 0)
-                                                    {
-                                                        var GetDataQuery = "select u,d,transfer_enable,banned,expired_at from v2_user where email=@email";
-                                                        Dictionary<string, object> keyValuePairs = new Dictionary<string, object>();
-                                                        keyValuePairs.Add("@email", link.tbL_Email);
-                                                        using (var reader = await mySql.GetDataAsync(GetDataQuery, keyValuePairs))
-                                                        {
-                                                            while (await reader.ReadAsync())
-                                                            {
-                                                                var bannd = reader.GetBoolean("banned");
-                                                                if (!bannd)
-                                                                {
-                                                                    var vol = reader.GetInt64("transfer_enable") - (reader.GetInt64("d") + reader.GetInt64("u"));
+                                            var message = warning.Message;
+                                            message += Environment.NewLine;
+                                            message += Environment.NewLine;
+                                            message += "〰️〰️〰️〰️〰️";
+                                            message += Environment.NewLine;
+                                            message += "🚀@" + botSetting.Bot_ID;
 
-                                                                    var d = Utility.ConvertByteToGB(vol);
-
-                                                                    if (d <= 0.2)
-                                                                    {
-                                                                        StringBuilder st = new StringBuilder();
-                                                                        if (link.tbL_Email.Split('@')[0].Contains('$'))
-                                                                        {
-                                                                            st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
-                                                                        }
-                                                                        st.AppendLine("");
-                                                                        st.Append("درحال اتمام حجم بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
-                                                                        st.AppendLine("");
-                                                                        st.AppendLine("〰️〰️〰️〰️〰️");
-                                                                        st.AppendLine("🚀@" + BotSetting.Bot_ID);
-
-                                                                        try
-                                                                        {
-                                                                            await bot.Client.SendMessage(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
-                                                                        }
-                                                                        catch
-                                                                        {
-                                                                            continue;
-                                                                        }
-                                                                        await bot.Client.SendMessage(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
-                                                                        link.tbL_Warning = true;
-                                                                        await tbTelegramUserRepository.SaveChangesAsync();
-                                                                    }
-
-                                                                    var exp = reader["expired_at"]?.ToString();
-                                                                    if (exp != "")
-                                                                    {
-                                                                        var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
-                                                                        if (ex <= DateTime.Now.AddDays(-2) && ex >= DateTime.Now.AddDays(31))
-                                                                        {
-                                                                            StringBuilder st = new StringBuilder();
-                                                                            if (link.tbL_Email.Split('@')[0].Contains('$'))
-                                                                            {
-                                                                                st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
-                                                                            }
-                                                                            st.AppendLine("");
-                                                                            st.AppendLine(" درحال اتمام زمان بسته می باشد لطفا هرچه سریعتر نسبت به تمدید اقدام کنید");
-                                                                            st.AppendLine("");
-                                                                            st.AppendLine("〰️〰️〰️〰️〰️");
-                                                                            st.AppendLine("🚀@" + BotSetting.Bot_ID);
-                                                                            try
-                                                                            {
-                                                                                await bot.Client.SendMessage(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
-                                                                            }
-                                                                            catch
-                                                                            {
-                                                                                continue;
-                                                                            }
-                                                                            link.tbL_Warning = true;
-                                                                            await tbTelegramUserRepository.SaveChangesAsync();
-                                                                        }
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    StringBuilder st = new StringBuilder();
-                                                                    if (link.tbL_Email.Split('@')[0].Contains('$'))
-                                                                    {
-                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0].Split('$')[0] + "</b>");
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        st.AppendLine("<b>" + "اشتراک : " + link.tbL_Email.Split('@')[0] + "</b>");
-                                                                    }
-
-                                                                    st.AppendLine("");
-                                                                    st.AppendLine("توسط ادمین مسدود شد برای دانستن علت مسدودی به پشتیبانی پیام دهید");
-                                                                    st.AppendLine("");
-                                                                    st.AppendLine("〰️〰️〰️〰️〰️");
-                                                                    st.AppendLine("🚀@" + BotSetting.Bot_ID);
-                                                                    try
-                                                                    {
-                                                                        await bot.Client.SendMessage(item.Tel_UniqUserID, st.ToString(), parseMode: ParseMode.Html);
-                                                                    }
-                                                                    catch
-                                                                    {
-                                                                        continue;
-                                                                    }
-                                                                    link.tbL_Warning = true;
-                                                                    await tbTelegramUserRepository.SaveChangesAsync();
-                                                                }
-
-                                                            }
-                                                        }
-
-                                                    }
-
-
-
-                                                }
-
-                                            }
+                                            await bot.Client.SendMessage(
+                                                item.Tel_UniqUserID, message, parseMode: ParseMode.Html);
+                                            sent.Add(warning);
                                         }
+                                        catch (Exception ex)
+                                        {
+                                            logger.Warn(ex, "خطا در ارسال هشدار بسته رزرو به کاربر " + item.Tel_UserID);
+                                        }
+                                    }
 
+                                    if (sent.Count > 0)
+                                    {
+                                        SubscriptionReserveWarnHelper.ApplySentFlags(link, sent);
+                                        await tbTelegramUserRepository.SaveChangesAsync();
                                     }
                                 }
                             }
-
-
                         }
                         catch (Exception ex)
                         {
@@ -212,8 +188,6 @@ public class TimerService
                     await mySql.CloseAsync().ConfigureAwait(false);
                 }
             }
-
-
         }
         catch (Exception ex)
         {
@@ -345,7 +319,7 @@ public class TimerService
     #region پیغام پاک شدن فاکتور های کارت به کارت
     public async Task CheckExpireFactores()
     {
-        var DateNow_CardToCard = DateTime.Now.AddHours(-24);
+        var DateNow_CardToCard = DateTime.Now.AddHours(-BotInvoiceGuard.InvoiceWarningHours);
         var DateNow_TetraPay = DateTime.Now.AddHours(-1);
 
         using (Entities db = new Entities())
@@ -465,16 +439,26 @@ public class TimerService
     #region  پاک کردن فاکتور های کارت به کارت
     public async Task RemoveExpireFactores()
     {
-        var DateNow = DateTime.Now.AddHours(-72);
-
+        var deleteBefore = DateTime.Now.AddHours(-BotInvoiceGuard.InvoiceDeleteHours);
 
         using (Entities db = new Entities())
         {
-            var CardToCardFactores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "CardToCard" && s.dw_Alerted == false).ToList();
+            var CardToCardFactores = db.tbDepositWallet_Log
+                .Where(s => s.dw_CreateDatetime <= deleteBefore
+                    && s.dw_Status == "FOR_PAY"
+                    && s.tbPaymentMethods.tbpm_Key == "CardToCard")
+                .ToList();
             foreach (var item in CardToCardFactores)
             {
                 try
                 {
+                    if (item.FK_Order_ID.HasValue)
+                    {
+                        var order = db.tbOrders.FirstOrDefault(o =>
+                            o.Order_ID == item.FK_Order_ID.Value && o.OrderStatus == "FOR_PAY");
+                        if (order != null)
+                            db.tbOrders.Remove(order);
+                    }
                     db.tbDepositWallet_Log.Remove(item);
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -504,12 +488,22 @@ public class TimerService
             }
 
 
-            var TetraPayFactores = db.tbDepositWallet_Log.Where(s => s.dw_CreateDatetime <= DateNow && s.dw_Status == "FOR_PAY" && s.tbPaymentMethods.tbpm_Key == "TetraPay" && s.dw_Alerted == false).ToList();
+            var TetraPayFactores = db.tbDepositWallet_Log
+                .Where(s => s.dw_CreateDatetime <= deleteBefore
+                    && s.dw_Status == "FOR_PAY"
+                    && s.tbPaymentMethods.tbpm_Key == "TetraPay")
+                .ToList();
             foreach (var item in TetraPayFactores)
             {
                 try
                 {
-
+                    if (item.FK_Order_ID.HasValue)
+                    {
+                        var order = db.tbOrders.FirstOrDefault(o =>
+                            o.Order_ID == item.FK_Order_ID.Value && o.OrderStatus == "FOR_PAY");
+                        if (order != null)
+                            db.tbOrders.Remove(order);
+                    }
                     db.tbDepositWallet_Log.Remove(item);
                 }
                 catch (DbUpdateConcurrencyException ex)

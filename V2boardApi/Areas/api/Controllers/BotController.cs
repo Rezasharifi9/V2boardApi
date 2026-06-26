@@ -492,6 +492,12 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
+                                if (UserAcc != null && UserAcc.Tel_Status == 0)
+                                {
+                                    await bot.Client.SendMessage(chatid, "⛔️ دسترسی شما به ربات مسدود شده است.", parseMode: ParseMode.Html);
+                                    return Ok();
+                                }
+
                                 #region چک کردن آیا کاربر در کانال عضو آست یا خیر
 
                                 if (BotSettings.ChannelID != null)
@@ -1722,6 +1728,12 @@ namespace V2boardApi.Areas.api.Controllers
 
                             #endregion
 
+                            if (UserAcc != null && UserAcc.Tel_Status == 0)
+                            {
+                                await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, "⛔️ دسترسی شما به ربات مسدود شده است.", parseMode: ParseMode.Html);
+                                return Ok();
+                            }
+
                             #region چک کردن که کاربر عضو است در کانال یا خیر
 
                             if (BotSettings.RequiredJoinChannel == true)
@@ -2706,34 +2718,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         var accountName = callback[2];
                                         var planId = Convert.ToInt32(callback[1]);
 
-                                        await BotInvoiceGuard.ExpireOldPendingInvoicesAsync(tbOrdersRepository, tbDepositLogRepo, UserAcc.Tel_UserID);
-
                                         var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
-                                        var blockingOrder = BotInvoiceGuard.GetBlockingPendingOrder(tbOrdersRepository, UserAcc.Tel_UserID, planId);
-                                        if (blockingOrder != null)
-                                        {
-                                            var pendingDeposit = BotInvoiceGuard.GetPendingDeposit(tbDepositLogRepo, blockingOrder.Order_ID);
-                                            if (pendingDeposit != null && FirstCard != null)
-                                            {
-                                                var invoiceText = BotInvoiceGuard.BuildCardToCardPaymentMessage(
-                                                    pendingDeposit.dw_TaxId,
-                                                    pendingDeposit.dw_Price.Value,
-                                                    FirstCard.CardNumber,
-                                                    FirstCard.InTheNameOf,
-                                                    BotSettings.IsActiveCardToCard == true,
-                                                    BotSettings.IsActiveSendReceipt == true,
-                                                    BotSettings.Bot_ID);
-
-                                                await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
-                                                var keyss = Keyboards.GetCopyPriceAndCardNumberButton(pendingDeposit.dw_Price.Value.ToString(), FirstCard.CardNumber);
-                                                var btnress = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, invoiceText, parseMode: ParseMode.Html, replyMarkup: keyss);
-                                                pendingDeposit.dw_message_id = btnress.MessageId;
-                                                await tbDepositLogRepo.SaveChangesAsync();
-                                                await bot.Client.AnswerCallbackQuery(callbackQuery.Id);
-                                                return Ok();
-                                            }
-                                        }
-
                                         var Plan = RepositoryLinkUserAndPlan.Where(a => a.Link_PU_ID == planId).FirstOrDefault();
                                         var Account = tbLinksRepository.Where(a => a.tbL_Email == accountName).FirstOrDefault();
 
@@ -2927,7 +2912,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                     string exp = DateTime.Now.AddDays((int)(order.Month * 30)).ConvertDatetimeToSecond().ToString();
 
-                                                    Link.tbL_Warning = false;
+                                                    SubscriptionReserveWarnHelper.ResetReserveWarnState(Link);
                                                     var Disc3 = new Dictionary<string, object>();
                                                     Disc3.Add("@DefaultPlanIdInV2board", Plan.tbPlans.Plan_ID_V2);
                                                     Disc3.Add("@transfer_enable", t);
@@ -2951,7 +2936,7 @@ namespace V2boardApi.Areas.api.Controllers
 
                                                     var InlineKeyboardMarkup = Keyboards.GetHomeButton();
 
-                                                    Link.tbL_Warning = false;
+                                                    SubscriptionReserveWarnHelper.ResetReserveWarnState(Link);
                                                     Link.tb_AutoRenew = false;
                                                     tbOrdersRepository.Insert(order);
                                                     await tbLinksRepository.SaveChangesAsync();
@@ -2996,10 +2981,11 @@ namespace V2boardApi.Areas.api.Controllers
                                                     await tbLinksRepository.SaveChangesAsync();
 
                                                     StringBuilder str = new StringBuilder();
-                                                    str.AppendLine("✅ چون هنوز حجم یا زمان داشتی بسته تو رزرو کردم");
-                                                    str.AppendLine("");
-                                                    str.AppendLine("♨️ بعد از اینکه بسته فعلیت تموم بشه خودم جایگزین میکنم تو نگران نباش و به کارت برس");
-                                                    str.AppendLine("");
+                                                    str.Append(BotMessages.BuildReservedPackageConfirmMessage(
+                                                        Plan.tbPlans.PlanVolume,
+                                                        Plan.tbPlans.PlanMonth,
+                                                        Link.tbL_Email,
+                                                        Convert.ToInt32(Price)));
                                                     await RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
                                                     await bot.Client.DeleteMessage(User.Tel_UniqUserID, callbackQuery.Message.MessageId);
                                                     var kyes = Keyboards.GetHomeButton();
@@ -3142,7 +3128,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 tbLinks.tbL_Token = token;
                                                 tbLinks.FK_Server_ID = Server.ServerID;
                                                 tbLinks.FK_TelegramUserID = UserAcc.Tel_UserID;
-                                                tbLinks.tbL_Warning = false;
+                                                SubscriptionReserveWarnHelper.ResetReserveWarnState(tbLinks);
                                                 tbLinks.tb_AutoRenew = false;
                                                 await mySql.CloseAsync();
 

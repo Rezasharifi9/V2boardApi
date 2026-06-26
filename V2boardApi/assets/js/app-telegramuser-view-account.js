@@ -5,6 +5,68 @@
 $(function () {
     'use strict';
 
+    var currentMoveLinkId = null;
+    var dt_orders = null;
+    var dt_accounts = null;
+
+    function getActionToken() {
+        return $('#telegramUserActionForm input[name="__RequestVerificationToken"]').val();
+    }
+
+    function postTelegramUserAction(url, data) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: $.extend({}, data, {
+                    __RequestVerificationToken: getActionToken()
+                }),
+                success: resolve,
+                error: reject
+            });
+        });
+    }
+
+    function renderAccountActions(full) {
+        return '<div class="d-flex align-items-center gap-1">' +
+            '<button type="button" class="btn btn-sm btn-label-primary btn-move-account" ' +
+            'data-link-id="' + full.LinkID + '" data-sub-name="' + full.V2boardUsername + '">' +
+            '<i class="ti ti-arrows-exchange me-1"></i>انتقال</button>' +
+            '<button type="button" class="btn btn-sm btn-label-danger btn-delete-account" ' +
+            'data-link-id="' + full.LinkID + '" data-sub-name="' + full.V2boardUsername + '">' +
+            '<i class="ti ti-trash me-1"></i>حذف</button>' +
+            '</div>';
+    }
+
+    function closeResponsiveModal(callback) {
+        var $responsiveModal = $('.dtr-bs-modal.show');
+        if ($responsiveModal.length) {
+            $responsiveModal.one('hidden.bs.modal', function () {
+                if (typeof callback === 'function') callback();
+            });
+            $responsiveModal.modal('hide');
+        } else if (typeof callback === 'function') {
+            callback();
+        }
+    }
+
+    function openMoveAccountModal() {
+        var $modal = $('#modalMoveAccount');
+        if (!$modal.parent().is('body')) {
+            $modal.appendTo('body');
+        }
+        $modal.modal('show');
+    }
+
+    function renderOrderActions(full) {
+        if (full.Status !== 0 || !full.OrderId) {
+            return '<span class="text-muted">—</span>';
+        }
+        return '<button type="button" class="btn btn-sm btn-label-danger btn-cancel-reserved-order" ' +
+            'data-order-id="' + full.OrderId + '">' +
+            '<i class="ti ti-x me-1"></i>لغو رزرو</button>';
+    }
+
     // Variable declaration for table
     var dt_project_table = $('.datatable-project'),
         dt_sub_table = $('.datatable-sub');
@@ -180,8 +242,19 @@ $(function () {
     // Invoice datatable
     // --------------------------------------------------------------------
     if (dt_orders_table.length) {
-        var dt_invoice = dt_orders_table.DataTable({
-            ajax: '/App/TelegramUsers/Orders?user_id=' + getUrlParameter("user_id"), // JSON file to add data
+        dt_orders = dt_orders_table.DataTable({
+            ajax: {
+                url: '/App/TelegramUsers/GetOrders',
+                type: 'POST',
+                data: function (d) {
+                    d.user_id = getUrlParameter('user_id');
+                },
+                error: function () {
+                    location.replace(location.href);
+                }
+            },
+            processing: true,
+            serverSide: true,
             columns: [
                 // columns according to JSON
                 { data: '' },
@@ -189,7 +262,8 @@ $(function () {
                 { data: 'Plan' },
                 { data: 'CreateDate' },
                 { data: 'Price' },
-                { data: 'Status' }
+                { data: 'Status' },
+                { data: 'OrderId' }
             ],
             columnDefs: [
                 {
@@ -246,45 +320,27 @@ $(function () {
                     targets: 5,
                     render: function (data, type, full, meta) {
                         var $State = full['Status'];
-                        if ($State == 1) {
-                            return (
-                                "<span class='badge bg-label-success'>" + "انجام شده" + "</span>"
-                            );
+                        var statusObj = {
+                            0: { title: 'در انتظار فعال سازی', class: 'bg-label-warning' },
+                            1: { title: 'انجام شده', class: 'bg-label-success' },
+                            3: { title: 'در انتظار پرداخت', class: 'bg-label-primary' }
+                        };
+                        var info = statusObj[$State];
+                        if (!info) {
+                            return "<span class='badge bg-label-secondary'>نامشخص</span>";
                         }
-                        if ($State == 0) {
-                            return (
-                                "<span class='badge bg-label-primary'>" + "در صف پرداخت" + "</span>"
-                            );
-                        } else {
-                            return (
-                                "<span class='badge bg-label-warning'>" + "در صف رزرو" + "</span>"
-                            );
-                        }  
+                        return "<span class='badge " + info.class + "'>" + info.title + "</span>";
+                    }
+                },
+                {
+                    targets: 6,
+                    title: 'عملیات',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, full) {
+                        return renderOrderActions(full);
                     }
                 }
-                //{
-                //    // Actions
-                //    targets: -1,
-                //    title: 'عملیات',
-                //    orderable: false,
-                //    render: function (data, type, full, meta) {
-                //        return (
-                //            '<div class="d-flex align-items-center">' +
-                //            '<a href="javascript:;" class="text-body" data-bs-toggle="tooltip" title="ارسال ایمیل"><i class="ti ti-mail me-2 ti-sm"></i></a>' +
-                //            '<a href="app-invoice-preview.html" class="text-body" data-bs-toggle="tooltip" title="نمایش"><i class="ti ti-eye mx-2 ti-sm"></i></a>' +
-                //            '<div class="d-inline-block">' +
-                //            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow text-body" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>' +
-                //            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                //            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
-                //            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
-                //            '<div class="dropdown-divider"></div>' +
-                //            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
-                //            '</ul>' +
-                //            '</div>' +
-                //            '</div>'
-                //        );
-                //    }
-                //}
             ],
             displayLength: 6,
             lengthMenu: [6, 10, 25, 50, 75, 100],
@@ -299,7 +355,7 @@ $(function () {
                     display: $.fn.dataTable.Responsive.display.modal({
                         header: function (row) {
                             var data = row.data();
-                            return 'جزئیات ' + data['Price'];
+                            return 'جزئیات ' + data['SubName'];
                         }
                     }),
                     type: 'column',
@@ -351,8 +407,19 @@ $(function () {
     // Invoice datatable
     // --------------------------------------------------------------------
     if (dt_accounts_table.length) {
-        var dt_accounts = dt_accounts_table.DataTable({
-            ajax: '/App/TelegramUsers/Accounts?user_id=' + getUrlParameter("user_id"), // JSON file to add data
+        dt_accounts = dt_accounts_table.DataTable({
+            ajax: {
+                url: '/App/TelegramUsers/GetAccounts',
+                type: 'POST',
+                data: function (d) {
+                    d.user_id = getUrlParameter('user_id');
+                },
+                error: function () {
+                    location.replace(location.href);
+                }
+            },
+            processing: true,
+            serverSide: true,
             columns: [
                 // columns according to JSON
                 { data: '' },
@@ -361,7 +428,8 @@ $(function () {
                 { data: 'RemainingVolume' },
                 { data: 'TotalVolume' },
                 { data: 'ExpireDate' },
-                { data: 'State' }
+                { data: 'State' },
+                { data: 'LinkID' }
             ],
             columnDefs: [
                 {
@@ -451,30 +519,16 @@ $(function () {
                                 );
                             }
                     }
+                },
+                {
+                    targets: 7,
+                    title: 'عملیات',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, full) {
+                        return renderAccountActions(full);
+                    }
                 }
-                //{
-                //    // Actions
-                //    targets: -1,
-                //    title: 'عملیات',
-                //    orderable: false,
-                //    render: function (data, type, full, meta) {
-                //        return (
-                //            '<div class="d-flex align-items-center">' +
-                //            '<a href="javascript:;" class="text-body" data-bs-toggle="tooltip" title="ارسال ایمیل"><i class="ti ti-mail me-2 ti-sm"></i></a>' +
-                //            '<a href="app-invoice-preview.html" class="text-body" data-bs-toggle="tooltip" title="نمایش"><i class="ti ti-eye mx-2 ti-sm"></i></a>' +
-                //            '<div class="d-inline-block">' +
-                //            '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow text-body" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>' +
-                //            '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                //            '<li><a href="javascript:;" class="dropdown-item">جزئیات</a></li>' +
-                //            '<li><a href="javascript:;" class="dropdown-item">بایگانی</a></li>' +
-                //            '<div class="dropdown-divider"></div>' +
-                //            '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">حذف</a></li>' +
-                //            '</ul>' +
-                //            '</div>' +
-                //            '</div>'
-                //        );
-                //    }
-                //}
             ],
             displayLength: 6,
             lengthMenu: [6, 10, 25, 50, 75, 100],
@@ -489,7 +543,7 @@ $(function () {
                     display: $.fn.dataTable.Responsive.display.modal({
                         header: function (row) {
                             var data = row.data();
-                            return 'جزئیات ' + data['Price'];
+                            return 'جزئیات ' + data['V2boardUsername'];
                         }
                     }),
                     type: 'column',
@@ -529,6 +583,131 @@ $(function () {
     });
 
 
+
+
+    $('body').on('click', '.btn-move-account', function () {
+        var linkId = $(this).data('link-id');
+        var subName = $(this).data('sub-name');
+        currentMoveLinkId = linkId;
+
+        closeResponsiveModal(function () {
+            $('#moveAccountSubName').text(subName);
+
+            $.get('/App/TelegramUsers/GetMoveAccountTargets', {
+                linkId: linkId,
+                currentUserId: getUrlParameter('user_id')
+            }).done(function (res) {
+                var $select = $('#moveAccountTarget');
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.select2('destroy');
+                }
+                $select.empty();
+                if (!res.data || res.data.length === 0) {
+                    $select.append('<option value="">مشترک دیگری یافت نشد</option>');
+                } else {
+                    res.data.forEach(function (item) {
+                        $select.append('<option value="' + item.id + '">' + item.label + '</option>');
+                    });
+                }
+                $select.select2({
+                    dropdownParent: $('#modalMoveAccount'),
+                    width: '100%',
+                    placeholder: 'انتخاب مشترک'
+                });
+                openMoveAccountModal();
+            });
+        });
+    });
+
+    $('#btnConfirmMoveAccount').on('click', function () {
+        var targetId = $('#moveAccountTarget').val();
+        if (!currentMoveLinkId || !targetId) return;
+
+        BodyBlockUI();
+        postTelegramUserAction('/App/TelegramUsers/MoveAccount', {
+            linkId: currentMoveLinkId,
+            targetTelUserId: targetId
+        }).then(function (res) {
+            BodyUnblockUI();
+            eval(res.data);
+            if (res.status === 'success') {
+                $('#modalMoveAccount').modal('hide');
+                if (dt_accounts) dt_accounts.ajax.reload(null, false);
+            }
+        }).catch(function () {
+            BodyUnblockUI();
+            showToast('خطا', 'خطا در انتقال اشتراک', 'text-danger');
+        });
+    });
+
+    $('body').on('click', '.btn-delete-account', function () {
+        var linkId = $(this).data('link-id');
+        var subName = $(this).data('sub-name');
+
+        closeResponsiveModal(function () {
+            Swal.fire({
+            text: 'آیا مطمئن هستید می‌خواهید اشتراک «' + subName + '» را حذف کنید؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله، حذف می‌کنم',
+            cancelButtonText: 'انصراف',
+            customClass: {
+                confirmButton: 'btn btn-danger me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (!result.value) return;
+
+            BodyBlockUI();
+            postTelegramUserAction('/App/TelegramUsers/DeleteTelegramAccount', {
+                linkId: linkId
+            }).then(function (res) {
+                BodyUnblockUI();
+                eval(res.data);
+                if (res.status === 'success' && dt_accounts) {
+                    dt_accounts.ajax.reload(null, false);
+                }
+            }).catch(function () {
+                BodyUnblockUI();
+                showToast('خطا', 'خطا در حذف اشتراک', 'text-danger');
+            });
+        });
+        });
+    });
+
+    $('body').on('click', '.btn-cancel-reserved-order', function () {
+        var orderId = $(this).data('order-id');
+
+        Swal.fire({
+            text: 'آیا مطمئن هستید می‌خواهید این بسته تمدیدی را لغو کنید؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله، لغو می‌کنم',
+            cancelButtonText: 'انصراف',
+            customClass: {
+                confirmButton: 'btn btn-danger me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (!result.value) return;
+
+            BodyBlockUI();
+            postTelegramUserAction('/App/Subscriptions/CancelReservedPackage', {
+                orderId: orderId
+            }).then(function (res) {
+                BodyUnblockUI();
+                eval(res.data);
+                if (res.status === 'success' && dt_orders) {
+                    dt_orders.ajax.reload(null, false);
+                }
+            }).catch(function () {
+                BodyUnblockUI();
+                showToast('خطا', 'خطا در لغو بسته تمدیدی', 'text-danger');
+            });
+        });
+    });
 
 
     // Filter form control to default size

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using DataLayer.DomainModel;
 using DataLayer.Repository;
 using V2boardApi.Areas.App.Data.Changelog;
@@ -12,8 +14,16 @@ namespace V2boardApi.Tools
         private const byte AdminAudience = 1;
         private const byte AgentAudience = 2;
 
-        public static string GetCurrentVersion()
+        public static void InvalidateVersionCache()
         {
+            HttpRuntime.Cache.Remove("PanelCurrentVersion");
+        }
+
+        public static string GetCurrentVersion()        {
+            var cached = HttpRuntime.Cache["PanelCurrentVersion"] as string;
+            if (!string.IsNullOrEmpty(cached))
+                return cached;
+
             try
             {
                 using (var db = new Entities())
@@ -24,15 +34,23 @@ namespace V2boardApi.Tools
                         .OrderByDescending(v => v.tbPclv_SortOrder)
                         .FirstOrDefault();
 
+                    string version;
                     if (current != null)
-                        return current.tbPclv_Version;
+                        version = current.tbPclv_Version;
+                    else
+                    {
+                        var latest = versionRepository
+                            .Where(v => v.tbPclv_IsActive)
+                            .OrderByDescending(v => v.tbPclv_SortOrder)
+                            .FirstOrDefault();
+                        version = latest != null ? latest.tbPclv_Version : "1.0.0";
+                    }
 
-                    var latest = versionRepository
-                        .Where(v => v.tbPclv_IsActive)
-                        .OrderByDescending(v => v.tbPclv_SortOrder)
-                        .FirstOrDefault();
+                    HttpRuntime.Cache.Insert("PanelCurrentVersion", version, null,
+                        System.Web.Caching.Cache.NoAbsoluteExpiration,
+                        System.TimeSpan.FromMinutes(30));
 
-                    return latest != null ? latest.tbPclv_Version : "1.0.0";
+                    return version;
                 }
             }
             catch
@@ -88,7 +106,10 @@ namespace V2boardApi.Tools
                     });
                 }
 
-                var currentVersion = versions.FirstOrDefault(v => v.tbPclv_IsCurrent)
+                var currentVersion = versions
+                    .Where(v => v.tbPclv_IsCurrent)
+                    .OrderByDescending(v => v.tbPclv_SortOrder)
+                    .FirstOrDefault()
                     ?? versions.FirstOrDefault();
 
                 return new PanelChangelogPageViewModel
@@ -97,6 +118,72 @@ namespace V2boardApi.Tools
                     RoleLabel = isAdmin ? "ادمین" : isAgent ? "نماینده" : "کاربر",
                     Versions = mappedVersions
                 };
+            }
+        }
+
+        public static async Task<PanelChangelogPopupViewModel> GetPendingPopupAsync(int userId, string role)
+        {
+            try
+            {
+                var page = await GetPageForRoleAsync(role);
+                var currentVersionBlock = page.Versions
+                    .FirstOrDefault(v => v.Version == page.CurrentVersion);
+
+                if (currentVersionBlock == null || currentVersionBlock.Items == null || !currentVersionBlock.Items.Any())
+                    return null;
+
+                using (var db = new Entities())
+                {
+                    var seenRepository = new Repository<tbPanelChangelogSeen>(db);
+                    var alreadySeen = await seenRepository.FirstOrDefaultAsync(s =>
+                        s.FK_User_ID == userId && s.tbPcls_Version == page.CurrentVersion);
+
+                    if (alreadySeen != null)
+                        return null;
+                }
+
+                return new PanelChangelogPopupViewModel
+                {
+                    Version = currentVersionBlock.Version,
+                    ReleaseDate = currentVersionBlock.ReleaseDate,
+                    Items = currentVersionBlock.Items
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static async Task MarkVersionSeenAsync(int userId, string version)
+        {
+            if (string.IsNullOrWhiteSpace(version))
+                version = GetCurrentVersion();
+
+            try
+            {
+                using (var db = new Entities())
+                {
+                    var seenRepository = new Repository<tbPanelChangelogSeen>(db);
+                    var existing = await seenRepository.FirstOrDefaultAsync(s =>
+                        s.FK_User_ID == userId && s.tbPcls_Version == version);
+
+                    if (existing != null)
+                        return;
+
+                    seenRepository.Insert(new tbPanelChangelogSeen
+                    {
+                        FK_User_ID = userId,
+                        tbPcls_Version = version,
+                        tbPcls_SeenAt = DateTime.Now
+                    });
+
+                    await seenRepository.SaveChangesAsync();
+                }
+            }
+            catch
+            {
+                // جدول هنوز migrate نشده — pop-up بدون ثبت seen دوباره نمایش داده می‌شود
             }
         }
     }

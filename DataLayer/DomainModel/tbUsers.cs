@@ -63,6 +63,8 @@ namespace DataLayer.DomainModel
         public Nullable<System.DateTime> Settlement_LastPreWarning { get; set; }
         public Nullable<System.DateTime> Settlement_LastOverdueWarning { get; set; }
         public bool Settlement_IsBlocked { get; set; }
+        public Nullable<int> Settlement_BlockGraceDays { get; set; }
+        public Nullable<System.DateTime> Settlement_LastDueDayWarning { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbBankCardNumbers> tbBankCardNumbers { get; set; }

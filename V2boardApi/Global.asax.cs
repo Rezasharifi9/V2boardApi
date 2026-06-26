@@ -53,6 +53,7 @@ namespace V2boardApi
 
             TimerService timer = new TimerService();
 
+            StimulsoftBootstrap.Initialize();
         }
 
         void Application_Error(object sender, EventArgs e)

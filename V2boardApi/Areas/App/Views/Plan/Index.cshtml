@@ -113,6 +113,20 @@
                     <option value="-1">در حال بارگزاری ...</option>
                 </select>
             </div>
+            @if (Role == "1" || Role == "3" || Role == "4")
+            {
+                <div class="col-sm-12">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="form-label mb-0" for="planAssignedUsers">تخصیص به نمایندگان زیرمجموعه</label>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-label-primary" id="planAssignedUsersSelectAll">انتخاب همه</button>
+                            <button type="button" class="btn btn-label-secondary" id="planAssignedUsersClearAll">حذف همه</button>
+                        </div>
+                    </div>
+                    <select id="planAssignedUsers" class="select2 form-select" multiple autocomplete="off" name="assignedUserIds">
+                    </select>
+                </div>
+            }
             @if (Role == "1")
             {
                 <div class="col-sm-12">
@@ -151,7 +165,7 @@
 
 @section customScripts {
 
-    <script src="../../assets/js/app-plan-list.js"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/app-plan-list.js")"></script>
     <script>
         //$("#btnAddPlan").click(function () {
 
@@ -202,9 +216,47 @@
                 allowClear: false
             });
 
+            $("#planAssignedUsers").wrap('<div class="position-relative"></div>').select2({
+                placeholder: 'انتخاب نمایندگان',
+                dropdownParent: $("#planAssignedUsers").parent(),
+                allowClear: true
+            });
 
+            loadPlanAssignedUsers();
 
+            $("#planAssignedUsersSelectAll").on("click", function () {
+                var $select = $("#planAssignedUsers");
+                var allValues = $select.find("option").map(function () {
+                    return $(this).val();
+                }).get();
+                $select.val(allValues).trigger("change");
+            });
+
+            $("#planAssignedUsersClearAll").on("click", function () {
+                $("#planAssignedUsers").val(null).trigger("change");
+            });
         });
+
+        function loadPlanAssignedUsers() {
+            var $select = $("#planAssignedUsers");
+            if (!$select.length)
+                return;
+
+            $.ajax({
+                url: "/App/Plan/GetSubAgentsSelect",
+                type: "get",
+                dataType: "json",
+                success: function (res) {
+                    $select.empty();
+                    if (res && res.data) {
+                        $.each(res.data, function (index, item) {
+                            var newOption = new Option(item.username, item.id, false, false);
+                            $select.append(newOption);
+                        });
+                    }
+                }
+            });
+        }
 
         function Groups(selectId) {
             var $select = $(selectId);

@@ -144,6 +144,31 @@ namespace V2boardApi.Tools
 
             return message;
         }
+
+        public static string BuildReservedPackageConfirmMessage(
+            double volumeGb,
+            double? months,
+            string subscriptionName = null,
+            int? priceToman = null)
+        {
+            var str = new StringBuilder();
+            str.AppendLine("✅ تراکنش شما با موفقیت تأیید شد.");
+            str.AppendLine("به دلیل داشتن بسته فعال، بسته تمدیدی به حالت رزرو رفته و پس از پایان بسته فعلی فعال خواهد شد.");
+            str.AppendLine("");
+            str.AppendLine("📋 مشخصات بسته:");
+            if (!string.IsNullOrWhiteSpace(subscriptionName))
+            {
+                var name = subscriptionName.Contains("$")
+                    ? subscriptionName.Split('$')[0]
+                    : subscriptionName.Split('@')[0];
+                str.AppendLine("نام اشتراک: " + name);
+            }
+            str.AppendLine("♾ حجم: " + volumeGb + " گیگ");
+            str.AppendLine("⏳ مدت: " + (months == null || months == 0 ? "نامحدود" : months + " ماه"));
+            if (priceToman.HasValue)
+                str.AppendLine("💵 مبلغ: " + priceToman.Value.ConvertToMony() + " تومان");
+            return str.ToString();
+        }
     }
 
     public class MessageModel

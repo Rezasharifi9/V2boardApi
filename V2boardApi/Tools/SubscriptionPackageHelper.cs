@@ -74,7 +74,7 @@ namespace V2boardApi.Tools
                 var link = linksRepository.Where(p => p.tbL_Email == order.AccountName).FirstOrDefault();
                 if (link != null)
                 {
-                    link.tbL_Warning = false;
+                    SubscriptionReserveWarnHelper.ResetReserveWarnState(link);
                     link.tb_AutoRenew = false;
                     await linksRepository.SaveChangesAsync();
                 }

@@ -21,6 +21,7 @@ using System.Net;
 using System.Web.Http.Cors;
 using System.Runtime.Remoting.Messaging;
 using V2boardApi.Areas.App.Data.SubscriptionsViewModels;
+using V2boardApi.Areas.api.Data.ViewModels;
 using System.Threading.Tasks;
 using Mysqlx.Expr;
 using System.Windows.Forms;
@@ -30,6 +31,7 @@ using DeviceDetectorNET.Class.Device;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Fluent;
+using MySqlConnector;
 
 namespace V2boardApi.Areas.api.Controllers
 {
@@ -44,6 +46,7 @@ namespace V2boardApi.Areas.api.Controllers
         private Repository<tbLinkUserAndPlans> RepositoryLinkUserAndPlan { get; set; }
         private Repository<tbLogs> RepositoryLogs { get; set; }
         private Repository<tbOrders> RepositoryOrders { get; set; }
+        private Repository<tbPlans> RepositoryPlans { get; set; }
         private Repository<tbLinks> RepositoryLinks { get; set; }
         private static tbServers server;
         public ClientController()
@@ -54,6 +57,7 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryLogs = new Repository<tbLogs>(db);
             RepositoryUser = new Repository<tbUsers>(db);
             RepositoryOrders = new Repository<tbOrders>(db);
+            RepositoryPlans = new Repository<tbPlans>(db);
             RepositoryLinks = new Repository<tbLinks>(db);
             server = HttpRuntime.Cache["Server"] as tbServers;
         }
@@ -270,85 +274,28 @@ namespace V2boardApi.Areas.api.Controllers
 
                     if (server != null)
                     {
-                        MySqlEntities sqlEntities = new MySqlEntities(server.ConnectionString);
-                        await sqlEntities.OpenAsync();
-                        var query = "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user where token='" + token + "'";
-                        var reader = await sqlEntities.GetDataAsync(query);
-                        while (reader.Read())
+                        using (var sqlEntities = new MySqlEntities(server.ConnectionString))
                         {
-                            GetUserDataModel getUserData = new GetUserDataModel();
-                            getUserData.id = reader.GetInt32("id");
-                            getUserData.IsActive = 1;
-                            getUserData.Name = reader.GetString("email").Split('@')[0];
-                            getUserData.IsBanned = reader.GetBoolean("banned");
-                            getUserData.TotalVolume = Utility.ConvertByteToGB(reader.GetInt64("transfer_enable")).ToString() + " GB";
-                            var exp = reader["expired_at"]?.ToString();
-                            logger.Info(exp);
-                            if (!string.IsNullOrEmpty(exp))
-                            {
-                                var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
-                                var onlineTime = Utility.ConvertSecondToDatetime(reader.GetInt64("expired_at"));
-                                if (onlineTime <= DateTime.Now.AddMinutes(-2))
-                                {
-                                    getUserData.IsOnline = true;
-                                }
-                                getUserData.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
-                                getUserData.ExpireDate = Utility.ConvertDateTimeToShamsi5(ex);
-                                getUserData.DaysLeft = Utility.CalculateLeftDayes(ex);
+                            await sqlEntities.OpenAsync();
+                            var disc = new Dictionary<string, object> { { "@token", token } };
+                            var reader = await sqlEntities.GetDataAsync(
+                                "SELECT id,email,d,u,transfer_enable,banned,expired_at FROM v2_user WHERE token=@token", disc);
 
-                                if (ex <= DateTime.Now)
-                                {
-                                    getUserData.IsActive = 3;
-                                }
-                                if (getUserData.DaysLeft <= 2)
-                                {
-                                    getUserData.CanEdit = true;
-                                }
-
-                            }
-                            
-                            if (getUserData.IsBanned)
+                            GetUserDataModel getUserData = null;
+                            string email = null;
+                            if (reader.Read())
                             {
-                                getUserData.IsActive = 5;
+                                getUserData = MapSubscribeUser(reader, token, server, out email);
+                                SetSubscribeViewBag(email, token, server);
                             }
+                            reader.Close();
 
-                            getUserData.SubLink = getUserData.SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token;
+                            if (getUserData == null)
+                                return HttpNotFound();
 
-                            var re = Utility.ConvertByteToGB(reader.GetInt64("d") + reader.GetInt64("u"));
-                            getUserData.UsedVolume = Math.Round(re, 2) + " GB";
-
-                            var vol = reader.GetInt64("transfer_enable") - (reader.GetInt64("d") + reader.GetInt64("u"));
-
-                            if (vol <= 0)
-                            {
-                                getUserData.IsActive = 2;
-                            }
-                            var d = Utility.ConvertByteToGB(vol);
-                            if (d <= 2)
-                            {
-                                getUserData.CanEdit = true;
-                            }
-                            getUserData.RemainingVolume = Math.Round(d, 2) + " GB";
-                            var name = reader.GetString("email").Split('@')[1];
-
-                            ViewBag.Url = server.ServerAddress + "api/v1/" + "client/subscribe?token=" + token;
-                            if (reader.GetString("email").Split('@')[1].Contains("."))
-                            {
-                                ViewBag.LinkCreator = reader.GetString("email").Split('.')[0];
-                            }
-                            else
-                            {
-                                ViewBag.LinkCreator = reader.GetString("email").Split('@')[1];
-                            }
-                            var User = server.tbUsers.Where(p => p.Username == reader.GetString("email").Split('@')[1]).FirstOrDefault();
-                            if (User != null)
-                            {
-                                ViewBag.IsRenew = User.IsRenew;
-                            }
-                            await sqlEntities.CloseAsync();
+                            ViewBag.ReservedPackages = GetReservedPackages(email);
                             return View(getUserData);
                         }
-
                     }
 
 
@@ -390,6 +337,101 @@ namespace V2boardApi.Areas.api.Controllers
             Dictionary<string, string> key = new Dictionary<string, string>();
             key.Add("link", token);
             return View(key);
+        }
+
+        private static GetUserDataModel MapSubscribeUser(MySqlDataReader reader, string token, tbServers server, out string email)
+        {
+            var ordEmail = reader.GetOrdinal("email");
+            var ordId = reader.GetOrdinal("id");
+            var ordBanned = reader.GetOrdinal("banned");
+            var ordTransferEnable = reader.GetOrdinal("transfer_enable");
+            var ordExpiredAt = reader.GetOrdinal("expired_at");
+            var ordD = reader.GetOrdinal("d");
+            var ordU = reader.GetOrdinal("u");
+
+            email = reader.GetString(ordEmail);
+            var model = new GetUserDataModel
+            {
+                id = reader.GetInt32(ordId),
+                IsActive = 1,
+                Name = email.Split('@')[0],
+                IsBanned = reader.GetBoolean(ordBanned),
+                TotalVolume = Utility.ConvertByteToGB(reader.GetInt64(ordTransferEnable)).ToString() + " GB",
+                SubLink = "https://" + server.SubAddress + "/api/v1/client/subscribe?token=" + token
+            };
+
+            var exp = reader.IsDBNull(ordExpiredAt) ? null : reader.GetValue(ordExpiredAt)?.ToString();
+            if (!string.IsNullOrEmpty(exp))
+            {
+                var ex = Utility.ConvertSecondToDatetime(Convert.ToInt64(exp));
+                var onlineTime = Utility.ConvertSecondToDatetime(reader.GetInt64(ordExpiredAt));
+                if (onlineTime <= DateTime.Now.AddMinutes(-2))
+                    model.IsOnline = true;
+
+                model.LastTimeOnline = Utility.ConvertDateTimeToShamsi(onlineTime);
+                model.ExpireDate = Utility.ConvertDateTimeToShamsi5(ex);
+                model.DaysLeft = Utility.CalculateLeftDayes(ex);
+
+                if (ex <= DateTime.Now)
+                    model.IsActive = 3;
+                if (model.DaysLeft <= 2)
+                    model.CanEdit = true;
+            }
+
+            if (model.IsBanned)
+                model.IsActive = 5;
+
+            var usedGb = Utility.ConvertByteToGB(reader.GetInt64(ordD) + reader.GetInt64(ordU));
+            model.UsedVolume = Math.Round(usedGb, 2) + " GB";
+
+            var remainingBytes = reader.GetInt64(ordTransferEnable) - (reader.GetInt64(ordD) + reader.GetInt64(ordU));
+            if (remainingBytes <= 0)
+                model.IsActive = 2;
+
+            var remainingGb = Utility.ConvertByteToGB(remainingBytes);
+            if (remainingGb <= 2)
+                model.CanEdit = true;
+
+            model.RemainingVolume = Math.Round(remainingGb, 2) + " GB";
+            return model;
+        }
+
+        private void SetSubscribeViewBag(string email, string token, tbServers server)
+        {
+            ViewBag.Url = server.ServerAddress + "api/v1/client/subscribe?token=" + token;
+            var username = email.Split('@')[1];
+            ViewBag.LinkCreator = username.Contains(".") ? email.Split('.')[0] : username;
+
+            var user = server.tbUsers.FirstOrDefault(p => p.Username == username);
+            if (user != null)
+                ViewBag.IsRenew = user.IsRenew;
+        }
+
+        private List<ReservedPackageViewModel> GetReservedPackages(string email)
+        {
+            return RepositoryOrders
+                .Where(o => o.AccountName == email && o.OrderStatus == "FOR_RESERVE")
+                .OrderBy(o => o.OrderDate)
+                .ToList()
+                .Select(o =>
+                {
+                    var planName = o.tbLinkUserAndPlans?.tbPlans?.Plan_Name;
+                    if (string.IsNullOrEmpty(planName) && o.V2_Plan_ID.HasValue)
+                    {
+                        var plan = RepositoryPlans.Where(p => p.Plan_ID_V2 == o.V2_Plan_ID).FirstOrDefault();
+                        planName = plan?.Plan_Name ?? "بسته رزرو";
+                    }
+
+                    return new ReservedPackageViewModel
+                    {
+                        PlanName = planName ?? "بسته رزرو",
+                        VolumeGb = o.Traffic,
+                        Months = o.Month,
+                        ReservedDate = o.OrderDate?.ConvertDateTimeToShamsi4() ?? "-",
+                        Status = "در انتظار فعال‌سازی"
+                    };
+                })
+                .ToList();
         }
     }
 }

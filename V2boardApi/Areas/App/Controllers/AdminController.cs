@@ -147,58 +147,67 @@ namespace V2boardApi.Areas.App.Controllers
 
         [AuthorizeApp(Roles = "1,3,4")]
         public async Task<ActionResult> _PartialGetAllUsers()
-
         {
             try
             {
-                var Users = await RepositoryUser.WhereAsync(s => s.tbUsers2.Username == User.Identity.Name);
-                Users.Add(await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name));
-                List<UserViewModel> users = new List<UserViewModel>();
-                foreach (var item in Users)
+                var usersList = await RepositoryUser.WhereAsync(s => s.tbUsers2.Username == User.Identity.Name);
+                var adminUser = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                if (adminUser != null && usersList.All(u => u == null || u.User_ID != adminUser.User_ID))
+                    usersList.Add(adminUser);
+
+                var result = new List<UserViewModel>();
+                foreach (var item in usersList)
                 {
-                    UserViewModel user = new UserViewModel();
-                    user.id = item.User_ID;
-                    user.profile = item.Profile_Filename;
-                    user.username = item.Username;
-                    user.status = 1;
-                    user.sumSellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => (long)s.SalePrice).Sum().ConvertToMony() + " تومان";
-                    user.sellCount = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID).Select(s => (long)s.SalePrice).Count();
-                    if (item.Wallet >= item.Limit)
+                    if (item == null || string.IsNullOrWhiteSpace(item.Username))
+                        continue;
+
+                    var limit = item.Limit ?? 0;
+                    var user = new UserViewModel
                     {
-                        user.status = 3;
-                    }
-                    else
-                    if (item.Wallet >= (item.Limit - (item.Limit * 0.2)))
+                        id = item.User_ID,
+                        profile = item.Profile_Filename,
+                        username = item.Username,
+                        status = 1,
+                        sellCount = RepositoryLogs
+                            .Where(p => p.tbLinkUserAndPlans != null
+                                && p.tbLinkUserAndPlans.tbUsers != null
+                                && p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID)
+                            .Count(),
+                        sumSellCount = RepositoryLogs
+                            .Where(p => p.tbLinkUserAndPlans != null
+                                && p.tbLinkUserAndPlans.tbUsers != null
+                                && p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID)
+                            .Sum(s => (long)(s.SalePrice ?? 0))
+                            .ConvertToMony() + " تومان",
+                        used = item.Wallet.ConvertToMony() + " تومان",
+                        limit = limit.ConvertToMony() + " تومان",
+                        RobotStatus = 0
+                    };
+
+                    if (limit > 0)
                     {
-                        user.status = 2;
+                        if (item.Wallet >= limit)
+                            user.status = 3;
+                        else if (item.Wallet >= (limit - (limit * 0.2)))
+                            user.status = 2;
                     }
+
                     if (item.Status == false)
-                    {
                         user.status = 4;
-                    }
-                    user.used = item.Wallet.ConvertToMony() + " تومان";
-                    user.limit = item.Limit.Value.ConvertToMony() + " تومان";
-                    user.RobotStatus = 0;
 
                     var bot = BotManager.GetBot(user.username);
-                    if (bot != null)
-                    {
-                        if (bot.Started)
-                        {
-                            user.RobotStatus = 1;
-                        }
-                    }
+                    if (bot != null && bot.Started)
+                        user.RobotStatus = 1;
 
-
-                    users.Add(user);
+                    result.Add(user);
                 }
 
-                return Json(new { data = users }, JsonRequestBehavior.AllowGet);
+                return Json(new { data = result }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "خطا در لود لیست نمایندگان");
-                return MessageBox.Error("خطا", "خطا در لود نمایندگان");
+                return Json(new { data = new List<UserViewModel>() }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -1224,44 +1233,137 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region نمایش لاگ ایجاد یا تمدید کاربر عمده 
         //[AuthorizeApp(Roles = "1,3,4")]
-        public ActionResult GetUserAccountLog(int user_id)
+        public ActionResult GetUserAccountLog(int user_id, string fromDate = null, string toDate = null)
         {
             try
             {
-                var user = RepositoryUser.Where(p => p.User_ID == user_id).FirstOrDefault();
-                var Logs = RepositoryLogs.Where(p => p.tbLinkUserAndPlans.tbUsers.User_ID == user_id).OrderByDescending(p => p.CreateDatetime.Value).ToList();
-                if (Logs != null)
-                {
-                    List<UserLogResponseModel> logs = new List<UserLogResponseModel>();
-                    foreach (var item in Logs)
-                    {
-                        UserLogResponseModel model = new UserLogResponseModel();
-                        model.id = item.log_ID;
-                        model.SubName = item.FK_NameUser_ID.Split('@')[0];
+                var result = BuildAgentHistory(user_id, fromDate, toDate);
+                if (result == null)
+                    return Json(new { data = new List<UserLogResponseModel>(), summary = (AgentHistorySummaryViewModel)null }, JsonRequestBehavior.AllowGet);
 
-                        if (model.SubName.Length > 20)
-                        {
-                            model.SubName = model.SubName.Substring(0, 10);
-                        }
-
-                        model.Event = item.Action;
-                        model.CreateDate = item.CreateDatetime.Value.ConvertDateTimeToShamsi2();
-                        model.SellPrice = item.SalePrice.Value.ConvertToMony();
-                        model.Plan = item.PlanName;
-                        logs.Add(model);
-                    }
-
-                    return Json(new { data = logs }, JsonRequestBehavior.AllowGet);
-                }
-                else
-                {
-                    return View();
-                }
+                return Json(new { data = result.Items, summary = result.Summary }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "در نمایش تاریخچه ساخت کاربر با خطایی مواجه شدیم !!");
-                return View();
+                return Json(new { data = new List<UserLogResponseModel>(), summary = (AgentHistorySummaryViewModel)null }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [AuthorizeApp(Roles = "1,3,4,2")]
+        public ActionResult ExportAgentHistoryPdf(int user_id, string fromDate = null, string toDate = null)
+        {
+            try
+            {
+                var result = BuildAgentHistory(user_id, fromDate, toDate);
+                if (result == null)
+                    return Content("نماینده یافت نشد");
+
+                var pdfBytes = AgentHistoryPdfHelper.Export(result);
+                var safeName = string.IsNullOrWhiteSpace(result.AgentUsername) ? "agent" : result.AgentUsername;
+                var fileName = "agent-history-" + safeName + "-" + DateTime.Now.ToString("yyyyMMddHHmm") + ".pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خروجی PDF تاریخچه اشتراک نماینده با خطا مواجه شد");
+                return Content("خطا در تهیه خروجی PDF");
+            }
+        }
+
+        private AgentHistoryPdfResultViewModel BuildAgentHistory(int user_id, string fromDate, string toDate)
+        {
+            var user = RepositoryUser.Where(p => p.User_ID == user_id).FirstOrDefault();
+            if (user == null)
+                return null;
+
+            DateTime? start = null;
+            DateTime? end = null;
+            if (!string.IsNullOrWhiteSpace(fromDate))
+                start = ParsePersianDate(fromDate).Date;
+            if (!string.IsNullOrWhiteSpace(toDate))
+                end = ParsePersianDate(toDate).Date.AddDays(1).AddSeconds(-1);
+
+            var logs = RepositoryLogs
+                .Where(p => p.tbLinkUserAndPlans != null && p.tbLinkUserAndPlans.L_FK_U_ID == user_id && p.CreateDatetime.HasValue)
+                .ToList()
+                .Where(p =>
+                {
+                    var dt = p.CreateDatetime.Value;
+                    if (start.HasValue && dt < start.Value) return false;
+                    if (end.HasValue && dt > end.Value) return false;
+                    return true;
+                })
+                .OrderByDescending(p => p.CreateDatetime)
+                .ToList();
+
+            var createdAction = Resource.LogActions.U_Created;
+            var editedAction = Resource.LogActions.U_Edited;
+
+            var summary = new AgentHistorySummaryViewModel
+            {
+                CreatedCount = logs.Count(l => l.Action == createdAction),
+                RenewedCount = logs.Count(l => l.Action == editedAction || l.Action == "رزرو بسته"),
+                TotalSalesAmount = logs.Where(l => l.SalePrice.HasValue).Sum(l => l.SalePrice.Value),
+                PaidInvoicesAmount = user.tbUserFactors
+                    .Where(f => f.tbUf_CreateTime.HasValue && f.tbUf_Value.HasValue && (f.tbUf_Status == 2 || f.tbUf_Status == 3))
+                    .Where(f =>
+                    {
+                        var dt = f.tbUf_CreateTime.Value;
+                        if (start.HasValue && dt < start.Value) return false;
+                        if (end.HasValue && dt > end.Value) return false;
+                        return true;
+                    })
+                    .Sum(f => f.tbUf_Value.Value)
+            };
+            summary.TotalSalesAmountFormatted = summary.TotalSalesAmount.ConvertToMony();
+            summary.PaidInvoicesAmountFormatted = summary.PaidInvoicesAmount.ConvertToMony();
+
+            var logModels = logs.Select(item =>
+            {
+                var model = new UserLogResponseModel
+                {
+                    id = item.log_ID,
+                    SubName = item.FK_NameUser_ID?.Split('@')[0] ?? "-",
+                    Event = item.Action,
+                    CreateDate = item.CreateDatetime.Value.ConvertDateTimeToShamsi2(),
+                    SellPrice = item.SalePrice.HasValue ? item.SalePrice.Value.ConvertToMony() : "0",
+                    Plan = item.PlanName
+                };
+                if (model.SubName.Length > 20)
+                    model.SubName = model.SubName.Substring(0, 10);
+                return model;
+            }).ToList();
+
+            var displayName = string.IsNullOrWhiteSpace(user.FullName) ? user.Username : user.FullName;
+
+            return new AgentHistoryPdfResultViewModel
+            {
+                AgentName = displayName,
+                AgentUsername = user.Username,
+                FromDate = start.HasValue ? start.Value.ConvertDateTimeToShamsi2() : "ابتدا",
+                ToDate = end.HasValue ? end.Value.ConvertDateTimeToShamsi2() : "اکنون",
+                GeneratedAt = DateTime.Now.ConvertDateTimeToShamsi2(),
+                Summary = summary,
+                Items = logModels
+            };
+        }
+
+        private static DateTime ParsePersianDate(string date)
+        {
+            try
+            {
+                return DateTime.Parse(date.Trim(), CultureInfo.GetCultureInfo("fa-IR"));
+            }
+            catch
+            {
+                var parts = date.Split('/');
+                if (parts.Length == 3)
+                {
+                    var pc = new PersianCalendar();
+                    return pc.ToDateTime(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), 0, 0, 0, 0);
+                }
+                throw;
             }
         }
 
@@ -1680,7 +1782,6 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpGet]
         public ActionResult _GetSettlementSetting(int user_id)
         {
-            Task.Run(() => SettlementService.ProcessAllAgents());
             var user = RepositoryUser.Where(s => s.User_ID == user_id).FirstOrDefault();
             if (user == null)
                 return Content("کاربر یافت نشد");
@@ -1691,8 +1792,7 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> SaveSettlementSetting(int user_id, bool settlementEnabled = false,
-            string settlementType = "Weekly", int? settlementDayOfWeek = 6, int? settlementDayOfMonth = 1,
-            string settlementStartDate = null)
+            int? settlementDaysAfterPayment = 15, int? settlementPreWarningDays = 2, int? settlementBlockGraceDays = 2)
         {
             try
             {
@@ -1701,34 +1801,15 @@ namespace V2boardApi.Areas.App.Controllers
                     return MessageBox.Warning("ناموفق", "کاربر یافت نشد");
 
                 user.Settlement_Enabled = settlementEnabled;
-                user.Settlement_Type = string.Equals(settlementType, "Monthly", StringComparison.OrdinalIgnoreCase) ? "Monthly" : "Weekly";
-                user.Settlement_DayOfWeek = settlementDayOfWeek ?? (int)DayOfWeek.Saturday;
-                user.Settlement_DayOfMonth = Math.Max(1, Math.Min(31, settlementDayOfMonth ?? 1));
+                user.Settlement_Type = "Rolling";
+                user.Settlement_DayOfMonth = Math.Max(1, Math.Min(365, settlementDaysAfterPayment ?? SettlementService.DefaultDaysAfterLastPayment));
+                user.Settlement_DayOfWeek = Math.Max(0, Math.Min(user.Settlement_DayOfMonth.Value, settlementPreWarningDays ?? SettlementService.DefaultPreWarningDays));
+                user.Settlement_BlockGraceDays = Math.Max(0, Math.Min(30, settlementBlockGraceDays ?? SettlementService.DefaultBlockGraceDays));
 
-                if (!string.IsNullOrWhiteSpace(settlementStartDate))
-                {
-                    try
-                    {
-                        user.Settlement_StartDate = DateTime.Parse(settlementStartDate.Trim(), CultureInfo.GetCultureInfo("fa-IR"));
-                    }
-                    catch
-                    {
-                        var parts = settlementStartDate.Split('/');
-                        if (parts.Length == 3)
-                        {
-                            var pc = new PersianCalendar();
-                            user.Settlement_StartDate = pc.ToDateTime(
-                                int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), 0, 0, 0, 0);
-                        }
-                    }
-                }
-                else if (settlementEnabled && !user.Settlement_StartDate.HasValue)
-                {
+                if (settlementEnabled && !user.Settlement_StartDate.HasValue)
                     user.Settlement_StartDate = DateTime.Now.Date;
-                }
 
-                user.Settlement_LastPreWarning = null;
-                user.Settlement_LastOverdueWarning = null;
+                SettlementService.ResetSettlementWarnings(user);
 
                 if (!settlementEnabled && user.Settlement_IsBlocked)
                 {
@@ -2292,7 +2373,19 @@ namespace V2boardApi.Areas.App.Controllers
                 var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
                 if (user != null)
                 {
-                    var Users = user.tbUsers1.Where(s => s.Status == true).ToList();
+                    List<tbUsers> Users;
+                    if (user.Role == 1)
+                    {
+                        Users = await RepositoryUser.table
+                            .Where(s => s.FK_Server_ID == user.FK_Server_ID && s.Status == true && s.Role != 1)
+                            .OrderBy(s => s.Username)
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        Users = user.tbUsers1.Where(s => s.Status == true).OrderBy(s => s.Username).ToList();
+                    }
+
                     List<SelectUserViewModel> SelectUsers = new List<SelectUserViewModel>();
                     foreach (var User in Users)
                     {

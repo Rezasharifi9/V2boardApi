@@ -236,7 +236,7 @@ $(function () {
                     }
                 }
             ],
-            order: [[2, 'desc']],
+            order: [[3, 'desc']],
             dom:
                 '<"row me-2"' +
                 '<"col-md-2"<"me-3"l>>' +

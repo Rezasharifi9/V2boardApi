@@ -39,3 +39,20 @@ BEGIN
     ALTER TABLE tbUsers ADD Settlement_IsBlocked bit NOT NULL CONSTRAINT DF_tbUsers_Settlement_IsBlocked DEFAULT 0;
 END
 GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'tbUsers') AND name = 'Settlement_BlockGraceDays')
+BEGIN
+    ALTER TABLE tbUsers ADD Settlement_BlockGraceDays int NULL;
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'tbUsers') AND name = 'Settlement_LastDueDayWarning')
+BEGIN
+    ALTER TABLE tbUsers ADD Settlement_LastDueDayWarning datetime NULL;
+END
+GO
+
+-- Settlement_DayOfMonth = مهلت تسویه (روز پس از آخرین پرداخت)
+-- Settlement_DayOfWeek = هشدار قبل از موعد (روز)
+-- Settlement_BlockGraceDays = مهلت مسدودسازی پس از موعد (روز)
+GO

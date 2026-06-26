@@ -407,6 +407,37 @@ namespace V2boardApi.Tools
         }
 
         /// <summary>
+        /// پارس تاریخ فروش ربات از خروجی GetBotSales (شمسی یا میلادی).
+        /// SP تاریخ را با style 120 برمی‌گرداند: yyyy-MM-dd (میلادی).
+        /// </summary>
+        public static bool TryParseBotSaleOrderDate(string orderDate, out DateTime result)
+        {
+            result = default(DateTime);
+            if (string.IsNullOrWhiteSpace(orderDate))
+                return false;
+
+            orderDate = orderDate.Trim();
+
+            // خروجی GetBotSales: CONVERT(..., 120) → مثلاً 2026-06-22
+            if (DateTime.TryParseExact(orderDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out result))
+                return true;
+
+            if (DateTime.TryParseExact(orderDate, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out result))
+                return true;
+
+            if (TryParseShamsiDate(orderDate, out result))
+                return true;
+
+            return DateTime.TryParse(orderDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+        }
+
+        public static DateTime? ParseBotSaleOrderDate(string orderDate)
+        {
+            DateTime dt;
+            return TryParseBotSaleOrderDate(orderDate, out dt) ? (DateTime?)dt : null;
+        }
+
+        /// <summary>
         /// تبدیل میلی ثانیه به تاریخ شمسی
         /// </summary>
         /// <param name="data">میلی ثانیه</param>

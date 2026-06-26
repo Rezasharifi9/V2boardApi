@@ -9,7 +9,15 @@ $(function () {
 
     if (dt_basic_table.length) {
         dt_basic = dt_basic_table.DataTable({
-            ajax: '/App/BotFactors/GetFactores',
+            ajax: {
+                url: '/App/BotFactors/GetAll',
+                type: 'POST',
+                error: function () {
+                    location.replace(location.href);
+                }
+            },
+            processing: true,
+            serverSide: true,
             columns: [
                 { data: '' },
                 { data: 'User' },
@@ -90,9 +98,15 @@ $(function () {
                         var statusObj = {
                             0: { title: 'پرداخت نشده', class: 'bg-label-danger' },
                             1: { title: 'پرداخت شده', class: 'bg-label-success' },
+                            3: { title: 'در انتظار پرداخت', class: 'bg-label-primary' },
+                            4: { title: 'منقضی شده', class: 'bg-label-secondary' },
                         };
 
-                        var $row_output = "<span class='badge " + statusObj[$Traffic].class + "'>" + statusObj[$Traffic].title + "</span>";
+                        var info = statusObj[$Traffic];
+                        if (!info) {
+                            return "<span class='badge bg-label-secondary'>نامشخص</span>";
+                        }
+                        var $row_output = "<span class='badge " + info.class + "'>" + info.title + "</span>";
 
                         return $row_output;
                     }

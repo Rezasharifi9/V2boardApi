@@ -10,7 +10,8 @@
 namespace DataLayer.DomainModel
 {
     using System;
-
+    using System.Collections.Generic;
+    
     public partial class tbPanelChangelogItems
     {
         public int tbPcli_ID { get; set; }
@@ -20,7 +21,7 @@ namespace DataLayer.DomainModel
         public byte tbPcli_Audience { get; set; }
         public int tbPcli_SortOrder { get; set; }
         public bool tbPcli_IsActive { get; set; }
-
+    
         public virtual tbPanelChangelogVersions tbPanelChangelogVersions { get; set; }
     }
 }

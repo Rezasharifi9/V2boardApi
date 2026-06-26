@@ -134,6 +134,7 @@
           <Property Name="tb_status" Type="bit" />
           <Property Name="ExceededCount" Type="int" Nullable="false" />
           <Property Name="ExceededLastTime" Type="datetime" />
+          <Property Name="tbL_ReserveWarnMask" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="tbLinkServerGroupWithUsers">
           <Key>
@@ -213,6 +214,39 @@
           <Property Name="Traffic" Type="float" Nullable="false" />
           <Property Name="Month" Type="float" Nullable="false" />
           <Property Name="Tel_RenewedDate" Type="datetime" />
+        </EntityType>
+        <EntityType Name="tbPanelChangelogItems">
+          <Key>
+            <PropertyRef Name="tbPcli_ID" />
+          </Key>
+          <Property Name="tbPcli_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_Version_ID" Type="int" Nullable="false" />
+          <Property Name="tbPcli_Title" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="tbPcli_Description" Type="nvarchar" MaxLength="1000" Nullable="false" />
+          <Property Name="tbPcli_Audience" Type="tinyint" Nullable="false" />
+          <Property Name="tbPcli_SortOrder" Type="int" Nullable="false" />
+          <Property Name="tbPcli_IsActive" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbPanelChangelogSeen">
+          <Key>
+            <PropertyRef Name="tbPcls_ID" />
+          </Key>
+          <Property Name="tbPcls_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_User_ID" Type="int" Nullable="false" />
+          <Property Name="tbPcls_Version" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="tbPcls_SeenAt" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbPanelChangelogVersions">
+          <Key>
+            <PropertyRef Name="tbPclv_ID" />
+          </Key>
+          <Property Name="tbPclv_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tbPclv_Version" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="tbPclv_ReleaseDate" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="tbPclv_SortOrder" Type="int" Nullable="false" />
+          <Property Name="tbPclv_IsCurrent" Type="bit" Nullable="false" />
+          <Property Name="tbPclv_IsActive" Type="bit" Nullable="false" />
+          <Property Name="tbPclv_CreatedAt" Type="datetime" Nullable="false" />
         </EntityType>
         <EntityType Name="tbPaymentLinks">
           <Key>
@@ -356,30 +390,6 @@
           <Property Name="v2_User_ID" Type="int" />
           <Property Name="Date" Type="datetime" />
         </EntityType>
-        <EntityType Name="tbPanelChangelogVersions">
-          <Key>
-            <PropertyRef Name="tbPclv_ID" />
-          </Key>
-          <Property Name="tbPclv_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="tbPclv_Version" Type="varchar" MaxLength="20" Nullable="false" />
-          <Property Name="tbPclv_ReleaseDate" Type="varchar" MaxLength="20" Nullable="false" />
-          <Property Name="tbPclv_SortOrder" Type="int" Nullable="false" />
-          <Property Name="tbPclv_IsCurrent" Type="bit" Nullable="false" />
-          <Property Name="tbPclv_IsActive" Type="bit" Nullable="false" />
-          <Property Name="tbPclv_CreatedAt" Type="datetime" Nullable="false" />
-        </EntityType>
-        <EntityType Name="tbPanelChangelogItems">
-          <Key>
-            <PropertyRef Name="tbPcli_ID" />
-          </Key>
-          <Property Name="tbPcli_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="FK_Version_ID" Type="int" Nullable="false" />
-          <Property Name="tbPcli_Title" Type="nvarchar" MaxLength="200" Nullable="false" />
-          <Property Name="tbPcli_Description" Type="nvarchar" MaxLength="1000" Nullable="false" />
-          <Property Name="tbPcli_Audience" Type="tinyint" Nullable="false" />
-          <Property Name="tbPcli_SortOrder" Type="int" Nullable="false" />
-          <Property Name="tbPcli_IsActive" Type="bit" Nullable="false" />
-        </EntityType>
         <EntityType Name="tbUserFactors">
           <Key>
             <PropertyRef Name="tbUf_ID" />
@@ -429,6 +439,8 @@
           <Property Name="Settlement_LastPreWarning" Type="datetime" />
           <Property Name="Settlement_LastOverdueWarning" Type="datetime" />
           <Property Name="Settlement_IsBlocked" Type="bit" Nullable="false" />
+          <Property Name="Settlement_BlockGraceDays" Type="int" />
+          <Property Name="Settlement_LastDueDayWarning" Type="datetime" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
@@ -678,6 +690,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbPanelChangelogItems_tbPanelChangelogVersions">
+          <End Role="tbPanelChangelogVersions" Type="Self.tbPanelChangelogVersions" Multiplicity="1" />
+          <End Role="tbPanelChangelogItems" Type="Self.tbPanelChangelogItems" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPanelChangelogVersions">
+              <PropertyRef Name="tbPclv_ID" />
+            </Principal>
+            <Dependent Role="tbPanelChangelogItems">
+              <PropertyRef Name="FK_Version_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbPaymentMethodUser_tbConnectionHelp">
           <End Role="tbConnectionHelp" Type="Self.tbConnectionHelp" Multiplicity="0..1" />
           <End Role="tbPaymentMethodUser" Type="Self.tbPaymentMethodUser" Multiplicity="*" />
@@ -778,18 +802,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_tbPanelChangelogItems_tbPanelChangelogVersions">
-          <End Role="tbPanelChangelogVersions" Type="Self.tbPanelChangelogVersions" Multiplicity="1" />
-          <End Role="tbPanelChangelogItems" Type="Self.tbPanelChangelogItems" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="tbPanelChangelogVersions">
-              <PropertyRef Name="tbPclv_ID" />
-            </Principal>
-            <Dependent Role="tbPanelChangelogItems">
-              <PropertyRef Name="FK_Version_ID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK_tbUserFactors_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
           <End Role="tbUserFactors" Type="Self.tbUserFactors" Multiplicity="*" />
@@ -880,6 +892,9 @@
           <EntitySet Name="tbNotifications" EntityType="Self.tbNotifications" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbNotificationUser" EntityType="Self.tbNotificationUser" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbPanelChangelogItems" EntityType="Self.tbPanelChangelogItems" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbPanelChangelogSeen" EntityType="Self.tbPanelChangelogSeen" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbPanelChangelogVersions" EntityType="Self.tbPanelChangelogVersions" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPaymentLinks" EntityType="Self.tbPaymentLinks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPaymentMethods" EntityType="Self.tbPaymentMethods" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPaymentMethodUser" EntityType="Self.tbPaymentMethodUser" Schema="dbo" store:Type="Tables" />
@@ -890,8 +905,6 @@
           <EntitySet Name="tbSocks5" EntityType="Self.tbSocks5" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbTelegramUsers" EntityType="Self.tbTelegramUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUseages" EntityType="Self.tbUseages" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="tbPanelChangelogVersions" EntityType="Self.tbPanelChangelogVersions" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="tbPanelChangelogItems" EntityType="Self.tbPanelChangelogItems" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUserFactors" EntityType="Self.tbUserFactors" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbUsers" EntityType="Self.tbUsers" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="Self.FK_tbBankCardNumbers_tbUsers">
@@ -970,6 +983,10 @@
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbOrders" EntitySet="tbOrders" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbPanelChangelogItems_tbPanelChangelogVersions" Association="Self.FK_tbPanelChangelogItems_tbPanelChangelogVersions">
+            <End Role="tbPanelChangelogVersions" EntitySet="tbPanelChangelogVersions" />
+            <End Role="tbPanelChangelogItems" EntitySet="tbPanelChangelogItems" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbPaymentMethodUser_tbConnectionHelp" Association="Self.FK_tbPaymentMethodUser_tbConnectionHelp">
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
             <End Role="tbPaymentMethodUser" EntitySet="tbPaymentMethodUser" />
@@ -1001,10 +1018,6 @@
           <AssociationSet Name="FK_tbUseages_tbServers" Association="Self.FK_tbUseages_tbServers">
             <End Role="tbServers" EntitySet="tbServers" />
             <End Role="tbUseages" EntitySet="tbUseages" />
-          </AssociationSet>
-          <AssociationSet Name="FK_tbPanelChangelogItems_tbPanelChangelogVersions" Association="Self.FK_tbPanelChangelogItems_tbPanelChangelogVersions">
-            <End Role="tbPanelChangelogVersions" EntitySet="tbPanelChangelogVersions" />
-            <End Role="tbPanelChangelogItems" EntitySet="tbPanelChangelogItems" />
           </AssociationSet>
           <AssociationSet Name="FK_tbUserFactors_tbUsers" Association="Self.FK_tbUserFactors_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
@@ -1056,6 +1069,12 @@
             <Parameter Name="controllerName" Mode="In" Type="String" />
             <Parameter Name="customData" Mode="In" Type="String" />
           </FunctionImport>
+          <EntitySet Name="tbPanelChangelogVersions" EntityType="V2boardSiteSharifiModel.tbPanelChangelogVersions" />
+          <EntitySet Name="tbPanelChangelogItems" EntityType="V2boardSiteSharifiModel.tbPanelChangelogItems" />
+          <AssociationSet Name="FK_tbPanelChangelogItems_tbPanelChangelogVersions" Association="V2boardSiteSharifiModel.FK_tbPanelChangelogItems_tbPanelChangelogVersions">
+            <End Role="tbPanelChangelogVersions" EntitySet="tbPanelChangelogVersions" />
+            <End Role="tbPanelChangelogItems" EntitySet="tbPanelChangelogItems" />
+          </AssociationSet>
           <EntitySet Name="NLog" EntityType="V2boardSiteSharifiModel.NLog" />
           <EntitySet Name="sysdiagrams" EntityType="V2boardSiteSharifiModel.sysdiagrams" />
           <EntitySet Name="tbBankCardNumbers" EntityType="V2boardSiteSharifiModel.tbBankCardNumbers" />
@@ -1069,6 +1088,7 @@
           <EntitySet Name="tbNotifications" EntityType="V2boardSiteSharifiModel.tbNotifications" />
           <EntitySet Name="tbNotificationUser" EntityType="V2boardSiteSharifiModel.tbNotificationUser" />
           <EntitySet Name="tbOrders" EntityType="V2boardSiteSharifiModel.tbOrders" />
+          <EntitySet Name="tbPanelChangelogSeen" EntityType="V2boardSiteSharifiModel.tbPanelChangelogSeen" />
           <EntitySet Name="tbPaymentLinks" EntityType="V2boardSiteSharifiModel.tbPaymentLinks" />
           <EntitySet Name="tbPaymentMethods" EntityType="V2boardSiteSharifiModel.tbPaymentMethods" />
           <EntitySet Name="tbPaymentMethodUser" EntityType="V2boardSiteSharifiModel.tbPaymentMethodUser" />
@@ -1079,8 +1099,6 @@
           <EntitySet Name="tbSocks5" EntityType="V2boardSiteSharifiModel.tbSocks5" />
           <EntitySet Name="tbTelegramUsers" EntityType="V2boardSiteSharifiModel.tbTelegramUsers" />
           <EntitySet Name="tbUseages" EntityType="V2boardSiteSharifiModel.tbUseages" />
-          <EntitySet Name="tbPanelChangelogVersions" EntityType="V2boardSiteSharifiModel.tbPanelChangelogVersions" />
-          <EntitySet Name="tbPanelChangelogItems" EntityType="V2boardSiteSharifiModel.tbPanelChangelogItems" />
           <EntitySet Name="tbUserFactors" EntityType="V2boardSiteSharifiModel.tbUserFactors" />
           <EntitySet Name="tbUsers" EntityType="V2boardSiteSharifiModel.tbUsers" />
           <AssociationSet Name="FK_tbBankCardNumbers_tbUsers" Association="V2boardSiteSharifiModel.FK_tbBankCardNumbers_tbUsers">
@@ -1199,10 +1217,6 @@
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
             <End Role="tbUsers" EntitySet="tbUsers" />
           </AssociationSet>
-          <AssociationSet Name="FK_tbPanelChangelogItems_tbPanelChangelogVersions" Association="V2boardSiteSharifiModel.FK_tbPanelChangelogItems_tbPanelChangelogVersions">
-            <End Role="tbPanelChangelogVersions" EntitySet="tbPanelChangelogVersions" />
-            <End Role="tbPanelChangelogItems" EntitySet="tbPanelChangelogItems" />
-          </AssociationSet>
           <AssociationSet Name="FK_tbUserFactors_tbUsers" Association="V2boardSiteSharifiModel.FK_tbUserFactors_tbUsers">
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUserFactors" EntitySet="tbUserFactors" />
@@ -1211,7 +1225,7 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbUsers1" EntitySet="tbUsers" />
           </AssociationSet>
-        </EntityContainer>
+          </EntityContainer>
         <ComplexType Name="GetBotSales_Result">
           <Property Type="String" Name="OrderDate" Nullable="true" MaxLength="10" />
           <Property Type="String" Name="Username" Nullable="true" MaxLength="150" />
@@ -1237,6 +1251,44 @@
           <Property Type="Double" Name="SalePrice" Nullable="true" />
           <Property Type="DateTime" Name="CreateDate" Nullable="true" />
         </ComplexType>
+        <EntityType Name="tbPanelChangelogVersions">
+          <Key>
+            <PropertyRef Name="tbPclv_ID" />
+          </Key>
+          <Property Name="tbPclv_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbPclv_Version" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="tbPclv_ReleaseDate" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="tbPclv_SortOrder" Type="Int32" Nullable="false" />
+          <Property Name="tbPclv_IsCurrent" Type="Boolean" Nullable="false" />
+          <Property Name="tbPclv_IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="tbPclv_CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="tbPanelChangelogItems" Relationship="V2boardSiteSharifiModel.FK_tbPanelChangelogItems_tbPanelChangelogVersions" FromRole="tbPanelChangelogVersions" ToRole="tbPanelChangelogItems" />
+        </EntityType>
+        <EntityType Name="tbPanelChangelogItems">
+          <Key>
+            <PropertyRef Name="tbPcli_ID" />
+          </Key>
+          <Property Name="tbPcli_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_Version_ID" Type="Int32" Nullable="false" />
+          <Property Name="tbPcli_Title" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="tbPcli_Description" Type="String" Nullable="false" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="tbPcli_Audience" Type="Byte" Nullable="false" />
+          <Property Name="tbPcli_SortOrder" Type="Int32" Nullable="false" />
+          <Property Name="tbPcli_IsActive" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="tbPanelChangelogVersions" Relationship="V2boardSiteSharifiModel.FK_tbPanelChangelogItems_tbPanelChangelogVersions" FromRole="tbPanelChangelogItems" ToRole="tbPanelChangelogVersions" />
+        </EntityType>
+        <Association Name="FK_tbPanelChangelogItems_tbPanelChangelogVersions">
+          <End Type="V2boardSiteSharifiModel.tbPanelChangelogVersions" Role="tbPanelChangelogVersions" Multiplicity="1" />
+          <End Type="V2boardSiteSharifiModel.tbPanelChangelogItems" Role="tbPanelChangelogItems" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbPanelChangelogVersions">
+              <PropertyRef Name="tbPclv_ID" />
+            </Principal>
+            <Dependent Role="tbPanelChangelogItems">
+              <PropertyRef Name="FK_Version_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityType Name="NLog">
           <Key>
             <PropertyRef Name="ID" />
@@ -1376,6 +1428,7 @@
           <Property Name="tb_status" Type="Boolean" />
           <Property Name="ExceededCount" Type="Int32" Nullable="false" />
           <Property Name="ExceededLastTime" Type="DateTime" Precision="3" />
+          <Property Name="tbL_ReserveWarnMask" Type="Int32" Nullable="false" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteSharifiModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteSharifiModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
         </EntityType>
@@ -1470,6 +1523,15 @@
           <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbOrders" FromRole="tbOrders" ToRole="tbDepositWallet_Log" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteSharifiModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbOrders" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteSharifiModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
+        </EntityType>
+        <EntityType Name="tbPanelChangelogSeen">
+          <Key>
+            <PropertyRef Name="tbPcls_ID" />
+          </Key>
+          <Property Name="tbPcls_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
+          <Property Name="tbPcls_Version" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="tbPcls_SeenAt" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
         <EntityType Name="tbPaymentLinks">
           <Key>
@@ -1635,32 +1697,6 @@
           <Property Name="Date" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteSharifiModel.FK_tbUseages_tbServers" FromRole="tbUseages" ToRole="tbServers" />
         </EntityType>
-        <EntityType Name="tbPanelChangelogVersions">
-          <Key>
-            <PropertyRef Name="tbPclv_ID" />
-          </Key>
-          <Property Name="tbPclv_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="tbPclv_Version" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="tbPclv_ReleaseDate" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="tbPclv_SortOrder" Type="Int32" Nullable="false" />
-          <Property Name="tbPclv_IsCurrent" Type="Boolean" Nullable="false" />
-          <Property Name="tbPclv_IsActive" Type="Boolean" Nullable="false" />
-          <Property Name="tbPclv_CreatedAt" Type="DateTime" Nullable="false" Precision="3" />
-          <NavigationProperty Name="tbPanelChangelogItems" Relationship="V2boardSiteSharifiModel.FK_tbPanelChangelogItems_tbPanelChangelogVersions" FromRole="tbPanelChangelogVersions" ToRole="tbPanelChangelogItems" />
-        </EntityType>
-        <EntityType Name="tbPanelChangelogItems">
-          <Key>
-            <PropertyRef Name="tbPcli_ID" />
-          </Key>
-          <Property Name="tbPcli_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="FK_Version_ID" Type="Int32" Nullable="false" />
-          <Property Name="tbPcli_Title" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
-          <Property Name="tbPcli_Description" Type="String" Nullable="false" MaxLength="1000" FixedLength="false" Unicode="true" />
-          <Property Name="tbPcli_Audience" Type="Byte" Nullable="false" />
-          <Property Name="tbPcli_SortOrder" Type="Int32" Nullable="false" />
-          <Property Name="tbPcli_IsActive" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="tbPanelChangelogVersions" Relationship="V2boardSiteSharifiModel.FK_tbPanelChangelogItems_tbPanelChangelogVersions" FromRole="tbPanelChangelogItems" ToRole="tbPanelChangelogVersions" />
-        </EntityType>
         <EntityType Name="tbUserFactors">
           <Key>
             <PropertyRef Name="tbUf_ID" />
@@ -1711,6 +1747,8 @@
           <Property Name="Settlement_LastPreWarning" Type="DateTime" Precision="3" />
           <Property Name="Settlement_LastOverdueWarning" Type="DateTime" Precision="3" />
           <Property Name="Settlement_IsBlocked" Type="Boolean" Nullable="false" />
+          <Property Name="Settlement_BlockGraceDays" Type="Int32" />
+          <Property Name="Settlement_LastDueDayWarning" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteSharifiModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteSharifiModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteSharifiModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
@@ -2098,18 +2136,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_tbPanelChangelogItems_tbPanelChangelogVersions">
-          <End Type="V2boardSiteSharifiModel.tbPanelChangelogVersions" Role="tbPanelChangelogVersions" Multiplicity="1" />
-          <End Type="V2boardSiteSharifiModel.tbPanelChangelogItems" Role="tbPanelChangelogItems" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="tbPanelChangelogVersions">
-              <PropertyRef Name="tbPclv_ID" />
-            </Principal>
-            <Dependent Role="tbPanelChangelogItems">
-              <PropertyRef Name="FK_Version_ID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK_tbUserFactors_tbUsers">
           <End Type="V2boardSiteSharifiModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
           <End Type="V2boardSiteSharifiModel.tbUserFactors" Role="tbUserFactors" Multiplicity="*" />
@@ -2134,7 +2160,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-      </Schema>
+        </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
@@ -2182,6 +2208,32 @@
             </ResultMapping>
           </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="NLog_AddEntry_p" FunctionName="V2boardSiteSharifiModel.Store.NLog_AddEntry_p" />
+          <EntitySetMapping Name="tbPanelChangelogItems">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbPanelChangelogItems">
+              <MappingFragment StoreEntitySet="tbPanelChangelogItems">
+                <ScalarProperty Name="tbPcli_IsActive" ColumnName="tbPcli_IsActive" />
+                <ScalarProperty Name="tbPcli_SortOrder" ColumnName="tbPcli_SortOrder" />
+                <ScalarProperty Name="tbPcli_Audience" ColumnName="tbPcli_Audience" />
+                <ScalarProperty Name="tbPcli_Description" ColumnName="tbPcli_Description" />
+                <ScalarProperty Name="tbPcli_Title" ColumnName="tbPcli_Title" />
+                <ScalarProperty Name="FK_Version_ID" ColumnName="FK_Version_ID" />
+                <ScalarProperty Name="tbPcli_ID" ColumnName="tbPcli_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbPanelChangelogVersions">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbPanelChangelogVersions">
+              <MappingFragment StoreEntitySet="tbPanelChangelogVersions">
+                <ScalarProperty Name="tbPclv_CreatedAt" ColumnName="tbPclv_CreatedAt" />
+                <ScalarProperty Name="tbPclv_IsActive" ColumnName="tbPclv_IsActive" />
+                <ScalarProperty Name="tbPclv_IsCurrent" ColumnName="tbPclv_IsCurrent" />
+                <ScalarProperty Name="tbPclv_SortOrder" ColumnName="tbPclv_SortOrder" />
+                <ScalarProperty Name="tbPclv_ReleaseDate" ColumnName="tbPclv_ReleaseDate" />
+                <ScalarProperty Name="tbPclv_Version" ColumnName="tbPclv_Version" />
+                <ScalarProperty Name="tbPclv_ID" ColumnName="tbPclv_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="NLog">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.NLog">
               <MappingFragment StoreEntitySet="NLog">
@@ -2302,6 +2354,7 @@
           <EntitySetMapping Name="tbLinks">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbLinks">
               <MappingFragment StoreEntitySet="tbLinks">
+                <ScalarProperty Name="tbL_ReserveWarnMask" ColumnName="tbL_ReserveWarnMask" />
                 <ScalarProperty Name="ExceededLastTime" ColumnName="ExceededLastTime" />
                 <ScalarProperty Name="ExceededCount" ColumnName="ExceededCount" />
                 <ScalarProperty Name="tb_status" ColumnName="tb_status" />
@@ -2401,6 +2454,16 @@
                 <ScalarProperty Name="FK_Link_Plan_ID" ColumnName="FK_Link_Plan_ID" />
                 <ScalarProperty Name="V2_Plan_ID" ColumnName="V2_Plan_ID" />
                 <ScalarProperty Name="Order_ID" ColumnName="Order_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbPanelChangelogSeen">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbPanelChangelogSeen">
+              <MappingFragment StoreEntitySet="tbPanelChangelogSeen">
+                <ScalarProperty Name="tbPcls_SeenAt" ColumnName="tbPcls_SeenAt" />
+                <ScalarProperty Name="tbPcls_Version" ColumnName="tbPcls_Version" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="tbPcls_ID" ColumnName="tbPcls_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -2556,32 +2619,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="tbPanelChangelogItems">
-            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbPanelChangelogItems">
-              <MappingFragment StoreEntitySet="tbPanelChangelogItems">
-                <ScalarProperty Name="tbPcli_IsActive" ColumnName="tbPcli_IsActive" />
-                <ScalarProperty Name="tbPcli_SortOrder" ColumnName="tbPcli_SortOrder" />
-                <ScalarProperty Name="tbPcli_Audience" ColumnName="tbPcli_Audience" />
-                <ScalarProperty Name="tbPcli_Description" ColumnName="tbPcli_Description" />
-                <ScalarProperty Name="tbPcli_Title" ColumnName="tbPcli_Title" />
-                <ScalarProperty Name="FK_Version_ID" ColumnName="FK_Version_ID" />
-                <ScalarProperty Name="tbPcli_ID" ColumnName="tbPcli_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tbPanelChangelogVersions">
-            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbPanelChangelogVersions">
-              <MappingFragment StoreEntitySet="tbPanelChangelogVersions">
-                <ScalarProperty Name="tbPclv_CreatedAt" ColumnName="tbPclv_CreatedAt" />
-                <ScalarProperty Name="tbPclv_IsActive" ColumnName="tbPclv_IsActive" />
-                <ScalarProperty Name="tbPclv_IsCurrent" ColumnName="tbPclv_IsCurrent" />
-                <ScalarProperty Name="tbPclv_SortOrder" ColumnName="tbPclv_SortOrder" />
-                <ScalarProperty Name="tbPclv_ReleaseDate" ColumnName="tbPclv_ReleaseDate" />
-                <ScalarProperty Name="tbPclv_Version" ColumnName="tbPclv_Version" />
-                <ScalarProperty Name="tbPclv_ID" ColumnName="tbPclv_ID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="tbUserFactors">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbUserFactors">
               <MappingFragment StoreEntitySet="tbUserFactors">
@@ -2598,6 +2635,8 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="Settlement_LastDueDayWarning" ColumnName="Settlement_LastDueDayWarning" />
+                <ScalarProperty Name="Settlement_BlockGraceDays" ColumnName="Settlement_BlockGraceDays" />
                 <ScalarProperty Name="Settlement_IsBlocked" ColumnName="Settlement_IsBlocked" />
                 <ScalarProperty Name="Settlement_LastOverdueWarning" ColumnName="Settlement_LastOverdueWarning" />
                 <ScalarProperty Name="Settlement_LastPreWarning" ColumnName="Settlement_LastPreWarning" />

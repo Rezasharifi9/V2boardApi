@@ -110,6 +110,71 @@
         </ul>
         @if (ViewBag.Type == "history")
         {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label" for="agentHistoryFromDate">از تاریخ</label>
+                            <input type="text" id="agentHistoryFromDate" class="form-control" placeholder="1404/01/01" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="agentHistoryToDate">تا تاریخ</label>
+                            <input type="text" id="agentHistoryToDate" class="form-control" placeholder="1404/03/01" />
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="btnApplyAgentHistoryFilter" class="btn btn-primary w-100">
+                                <i class="ti ti-filter me-1"></i>اعمال فیلتر
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="btnClearAgentHistoryFilter" class="btn btn-label-secondary w-100">
+                                پاک کردن
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-12 text-end">
+                            <button type="button" id="btnExportAgentHistoryPdf" class="btn btn-label-primary">
+                                <i class="ti ti-file-download me-1"></i>دانلود گزارش PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mb-4 d-none" id="agentHistorySummary">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border shadow-none">
+                        <div class="card-body py-3">
+                            <small class="text-muted d-block mb-1">اشتراک ساخته‌شده</small>
+                            <strong id="summaryCreatedCount" class="text-primary">0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border shadow-none">
+                        <div class="card-body py-3">
+                            <small class="text-muted d-block mb-1">اشتراک تمدید شده</small>
+                            <strong id="summaryRenewedCount" class="text-info">0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border shadow-none bg-label-success">
+                        <div class="card-body py-3">
+                            <small class="text-muted d-block mb-1">مبلغ فروش</small>
+                            <strong id="summarySalesAmount">0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border shadow-none">
+                        <div class="card-body py-3">
+                            <small class="text-muted d-block mb-1">فاکتورهای پرداخت‌شده</small>
+                            <strong id="summaryPaidInvoices">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="card mb-4">
                 <div class="table-responsive mb-3">
                     <table class="table datatable-sub border-top">
@@ -314,17 +379,17 @@
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
     <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
-    <script src="../../assets/libs/jdate/jdate.js"></script>
-    <script src="../../assets/libs/flatpickr/flatpickr-jalali.js"></script>
-    <script src="../../assets/libs/flatpickr/l10n/fa.js"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/jdate/jdate.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/flatpickr/flatpickr-jalali.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/flatpickr/l10n/fa.js")"></script>
 }
 
 
 @section customScripts {
 
-    <script src="../../assets/js/modal-edit-wallet.js"></script>
-    <script src="../../assets/js/app-user-view.js"></script>
-    <script src="../../assets/js/app-user-view-account.js?v1"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/modal-edit-wallet.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/app-user-view.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/app-user-view-account.js")"></script>
 
 
 
@@ -523,65 +588,11 @@
                 });
 
         // --- تنظیمات تسویه ---
-        var settlementPickerInstance = null;
-
-        function toggleSettlementFields() {
-            var type = $("#settlementType").val();
-            if (type === "Monthly") {
-                $("#settlementWeekDayWrap").addClass("d-none");
-                $("#settlementMonthDayWrap").removeClass("d-none");
-            } else {
-                $("#settlementWeekDayWrap").removeClass("d-none");
-                $("#settlementMonthDayWrap").addClass("d-none");
-            }
-        }
-
-        function initSettlementPicker() {
-            var pickerEl = document.querySelector('#settlement-start-picker');
-            if (!pickerEl || typeof flatpickr === 'undefined') return;
-
-            if (settlementPickerInstance) {
-                settlementPickerInstance.destroy();
-                settlementPickerInstance = null;
-            }
-
-            var $form = $('#settlementSettingForm');
-            var startDate = $form.data('start-date') || pickerEl.value || '';
-            var opts = {
-                disableMobile: "true",
-                altInput: true,
-                altFormat: 'j F Y',
-                dateFormat: 'Y/m/d',
-                locale: 'fa'
-            };
-            if (startDate) {
-                opts.defaultDate = startDate;
-            }
-            settlementPickerInstance = flatpickr(pickerEl, opts);
-        }
-
-        function initSettlementTab() {
-            if (!$('#settlementSettingForm').length) return;
-
-            toggleSettlementFields();
-            initSettlementPicker();
-        }
-
-        $(document).on('change', '#settlementType', toggleSettlementFields);
-
-        $('button[data-bs-target="#form-tabs-settlement"]').on('shown.bs.tab', function () {
-            initSettlementTab();
-        });
-
         $(document).on('click', '#saveSettlementSetting', function () {
             AjaxFormPost('/App/Admin/SaveSettlementSetting', '#settlementSettingForm').then(function (res) {
                 if (res && res.data) eval(res.data);
             });
         });
-
-        if ($('#form-tabs-settlement').hasClass('active') || window.location.search.indexOf('type=Settings') > -1) {
-            setTimeout(initSettlementTab, 300);
-        }
     </script>
 
 }

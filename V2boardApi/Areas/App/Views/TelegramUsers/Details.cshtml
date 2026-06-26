@@ -85,6 +85,7 @@
                                 <th>تاریخ ایجاد</th>
                                 <th>مبلغ</th>
                                 <th>وضعیت</th>
+                                <th>عملیات</th>
                             </tr>
                         </thead>
                     </table>
@@ -114,6 +115,7 @@
                                 <th>حجم باقی مانده</th>
                                 <th>تاریخ انقضا</th>
                                 <th>وضعیت</th>
+                                <th>عملیات</th>
 
                             </tr>
                         </thead>
@@ -177,6 +179,30 @@
 
 <!--/ Edit Wallet Modal -->
 
+<form id="telegramUserActionForm" class="d-none">
+    @Html.AntiForgeryToken()
+</form>
+
+<div aria-hidden="true" class="modal fade" id="modalMoveAccount" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">انتقال اشتراک</h5>
+                <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">اشتراک: <strong id="moveAccountSubName"></strong></p>
+                <label class="form-label" for="moveAccountTarget">انتقال به مشترک</label>
+                <select class="form-select select2" id="moveAccountTarget" style="width: 100%;"></select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-label-secondary" data-bs-dismiss="modal" type="button">انصراف</button>
+                <button class="btn btn-primary" id="btnConfirmMoveAccount" type="button">انتقال</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @section vendorScripts {
 
@@ -197,9 +223,9 @@
 
 @section customScripts {
 
-    <script src="../../assets/js/modal-edit-wallet.js"></script>
-    <script src="../../assets/js/app-user-view.js"></script>
-    <script src="../../assets/js/app-telegramuser-view-account.js"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/modal-edit-wallet.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/app-user-view.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/app-telegramuser-view-account.js")"></script>
 
 
     <script>

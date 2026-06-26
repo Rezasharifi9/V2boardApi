@@ -49,75 +49,37 @@ namespace V2boardApi.Areas.App.Controllers
         public async Task<ActionResult> _WeeklyDataReport()
         {
             var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
-            // ایجاد یک نمونه از PersianCalendar
-            PersianCalendar persianCalendar = new PersianCalendar();
+            var persianCalendar = new PersianCalendar();
+            var today = DateTime.Now;
+            var weekBounds = DashboardSalesHelper.GetPersianWeekBounds(today);
+            var salesData = DashboardSalesHelper.LoadSalesData(db);
 
-            // تاریخ امروز میلادی
-            DateTime today = DateTime.Now.Date;
-
-            // استخراج روز جاری هفته (0 برای شنبه)
-            DayOfWeek dayOfWeek = persianCalendar.GetDayOfWeek(today);
-
-            // محاسبه شروع هفته جاری (شنبه این هفته)
-            int dayOfWeekInPersian = (int)today.DayOfWeek == 6 ? 0 : (int)today.DayOfWeek + 1;
-            DateTime startOfThisWeek = today.AddDays(-dayOfWeekInPersian);
-
-            // محاسبه شروع هفته گذشته
-            DateTime startOfLastWeek = startOfThisWeek.AddDays(-7); // 7 روز قبل از شروع این هفته
-
-            // محاسبه پایان هفته گذشته (جمعه هفته گذشته)
-            DateTime endOfLastWeek = startOfLastWeek.AddDays(6); // 6 روز بعد از شروع هفته گذشته
-
-            // تبدیل تاریخ شروع هفته گذشته به شمسی
-            int startOfLastWeekYear = persianCalendar.GetYear(startOfLastWeek);
-            int startOfLastWeekMonth = persianCalendar.GetMonth(startOfLastWeek);
-            int startOfLastWeekDay = persianCalendar.GetDayOfMonth(startOfLastWeek);
-
-            // تبدیل تاریخ پایان هفته گذشته به شمسی
-            int endOfLastWeekYear = persianCalendar.GetYear(endOfLastWeek);
-            int endOfLastWeekMonth = persianCalendar.GetMonth(endOfLastWeek);
-            int endOfLastWeekDay = persianCalendar.GetDayOfMonth(endOfLastWeek);
+            var nowYear = persianCalendar.GetYear(today);
+            var nowMonth = persianCalendar.GetMonth(today);
 
             WeeklyDataReportViewModel wkData = new WeeklyDataReportViewModel();
 
-            var Year = persianCalendar.GetYear(DateTime.Now);
-            var Month = persianCalendar.GetMonth(DateTime.Now);
-            var FirstMonth = persianCalendar.ToDateTime(Year, Month,1,0,0,0,0);
+            var thisWeekSale = DashboardSalesHelper.SumSalesInRange(
+                salesData, weekBounds.ThisWeekStart, weekBounds.ThisWeekEnd);
+            var oldWeekSale = DashboardSalesHelper.SumSalesInRange(
+                salesData, weekBounds.LastWeekStart, weekBounds.LastWeekEnd);
+            var sellMonth = DashboardSalesHelper.SumSalesForPersianMonth(
+                salesData, nowYear, nowMonth, DashboardSalesHelper.GetPassedDaysInPersianMonth(today));
 
+            wkData.Sale = (long)Math.Round(thisWeekSale, 0);
+            wkData.ProfitSale = DashboardSalesHelper.CalcChangePercent(thisWeekSale, oldWeekSale);
 
-            double SellMonth = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= FirstMonth).Sum(s => s.SalePrice.Value);
-            SellMonth += db.GetUserSales().Where(s => s.CreateDate >= FirstMonth).Sum(s => s.SalePrice.Value);
-            SellMonth += db.GetMasterUserSales().Where(s => s.CreateDate >= FirstMonth).Sum(s => s.SalePrice.Value);
-
-            var ThisWeekSale = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= startOfThisWeek).Sum(s => s.SalePrice);
-            ThisWeekSale += db.GetUserSales().Where(s => s.CreateDate >= startOfThisWeek).Sum(s => s.SalePrice);
-            ThisWeekSale += db.GetMasterUserSales().Where(s => s.CreateDate >= startOfThisWeek).Sum(s => s.SalePrice);
-
-
-            var OldWeekSale = db.GetBotSales().Where(s => Convert.ToDateTime(s.OrderDate) >= startOfLastWeek && Convert.ToDateTime(s.OrderDate) <= startOfThisWeek).Sum(s => s.SalePrice);
-            OldWeekSale += db.GetUserSales().Where(s => s.CreateDate >= startOfLastWeek && s.CreateDate <= endOfLastWeek).Sum(s => s.SalePrice);
-            OldWeekSale += db.GetMasterUserSales().Where(s => s.CreateDate >= startOfLastWeek && s.CreateDate <= endOfLastWeek).Sum(s => s.SalePrice);
-
-
-            wkData.Sale = (long)ThisWeekSale;
-            wkData.ProfitSale = Math.Round((double)(((double)(ThisWeekSale - OldWeekSale) / OldWeekSale) * 100), 2);
-
-            var PassedDayes = (DateTime.Now - FirstMonth).Days + 1;
-
-
-
-            wkData.SellAvg = SellMonth / PassedDayes;
-
-
+            var passedDays = DashboardSalesHelper.GetPassedDaysInPersianMonth(today);
+            wkData.SellAvg = passedDays > 0 ? sellMonth / passedDays : 0;
 
             using (MySqlEntities mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString))
             {
 
                 await mySqlEntities.OpenAsync();
 
-                var ThisWeekUnix = Utility.ConvertDatetimeToSecond(startOfThisWeek);
-                var OldWeekUnix = Utility.ConvertDatetimeToSecond(startOfLastWeek);
-                var OldEndWeekUnix = Utility.ConvertDatetimeToSecond(endOfLastWeek);
+                var ThisWeekUnix = Utility.ConvertDatetimeToSecond(weekBounds.ThisWeekStart);
+                var OldWeekUnix = Utility.ConvertDatetimeToSecond(weekBounds.LastWeekStart);
+                var OldEndWeekUnix = Utility.ConvertDatetimeToSecond(weekBounds.LastWeekEnd);
 
 
 
@@ -134,7 +96,7 @@ namespace V2boardApi.Areas.App.Controllers
                 await OldReader.ReadAsync();
                 var OldWeekCountSub = OldReader.GetInt32("CountUser");
                 OldReader.Close();
-                wkData.ProfitSub = Math.Round(((double)(ThisWeekCountSub - OldWeekCountSub) / OldWeekCountSub) * 100, 2);
+                wkData.ProfitSub = DashboardSalesHelper.CalcChangePercent(ThisWeekCountSub, OldWeekCountSub);
                 wkData.Subscriptions = ThisWeekCountSub;
 
 
@@ -154,7 +116,7 @@ namespace V2boardApi.Areas.App.Controllers
                 OldReader.Close();
 
 
-                wkData.ProfitUseage = Math.Round(((double)(ThisUseageWeek - OldUseageWeek) / OldUseageWeek) * 100, 2);
+                wkData.ProfitUseage = DashboardSalesHelper.CalcChangePercent(ThisUseageWeek, OldUseageWeek);
                 wkData.SubscriptionUseage = Math.Round(Utility.ConvertByteToGB(ThisUseageWeek), 2);
 
                 await mySqlEntities.CloseAsync();
@@ -174,34 +136,18 @@ namespace V2boardApi.Areas.App.Controllers
             var Pc = new PersianCalendar();
 
             var data = new List<_PerformanceSysViewModel>();
-
-
+            var salesData = DashboardSalesHelper.LoadSalesData(db);
 
             var NowYear = Pc.GetYear(DateTime.Now);
             var NowMonth = Pc.GetMonth(DateTime.Now);
             var NowDay = Pc.GetDayOfMonth(DateTime.Now);
-            var BotSales = db.GetBotSales().Where(s => Pc.GetYear(Convert.ToDateTime(s.OrderDate)) == NowYear).ToList();
-            var UserSales = db.GetUserSales().Where(s => Pc.GetYear(s.CreateDate.Value) == NowYear).ToList();
-            var MasterUserSales = db.GetMasterUserSales().Where(s => Pc.GetYear(s.CreateDate.Value) == NowYear).ToList();
-
-
 
             _PerformanceSysViewModel model = new _PerformanceSysViewModel();
-            List<double> list_kol = new List<double>();
+            List<double> list_kol = DashboardSalesHelper.BuildPersianMonthChartData(salesData, NowYear, NowMonth, NowDay);
             List<string> list_date = new List<string>();
 
-
             for (int i = 1; i <= NowDay; i++)
-            {
-                var BotSum = BotSales.Where(s => Pc.GetDayOfMonth(Convert.ToDateTime(s.OrderDate)) == i && Pc.GetMonth(Convert.ToDateTime(s.OrderDate)) == NowMonth).Sum(s => s.SalePrice.Value);
-                var UserSaleSum = UserSales.Where(s => Pc.GetDayOfMonth(Convert.ToDateTime(s.CreateDate)) == i && Pc.GetMonth(Convert.ToDateTime(s.CreateDate)) == NowMonth).Sum(s => s.SalePrice);
-                var MasterUserSUm = MasterUserSales.Where(s => Pc.GetDayOfMonth(Convert.ToDateTime(s.CreateDate)) == i && Pc.GetMonth(Convert.ToDateTime(s.CreateDate)) == NowMonth).Sum(s => s.SalePrice);
-
-                double sum = (double)(BotSum + UserSaleSum + MasterUserSUm) / 1000;
-
-                list_kol.Add(Math.Round(sum,0));
                 list_date.Add(i.ToString());
-            }
 
             model.id = 1;
             model.active_option = NowDay;
@@ -212,25 +158,39 @@ namespace V2boardApi.Areas.App.Controllers
 
 
             _PerformanceSysViewModel model_agent = new _PerformanceSysViewModel();
-            List<Tuple<double, string>> salesData = new List<Tuple<double, string>>();
+            List<Tuple<double, string>> agentSales = new List<Tuple<double, string>>();
 
             var agents = user.tbUsers1.Where(s => s.Status == true)
                                    .ToList();
 
             foreach (var agent in agents)
             {
-                var BotSum = BotSales.Where(s => s.Username == agent.Username && Pc.GetMonth(Convert.ToDateTime(s.OrderDate)) == NowMonth).Sum(s => s.SalePrice.Value);
-                var UserSaleSum = UserSales.Where(s => s.Username == agent.Username && Pc.GetMonth(Convert.ToDateTime(s.CreateDate)) == NowMonth).Sum(s => s.SalePrice);
-                var MasterUserSUm = MasterUserSales.Where(s => s.Username == agent.Username && Pc.GetMonth(Convert.ToDateTime(s.CreateDate)) == NowMonth).Sum(s => s.SalePrice);
+                var BotSum = salesData.BotSales
+                    .Where(s => string.Equals(s.Username, agent.Username, StringComparison.OrdinalIgnoreCase))
+                    .Select(s => new { Item = s, Date = Utility.ParseBotSaleOrderDate(s.OrderDate) })
+                    .Where(x => x.Date.HasValue
+                        && Pc.GetYear(x.Date.Value) == NowYear
+                        && Pc.GetMonth(x.Date.Value) == NowMonth)
+                    .Sum(x => x.Item.SalePrice ?? 0);
+                var UserSaleSum = salesData.UserSales
+                    .Where(s => string.Equals(s.Username, agent.Username, StringComparison.OrdinalIgnoreCase)
+                        && s.CreateDate.HasValue
+                        && Pc.GetYear(s.CreateDate.Value) == NowYear
+                        && Pc.GetMonth(s.CreateDate.Value) == NowMonth)
+                    .Sum(s => s.SalePrice ?? 0);
+                var MasterUserSUm = salesData.MasterSales
+                    .Where(s => string.Equals(s.Username, agent.Username, StringComparison.OrdinalIgnoreCase)
+                        && s.CreateDate.HasValue
+                        && Pc.GetYear(s.CreateDate.Value) == NowYear
+                        && Pc.GetMonth(s.CreateDate.Value) == NowMonth)
+                    .Sum(s => s.SalePrice ?? 0);
 
-                double sum = (double)(BotSum + UserSaleSum + MasterUserSUm) / 1000;
+                double sum = (BotSum + UserSaleSum + MasterUserSUm) / 1000d;
 
-                // Add to salesData list for sorting later
-                salesData.Add(new Tuple<double, string>(sum, agent.Username));
+                agentSales.Add(new Tuple<double, string>(Math.Round(sum, 0), agent.Username));
             }
 
-            // Sort salesData by sum in descending order
-            var sortedSalesData = salesData.OrderByDescending(s => s.Item1).Take(12).ToList();
+            var sortedSalesData = agentSales.OrderByDescending(s => s.Item1).Take(12).ToList();
 
             // Extract sorted values into list_sell and list_agent
             List<double> list_sell = sortedSalesData.Select(s => s.Item1).ToList();
@@ -251,11 +211,15 @@ namespace V2boardApi.Areas.App.Controllers
 
             for (int i = 1; i <= NowDay; i++)
             {
-                var BotSum = BotSales.Where(s => Pc.GetDayOfMonth(Convert.ToDateTime(s.OrderDate)) == i && Pc.GetMonth(Convert.ToDateTime(s.OrderDate)) == NowMonth).Sum(s => s.SalePrice.Value);
+                var botDayAmount = salesData.BotSales
+                    .Select(s => new { Item = s, Date = Utility.ParseBotSaleOrderDate(s.OrderDate) })
+                    .Where(x => x.Date.HasValue
+                        && Pc.GetYear(x.Date.Value) == NowYear
+                        && Pc.GetMonth(x.Date.Value) == NowMonth
+                        && Pc.GetDayOfMonth(x.Date.Value) == i)
+                    .Sum(x => x.Item.SalePrice ?? 0);
 
-                double sum = (double)(BotSum) / 1000;
-
-                list_bot.Add(Math.Round(sum, 0));
+                list_bot.Add(Math.Round(botDayAmount / 1000d, 0));
                 list_date2.Add(i.ToString());
             }
 
@@ -279,27 +243,37 @@ namespace V2boardApi.Areas.App.Controllers
 
             _PerformanceSystemViewModel systemViewModel = new _PerformanceSystemViewModel();
 
+            var today = DateTime.Now;
+            var NowYear = Pc.GetYear(today);
+            var NowMonth = Pc.GetMonth(today);
 
+            var salesData = DashboardSalesHelper.LoadSalesData(db);
 
-            var NowYear = Pc.GetYear(DateTime.Now);
-            var NowMonth = Pc.GetMonth(DateTime.Now);
-            var NowDay = Pc.GetDayOfMonth(DateTime.Now);
+            var botSale = salesData.BotSales
+                .Select(s => new { Item = s, Date = Utility.ParseBotSaleOrderDate(s.OrderDate) })
+                .Where(x => x.Date.HasValue
+                    && Pc.GetYear(x.Date.Value) == NowYear
+                    && Pc.GetMonth(x.Date.Value) == NowMonth)
+                .Sum(x => x.Item.SalePrice ?? 0);
+            var userSale = salesData.UserSales
+                .Where(s => s.CreateDate.HasValue
+                    && Pc.GetYear(s.CreateDate.Value) == NowYear
+                    && Pc.GetMonth(s.CreateDate.Value) == NowMonth)
+                .Sum(s => s.SalePrice ?? 0);
+            var masterUseSale = salesData.MasterSales
+                .Where(s => s.CreateDate.HasValue
+                    && Pc.GetYear(s.CreateDate.Value) == NowYear
+                    && Pc.GetMonth(s.CreateDate.Value) == NowMonth)
+                .Sum(s => s.SalePrice ?? 0);
 
-
-            var BotSales = db.GetBotSales().Where(s => Pc.GetYear(Convert.ToDateTime(s.OrderDate)) == NowYear && Pc.GetMonth(Convert.ToDateTime(s.OrderDate)) == NowMonth).ToList();
-            var UserSales = db.GetUserSales().Where(s => Pc.GetYear(s.CreateDate.Value) == NowYear && Pc.GetMonth(Convert.ToDateTime(s.CreateDate)) == NowMonth).ToList();
-            var MasterUserSales = db.GetMasterUserSales().Where(s => Pc.GetYear(s.CreateDate.Value) == NowYear && Pc.GetMonth(Convert.ToDateTime(s.CreateDate)) == NowMonth).ToList();
-
-            var botSale = BotSales.Sum(s => s.SalePrice);
-            var masterUseSale = MasterUserSales.Sum(s => s.SalePrice);
-
-            var userSale = UserSales.Sum(s => s.SalePrice) + masterUseSale;
+            userSale += masterUseSale;
             var total = botSale + userSale;
 
-            
-
-            systemViewModel.Precent_Agent = Math.Round(((double)userSale.Value / (double)total.Value) * 100, 2);
-            systemViewModel.Precent_bot = Math.Round(((double)botSale.Value / (double)total.Value) * 100, 2);
+            if (total > 0)
+            {
+                systemViewModel.Precent_Agent = Math.Round((userSale / total) * 100, 2);
+                systemViewModel.Precent_bot = Math.Round((botSale / total) * 100, 2);
+            }
 
 
 
@@ -384,19 +358,9 @@ namespace V2boardApi.Areas.App.Controllers
             var user = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
 
             var persianCalendar = new PersianCalendar();
+            var weekBounds = DashboardSalesHelper.GetPersianWeekBounds(DateTime.Now);
 
-
-            DateTime today = DateTime.Now.Date;
-
-            // استخراج روز جاری هفته (0 برای شنبه)
-            DayOfWeek dayOfWeek = persianCalendar.GetDayOfWeek(today);
-
-
-            int daysToSubtract = (int)dayOfWeek + 1;
-            DateTime startOfThisWeek = today.AddDays(-daysToSubtract);
-
-
-            List<DateTime> dates = GetDatesBetween(startOfThisWeek, DateTime.Now);
+            List<DateTime> dates = GetDatesBetween(weekBounds.ThisWeekStart, DateTime.Now.Date);
 
             List<int> Dates = new List<int>();
             List<double> Traffic = new List<double>();

@@ -8,7 +8,7 @@ namespace V2boardApi.Models.DashbordModel
     public class WeeklyDataReportViewModel
     {
         /// <summary>
-        /// مقدار فروش به ریال
+        /// مقدار فروش هفته جاری به تومان
         /// </summary>
         public long Sale { get; set; }
         /// <summary>

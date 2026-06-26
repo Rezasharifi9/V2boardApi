@@ -28,6 +28,7 @@ namespace DataLayer.DomainModel
         public Nullable<bool> tb_status { get; set; }
         public int ExceededCount { get; set; }
         public Nullable<System.DateTime> ExceededLastTime { get; set; }
+        public int tbL_ReserveWarnMask { get; set; }
     
         public virtual tbServers tbServers { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }

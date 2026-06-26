@@ -9,87 +9,58 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using V2boardApi.Tools;
 
 namespace V2boardApi.Tools
 {
+    /// <summary>
+    /// تسویه بدهی نماینده بر اساس فاصله از آخرین فاکتور پرداخت‌شده (نه تقویم هفتگی/ماهانه).
+    /// </summary>
     public static class SettlementService
     {
         public const string RemarksFlag = "[SETTLEMENT_BLOCK]";
+        public const int DefaultDaysAfterLastPayment = 15;
+        public const int DefaultPreWarningDays = 2;
+        public const int DefaultBlockGraceDays = 2;
+        public const int OverdueReminderHours = 6;
+
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static DateTime GetDueDateOnOrAfter(DateTime date, tbUsers user)
+        public static int GetDaysAfterLastPayment(tbUsers user)
         {
-            var start = user.Settlement_StartDate?.Date ?? date.Date;
-            if (date.Date < start)
-                date = start;
-
-            if (string.Equals(user.Settlement_Type, "Monthly", StringComparison.OrdinalIgnoreCase))
-            {
-                int dom = user.Settlement_DayOfMonth ?? 1;
-                dom = Math.Max(1, Math.Min(31, dom));
-                var candidate = new DateTime(date.Year, date.Month, Math.Min(dom, DateTime.DaysInMonth(date.Year, date.Month)));
-                if (candidate < date.Date)
-                {
-                    var next = date.AddMonths(1);
-                    candidate = new DateTime(next.Year, next.Month, Math.Min(dom, DateTime.DaysInMonth(next.Year, next.Month)));
-                }
-                return candidate;
-            }
-
-            int targetDow = user.Settlement_DayOfWeek ?? (int)DayOfWeek.Saturday;
-            int daysUntil = ((targetDow - (int)date.DayOfWeek) + 7) % 7;
-            return date.Date.AddDays(daysUntil);
+            return Math.Max(1, user.Settlement_DayOfMonth ?? DefaultDaysAfterLastPayment);
         }
 
-        public static DateTime? GetLastDueDate(DateTime now, tbUsers user)
+        public static int GetPreWarningDays(tbUsers user)
         {
-            if (!user.Settlement_StartDate.HasValue)
-                return null;
-
-            var cursor = user.Settlement_StartDate.Value.Date;
-            DateTime? last = null;
-            var today = now.Date;
-
-            while (true)
-            {
-                var due = GetDueDateOnOrAfter(cursor, user);
-                if (due.Date > today)
-                    break;
-                last = due;
-                cursor = due.AddDays(1);
-            }
-
-            return last;
+            var days = GetDaysAfterLastPayment(user);
+            var pre = user.Settlement_DayOfWeek ?? DefaultPreWarningDays;
+            return Math.Max(0, Math.Min(days, pre));
         }
 
-        public static DateTime? GetPreviousDueDate(DateTime dueDate, tbUsers user)
+        public static int GetBlockGraceDays(tbUsers user)
         {
-            if (!user.Settlement_StartDate.HasValue)
-                return null;
-
-            var cursor = user.Settlement_StartDate.Value.Date;
-            DateTime? prev = null;
-
-            while (true)
-            {
-                var due = GetDueDateOnOrAfter(cursor, user);
-                if (due.Date >= dueDate.Date)
-                    break;
-                prev = due;
-                cursor = due.AddDays(1);
-            }
-
-            return prev;
+            return Math.Max(0, user.Settlement_BlockGraceDays ?? DefaultBlockGraceDays);
         }
 
-        public static bool HasPaidInSettlementPeriod(Entities db, tbUsers agent, DateTime periodStart, DateTime dueEnd)
+        public static DateTime? GetLastPaidFactorDate(Entities db, tbUsers agent)
         {
-            return db.tbUserFactors.Any(f =>
-                f.FK_User_ID == agent.User_ID &&
-                f.tbUf_Status == 3 &&
-                f.tbUf_CreateTime >= periodStart &&
-                f.tbUf_CreateTime <= DateTime.Now);
+            return db.tbUserFactors
+                .Where(f => f.FK_User_ID == agent.User_ID && f.tbUf_Status == 3 && f.tbUf_CreateTime.HasValue)
+                .OrderByDescending(f => f.tbUf_CreateTime)
+                .Select(f => f.tbUf_CreateTime)
+                .FirstOrDefault();
+        }
+
+        public static DateTime GetSettlementAnchor(Entities db, tbUsers agent)
+        {
+            var lastPaid = GetLastPaidFactorDate(db, agent);
+            if (lastPaid.HasValue)
+                return lastPaid.Value.Date;
+
+            if (agent.Settlement_StartDate.HasValue)
+                return agent.Settlement_StartDate.Value.Date;
+
+            return DateTime.Now.Date;
         }
 
         public static List<string> GetNetworkUsernames(tbUsers agent, Entities db)
@@ -108,7 +79,11 @@ namespace V2boardApi.Tools
                 if (!result.Contains(current.Username))
                     result.Add(current.Username);
 
-                var children = db.tbUsers.Where(u => u.Parent_ID == id && u.Status == true).Select(u => u.User_ID).ToList();
+                var children = db.tbUsers
+                    .Where(u => u.Parent_ID == id && u.Status == true)
+                    .Select(u => u.User_ID)
+                    .ToList();
+
                 foreach (var childId in children)
                     queue.Enqueue(childId);
             }
@@ -124,18 +99,9 @@ namespace V2boardApi.Tools
                 if (botSetting == null || string.IsNullOrEmpty(botSetting.Bot_Token))
                     return;
 
-                TelegramBotClient client = null;
+                TelegramBotClient client;
                 var cached = BotManager.GetBot(agent.Username);
-                if (cached != null)
-                    client = cached.Client;
-                else
-                    client = new TelegramBotClient(botSetting.Bot_Token);
-
-                //if (botSetting.AdminBot_ID > 0)
-                //{
-                //    await client.SendMessage(botSetting.AdminBot_ID, message);
-                //    return;
-                //}
+                client = cached != null ? cached.Client : new TelegramBotClient(botSetting.Bot_Token);
 
                 if (!string.IsNullOrEmpty(agent.TelegramID))
                 {
@@ -172,9 +138,10 @@ namespace V2boardApi.Tools
                         { "@flagLike", "%" + RemarksFlag + "%" },
                         { "@pattern", "%@" + username }
                     };
-                    var reader = await mysql.GetDataAsync(query, parameters);
-                    while (await reader.ReadAsync()) { }
-                    reader.Close();
+                    using (var reader = await mysql.GetDataAsync(query, parameters))
+                    {
+                        while (await reader.ReadAsync()) { }
+                    }
                 }
                 await mysql.CloseAsync();
             }
@@ -199,111 +166,130 @@ namespace V2boardApi.Tools
                         { "@flagLike", "%" + RemarksFlag + "%" },
                         { "@pattern", "%@" + username }
                     };
-                    var reader = await mysql.GetDataAsync(query, parameters);
-                    while (await reader.ReadAsync()) { }
-                    reader.Close();
+                    using (var reader = await mysql.GetDataAsync(query, parameters))
+                    {
+                        while (await reader.ReadAsync()) { }
+                    }
                 }
                 await mysql.CloseAsync();
             }
         }
 
-        public static async Task OnAgentPaymentConfirmed(tbUsers agent, Entities db)
+        public static void ResetSettlementWarnings(tbUsers agent)
         {
-            if (!agent.Settlement_IsBlocked)
-                return;
-
-            await UnblockAgentSubscriptions(agent, db);
-            agent.Settlement_IsBlocked = false;
             agent.Settlement_LastPreWarning = null;
             agent.Settlement_LastOverdueWarning = null;
+            agent.Settlement_LastDueDayWarning = null;
+        }
+
+        public static async Task OnAgentPaymentConfirmed(tbUsers agent, Entities db)
+        {
+            var wasBlocked = agent.Settlement_IsBlocked;
+
+            if (wasBlocked)
+                await UnblockAgentSubscriptions(agent, db);
+
+            agent.Settlement_IsBlocked = false;
+            ResetSettlementWarnings(agent);
+
+            var lastPaid = GetLastPaidFactorDate(db, agent);
+            if (lastPaid.HasValue)
+                agent.Settlement_StartDate = lastPaid.Value.Date;
+
             await db.SaveChangesAsync();
 
             var msg = new StringBuilder();
             msg.AppendLine("نماینده گرامی");
             msg.AppendLine("");
-            msg.AppendLine("✅ پرداخت تسویه شما ثبت شد و اشتراک‌های زیرمجموعه مجدداً فعال گردید.");
+            if (wasBlocked)
+                msg.AppendLine("✅ پرداخت بدهی شما ثبت شد و تمامی اشتراک‌های زیرمجموعه مجدداً فعال گردید.");
+            else
+                msg.AppendLine("✅ پرداخت فاکتور شما ثبت شد. مهلت تسویه بعدی از امروز محاسبه می‌شود.");
+
+            var dueDate = GetSettlementAnchor(db, agent).AddDays(GetDaysAfterLastPayment(agent));
+            msg.AppendLine("📅 موعد تسویه بعدی: " + dueDate.ToString("yyyy/MM/dd", CultureInfo.GetCultureInfo("fa-IR")));
             await SendAgentTelegramMessage(agent, msg.ToString());
         }
 
         public static async Task ProcessAgent(tbUsers agent, Entities db, DateTime now)
         {
-            if (!agent.Settlement_Enabled || !agent.Settlement_StartDate.HasValue || agent.Status != true)
+            if (!agent.Settlement_Enabled || agent.Status != true)
             {
                 if (agent.Settlement_IsBlocked)
                 {
                     await UnblockAgentSubscriptions(agent, db);
                     agent.Settlement_IsBlocked = false;
+                    ResetSettlementWarnings(agent);
                     await db.SaveChangesAsync();
                 }
                 return;
             }
 
-            var lastDue = GetLastDueDate(now, agent);
-            DateTime dueDate;
-            if (lastDue.HasValue)
-                dueDate = lastDue.Value;
-            else
-            {
-                dueDate = GetDueDateOnOrAfter(agent.Settlement_StartDate.Value.Date, agent);
-                if (now.Date < dueDate.Date.AddDays(-2))
-                    return;
-            }
+            var anchor = GetSettlementAnchor(db, agent);
+            var daysUntilDue = GetDaysAfterLastPayment(agent);
+            var preWarningDays = GetPreWarningDays(agent);
+            var blockGraceDays = GetBlockGraceDays(agent);
 
-            var prevDue = GetPreviousDueDate(dueDate, agent);
-            var periodStart = (prevDue?.Date.AddDays(1) ?? agent.Settlement_StartDate.Value.Date);
+            var dueDate = anchor.AddDays(daysUntilDue);
+            var preWarningDate = dueDate.AddDays(-preWarningDays);
+            var blockDate = dueDate.AddDays(blockGraceDays);
             var dueEnd = dueDate.Date.AddDays(1).AddSeconds(-1);
-            var preWarningDate = dueDate.Date.AddDays(-2);
-            var blockDate = dueDate.Date.AddDays(2);
-
-            bool paid = HasPaidInSettlementPeriod(db, agent, periodStart, dueEnd);
-
-            if (paid)
-            {
-                if (agent.Settlement_IsBlocked)
-                    await OnAgentPaymentConfirmed(agent, db);
-                else
-                {
-                    agent.Settlement_LastPreWarning = null;
-                    agent.Settlement_LastOverdueWarning = null;
-                    await db.SaveChangesAsync();
-                }
-                return;
-            }
 
             var dueLabel = dueDate.ToString("yyyy/MM/dd", CultureInfo.GetCultureInfo("fa-IR"));
 
-            if (now.Date >= preWarningDate && now.Date < dueDate.Date)
+            if (now < preWarningDate)
+                return;
+
+            if (now.Date >= preWarningDate.Date && now.Date < dueDate.Date)
             {
-                if (!agent.Settlement_LastPreWarning.HasValue || agent.Settlement_LastPreWarning.Value.Date < preWarningDate)
+                if (!agent.Settlement_LastPreWarning.HasValue ||
+                    agent.Settlement_LastPreWarning.Value.Date < preWarningDate.Date)
                 {
+                    var remaining = (dueDate.Date - now.Date).Days;
                     var msg = new StringBuilder();
                     msg.AppendLine("⚠️ نماینده گرامی");
                     msg.AppendLine("");
-                    msg.AppendLine("۲ روز تا موعد تسویه (" + dueLabel + ") باقی مانده است.");
-                    msg.AppendLine("لطفاً نسبت به پرداخت بدهی خود از بخش پروفایل من اقدام کنید.");
+                    msg.AppendLine(remaining + " روز تا موعد تسویه (" + dueLabel + ") باقی مانده است.");
+                    msg.AppendLine("لطفاً در اسرع وقت نسبت به پرداخت بدهی اقدام کنید.");
                     await SendAgentTelegramMessage(agent, msg.ToString());
                     agent.Settlement_LastPreWarning = now;
                     await db.SaveChangesAsync();
                 }
             }
 
-            if (now > dueEnd && now.Date < blockDate)
+            if (now.Date == dueDate.Date)
+            {
+                if (!agent.Settlement_LastDueDayWarning.HasValue ||
+                    agent.Settlement_LastDueDayWarning.Value.Date < dueDate.Date)
+                {
+                    var msg = new StringBuilder();
+                    msg.AppendLine("📅 نماینده گرامی");
+                    msg.AppendLine("");
+                    msg.AppendLine("سررسید تسویه شما (" + dueLabel + ") فرا رسیده است.");
+                    msg.AppendLine("لطفاً در اسرع وقت نسبت به پرداخت بدهی اقدام کنید.");
+                    await SendAgentTelegramMessage(agent, msg.ToString());
+                    agent.Settlement_LastDueDayWarning = now;
+                    await db.SaveChangesAsync();
+                }
+            }
+
+            if (now > dueEnd && now < blockDate)
             {
                 if (!agent.Settlement_LastOverdueWarning.HasValue ||
-                    (now - agent.Settlement_LastOverdueWarning.Value).TotalHours >= 6)
+                    (now - agent.Settlement_LastOverdueWarning.Value).TotalHours >= OverdueReminderHours)
                 {
                     var msg = new StringBuilder();
                     msg.AppendLine("❌ نماینده گرامی");
                     msg.AppendLine("");
-                    msg.AppendLine("موعد تسویه (" + dueLabel + ") گذشته و هنوز پرداختی ثبت نشده است.");
-                    msg.AppendLine("لطفاً هرچه سریع‌تر نسبت به پرداخت بدهی اقدام کنید.");
+                    msg.AppendLine("مهلت پرداخت شما به اتمام رسیده است.");
+                    msg.AppendLine("لطفاً در اسرع وقت نسبت به پرداخت بدهی اقدام کنید.");
                     await SendAgentTelegramMessage(agent, msg.ToString());
                     agent.Settlement_LastOverdueWarning = now;
                     await db.SaveChangesAsync();
                 }
             }
 
-            if (now.Date >= blockDate && !agent.Settlement_IsBlocked)
+            if (now >= blockDate && !agent.Settlement_IsBlocked)
             {
                 await BlockAgentSubscriptions(agent, db);
                 agent.Settlement_IsBlocked = true;
@@ -312,8 +298,8 @@ namespace V2boardApi.Tools
                 var msg = new StringBuilder();
                 msg.AppendLine("🚫 نماینده گرامی");
                 msg.AppendLine("");
-                msg.AppendLine("به دلیل عدم پرداخت بدهی پس از موعد تسویه، تمامی اشتراک‌های زیرمجموعه شما مسدود گردید.");
-                msg.AppendLine("پس از پرداخت و ثبت فاکتور، اشتراک‌ها به‌صورت خودکار فعال می‌شوند.");
+                msg.AppendLine("تمامی اشتراک‌های زیرمجموعه شما مسدود گردید.");
+                msg.AppendLine("لطفاً نسبت به پرداخت بدهی اقدام کنید؛ پس از ثبت پرداخت، اشتراک‌ها خودکار فعال می‌شوند.");
                 await SendAgentTelegramMessage(agent, msg.ToString());
             }
         }

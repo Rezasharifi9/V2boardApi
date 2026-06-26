@@ -151,9 +151,9 @@
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/auto-focus.js")"></script>
-    <script src="../../assets/libs/jdate/jdate.js"></script>
-    <script src="../../assets/libs/flatpickr/flatpickr-jalali.js"></script>
-    <script src="../../assets/libs/flatpickr/l10n/fa.js"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/jdate/jdate.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/flatpickr/flatpickr-jalali.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/flatpickr/l10n/fa.js")"></script>
     <script src="../../assets/vendor/libs/select2/select2.js"></script>
     <script src="../../assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js"></script>
     <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
@@ -187,7 +187,7 @@
         }
     </script>
     <!-- Page JS -->
-    <script src="~/assets/js/app-invoice-list.js?v=20250619"></script>
+    <script src="@Url.Content(PanelAssetHelper.Js("~/assets/js/app-invoice-list.js"))"></script>
 
 
 }

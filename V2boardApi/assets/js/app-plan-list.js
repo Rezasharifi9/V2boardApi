@@ -224,22 +224,23 @@ $(function () {
                     if (data.hasOwnProperty(key)) {
                         var input = $('input[name=' + key + ']');
                         if (key == "UnlimitedPlan") {
-                            console.log(data[key]);
                             if (data[key] == true) {
                                 $("#UnlimitedPlan").attr("checked", true);
                                 $('#UnlimitedPlan').val("True");
-
                             }
                             else {
                                 $("#UnlimitedPlan").attr("checked", false);
                                 $('#UnlimitedPlan').val("False");
                             }
                         }
-                        if (key == "planTime") {
+                        else if (key == "planTime") {
                             SelectPlan("#planTime", data[key]);
                         }
-                        if (key == "planGroup") {
+                        else if (key == "planGroup") {
                             SelectGroup("#planGroup", data[key]);
+                        }
+                        else if (key == "assignedUserIds") {
+                            $("#planAssignedUsers").val(data[key]).trigger('change');
                         }
                         else {
                             input.val(data[key]);

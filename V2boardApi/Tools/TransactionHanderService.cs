@@ -62,14 +62,109 @@ namespace V2boardApi.Tools
             throw new NotImplementedException();
         }
 
+        private static string NormalizePhoneNumber(string mobile)
+        {
+            if (string.IsNullOrWhiteSpace(mobile))
+                return mobile;
+
+            mobile = mobile.Trim();
+            if (mobile.StartsWith("\"") || mobile.StartsWith("["))
+            {
+                try
+                {
+                    var deserialized = JsonConvert.DeserializeObject(mobile);
+                    return deserialized?.ToString() ?? mobile;
+                }
+                catch
+                {
+                    return mobile;
+                }
+            }
+
+            return mobile;
+        }
+
+        public async Task<bool> AcceptUserFactorAsync(int factorId)
+        {
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var userFactor = RepositoryFactor
+                        .Where(q => q.tbUf_ID == factorId && q.tbUf_Status == 1)
+                        .FirstOrDefault();
+
+                    if (userFactor == null || !userFactor.tbUf_Value.HasValue)
+                        return false;
+
+                    return await ConfirmUserFactorPayment(userFactor, transaction);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    logger.Error(ex, "خطا در تائید دستی فاکتور نماینده " + factorId);
+                    return false;
+                }
+            }
+        }
+
+        private async Task<bool> ConfirmUserFactorPayment(tbUserFactors userFactor, System.Data.Entity.DbContextTransaction transaction)
+        {
+            var valueStr = userFactor.tbUf_Value.Value.ToString();
+            if (valueStr.Length <= 3)
+                return false;
+
+            var result = valueStr.Substring(0, valueStr.Length - 3) + "000";
+            userFactor.tbUf_Status = 3;
+            userFactor.tbUsers.Wallet -= (Convert.ToDouble(result) / 10);
+
+            tbBotSettings botSetting = null;
+            TelegramBotClient botClient = null;
+            var agent = userFactor.tbUsers;
+            if (agent?.Parent_ID != null)
+            {
+                var admin = await RepositoryUser.FirstOrDefaultAsync(u => u.User_ID == agent.Parent_ID);
+                botSetting = admin?.tbBotSettings?.FirstOrDefault();
+                if (botSetting != null)
+                    botClient = new TelegramBotClient(botSetting.Bot_Token);
+            }
+
+            var telegramUser = RepositoryTelegramUser
+                .Where(q => q.Tel_Username == agent.TelegramID)
+                .FirstOrDefault();
+
+            if (telegramUser != null && botClient != null && botSetting != null)
+            {
+                StringBuilder str1 = new StringBuilder();
+                str1.AppendLine("نماینده گرامی");
+                str1.AppendLine("");
+                str1.AppendLine("✅ پرداختی شما با موفقیت تائید شد");
+                str1.AppendLine("");
+                str1.AppendLine("🚀 @" + botSetting.Bot_ID);
+
+                try
+                {
+                    await botClient.SendMessage(telegramUser.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                }
+                catch { }
+            }
+
+            RepositoryFactor.Save();
+            if (agent.Settlement_Enabled)
+                await SettlementService.OnAgentPaymentConfirmed(agent, db);
+
+            transaction.Commit();
+            return true;
+        }
+
         public async Task<bool> CheckOrder(string SMSMessageText, string Mobile)
         {
             using (var transaction = db.Database.BeginTransaction())
             {
                 try
                 {
-                    var Phone = JsonConvert.DeserializeObject(Mobile);
-                    var User = await RepositoryUser.FirstOrDefaultAsync(p => p.PhoneNumber == Phone.ToString());
+                    var Phone = NormalizePhoneNumber(Mobile);
+                    var User = await RepositoryUser.FirstOrDefaultAsync(p => p.PhoneNumber == Phone);
                     if (User != null)
                     {
                         int pr = int.Parse(SMSMessageText, NumberStyles.Currency);
@@ -164,7 +259,7 @@ namespace V2boardApi.Tools
 
                                         string exp = DateTime.Now.AddDays((int)(order.Month * 30)).ConvertDatetimeToSecond().ToString();
 
-                                        Link.tbL_Warning = false;
+                                        SubscriptionReserveWarnHelper.ResetReserveWarnState(Link);
                                         var Disc3 = new Dictionary<string, object>();
                                         Disc3.Add("@DefaultPlanIdInV2board", order.tbLinkUserAndPlans.tbPlans.Plan_ID_V2);
                                         Disc3.Add("@transfer_enable", t);
@@ -188,7 +283,7 @@ namespace V2boardApi.Tools
 
                                         var InlineKeyboardMarkup = Keyboards.GetHomeButton();
 
-                                        Link.tbL_Warning = false;
+                                        SubscriptionReserveWarnHelper.ResetReserveWarnState(Link);
                                         Link.tb_AutoRenew = false;
 
                                         order.OrderStatus = "FINISH";
@@ -224,10 +319,11 @@ namespace V2boardApi.Tools
 
 
                                         StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("✅ چون هنوز حجم یا زمان داشتی بسته تو رزرو کردم");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("♨️ بعد از اینکه بسته فعلیت تموم بشه خودم جایگزین میکنم تو نگران نباش و به کارت برس");
-                                        str2.AppendLine("");
+                                        str2.Append(BotMessages.BuildReservedPackageConfirmMessage(
+                                            order.tbLinkUserAndPlans.tbPlans.PlanVolume,
+                                            order.tbLinkUserAndPlans.tbPlans.PlanMonth,
+                                            order.AccountName,
+                                            Convert.ToInt32(order.Order_Price)));
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
                                         await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
@@ -327,7 +423,7 @@ namespace V2boardApi.Tools
                                     tbLinks.tbL_Token = token;
                                     tbLinks.FK_Server_ID = Order.tbTelegramUsers.tbUsers.tbServers.ServerID;
                                     tbLinks.FK_TelegramUserID = Order.tbTelegramUsers.Tel_UserID;
-                                    tbLinks.tbL_Warning = false;
+                                    SubscriptionReserveWarnHelper.ResetReserveWarnState(tbLinks);
                                     tbLinks.tb_AutoRenew = false;
                                     await mySql.CloseAsync();
 
@@ -409,36 +505,8 @@ namespace V2boardApi.Tools
                         }
 
                         var UserFactor = RepositoryFactor.Where(q => q.tbUf_Status == 1 && q.tbUf_Value == pr).FirstOrDefault();
-                        if(UserFactor != null)
-                        {
-                            string result = UserFactor.tbUf_Value.Value.ToString().Substring(0, UserFactor.tbUf_Value.Value.ToString().Length - 3) + "000";
-
-                            UserFactor.tbUf_Status = 3;
-                            UserFactor.tbUsers.Wallet -= (Convert.ToDouble(result) / 10);
-
-
-                            var TelegramUser = RepositoryTelegramUser.Where(q => q.Tel_Username == UserFactor.tbUsers.TelegramID).FirstOrDefault();
-                            if (TelegramUser != null)
-                            {
-                                StringBuilder str1 = new StringBuilder();
-                                str1.AppendLine("نماینده گرامی");
-                                str1.AppendLine("");
-                                str1.AppendLine("✅ پرداختی شما با موفقیت تائید شد");
-                                str1.AppendLine("");
-                                str1.AppendLine("🚀 @" + botSetting.Bot_ID);
-
-                                try
-                                {
-                                    await botClient.SendMessage(TelegramUser.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
-                                }
-                                catch { }
-                            }
-                            RepositoryFactor.Save();
-                            if (UserFactor.tbUsers.Settlement_Enabled)
-                                await SettlementService.OnAgentPaymentConfirmed(UserFactor.tbUsers, db);
-                            transaction.Commit();
-                            return true;
-                        }
+                        if (UserFactor != null)
+                            return await ConfirmUserFactorPayment(UserFactor, transaction);
 
                         return false;
                     }
@@ -468,8 +536,8 @@ namespace V2boardApi.Tools
             {
                 try
                 {
-                    var Phone = JsonConvert.DeserializeObject(Mobile);
-                    var User = await RepositoryUser.FirstOrDefaultAsync(p => p.PhoneNumber == Phone.ToString());
+                    var Phone = NormalizePhoneNumber(Mobile);
+                    var User = await RepositoryUser.FirstOrDefaultAsync(p => p.PhoneNumber == Phone);
                     if (User != null)
                     {
                         var tbDepositLog = await RepositoryDepositWallet.WhereAsync(p => p.dw_ID == factorId);
@@ -560,7 +628,7 @@ namespace V2boardApi.Tools
 
                                         string exp = DateTime.Now.AddDays((int)(order.Month * 30)).ConvertDatetimeToSecond().ToString();
 
-                                        Link.tbL_Warning = false;
+                                        SubscriptionReserveWarnHelper.ResetReserveWarnState(Link);
                                         var Disc3 = new Dictionary<string, object>();
                                         Disc3.Add("@DefaultPlanIdInV2board", order.tbLinkUserAndPlans.tbPlans.Plan_ID_V2);
                                         Disc3.Add("@transfer_enable", t);
@@ -584,7 +652,7 @@ namespace V2boardApi.Tools
 
                                         var InlineKeyboardMarkup = Keyboards.GetHomeButton();
 
-                                        Link.tbL_Warning = false;
+                                        SubscriptionReserveWarnHelper.ResetReserveWarnState(Link);
                                         Link.tb_AutoRenew = false;
 
                                         order.OrderStatus = "FINISH";
@@ -620,10 +688,11 @@ namespace V2boardApi.Tools
 
 
                                         StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("✅ چون هنوز حجم یا زمان داشتی بسته تو رزرو کردم");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("♨️ بعد از اینکه بسته فعلیت تموم بشه خودم جایگزین میکنم تو نگران نباش و به کارت برس");
-                                        str2.AppendLine("");
+                                        str2.Append(BotMessages.BuildReservedPackageConfirmMessage(
+                                            order.tbLinkUserAndPlans.tbPlans.PlanVolume,
+                                            order.tbLinkUserAndPlans.tbPlans.PlanMonth,
+                                            order.AccountName,
+                                            Convert.ToInt32(order.Order_Price)));
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
                                         await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
@@ -713,7 +782,7 @@ namespace V2boardApi.Tools
                                     tbLinks.tbL_Token = token;
                                     tbLinks.FK_Server_ID = Order.tbTelegramUsers.tbUsers.tbServers.ServerID;
                                     tbLinks.FK_TelegramUserID = Order.tbTelegramUsers.Tel_UserID;
-                                    tbLinks.tbL_Warning = false;
+                                    SubscriptionReserveWarnHelper.ResetReserveWarnState(tbLinks);
                                     tbLinks.tb_AutoRenew = false;
                                     await mySql.CloseAsync();
 

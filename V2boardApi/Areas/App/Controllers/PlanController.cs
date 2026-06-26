@@ -3,6 +3,7 @@ using DataLayer.Repository;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -225,6 +226,9 @@ namespace V2boardApi.Areas.App.Controllers
                             await mysql.CloseAsync();
 
                         }
+
+                        if (model.id != 0 && (user.Role == 1 || user.Role == 3 || user.Role == 4))
+                            await SyncPlanAssignments(model.id.Value, model.assignedUserIds, user);
                     }
                     if (model.id != 0)
                     {
@@ -273,6 +277,12 @@ namespace V2boardApi.Areas.App.Controllers
                 requestPlan.planSpeed = plan.Speed_limit;
                 requestPlan.planDevicelimit = plan.device_limit;
                 requestPlan.UnlimitedPlan = plan.IsRobotPlan;
+                var subAgentIds = GetSubAgentIds(user);
+                requestPlan.assignedUserIds = RepositoryUserPlanLinks
+                    .Where(l => l.L_FK_P_ID == id && l.L_Status == true && l.L_FK_U_ID.HasValue)
+                    .Select(l => l.L_FK_U_ID.Value)
+                    .Where(agentId => subAgentIds.Contains(agentId))
+                    .ToArray();
                 var data = requestPlan.ToDictionary();
                 return Json(new { status = "success", data = data }, JsonRequestBehavior.AllowGet);
             }
@@ -510,6 +520,78 @@ namespace V2boardApi.Areas.App.Controllers
 
         #endregion
 
+        [HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> GetSubAgentsSelect()
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                if (user == null)
+                    return Json(new { data = new object[0] }, JsonRequestBehavior.AllowGet);
+
+                var agents = await RepositoryUser.table
+                    .Where(s => s.Parent_ID == user.User_ID && s.Status == true)
+                    .OrderBy(s => s.Username)
+                    .Select(s => new { id = s.User_ID, username = s.Username })
+                    .ToListAsync();
+
+                return Json(new { data = agents }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در دریافت لیست نمایندگان زیرمجموعه");
+                return Json(new { data = new object[0] }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        private HashSet<int> GetSubAgentIds(tbUsers owner)
+        {
+            return new HashSet<int>(
+                RepositoryUser.table
+                    .Where(s => s.Parent_ID == owner.User_ID && s.Status == true)
+                    .Select(s => s.User_ID)
+                    .ToList());
+        }
+
+        private async Task SyncPlanAssignments(int planId, int[] assignedUserIds, tbUsers owner)
+        {
+            if (assignedUserIds == null)
+                assignedUserIds = new int[0];
+
+            var validAgentIds = GetSubAgentIds(owner);
+            var assignedSet = new HashSet<int>(assignedUserIds.Where(id => validAgentIds.Contains(id)));
+            var existingLinks = RepositoryUserPlanLinks.Where(l => l.L_FK_P_ID == planId).ToList();
+
+            foreach (var userId in assignedSet)
+            {
+                var link = existingLinks.FirstOrDefault(l => l.L_FK_U_ID == userId);
+                if (link != null)
+                {
+                    link.L_Status = true;
+                }
+                else
+                {
+                    RepositoryUserPlanLinks.Insert(new tbLinkUserAndPlans
+                    {
+                        L_FK_U_ID = userId,
+                        L_FK_P_ID = planId,
+                        L_Status = true,
+                        L_ShowInBot = false
+                    });
+                }
+            }
+
+            foreach (var link in existingLinks)
+            {
+                if (link.L_FK_U_ID.HasValue
+                    && validAgentIds.Contains(link.L_FK_U_ID.Value)
+                    && !assignedSet.Contains(link.L_FK_U_ID.Value))
+                    link.L_Status = false;
+            }
+
+            await RepositoryUserPlanLinks.SaveChangesAsync();
+        }
 
         protected override void Dispose(bool disposing)
         {

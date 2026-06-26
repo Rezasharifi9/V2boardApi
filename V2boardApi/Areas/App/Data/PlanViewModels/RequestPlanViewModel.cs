@@ -30,5 +30,6 @@ namespace V2boardApi.Areas.App.Data.PlanViewModels
         [Required(ErrorMessage = "لطفا دسته بندی را انتخاب کنید")]
         public Nullable<int> planGroup { get; set; }
         public bool UnlimitedPlan { get; set; }
+        public int[] assignedUserIds { get; set; }
     }
 }

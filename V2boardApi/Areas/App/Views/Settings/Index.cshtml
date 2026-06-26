@@ -1,519 +1,148 @@
-﻿
+﻿@model DataLayer.DomainModel.tbServers
 @{
-    ViewBag.Title = "Index";
-    Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "تنظیمات پنل";
 }
 
-@{
-    var RequestRole = V2boardApi.Tools.JwtToken.GetUserRole();
-    var Role = "";
-    if (RequestRole != null)
-    {
-        Role = RequestRole;
-    }
+@section vendorStyle {
+    <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
 }
 
-<div style="overflow-y:auto;overflow-x:hidden;height:750px;">
-    <div class="page-header">
-        <h3 class="page-title"> تنظیمات پنل </h3>
-    </div>
-    <div class="row">
-        <div class="col-md-12 grid-margin stretch-card">
-            @Html.Action("_BotSetting", "Settings")
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6 grid-margin stretch-card">
-            @Html.Action("_BankNumbers", "Settings")
-        </div>
-        @if (Role.Contains("1"))
-        {
-            <div class="col-md-6 grid-margin stretch-card">
-                @Html.Action("_BaseSetting", "Settings")
+<h4 class="py-3 mb-4">تنظیمات پنل</h4>
+
+<div class="row g-4">
+    <!-- تنظیمات عمومی -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="ti ti-world me-2"></i>تنظیمات عمومی</h5>
             </div>
-
-        }
+            <div class="card-body">
+                <form id="generalSettingsForm">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="SubAddress">دامنه Sub</label>
+                            <input type="text" dir="ltr" class="form-control" id="SubAddress" name="SubAddress" placeholder="sub.example.com" value="@Model.SubAddress" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="BackupSubAddr">دامنه Sub پشتیبان</label>
+                            <input type="text" dir="ltr" class="form-control" id="BackupSubAddr" name="BackupSubAddr" placeholder="backup.example.com" value="@Model.BackupSubAddr" />
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-primary" id="btnSaveGeneral">
+                            <i class="ti ti-device-floppy me-1"></i>ذخیره تنظیمات عمومی
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
+    <!-- ارتباط با MySQL -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="ti ti-database me-2"></i>ارتباط با سرور MySQL</h5>
+            </div>
+            <div class="card-body">
+                <form id="mysqlSettingsForm">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="ServerAddress">دامنه پنل V2board</label>
+                            <input type="text" dir="ltr" class="form-control" id="ServerAddress" name="ServerAddress" placeholder="panel.example.com" value="@Model.ServerAddress" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="ServerIP">آیپی سرور MySQL</label>
+                            <input type="text" dir="ltr" class="form-control" id="ServerIP" name="ServerIP" placeholder="192.168.1.1" value="@Model.ServerIP" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="DataBaseName">نام دیتابیس</label>
+                            <input type="text" dir="ltr" class="form-control" id="DataBaseName" name="DataBaseName" placeholder="v2board" value="@Model.DataBaseName" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="MysqlUsername">نام کاربری MySQL</label>
+                            <input type="text" dir="ltr" class="form-control" id="MysqlUsername" name="Username" placeholder="root" value="@Model.Username" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="MysqlPassword">رمز عبور MySQL</label>
+                            <input type="password" dir="ltr" class="form-control" id="MysqlPassword" name="Password" placeholder="********" value="@Model.Password" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="ApiToken_V2board">توکن API V2board</label>
+                            <input type="text" dir="ltr" class="form-control" id="ApiToken_V2board" name="ApiToken_V2board" placeholder="api-token" value="@Model.ApiToken_V2board" />
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-primary" id="btnSaveMysql">
+                            <i class="ti ti-device-floppy me-1"></i>ذخیره تنظیمات MySQL
+                        </button>
+                        <button type="button" class="btn btn-label-secondary" id="btnTestMysql">
+                            <i class="ti ti-plug-connected me-1"></i>تست سرور MySQL
+                        </button>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0">نکته: پورت 3306 در سرور باید باز باشد.</p>
+                </form>
+            </div>
+        </div>
+    </div>
 
+    <!-- تنظیمات ربات -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="ti ti-robot me-2"></i>تنظیمات ربات</h5>
+            </div>
+            <div class="card-body">
+                <form id="botSettingsForm">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="Robot_ID">آیدی ربات (Username)</label>
+                            <input type="text" dir="ltr" class="form-control" id="Robot_ID" name="Robot_ID" placeholder="mybot_bot" value="@Model.Robot_ID" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="Robot_Token">توکن ربات</label>
+                            <input type="text" dir="ltr" class="form-control" id="Robot_Token" name="Robot_Token" placeholder="123456:ABC..." value="@Model.Robot_Token" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="BotID">Bot ID (عددی)</label>
+                            <input type="number" dir="ltr" class="form-control" id="BotID" name="BotID" placeholder="123456789" value="@Model.BotID" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="AdminTelegramUniqID">شناسه تلگرام ادمین</label>
+                            <input type="number" dir="ltr" class="form-control" id="AdminTelegramUniqID" name="AdminTelegramUniqID" placeholder="65845695212" value="@Model.AdminTelegramUniqID" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="Channel_ID">آیدی کانال</label>
+                            <input type="text" dir="ltr" class="form-control" id="Channel_ID" name="Channel_ID" placeholder="mychannel" value="@Model.Channel_ID" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="BotbaseAddress">آدرس پایه ربات</label>
+                            <input type="text" dir="ltr" class="form-control" id="BotbaseAddress" name="BotbaseAddress" placeholder="https://bot.example.com" value="@Model.BotbaseAddress" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="Discount_Percent">تخفیف (درصد)</label>
+                            <input type="number" dir="ltr" class="form-control" id="Discount_Percent" name="Discount_Percent" placeholder="15" value="@Model.Discount_Percent" min="0" max="100" step="0.1" />
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-primary" id="btnSaveBot">
+                            <i class="ti ti-device-floppy me-1"></i>ذخیره تنظیمات ربات
+                        </button>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0">برای دریافت شناسه تلگرام ادمین از ربات getmyid_bot استفاده کنید.</p>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
-
-@section scripts {
-    <script>
-
-        $(function () {
-
-
-            new DataTable("#cards", {
-                paging: true,
-                scrollCollapse: false,
-                scrollX: true,
-                scrollY: "300px",
-                pageLength: 13,
-                bFilter: true,
-                lengthChange: false,
-                searchPlaceholder: "جستجو ",
-                sSearch: "Quick Search:",
-                language: {
-                    lengthMenu: "Display _MENU_ records per page",
-                    zeroRecords: "اطلاعاتی یافت نشد",
-                    info: "",
-                    infoEmpty: "اطلاعاتی وجود ندارد",
-                    infoFiltered: "(filtered from _MAX_ total records)",
-                    sSearch: "جستجو : ",
-                    paginate: {
-                        previous: "قبلی",
-                        next: "بعدی"
-                    }
-                }
-            });
-
-            // کد های مربوط به بخش تنظیمات MYSQL
-
-            $("#testConnection").click(function () {
-
-                var IPAddress = $("#IPAddress").val();
-                var DatabaseName = $("#DatabaseName").val();
-                var Username = $("#Username").val();
-                var Password = $("#Password").val();
-
-
-                if (IPAddress.length == 0) {
-                    Swal.fire({
-                        title: "خطا",
-                        text: "لطفا آیپی سرور را وارد کنید",
-                        icon: "info"
-                    });
-                } else if (DatabaseName.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا نام دیتابیس MYSQL را وارد کنید",
-                        icon: "info"
-                    });
-                }
-                else if (Username.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا نام کابری MYSQL را وارد کنید",
-                        icon: "info"
-                    });
-                }
-                else if (Password.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا رمز عبور MYSQL را وارد کنید",
-                        icon: "info"
-                    });
-                }
-                else {
-                    $("#loading").css("display", "flex");
-                    $.ajax({
-                        url: "@Url.Action("ScanPort","Settings")",
-                        type: "post",
-                        dataType: "html",
-                        data: { IPAddress: IPAddress, DatabaseName: DatabaseName, Username: Username, Password: Password },
-                        success: function (res) {
-                            $("#loading").css("display", "none");
-
-                            var spl = res.split('-');
-
-                            Swal.fire({
-                                title: "وضعیت ارتباط",
-                                text: spl[1],
-                                icon: spl[0]
-                            });
-                        }
-                    });
-                }
-
-            });
-
-
-            $("#SaveServerInfo").click(function () {
-
-                var IPAddress = $("#IPAddress").val();
-                var DatabaseName = $("#DatabaseName").val();
-                var Username = $("#Username").val();
-                var Password = $("#Password").val();
-                var SubAddr = $("#SubAddr").val();
-                var ServerAddress = $("#ServerAddress").val();
-
-
-                if (IPAddress.length == 0) {
-                    Swal.fire({
-                        title: "خطا",
-                        text: "لطفا آیپی سرور را وارد کنید",
-                        icon: "warning"
-                    });
-                } else if (DatabaseName.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا نام دیتابیس MYSQL را وارد کنید",
-                        icon: "warning"
-                    });
-                }
-                else if (Username.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا نام کابری MYSQL را وارد کنید",
-                        icon: "warning"
-                    });
-                }
-                else if (Password.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا رمز عبور MYSQL را وارد کنید",
-                        icon: "warning"
-                    });
-                }
-                else if (SubAddr.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا دامنه سابسکرایب را وارد کنید",
-                        icon: "warning"
-                    });
-                }
-                else if (ServerAddress.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا دامنه سرور V2board را وارد کنید",
-                        icon: "warning"
-                    });
-                }
-                else {
-                    $("#loading").css("display", "flex");
-                    $.ajax({
-                        url: "@Url.Action("ScanPort","Settings")",
-                        type: "post",
-                        dataType: "html",
-                        data: { IPAddress: IPAddress, DatabaseName: DatabaseName, Username: Username, Password: Password },
-                        success: function (res) {
-                            $("#loading").css("display", "none");
-
-                            var spl = res.split('-');
-
-                            if (spl[0] == "warning") {
-
-                                Swal.fire({
-                                    title: "آیا مطمئن هستید",
-                                    text: "ارتباط با سرویس MYSQL برقرار نیست آیا ذخیره شود ؟",
-                                    icon: "warning",
-                                    showCancelButton: true,
-                                    confirmButtonColor: "#3085d6",
-                                    cancelButtonColor: "#d33",
-                                    confirmButtonText: "بله ذخیره کن",
-                                    cancelButtonText: "خیر",
-                                    customClass: {
-                                        cancelButton: 'order-1 right-gap',
-                                        confirmButton: 'order-2',
-                                    }
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        $("#loading").css("display", "flex");
-                                        $.ajax({
-                                            url: "@Url.Action("SaveServerSetting","Settings")",
-                                            type: "post",
-                                            dataType: "html",
-                                            data: { IPAddress: IPAddress, ServerAddress: ServerAddress, DatabaseName: DatabaseName, Username: Username, Password: Password, SubAddr: SubAddr },
-                                            success: function (res) {
-                                                $("#loading").css("display", "none");
-
-                                                var spl = res.split('-');
-
-                                                Swal.fire({
-                                                    title: "وضعیت",
-                                                    text: spl[1],
-                                                    icon: spl[0]
-                                                });
-                                            }
-                                        });
-
-                                    }
-                                });
-                            }
-                            else {
-                                $("#loading").css("display", "flex");
-                                $.ajax({
-                                    url: "@Url.Action("SaveServerSetting","Settings")",
-                                    type: "post",
-                                    dataType: "html",
-                                    data: { IPAddress: IPAddress, ServerAddress: ServerAddress, DatabaseName: DatabaseName, Username: Username, Password: Password, SubAddr: SubAddr },
-                                    success: function (res) {
-                                        $("#loading").css("display", "none");
-
-                                        var spl = res.split('-');
-
-                                        Swal.fire({
-                                            title: "وضعیت",
-                                            text: spl[1],
-                                            icon: spl[0]
-                                        });
-                                    }
-                                });
-                            }
-
-                        }
-                    });
-
-                }
-
-            });
-
-            // پایان کد های مربوط به بخش تنظیمات MYSQL
-
-            //کد های مربوط به بخش تنظیمات ربات
-
-            $("#SaveBotInfo").click(function () {
-
-                var BotId = $("#BotId").val();
-                var BotToken = $("#BotToken").val();
-                var TelegramUserId = $("#TelegramUserId").val();
-                var ChannelId = $("#ChannelId").val();
-                var PricePerGig_Major = $("#PricePerGig_Major").val();
-                var PricePerGig_Admin = $("#PricePerGig_Admin").val();
-                var PricePerMonth_Major = $("#PricePerMonth_Major").val();
-                var PricePerMonth_Admin = $("#PricePerMonth_Admin").val();
-                var Present_Discount = $("#Present_Discount").val();
-                var IsActiveSendReceipt = false;
-                var IsActiveCardToCard = false;
-
-                if (BotId.indexOf("@@") != -1) {
-                    Swal.fire({
-                        title: "خطا",
-                        text: "آیدی ربات را بدون @@ وارد کنید",
-                        icon: "warning"
-                    });
-                    return;
-                }else
-                    if (ChannelId.indexOf("@@") != -1) {
-                    Swal.fire({
-                        title: "خطا",
-                        text: "آیدی کانال را بدون @@ وارد کنید",
-                        icon: "warning"
-                    });
-                    return;
-                }
-
-                
-
-                var RequiredJoinChannel = false;
-                var Active = false;
-
-
-                if ($("#RequiredJoinChannel").is(':checked'))
-                {
-                    if (ChannelId.length <= 0) {
-                        Swal.fire({
-                            title: "خطا",
-                            text: "برای فعال بودن عضو شدن اجباری در کانال باید آیدی کانال را وارد کنید",
-                            icon: "warning"
-                        });
-                        return;
-                    }
-                    else {
-                        RequiredJoinChannel = true;
-                    }
-                }
-
-                if ($("#Active").is(':checked')) {
-                    Active = true;
-                }
-                if ($("#IsActiveSendReceipt").is(':checked')) {
-                    IsActiveSendReceipt = true;
-                }
-                if ($("#IsActiveCardToCard").is(':checked')) {
-                    IsActiveCardToCard = true;
-                }
-
-
-                if (BotId.length == 0) {
-                    Swal.fire({
-                        title: "خطا",
-                        text: "لطفا آیدی ربات را وارد کنید",
-                        icon: "warning"
-                    });
-                } else if (BotToken.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا توکن ربات را وارد کنید",
-                        icon: "warning"
-                    });
-                }
-                else if (TelegramUserId.length == 0) {
-                    Swal.fire({
-                        title: "وضعیت",
-                        text: "لطفا شناسه کابری تلگرام ادمین را وارد کنید",
-                        icon: "warning"
-                    });
-                }
-                else {
-
-                    $("#loading").css("display", "flex");
-                    $.ajax({
-                        url: "@Url.Action("SaveBotSetting","Settings")",
-                        type: "post",
-                        dataType: "html",
-                        data: { BotId: BotId, BotToken: BotToken, TelegramUserId: TelegramUserId, ChannelId: ChannelId, RequiredJoinChannel: RequiredJoinChannel, Active: Active, PricePerGig_Major: PricePerGig_Major, PricePerMonth_Major: PricePerMonth_Major, Present_Discount: Present_Discount, IsActiveSendReceipt: IsActiveSendReceipt, IsActiveCardToCard: IsActiveCardToCard },
-                        success: function (res) {
-                            $("#loading").css("display", "none");
-
-                            var spl = res.split('-');
-
-                            Swal.fire({
-                                title: "پیغام",
-                                text: spl[1],
-                                icon: spl[0]
-                            });
-                        }
-                    });
-                }
-
-            });
-
-            // پایان کد های ربات
-
-            // بخش ذخیره کردن کارت بانکی ها
-            $("#SaveBankCards").click(function () {
-
-
-            });
-            // پایان بخش کد های کارت بانکی
-
-        });
-
-
-        function SaveBankCards() {
-            var CardNumber = $("#CardNumber").val();
-            var NameOfCard = $("#NameOfCard").val();
-            var SmsNumberOfCard = $("#SmsNumberOfCard").val();
-            var phoneNumber = $("#phoneNumber").val();
-            var Card_ID = $("#Card_ID").val();
-
-            if (CardNumber.length == 0) {
-                Swal.fire({
-                    title: "خطا",
-                    text: "لطفا شماره کارت را وارد کنید",
-                    icon: "warning"
-                });
-            } else if (NameOfCard.length == 0) {
-                Swal.fire({
-                    title: "خطا",
-                    text: "لطفا نام و نام خانوادگی دارنده کارت را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else if (SmsNumberOfCard.length == 0) {
-                Swal.fire({
-                    title: "خطا",
-                    text: "لطفا شماره SMS بانک را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else if (phoneNumber.length == 0) {
-                Swal.fire({
-                    title: "خطا",
-                    text: "لطفا شماره همراه را وارد کنید",
-                    icon: "warning"
-                });
-            }
-            else {
-
-                if (CardNumber.length != 16) {
-                    Swal.fire({
-                        title: "خطا",
-                        text: "شماره کارت باید 16 رقم باشد",
-                        icon: "warning"
-                    });
-                }
-                else {
-                    $("#loading").css("display", "flex");
-                    $.ajax({
-                        url: "@Url.Action("SaveBankNumbers", "Settings")",
-                        type: "post",
-                        dataType: "html",
-                        data: { CardNumber: CardNumber, NameOfCard: NameOfCard, SmsNumberOfCard: SmsNumberOfCard, phoneNumber: phoneNumber, Card_ID: Card_ID },
-                        success: function (res) {
-                            $("#loading").css("display", "none");
-
-                            var spl = res.split('-');
-
-                            Swal.fire({
-                                title: "پیغام",
-                                text: spl[1],
-                                icon: spl[0]
-                            }).then(() => {
-                                location.reload();
-                            })
-
-                        }
-                    });
-                }
-
-            }
-        }
-
-        function DeleteCard(CardNumber) {
-            Swal.fire({
-                title: "آیا مطمئن هستید",
-                text: "آیا از حذف شماره کارت " + CardNumber + " مطمئن هستید ؟",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "بله حذف کن",
-                cancelButtonText: "خیر",
-                customClass: {
-                    cancelButton: 'order-1 right-gap',
-                    confirmButton: 'order-2',
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $("#loading").css("display", "flex");
-                    $.ajax({
-                        url: "@Url.Action("DeleteCard", "Settings")",
-                        type: "post",
-                        dataType: "html",
-                        data: { CardNumber: CardNumber },
-                        success: function (res) {
-                            $("#loading").css("display", "none");
-
-                            var spl = res.split('-');
-
-                            Swal.fire({
-                                title: "پیغام",
-                                text: spl[1],
-                                icon: spl[0]
-                            }).then(() => {
-                                location.reload();
-                            });
-                        }
-                    });
-
-                }
-            });
-
-
-
-        }
-
-
-
-        function EditCard(CardID) {
-            $("#loading").css("display", "flex");
-            $.ajax({
-                url: "@Url.Action("_EditBankNumber", "Settings")",
-                type: "get",
-                dataType: "html",
-                data: { CardID: CardID },
-                success: function (res) {
-                    $("#loading").css("display", "none");
-
-                    $("#EditBankPartial").html(res);
-
-                }
-            });
-        }
-
-    </script>
+@section vendorScripts {
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+}
+
+@section customScripts {
+    <script src="@Url.Content(PanelAssetHelper.Js("~/assets/js/app-panel-settings.js"))"></script>
 }

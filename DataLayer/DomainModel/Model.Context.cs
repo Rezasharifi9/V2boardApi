@@ -27,6 +27,8 @@ namespace DataLayer.DomainModel
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<tbPanelChangelogVersions> tbPanelChangelogVersions { get; set; }
+        public virtual DbSet<tbPanelChangelogItems> tbPanelChangelogItems { get; set; }
         public virtual DbSet<NLog> NLog { get; set; }
         public virtual DbSet<sysdiagrams> sysdiagrams { get; set; }
         public virtual DbSet<tbBankCardNumbers> tbBankCardNumbers { get; set; }
@@ -40,6 +42,7 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbNotifications> tbNotifications { get; set; }
         public virtual DbSet<tbNotificationUser> tbNotificationUser { get; set; }
         public virtual DbSet<tbOrders> tbOrders { get; set; }
+        public virtual DbSet<tbPanelChangelogSeen> tbPanelChangelogSeen { get; set; }
         public virtual DbSet<tbPaymentLinks> tbPaymentLinks { get; set; }
         public virtual DbSet<tbPaymentMethods> tbPaymentMethods { get; set; }
         public virtual DbSet<tbPaymentMethodUser> tbPaymentMethodUser { get; set; }
@@ -50,8 +53,6 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbSocks5> tbSocks5 { get; set; }
         public virtual DbSet<tbTelegramUsers> tbTelegramUsers { get; set; }
         public virtual DbSet<tbUseages> tbUseages { get; set; }
-        public virtual DbSet<tbPanelChangelogVersions> tbPanelChangelogVersions { get; set; }
-        public virtual DbSet<tbPanelChangelogItems> tbPanelChangelogItems { get; set; }
         public virtual DbSet<tbUserFactors> tbUserFactors { get; set; }
         public virtual DbSet<tbUsers> tbUsers { get; set; }
     

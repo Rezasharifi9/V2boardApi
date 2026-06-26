@@ -1,69 +1,14 @@
-using DataLayer.DomainModel;
-using DataLayer.Repository;
-using System;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace V2boardApi.Tools
 {
     public static class BotInvoiceGuard
     {
-        public const int PendingInvoiceDays = 2;
+        public const int InvoiceWarningHours = 24;
+        public const int InvoiceDeleteHours = 72;
 
-        public static async Task ExpireOldPendingInvoicesAsync(
-            Repository<tbOrders> ordersRepository,
-            Repository<tbDepositWallet_Log> depositRepository,
-            int telUserId)
-        {
-            var expireBefore = DateTime.Now.AddDays(-PendingInvoiceDays);
-            var oldOrders = ordersRepository
-                .Where(o => o.FK_Tel_UserID == telUserId &&
-                            o.OrderStatus == "FOR_PAY" &&
-                            o.OrderDate < expireBefore)
-                .ToList();
-
-            foreach (var order in oldOrders)
-            {
-                order.OrderStatus = "EXPIRED";
-                var deposits = depositRepository
-                    .Where(d => d.FK_Order_ID == order.Order_ID && d.dw_Status == "FOR_PAY")
-                    .ToList();
-                foreach (var deposit in deposits)
-                    deposit.dw_Status = "EXPIRED";
-            }
-
-            if (oldOrders.Count > 0)
-            {
-                await ordersRepository.SaveChangesAsync();
-                await depositRepository.SaveChangesAsync();
-            }
-        }
-
-        public static tbOrders GetBlockingPendingOrder(
-            Repository<tbOrders> ordersRepository,
-            int telUserId,
-            int linkPlanId)
-        {
-            var cutoff = DateTime.Now.AddDays(-PendingInvoiceDays);
-            return ordersRepository
-                .Where(o => o.FK_Tel_UserID == telUserId &&
-                            o.OrderStatus == "FOR_PAY" &&
-                            o.FK_Link_Plan_ID == linkPlanId &&
-                            o.OrderDate >= cutoff)
-                .OrderByDescending(o => o.OrderDate)
-                .FirstOrDefault();
-        }
-
-        public static tbDepositWallet_Log GetPendingDeposit(
-            Repository<tbDepositWallet_Log> depositRepository,
-            int orderId)
-        {
-            return depositRepository
-                .Where(d => d.FK_Order_ID == orderId && d.dw_Status == "FOR_PAY")
-                .OrderByDescending(d => d.dw_CreateDatetime)
-                .FirstOrDefault();
-        }
+        /// <summary>برای نمایش «منقضی شده» در پنل — هم‌راستا با هشدار ۲۴ ساعته.</summary>
+        public const int PendingInvoiceDays = 1;
 
         public static string BuildCardToCardPaymentMessage(
             string taxId,

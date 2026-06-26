@@ -289,13 +289,8 @@ namespace V2boardApi.Areas.App.Controllers
                 if (factor == null)
                     return MessageBox.Warning("ناموفق", "این فاکتور قبلا تائید شده یا یافت نشد");
 
-                var admin = RepositoryUsers.Where(u => u.Role == 1).FirstOrDefault();
-                var activeCard = admin?.tbBankCardNumbers?.FirstOrDefault(c => c.Active);
-                if (activeCard == null || string.IsNullOrEmpty(activeCard.phoneNumber))
-                    return MessageBox.Warning("ناموفق", "شماره همراه دارنده کارت در تنظیمات کارت بانکی ثبت نشده است");
-
                 TransactionHanderService service = new TransactionHanderService();
-                var res = await service.CheckOrder(factor.tbUf_Value.ToString(), activeCard.phoneNumber);
+                var res = await service.AcceptUserFactorAsync(factor_id);
                 if (res)
                     return Toaster.Success("موفق", "تراکنش با موفقیت تائید شد");
 

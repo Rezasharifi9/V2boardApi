@@ -28,4 +28,11 @@ namespace V2boardApi.Areas.App.Data.Changelog
         public string RoleLabel { get; set; }
         public List<PanelChangelogVersion> Versions { get; set; }
     }
+
+    public class PanelChangelogPopupViewModel
+    {
+        public string Version { get; set; }
+        public string ReleaseDate { get; set; }
+        public List<PanelChangelogEntry> Items { get; set; }
+    }
 }

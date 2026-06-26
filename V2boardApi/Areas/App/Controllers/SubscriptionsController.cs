@@ -74,6 +74,10 @@ namespace V2boardApi.Areas.App.Controllers
                 var searchValue = Request.Form.GetValues("search[value]").FirstOrDefault();
                 var sortColumnIndex = Request.Form.GetValues("order[0][column]").FirstOrDefault();
                 var sortColumnDir = Request.Form.GetValues("order[0][dir]").FirstOrDefault();
+                var filterAgentIdStr = Request.Form.GetValues("filterAgentId")?.FirstOrDefault();
+                var filterFromDate = Request.Form.GetValues("filterFromDate")?.FirstOrDefault();
+                var filterToDate = Request.Form.GetValues("filterToDate")?.FirstOrDefault();
+                var filterSortLowVolume = Request.Form.GetValues("filterSortLowVolume")?.FirstOrDefault() == "1";
 
                 int pageSize = length != null ? Convert.ToInt32(length) : 0;
                 int skip = start != null ? Convert.ToInt32(start) : 0;
@@ -86,141 +90,36 @@ namespace V2boardApi.Areas.App.Controllers
 
                 var detail_online = await V2boardApiTools.GetSubOnlineList();
 
-                // دریافت نقش کاربر
-                var userRole = user.Role.Value; // فرض می‌کنیم نقش کاربر در user.Role ذخیره شده است
+                var userRole = user.Role.Value;
 
-                string baseQuery = "SELECT v2.id, v2.email, t, u, d, v2.transfer_enable, banned, token, expired_at, plan_id,pl.name " +
-                                   "FROM `v2_user` AS v2 JOIN v2_plan AS pl ON plan_id = pl.id WHERE 1=1 ";
-                string searchQuery = "";
+                tbUsers filterAgent = null;
+                if (!string.IsNullOrEmpty(filterAgentIdStr) && int.TryParse(filterAgentIdStr, out var filterAgentId))
+                {
+                    var candidate = await usersRepository.FirstOrDefaultAsync(u => u.User_ID == filterAgentId);
+                    if (CanAccessFilterAgent(user, userRole, candidate))
+                        filterAgent = candidate;
+                }
+
+                string baseQuery = "SELECT v2.id, v2.email, v2.t, v2.u, v2.d, v2.transfer_enable, v2.banned, v2.token, v2.expired_at, v2.plan_id, pl.name " +
+                                   "FROM `v2_user` AS v2 JOIN v2_plan AS pl ON v2.plan_id = pl.id WHERE 1=1 ";
+                string filterQuery = BuildRoleScopeFilter(user, userRole, filterAgent);
+                filterQuery += BuildDateFilter(filterFromDate, filterToDate);
 
                 if (!string.IsNullOrEmpty(searchValue))
                 {
                     if (searchValue.Contains("token="))
                     {
                         var tokenValue = searchValue.Split('=')[1];
-                        searchQuery += $" AND token='{tokenValue}'";
-                        if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
-                        {
-                            if (userRole == 4)
-                            {
-                                searchQuery += $" AND (";
-                                var Counter = 1;
-
-                                searchQuery += $"email LIKE '%@{user.Username}' OR  ";
-
-                                foreach (var item in user.tbUsers1)
-                                {
-
-
-                                    if (Counter == user.tbUsers1.Count)
-                                    {
-                                        searchQuery += $"email LIKE '%@{item.Username}')";
-                                    }
-                                    else
-                                    {
-                                        searchQuery += $"email LIKE '%@{item.Username}' OR  ";
-                                    }
-                                    Counter++;
-
-                                }
-
-
-                            }
-                            else
-                            {
-                                searchQuery += $" AND email LIKE '%@{user.Username}'";
-                            }
-
-                        }
+                        filterQuery += $" AND v2.token='{tokenValue}'";
                     }
                     else
                     {
-                        searchQuery += $" AND email LIKE '%{searchValue}%'";
-                        if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
-                        {
-                            if (userRole == 4)
-                            {
-                                searchQuery += $" AND (";
-                                var Counter = 1;
-                                searchQuery += $"email LIKE '%@{user.Username}%' OR  ";
-                                foreach (var item in user.tbUsers1)
-                                {
-
-
-                                    if (Counter == user.tbUsers1.Count)
-                                    {
-                                        searchQuery += $"email LIKE '%@{item.Username}')";
-                                    }
-                                    else
-                                    {
-                                        searchQuery += $"email LIKE '%@{item.Username}' OR  ";
-                                    }
-                                    Counter++;
-
-                                }
-
-
-                            }
-                            else
-                            {
-                                searchQuery += $" AND email LIKE '%@{user.Username}'";
-                            }
-                        }
-                    }
-                }
-                else if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
-                {
-                    if (userRole == 4)
-                    {
-                        searchQuery += $" AND (";
-                        var Counter = 1;
-                        searchQuery += $"email LIKE '%@{user.Username}' OR  ";
-                        foreach (var item in user.tbUsers1)
-                        {
-
-
-                            if (Counter == user.tbUsers1.Count)
-                            {
-                                searchQuery += $"email LIKE '%@{item.Username}')";
-                            }
-                            else
-                            {
-                                searchQuery += $"email LIKE '%@{item.Username}' OR  ";
-                            }
-                            Counter++;
-
-                        }
-
-
-                    }
-                    else
-                    {
-                        searchQuery += $" AND email LIKE '%@{user.Username}'";
+                        filterQuery += $" AND v2.email LIKE '%{searchValue}%'";
                     }
                 }
 
-                string query = baseQuery + searchQuery;
-
-                // Sorting
-                switch (sortColumnIndex)
-                {
-                    case "0":
-                        query += $" ORDER BY email {sortColumnDir}";
-                        break;
-                    case "1":
-                        query += $" ORDER BY transfer_enable {sortColumnDir}";
-                        break;
-                    case "2":
-                        query += $" ORDER BY t {sortColumnDir}";
-                        break;
-                    case "5":
-                        query += $" ORDER BY expired_at {sortColumnDir}";
-                        break;
-                    default:
-                        query += " ORDER BY v2.id DESC";
-                        break;
-                }
-
+                string query = baseQuery + filterQuery;
+                query += BuildSubscriptionOrderBy(sortColumnIndex, sortColumnDir, filterSortLowVolume);
                 query += pageSize > 0 ? $" LIMIT {skip}, {pageSize}" : "";
                 List<GetUserDataModel> users = new List<GetUserDataModel>();
                 using (var mySqlEntities = new MySqlEntities(user.tbServers.ConnectionString))
@@ -330,49 +229,17 @@ namespace V2boardApi.Areas.App.Controllers
                         reader.Close();
                     }
 
-                    var countQuery = "SELECT COUNT(*) AS Count FROM `v2_user` WHERE 1=1";
-                    if (userRole == 2 || userRole == 3 || userRole == 4) // اگر نقش برابر 2 بود، فیلتر Username را اضافه می‌کنیم
+                    var countQuery = "SELECT COUNT(*) AS Count FROM `v2_user` AS v2 WHERE 1=1" + filterQuery;
+
+                    object summary = null;
+                    var hasDateRange = !string.IsNullOrWhiteSpace(filterFromDate) && !string.IsNullOrWhiteSpace(filterToDate);
+                    var summaryAgent = filterAgent;
+                    if (summaryAgent == null && hasDateRange && (userRole == 2 || userRole == 3))
+                        summaryAgent = user;
+                    if (hasDateRange && summaryAgent != null)
                     {
-                        if (userRole == 4)
-                        {
-                            countQuery += $" AND (";
-                            var Counter = 1;
-                            countQuery += $"email LIKE '%@{user.Username}%' OR  ";
-                            foreach (var item in user.tbUsers1)
-                            {
-
-
-                                if (Counter == user.tbUsers1.Count)
-                                {
-                                    countQuery += $"email LIKE '%@{item.Username}%' )";
-                                }
-                                else
-                                {
-                                    countQuery += $"email LIKE '%@{item.Username}%' OR  ";
-                                }
-                                Counter++;
-
-                            }
-
-
-                        }
-                        else
-                        {
-                            countQuery += $" AND email LIKE '%@{user.Username}%'";
-                        }
-                    }
-
-                    if (!string.IsNullOrEmpty(searchValue))
-                    {
-                        if (searchValue.Contains("token="))
-                        {
-                            var tokenValue = searchValue.Split('=')[1];
-                            countQuery += $" AND token='{tokenValue}'";
-                        }
-                        else
-                        {
-                            countQuery += $" AND email LIKE '%{searchValue}%'";
-                        }
+                        var summaryFilter = BuildRoleScopeFilter(user, userRole, summaryAgent) + BuildDateFilter(filterFromDate, filterToDate);
+                        summary = await BuildFilterSummaryAsync(mySqlEntities, summaryFilter, summaryAgent, user.FK_Server_ID.Value);
                     }
 
                     using (var reader = await mySqlEntities.GetDataAsync(countQuery))
@@ -386,7 +253,8 @@ namespace V2boardApi.Areas.App.Controllers
                             draw,
                             recordsTotal = totalRecords,
                             recordsFiltered = totalRecords,
-                            data = users
+                            data = users,
+                            summary
                         }, JsonRequestBehavior.AllowGet);
                     }
                 }
@@ -396,6 +264,124 @@ namespace V2boardApi.Areas.App.Controllers
                 logger.Error(ex, "نمایش لیست اشتراکات در پنل فروش با خطا مواجه شد");
                 return MessageBox.Error("خطا", "خطا در دریافت داده از سمت سرور");
             }
+        }
+
+        private static bool CanAccessFilterAgent(tbUsers currentUser, int userRole, tbUsers targetAgent)
+        {
+            if (targetAgent == null || targetAgent.FK_Server_ID != currentUser.FK_Server_ID)
+                return false;
+            if (userRole == 1)
+                return targetAgent.FK_Server_ID == currentUser.FK_Server_ID && targetAgent.Role != 1;
+            if (userRole == 2)
+                return targetAgent.User_ID == currentUser.User_ID;
+            if (userRole == 3)
+                return currentUser.tbUsers1.Any(a => a.User_ID == targetAgent.User_ID && a.Status == true);
+            return false;
+        }
+
+        private static string BuildRoleScopeFilter(tbUsers currentUser, int userRole, tbUsers filterAgent)
+        {
+            if (filterAgent != null)
+                return $" AND v2.email LIKE '%@{filterAgent.Username}'";
+
+            if (userRole == 2 || userRole == 3)
+                return $" AND v2.email LIKE '%@{currentUser.Username}'";
+
+            if (userRole == 4)
+            {
+                var parts = new List<string> { $"v2.email LIKE '%@{currentUser.Username}'" };
+                foreach (var item in currentUser.tbUsers1)
+                    parts.Add($"v2.email LIKE '%@{item.Username}'");
+                return " AND (" + string.Join(" OR ", parts) + ")";
+            }
+
+            return "";
+        }
+
+        private string BuildDateFilter(string filterFromDate, string filterToDate)
+        {
+            var sb = new StringBuilder();
+            if (!string.IsNullOrWhiteSpace(filterFromDate))
+            {
+                var fromUnix = (long)ParsePersianDate(filterFromDate).Date.ConvertDatetimeToSecond();
+                sb.Append($" AND v2.created_at >= {fromUnix}");
+            }
+            if (!string.IsNullOrWhiteSpace(filterToDate))
+            {
+                var toUnix = (long)ParsePersianDate(filterToDate).Date.AddDays(1).AddSeconds(-1).ConvertDatetimeToSecond();
+                sb.Append($" AND v2.created_at <= {toUnix}");
+            }
+            return sb.ToString();
+        }
+
+        private static string BuildSubscriptionOrderBy(string sortColumnIndex, string sortColumnDir, bool filterSortLowVolume)
+        {
+            var dir = string.IsNullOrEmpty(sortColumnDir) ? "ASC" : sortColumnDir;
+            if (filterSortLowVolume || sortColumnIndex == "4")
+                return " ORDER BY (v2.transfer_enable - (v2.u + v2.d)) ASC";
+
+            switch (sortColumnIndex)
+            {
+                case "1":
+                    return $" ORDER BY v2.email {dir}";
+                case "2":
+                    return $" ORDER BY v2.transfer_enable {dir}";
+                case "3":
+                    return $" ORDER BY v2.t {dir}";
+                case "5":
+                case "8":
+                    return $" ORDER BY v2.expired_at {dir}";
+                default:
+                    return " ORDER BY v2.id DESC";
+            }
+        }
+
+        private async Task<object> BuildFilterSummaryAsync(MySqlEntities mySqlEntities, string filterClause, tbUsers filterAgent, int serverId)
+        {
+            var summaryQuery = "SELECT v2.plan_id FROM `v2_user` AS v2 WHERE 1=1" + filterClause;
+            var planIds = new List<long>();
+            using (var summaryReader = await mySqlEntities.GetDataAsync(summaryQuery))
+            {
+                while (await summaryReader.ReadAsync())
+                    planIds.Add(summaryReader.GetInt64(summaryReader.GetOrdinal("plan_id")));
+            }
+
+            long totalAmount = 0;
+            foreach (var planId in planIds)
+                totalAmount += await ComputeSubscriptionAmountAsync(filterAgent, planId, serverId);
+
+            var agentRole = filterAgent.Role ?? 2;
+            return new
+            {
+                totalCount = planIds.Count,
+                totalAmount,
+                totalAmountFormatted = totalAmount.ToString("N0"),
+                amountLabel = GetSubscriptionAmountLabel(agentRole),
+                agentUsername = filterAgent.Username
+            };
+        }
+
+        private async Task<long> ComputeSubscriptionAmountAsync(tbUsers agent, long planIdV2, int serverId)
+        {
+            var plan = await plansRepository.FirstOrDefaultAsync(p => p.Plan_ID_V2 == planIdV2 && p.FK_Server_ID == serverId);
+            if (plan == null)
+                return 0;
+
+            if (agent.Role == 2)
+                return plan.Price;
+
+            var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == agent.User_ID);
+            if (linkGroupUser == null)
+                return plan.Price;
+
+            return (long)((plan.PlanVolume * linkGroupUser.PriceForGig)
+                + (plan.PlanMonth * linkGroupUser.PriceForMonth)
+                + ((plan.device_limit ?? 0) * linkGroupUser.PriceForUser));
+        }
+
+        private static string GetSubscriptionAmountLabel(int agentRole)
+        {
+            return agentRole == 2 ? "جمع قیمت فروش تعرفه" : "جمع هزینه (قیمت هر گیگ)";
         }
 
         #endregion
@@ -890,7 +876,7 @@ namespace V2boardApi.Areas.App.Controllers
                             volumeGb = o.Traffic,
                             months = o.Month,
                             reservedDate = o.OrderDate?.ConvertDateTimeToShamsi4() ?? "-",
-                            status = "در صف رزرو"
+                            status = "در انتظار فعال سازی"
                         };
                     }).ToList();
 
@@ -1077,6 +1063,110 @@ namespace V2boardApi.Areas.App.Controllers
                 logger.Error(ex, "رزرو بسته اشتراک با خطا مواجه شد");
                 return Toaster.Error("ناموفق", "خطا در رزرو بسته");
             }
+        }
+
+        [System.Web.Http.HttpPost]
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ActivateReservedPackage(int orderId)
+        {
+            try
+            {
+                var agent = usersRepository.table.FirstOrDefault(p => p.Username == User.Identity.Name);
+                if (agent?.tbServers == null)
+                    return Toaster.Error("ناموفق", "کاربر یافت نشد");
+
+                var order = await GetValidatedReservedOrderAsync(orderId, agent);
+                if (order == null)
+                    return MessageBox.Warning("هشدار", "اشتراک رزرو یافت نشد");
+
+                using (var mySql = new MySqlEntities(agent.tbServers.ConnectionString))
+                {
+                    await mySql.OpenAsync();
+                    var applied = await SubscriptionPackageHelper.ApplyReservedOrderAsync(
+                        order, mySql, ordersRepository, linksRepository);
+
+                    if (!applied)
+                        return Toaster.Error("ناموفق", "خطا در فعال‌سازی اشتراک");
+
+                    var subName = order.AccountName.Split('@')[0];
+                    var plan = order.tbLinkUserAndPlans?.tbPlans
+                        ?? plansRepository.Where(p => p.Plan_ID_V2 == order.V2_Plan_ID).FirstOrDefault();
+                    var linkPlanId = order.FK_Link_Plan_ID ?? order.tbLinkUserAndPlans?.Link_PU_ID ?? 0;
+
+                    string subToken = null;
+                    var disc = new Dictionary<string, object> { { "@email", order.AccountName } };
+                    var tokenReader = await mySql.GetDataAsync("SELECT token FROM v2_user WHERE email=@email", disc);
+                    if (await tokenReader.ReadAsync())
+                        subToken = tokenReader["token"]?.ToString();
+                    tokenReader.Close();
+
+                    if (linkPlanId > 0 && plan != null)
+                    {
+                        AddLog("فعال‌سازی بسته رزرو", linkPlanId, subName,
+                            (int)(order.Order_Price ?? plan.Price), plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, subToken);
+                    }
+
+                    logger.Info("بسته رزرو به‌صورت دستی فعال شد");
+                    return Toaster.Success("موفق", "اشتراک با موفقیت فعال شد");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "فعال‌سازی بسته رزرو با خطا مواجه شد");
+                return Toaster.Error("ناموفق", "خطا در فعال‌سازی اشتراک");
+            }
+        }
+
+        [System.Web.Http.HttpPost]
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CancelReservedPackage(int orderId)
+        {
+            try
+            {
+                var agent = usersRepository.table.FirstOrDefault(p => p.Username == User.Identity.Name);
+                if (agent?.tbServers == null)
+                    return Toaster.Error("ناموفق", "کاربر یافت نشد");
+
+                var order = await GetValidatedReservedOrderAsync(orderId, agent);
+                if (order == null)
+                    return MessageBox.Warning("هشدار", "اشتراک رزرو یافت نشد");
+
+                if (!await ReservedPackageHelper.RefundReservedOrderWalletAsync(
+                    order, usersRepository, plansRepository, linkUserAndPlansRepository, linkUserGroupRepository))
+                    return Toaster.Error("ناموفق", "خطا در بازگشت مبلغ به حساب شما");
+
+                ReservedPackageHelper.RemoveReservePackageLogs(logsRepository, order);
+
+                ordersRepository.Delete(order);
+                ordersRepository.Save();
+
+                logger.Info("بسته رزرو لغو شد و مبلغ به حساب نماینده برگشت");
+                return Toaster.Success("موفق", "اشتراک با موفقیت حذف گردید و مبلغ به حساب شما برگشت خورد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "لغو بسته رزرو با خطا مواجه شد");
+                return Toaster.Error("ناموفق", "خطا در حذف اشتراک");
+            }
+        }
+
+        private async Task<tbOrders> GetValidatedReservedOrderAsync(int orderId, tbUsers agent)
+        {
+            var order = await ordersRepository.table
+                .Include(o => o.tbLinkUserAndPlans)
+                .Include(o => o.tbLinkUserAndPlans.tbPlans)
+                .FirstOrDefaultAsync(o => o.Order_ID == orderId && o.OrderStatus == "FOR_RESERVE");
+
+            if (order == null || string.IsNullOrEmpty(order.AccountName) || !order.AccountName.Contains("@"))
+                return null;
+
+            if (agent.Role == 1)
+                return order;
+
+            var username = order.AccountName.Split('@')[1];
+            return agent.Username == username ? order : null;
         }
 
         #endregion

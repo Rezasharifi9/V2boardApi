@@ -383,6 +383,7 @@
     <Compile Include="Areas\api\Data\ViewModels\AddAccountWithOutPlanInputModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\GetFactorsViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\NotPayedUserModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\ReservedPackageViewModel.cs" />
     <Compile Include="Areas\App\Controllers\AdminDashboardController.cs" />
     <Compile Include="Areas\App\AppAreaRegistration.cs" />
     <Compile Include="Areas\App\Controllers\AdminController.cs" />
@@ -427,6 +428,8 @@
     <Compile Include="Areas\App\Data\TelegramUsersViewModel\TelegramUsersResponseViewModel.cs" />
     <Compile Include="Areas\App\Data\UserFactorsViewModels\GeneralInfoPaymentViewModel.cs" />
     <Compile Include="Areas\App\Data\UserFactorsViewModels\UserFactor_ListViewModel.cs" />
+    <Compile Include="Areas\App\Data\UsersViewModels\AgentHistoryPdfResultViewModel.cs" />
+    <Compile Include="Areas\App\Data\UsersViewModels\AgentHistorySummaryViewModel.cs" />
     <Compile Include="Areas\App\Data\UsersViewModels\SelectUserViewModel.cs" />
     <Compile Include="Areas\App\Data\UsersViewModels\UserViewModel.cs" />
     <Compile Include="Global.asax.cs">
@@ -457,7 +460,11 @@
     <Compile Include="Tools\GeminiAPI.cs" />
     <Compile Include="Tools\HubSmartAPI.cs" />
     <Compile Include="Tools\BotInvoiceGuard.cs" />
+    <Compile Include="Tools\OrderStatusHelper.cs" />
+    <Compile Include="Tools\ReservedPackageHelper.cs" />
+    <Compile Include="Tools\TelegramSubscriptionHelper.cs" />
     <Compile Include="Tools\SubscriptionPackageHelper.cs" />
+    <Compile Include="Tools\SubscriptionReserveWarnHelper.cs" />
     <Compile Include="Tools\AuthSession.cs" />
     <Compile Include="Tools\JwtToken.cs" />
     <Compile Include="Tools\NowPayment.cs" />
@@ -486,9 +493,11 @@
     <Compile Include="Tools\Network.cs" />
     <Compile Include="Tools\RealUser.cs" />
     <Compile Include="Tools\StartUpOwin.cs" />
+    <Compile Include="Tools\PanelAssetHelper.cs" />
     <Compile Include="Tools\PanelChangelogService.cs" />
+    <Compile Include="Tools\AgentHistoryPdfHelper.cs" />
     <Compile Include="Tools\UsageHistoryPdfHelper.cs" />
-    <Compile Include="Tools\Stimulsoft.cs" />
+    <Compile Include="Tools\StimulsoftBootstrap.cs" />
     <Compile Include="Tools\Timers.cs" />
     <Compile Include="Tools\TransactionHanderService.cs" />
     <Compile Include="Tools\UserLog.cs" />
@@ -926,6 +935,7 @@
     <Content Include="assets\js\app-email.js" />
     <Content Include="assets\js\app-invoice-add.js" />
     <Content Include="assets\js\app-invoice-edit.js" />
+    <Content Include="assets\js\app-panel-settings.js" />
     <Content Include="assets\js\app-invoice-list.js" />
     <Content Include="assets\js\app-invoice-user-list.js" />
     <Content Include="assets\js\app-invoice-print.js" />
@@ -1983,6 +1993,9 @@
     <Content Include="Scripts\bootstrap.min.js.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
+    <Compile Include="Tools\DataTablesRequest.cs" />
+    <Compile Include="Tools\DailySalesReportService.cs" />
+    <Compile Include="Tools\DashboardSalesHelper.cs" />
     <Compile Include="Tools\SettlementService.cs" />
     <Compile Include="Tools\SecretKeyGenerator.cs" />
   </ItemGroup>

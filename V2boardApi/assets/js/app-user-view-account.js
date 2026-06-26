@@ -7,13 +7,50 @@ $(function () {
 
     // Variable declaration for table
     var dt_project_table = $('.datatable-project'),
-        dt_sub_table = $('.datatable-sub');
+        dt_sub_table = $('.datatable-sub'),
+        dt_sub;
+
+    function updateAgentHistorySummary(summary) {
+        var $box = $('#agentHistorySummary');
+        if (!summary) {
+            $box.addClass('d-none');
+            return;
+        }
+        $('#summaryCreatedCount').text(summary.CreatedCount || summary.createdCount || 0);
+        $('#summaryRenewedCount').text(summary.RenewedCount || summary.renewedCount || 0);
+        $('#summarySalesAmount').text((summary.TotalSalesAmountFormatted || summary.totalSalesAmountFormatted || '0') + ' تومان');
+        $('#summaryPaidInvoices').text((summary.PaidInvoicesAmountFormatted || summary.paidInvoicesAmountFormatted || '0') + ' تومان');
+        $box.removeClass('d-none');
+    }
+
+    if (dt_sub_table.length && typeof flatpickr !== 'undefined') {
+        var agentHistoryFpOpts = {
+            disableMobile: "true",
+            altInput: true,
+            altFormat: 'j F Y',
+            dateFormat: 'Y/m/d',
+            locale: 'fa'
+        };
+        flatpickr('#agentHistoryFromDate', agentHistoryFpOpts);
+        flatpickr('#agentHistoryToDate', agentHistoryFpOpts);
+    }
 
     // Sub datatable
     // --------------------------------------------------------------------
     if (dt_sub_table.length) {
-        var dt_invoice = dt_sub_table.DataTable({
-            ajax: '/App/Admin/GetUserAccountLog?user_id=' + getUrlParameter("user_id"), // JSON file to add data
+        dt_sub = dt_sub_table.DataTable({
+            ajax: {
+                url: '/App/Admin/GetUserAccountLog',
+                data: function (d) {
+                    d.user_id = getUrlParameter('user_id');
+                    d.fromDate = $('#agentHistoryFromDate').val() || '';
+                    d.toDate = $('#agentHistoryToDate').val() || '';
+                },
+                dataSrc: function (json) {
+                    updateAgentHistorySummary(json.summary);
+                    return json.data;
+                }
+            },
             columns: [
                 // columns according to JSON
                 { data: 'id' },
@@ -158,6 +195,38 @@ $(function () {
             }
         });
     }
+
+    $('#btnApplyAgentHistoryFilter').on('click', function () {
+        if (dt_sub) dt_sub.ajax.reload();
+    });
+
+    $('#btnClearAgentHistoryFilter').on('click', function () {
+        $('#agentHistoryFromDate').val('');
+        $('#agentHistoryToDate').val('');
+        $('#agentHistorySummary').addClass('d-none');
+        if (dt_sub) dt_sub.ajax.reload();
+    });
+
+    $('#btnExportAgentHistoryPdf').on('click', function () {
+        var userId = getUrlParameter('user_id');
+        if (!userId) {
+            return;
+        }
+
+        var fromDate = $('#agentHistoryFromDate').val();
+        var toDate = $('#agentHistoryToDate').val();
+        var url = '/App/Admin/ExportAgentHistoryPdf?user_id=' + userId;
+
+        if (fromDate) {
+            url += '&fromDate=' + encodeURIComponent(fromDate);
+        }
+        if (toDate) {
+            url += '&toDate=' + encodeURIComponent(toDate);
+        }
+
+        window.open(url, '_blank');
+    });
+
     // On each datatable draw, initialize tooltip
     dt_sub_table.on('draw.dt', function () {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

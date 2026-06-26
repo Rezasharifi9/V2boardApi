@@ -576,6 +576,7 @@ if (typeof $ !== 'undefined') {
                 async: false
             }).responseJSON;
             // Init typeahead on searchInput
+            if ($.fn.typeahead) {
             searchInput.each(function () {
                 var $this = $(this);
                 searchInput
@@ -728,6 +729,7 @@ if (typeof $ !== 'undefined') {
                     }
                 });
             });
+            }
 
             // Init PerfectScrollbar in search result
             var psSearch;

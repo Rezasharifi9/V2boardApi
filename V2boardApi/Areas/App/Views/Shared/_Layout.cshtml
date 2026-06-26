@@ -26,7 +26,7 @@
     <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
     <script src="../../assets/vendor/js/template-customizer.js"></script>
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-    <script src="../../assets/js/config.js"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/config.js")"></script>
     <!-- Better experience of RTL -->
     <link href="../../assets/css/rtl.css" rel="stylesheet" />
 
@@ -184,25 +184,19 @@
                             <div>مشترکین</div>
                         </a>
                     </li>
-                    <!-- ربات -->
+                    <!-- پیکربندی -->
                     <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text" data-i18n="Components">پیکربندی (درحال توسعه)</span>
+                        <span class="menu-header-text" data-i18n="Components">پیکربندی</span>
                     </li>
                     @if (Role == "1")
                     {
-                        <li class="menu-item" style="">
-                            <a class="menu-link" href="javascript:void(0);">
-                                <i class="menu-icon tf-icons ti ti-server"></i>
-                                <div>سرور</div>
+                        <li class="menu-item">
+                            <a class="menu-link" href="@Url.Action("Index","Settings",new {area="App"})">
+                                <i class="menu-icon tf-icons ti ti-settings"></i>
+                                <div>تنظیمات</div>
                             </a>
                         </li>
                     }
-                    <li class="menu-item" style="">
-                        <a class="menu-link" href="javascript:void(0);">
-                            <i class="menu-icon tf-icons ti ti-robot"></i>
-                            <div>ربات</div>
-                        </a>
-                    </li>
                     @*<li class="menu-header small text-uppercase">
             <span class="menu-header-text" data-i18n="Components">پشتیبانی</span>
         </li>
@@ -726,6 +720,31 @@
         <div class="toast-body">اشتراک با موفقیت ویرایش شد</div>
     </div>
 
+    @if (Role != null)
+    {
+        <div class="modal fade" id="panelChangelogModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="ti ti-sparkles me-2 text-primary"></i>
+                            به‌روزرسانی پنل — نسخه <span id="panelChangelogVersion"></span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted mb-3">تاریخ انتشار: <span id="panelChangelogDate"></span></p>
+                        <div id="panelChangelogItems" class="list-group list-group-flush"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="@Url.Action("Index", "Changelog", new { area = "App" })" class="btn btn-label-secondary">مشاهده همه تغییرات</a>
+                        <button type="button" class="btn btn-primary" id="panelChangelogDismiss">متوجه شدم</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     <!-- / Layout wrapper -->
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
@@ -934,7 +953,7 @@
 
     <!-- Vendors JS -->
     <!-- Main JS -->
-    <script src="../../assets/js/main.js"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/js/main.js")"></script>
     @RenderSection("customScripts", false)
     <script>
 
@@ -989,8 +1008,77 @@
         </text>
             }
 
+        @if (Role != null)
+        {
+            <text>
+            var panelChangelogVersion = null;
+            var panelChangelogMarked = false;
 
+            function markPanelChangelogSeen() {
+                if (panelChangelogMarked || !panelChangelogVersion) return;
+                panelChangelogMarked = true;
+                var v = panelChangelogVersion;
+                $.ajax({
+                    url: "@Url.Action("MarkSeen", "Changelog", new { area = "App" })?version=" + encodeURIComponent(v),
+                    type: "get"
+                });
+            }
 
+            function showPanelChangelogPopup(data) {
+                panelChangelogVersion = data.version;
+                panelChangelogMarked = false;
+                $("#panelChangelogVersion").text(data.version);
+                $("#panelChangelogDate").text(data.releaseDate || "-");
+                var $list = $("#panelChangelogItems").empty();
+                $.each(data.items, function (_, item) {
+                    $list.append(
+                        '<div class="list-group-item px-0">' +
+                        '<h6 class="mb-1">' + item.title + '</h6>' +
+                        '<p class="mb-0 text-muted small">' + item.description + '</p>' +
+                        '</div>'
+                    );
+                });
+                var modalEl = document.getElementById('panelChangelogModal');
+                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+
+            function checkPanelChangelogPopup(delayMs) {
+                if (window.location.pathname.toLowerCase().indexOf('/changelog') >= 0)
+                    return;
+                setTimeout(function () {
+                    $.ajax({
+                        url: "@Url.Action("GetPendingPopup", "Changelog", new { area = "App" })",
+                        type: "get",
+                        dataType: "json",
+                        success: function (res) {
+                            if (res && res.show && res.items && res.items.length > 0) {
+                                showPanelChangelogPopup(res);
+                            }
+                        }
+                    });
+                }, delayMs || 0);
+            }
+
+            $("#panelChangelogDismiss").on("click", function () {
+                markPanelChangelogSeen();
+                bootstrap.Modal.getInstance(document.getElementById('panelChangelogModal')).hide();
+            });
+
+            $("#panelChangelogModal").on("hidden.bs.modal", function () {
+                markPanelChangelogSeen();
+            });
+
+            @if (Role == "1")
+            {
+                <text>checkPanelChangelogPopup(800);</text>
+            }
+            else
+            {
+                <text>checkPanelChangelogPopup(1500);</text>
+            }
+            </text>
+        }
 
         });
 

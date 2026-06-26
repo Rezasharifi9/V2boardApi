@@ -7,29 +7,30 @@
       <Diagram DiagramId="61ab93f3291f4a6eb957e0787146daf3" Name="Diagram1">
         <EntityTypeShape EntityType="V2boardSiteSharifiModel.NLog" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="V2boardSiteSharifiModel.sysdiagrams" Width="1.5" PointX="2.75" PointY="0.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbBankCardNumbers" Width="1.5" PointX="11.25" PointY="32" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbBotSettings" Width="1.5" PointX="14.25" PointY="17.5" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbConnectionHelp" Width="1.5" PointX="11.25" PointY="25.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbDepositWallet_Log" Width="1.5" PointX="18.75" PointY="35.625" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinks" Width="1.5" PointX="3" PointY="24.875" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="14.25" PointY="29.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinkUserAndPlans" Width="1.5" PointX="14.25" PointY="25.5" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLogs" Width="1.5" PointX="16.5" PointY="29.375" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbNotifications" Width="1.5" PointX="15" PointY="13.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbNotificationUser" Width="1.5" PointX="17.25" PointY="21.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbOrders" Width="1.5" PointX="16.5" PointY="34.125" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentLinks" Width="1.5" PointX="2.75" PointY="3.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentMethods" Width="1.5" PointX="16.5" PointY="39.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentMethodUser" Width="1.5" PointX="16.5" PointY="25.625" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPlans" Width="1.5" PointX="6" PointY="24.625" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbServerGroups" Width="1.5" PointX="12" PointY="29" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbBankCardNumbers" Width="1.5" PointX="8.25" PointY="29" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbBotSettings" Width="1.5" PointX="11.25" PointY="23.625" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbConnectionHelp" Width="1.5" PointX="8.25" PointY="39" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbDepositWallet_Log" Width="1.5" PointX="15.75" PointY="31.625" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinks" Width="1.5" PointX="3" PointY="19" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinkServerGroupWithUsers" Width="1.5" PointX="11.25" PointY="19.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLinkUserAndPlans" Width="1.5" PointX="8.25" PointY="24.625" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbLogs" Width="1.5" PointX="10.5" PointY="15.5" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbNotifications" Width="1.5" PointX="12" PointY="37.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbNotificationUser" Width="1.5" PointX="14.25" PointY="25.875" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbOrders" Width="1.5" PointX="13.5" PointY="29.25" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPanelChangelogSeen" Width="1.5" PointX="2.75" PointY="3.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentLinks" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentMethods" Width="1.5" PointX="13.5" PointY="34.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPaymentMethodUser" Width="1.5" PointX="10.5" PointY="32.25" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbPlans" Width="1.5" PointX="3" PointY="24.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbServerGroups" Width="1.5" PointX="9" PointY="12.125" />
         <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbServers" Width="1.5" PointX="0.75" PointY="24.125" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSettings" Width="1.5" PointX="4.75" PointY="0.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSocks5" Width="1.5" PointX="4.75" PointY="3.75" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbTelegramUsers" Width="1.5" PointX="11.25" PointY="35.25" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUseages" Width="1.5" PointX="3" PointY="52.5" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUserFactors" Width="1.5" PointX="11.25" PointY="19.125" />
-        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUsers" Width="1.5" PointX="9" PointY="22" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSettings" Width="1.5" PointX="4.75" PointY="4.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbSocks5" Width="1.5" PointX="6.75" PointY="0.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbTelegramUsers" Width="1.5" PointX="8.25" PointY="32.25" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUseages" Width="1.5" PointX="3" PointY="52.75" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUserFactors" Width="1.5" PointX="8.25" PointY="19.25" />
+        <EntityTypeShape EntityType="V2boardSiteSharifiModel.tbUsers" Width="1.5" PointX="6" PointY="21.875" />
         <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBankCardNumbers_tbUsers" />
         <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBotSettings_tbBotSettings" />
         <AssociationConnector Association="V2boardSiteSharifiModel.FK_tbBotSettings_tbPlans" />

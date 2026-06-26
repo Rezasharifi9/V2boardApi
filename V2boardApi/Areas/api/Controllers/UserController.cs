@@ -382,12 +382,22 @@ namespace V2boardApi.Areas.api.Controllers
         {
             var Date = DateTime.Now.AddDays(-1);
             var Factors = await db.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= Date && p.dw_Status == "FOR_PAY").OrderByDescending(p => p.dw_CreateDatetime).ToListAsync();
+            var AgentFactors = await db.tbUserFactors.Where(p => p.tbUf_CreateTime >= Date && p.tbUf_Status == 1).OrderByDescending(p => p.tbUf_CreateTime).ToListAsync();
             List<GetFactorsViewModel> data = new List<GetFactorsViewModel>();
             foreach (var item in Factors)
             {
                 GetFactorsViewModel factor = new GetFactorsViewModel();
                 factor.FullName = item.tbTelegramUsers.Tel_Username + " " + "(" + item.tbTelegramUsers.Tel_FirstName + " " + item.tbTelegramUsers.Tel_LastName + ")";
                 factor.Price = item.dw_Price.Value.ConvertToMony();
+                data.Add(factor);
+            }
+
+            foreach (var item in AgentFactors)
+            {
+                GetFactorsViewModel factor = new GetFactorsViewModel();
+                var agentName = string.IsNullOrWhiteSpace(item.tbUsers.FullName) ? item.tbUsers.Username : item.tbUsers.FullName;
+                factor.FullName = item.tbUsers.Username + " (" + agentName + ")";
+                factor.Price = item.tbUf_Value.Value.ConvertToMony();
                 data.Add(factor);
             }
 

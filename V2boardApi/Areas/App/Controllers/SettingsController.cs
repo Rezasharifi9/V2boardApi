@@ -1,16 +1,10 @@
 ﻿using DataLayer.DomainModel;
 using DataLayer.Repository;
 using NLog;
-using Org.BouncyCastle.Asn1.X509;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
-using System.Windows;
-using Telegram.Bot;
-using Telegram.Bot.Types;
 using V2boardApi.Tools;
 
 namespace V2boardApi.Areas.App.Controllers
@@ -32,114 +26,135 @@ namespace V2boardApi.Areas.App.Controllers
             RepositoryCards = new Repository<tbBankCardNumbers>(db);
         }
 
-        // GET: App/Settings
-        [AuthorizeApp(Roles = "1,2,3,4")]
+        [AuthorizeApp(Roles = "1")]
         public ActionResult Index()
         {
-            return View();
+            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            if (user?.tbServers == null)
+                return View(new tbServers());
+
+            return View(user.tbServers);
         }
 
-        #region چک کردن ارتباط با mySql 
+        #region تست و ذخیره MySQL
 
         [HttpPost]
         [AuthorizeApp(Roles = "1")]
-        public async Task<ActionResult> ScanPort(string IPAddress, string DatabaseName, string Username, string Password)
+        public async Task<ActionResult> TestMysqlConnection(string ServerIP, string DataBaseName, string Username, string Password)
         {
             try
             {
-                var Connection = "Server=" + IPAddress + ";User ID=" + Username + ";Password=" + Password + ";Database=" + DatabaseName + "";
-                MySqlEntities mySqlEntities = new MySqlEntities(Connection);
-                await mySqlEntities.OpenAsync();
-                await mySqlEntities.CloseAsync();
-                return Content("success-" + "ارتباط با سرویس MYSQL برقرار شد");
+                var connection = BuildMysqlConnectionString(ServerIP, DataBaseName, Username, Password);
+                using (var mySqlEntities = new MySqlEntities(connection))
+                {
+                    await mySqlEntities.OpenAsync();
+                    await mySqlEntities.CloseAsync();
+                }
+                return Json(new { status = "success", message = "ارتباط با سرویس MySQL برقرار شد" }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "عدم برقراری ارتباط با MYSQL ");
-                return Content("warning-" + "عدم برقرار ارتباط با سرویس MYSQL");
+                logger.Error(ex, "عدم برقراری ارتباط با MySQL");
+                return Json(new { status = "warning", message = "عدم برقراری ارتباط با سرویس MySQL" }, JsonRequestBehavior.AllowGet);
             }
-
-
-
-        }
-
-        #endregion
-
-        #region تنظیمات سرور
-        [AuthorizeApp(Roles = "1")]
-        public ActionResult _BaseSetting()
-        {
-            var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-            return PartialView(Use.tbServers);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [AuthorizeApp(Roles = "1")]
-        public ActionResult SaveServerSetting(string IPAddress, string ServerAddress, string DatabaseName, string Username, string Password, string SubAddr)
+        public ActionResult SaveMysqlSettings(string ServerAddress, string ServerIP, string Username, string Password, string DataBaseName, string ApiToken_V2board)
         {
             try
             {
+                var server = GetCurrentServer();
+                if (server == null)
+                    return Json(new { status = "danger", message = "سرور یافت نشد" }, JsonRequestBehavior.AllowGet);
 
+                server.ServerAddress = ServerAddress?.Trim();
+                server.ServerIP = ServerIP?.Trim();
+                server.Username = Username?.Trim();
+                server.Password = Password;
+                server.DataBaseName = DataBaseName?.Trim();
+                server.ApiToken_V2board = ApiToken_V2board?.Trim();
 
-
-                var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-                if (Use.tbServers != null)
-                {
-                    Use.tbServers.ServerIP = IPAddress;
-                    Use.tbServers.ServerAddress = ServerAddress;
-                    Use.tbServers.DataBaseName = DatabaseName;
-                    Use.tbServers.Username = Username;
-                    Use.tbServers.Password = Password;
-                    Use.tbServers.SubAddress = SubAddr;
-                    RepositoryUser.Save();
-                    logger.Info("تنظیمات سرور ویرایش شد");
-                    return Content("success-" + "اطلاعات سرور با موفقیت ذخیره شد");
-                }
-                else
-                {
-                    tbServers server = new tbServers();
-                    server.ServerIP = IPAddress;
-                    server.DataBaseName = DatabaseName;
-                    server.Username = Username;
-                    server.Password = Password;
-                    server.SubAddress = SubAddr;
-                    server.ServerAddress = ServerAddress;
-                    RepositoryServer.Insert(server);
-                    RepositoryServer.Save();
-
-                    Use.FK_Server_ID = server.ServerID;
-
-                    RepositoryUser.Save();
-                    logger.Info("تنظیمات سرور ویرایش شد");
-                    return Content("success-" + "اطلاعات سرور با موفقیت ذخیره شد");
-                }
+                RepositoryServer.Save();
+                logger.Info("تنظیمات MySQL پنل ذخیره شد");
+                return Json(new { status = "success", message = "تنظیمات ارتباط با MySQL ذخیره شد" }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "ذخیره سازی تنظیمات سرور با خطا مواجه شد");
-                return Content("danger-", "ذخیره سازی اطلاعات با خطا مواجه شد");
+                logger.Error(ex, "ذخیره تنظیمات MySQL با خطا مواجه شد");
+                return Json(new { status = "danger", message = "ذخیره تنظیمات با خطا مواجه شد" }, JsonRequestBehavior.AllowGet);
             }
         }
 
         #endregion
 
-        #region تنظیمات ربات
-        [AuthorizeApp(Roles = "1,2,3,4")]
-        public ActionResult _BotSetting()
+        #region تنظیمات عمومی
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult SaveGeneralSettings(string SubAddress, string BackupSubAddr)
         {
-            var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
-
-            if (Use.tbBotSettings.FirstOrDefault() == null)
+            try
             {
-                return PartialView(new tbBotSettings());
-            }
+                var server = GetCurrentServer();
+                if (server == null)
+                    return Json(new { status = "danger", message = "سرور یافت نشد" }, JsonRequestBehavior.AllowGet);
 
-            return PartialView(Use.tbBotSettings.FirstOrDefault());
+                server.SubAddress = SubAddress?.Trim();
+                server.BackupSubAddr = BackupSubAddr?.Trim();
+
+                RepositoryServer.Save();
+                logger.Info("تنظیمات عمومی پنل ذخیره شد");
+                return Json(new { status = "success", message = "تنظیمات عمومی ذخیره شد" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "ذخیره تنظیمات عمومی با خطا مواجه شد");
+                return Json(new { status = "danger", message = "ذخیره تنظیمات با خطا مواجه شد" }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         #endregion
 
-        #region کارت بانکی ها
+        #region تنظیمات ربات (سطح سرور)
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult SaveBotServerSettings(double? Discount_Percent, long? AdminTelegramUniqID, string Channel_ID, string BotbaseAddress, string Robot_Token, string Robot_ID, long? BotID)
+        {
+            try
+            {
+                var server = GetCurrentServer();
+                if (server == null)
+                    return Json(new { status = "danger", message = "سرور یافت نشد" }, JsonRequestBehavior.AllowGet);
+
+                server.Discount_Percent = Discount_Percent;
+                server.AdminTelegramUniqID = AdminTelegramUniqID;
+                server.Channel_ID = Channel_ID?.Trim();
+                server.BotbaseAddress = BotbaseAddress?.Trim();
+                server.Robot_Token = Robot_Token?.Trim();
+                server.Robot_ID = Robot_ID?.Trim();
+                server.BotID = BotID;
+
+                RepositoryServer.Save();
+                logger.Info("تنظیمات ربات سرور ذخیره شد");
+                return Json(new { status = "success", message = "تنظیمات ربات ذخیره شد" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "ذخیره تنظیمات ربات با خطا مواجه شد");
+                return Json(new { status = "danger", message = "ذخیره تنظیمات با خطا مواجه شد" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        #endregion
+
+        #region کارت بانکی (سایر بخش‌ها)
+
         [AuthorizeApp(Roles = "1,2,3,4")]
         public ActionResult _BankNumbers()
         {
@@ -151,7 +166,6 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,2,3,4")]
         public ActionResult SaveBankNumbers(string CardNumber, string NameOfCard, string SmsNumberOfCard, string phoneNumber, int Card_ID)
         {
-
             try
             {
                 var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
@@ -194,7 +208,6 @@ namespace V2boardApi.Areas.App.Controllers
                     Use.tbBankCardNumbers.Add(Card);
                     RepositoryUser.Save();
                     logger.Info("کارت بانکی جدید اضافه شد");
-
                 }
                 return Content("success-" + "اطلاعات بانکی با موفقیت ذخیره شد");
             }
@@ -215,9 +228,7 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     var Card = Use.tbBankCardNumbers.Where(p => p.CardNumber == CardNumber).FirstOrDefault();
                     if (Card != null)
-                    {
                         Use.tbBankCardNumbers.Remove(Card);
-                    }
                     RepositoryUser.Save();
                 }
                 logger.Info("کارت با موفقیت حذف شد");
@@ -242,9 +253,7 @@ namespace V2boardApi.Areas.App.Controllers
                     if (Card != null)
                     {
                         foreach (var item in Use.tbBankCardNumbers)
-                        {
                             item.Active = false;
-                        }
                         Card.Active = true;
                     }
                     RepositoryUser.Save();
@@ -265,11 +274,21 @@ namespace V2boardApi.Areas.App.Controllers
         {
             var Use = RepositoryUser.Where(p => p.Username == User.Identity.Name).First();
             var Card = Use.tbBankCardNumbers.Where(p => p.CardNumber_ID == CardID).FirstOrDefault();
-
             return PartialView(Card);
         }
 
         #endregion
+
+        private tbServers GetCurrentServer()
+        {
+            var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            return user?.tbServers;
+        }
+
+        private static string BuildMysqlConnectionString(string serverIp, string databaseName, string username, string password)
+        {
+            return $"Server={serverIp};Port=3306;Database={databaseName};Uid={username};Pwd={password};SslMode=None;AllowPublicKeyRetrieval=True;";
+        }
 
         protected override void Dispose(bool disposing)
         {
@@ -281,6 +300,5 @@ namespace V2boardApi.Areas.App.Controllers
             }
             base.Dispose(disposing);
         }
-
     }
 }

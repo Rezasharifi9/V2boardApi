@@ -28,7 +28,15 @@ $(function () {
 
     if (dt_user_table.length) {
         var dt_user = dt_user_table.DataTable({
-            ajax: '/App/TelegramUsers/_PartialGetAllUsers',
+            ajax: {
+                url: '/App/TelegramUsers/GetAll',
+                type: 'POST',
+                error: function () {
+                    location.replace(location.href);
+                }
+            },
+            processing: true,
+            serverSide: true,
             columns: [
                 { data: 'Profile' },
                 { data: 'Username' },
@@ -152,10 +160,10 @@ $(function () {
                         var $status = full['Status'];
                         var $StatusTitle = "";
                         if ($status == 0) {
-                            $StatusTitle = "فعال کردن";
+                            $StatusTitle = "رفع مسدودیت";
                         }
                         else {
-                            $StatusTitle = "غیرفعال کردن";
+                            $StatusTitle = "مسدود کردن";
                         }
                         return (
                             '<div class="d-flex align-items-center">' +
@@ -170,6 +178,7 @@ $(function () {
                     }
                 }
             ],
+            order: [[1, 'desc']],
             language: {
                 "paginate": {
                     "first": "اولین",
@@ -226,31 +235,32 @@ $(function () {
 
     // Active Or DeActive User
     $('body').on('click', '.BanUser', function () {
-        //var id = $(this).attr("data-id");
-        //Swal.fire({
-        //    title: 'هشدار',
-        //    text: "مطمئنی میخای وضعیت کاربر رو تغییر بدی ؟!",
-        //    icon: 'warning',
-        //    showCancelButton: true,
-        //    confirmButtonText: 'بله',
-        //    cancelButtonText: 'بازگشت',
-        //    customClass: {
-        //        confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
-        //        cancelButton: 'btn btn-label-secondary waves-effect waves-light'
-        //    },
-        //    buttonsStyling: false
-        //}).then(function (result) {
-        //    if (result.value) {
-        //        $.ajax({
-        //            url: "/App/Admin/BanUser?id=" + id,
-        //            type: "get",
-        //            dataType: "json",
-        //            success: function (res) {
-        //                dt_user.ajax.reload(null, false);
-        //            }
-        //        })
-        //    }
-        //});
+        var id = $(this).attr("data-id");
+        Swal.fire({
+            title: 'هشدار',
+            text: "مطمئنی میخای وضعیت کاربر رو تغییر بدی ؟!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+                $.ajax({
+                    url: "/App/TelegramUsers/BanUser?id=" + id,
+                    type: "get",
+                    dataType: "json",
+                    success: function (res) {
+                        eval(res.data);
+                        dt_user.ajax.reload(null, false);
+                    }
+                })
+            }
+        });
     });
 
     // Active Or DeActive Robot

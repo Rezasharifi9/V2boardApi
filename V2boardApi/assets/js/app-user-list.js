@@ -55,7 +55,10 @@ $(function () {
     // Users datatable
     if (dt_user_table.length) {
         var dt_user = dt_user_table.DataTable({
-            ajax: '/App/Admin/_PartialGetAllUsers', // JSON file to add data
+            ajax: {
+                url: '/App/Admin/_PartialGetAllUsers',
+                dataSrc: 'data'
+            },
             columns: [
                 // columns according to JSON
                 { data: 'id' },
@@ -85,21 +88,19 @@ $(function () {
                     targets: 1,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
-                        var userId = full["id"];
-                        var $name = full['username'],
-                            $image = full['profile'];
+                        var userId = full['id'];
+                        var $name = full['username'] || full['Username'] || '-';
+                        var $image = full['profile'];
+                        var $output;
                         if ($image) {
-                            // For Avatar image
-                            var $output =
+                            $output =
                                 '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="profile" class="rounded-circle">';
                         } else {
-                            // For Avatar badge
                             var stateNum = Math.floor(Math.random() * 6);
                             var states = ['success', 'danger', 'warning', 'info', 'primary', 'secondary'];
-                            var $state = states[stateNum],
-                                $name = full['username'];
-                            let nameParts = $name.split(" ");
-                            let $initials = nameParts[0].charAt(0);
+                            var $state = states[stateNum];
+                            var nameParts = String($name).trim().split(/\s+/).filter(Boolean);
+                            var $initials = nameParts.length > 0 ? nameParts[0].charAt(0) : '?';
                             $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
                         }
                         // Creates full output for row
@@ -149,11 +150,12 @@ $(function () {
                     targets: 4,
                     render: function (data, type, full, meta) {
                         var $status = full['status'];
+                        var info = statusObj[$status] || { title: 'نامشخص', class: 'bg-label-secondary' };
                         return (
                             '<span class="badge ' +
-                            statusObj[$status].class +
+                            info.class +
                             '" text-capitalized>' +
-                            statusObj[$status].title +
+                            info.title +
                             '</span>'
                         );
                     }
@@ -601,6 +603,8 @@ $(function () {
             });
         });
     }
+
+    if (addNewUserForm) {
     const fv = FormValidation.formValidation(addNewUserForm, {
         fields: {
             userUsername: {
@@ -650,10 +654,11 @@ $(function () {
 
         });
     });
+    }
 
 
     var addNewPlanForm = document.getElementById('addNewPlanForm');
-
+    if (addNewPlanForm) {
     const fv_plan = FormValidation.formValidation(addNewPlanForm, {
         plugins: {
             trigger: new FormValidation.plugins.Trigger(),
@@ -684,6 +689,7 @@ $(function () {
 
         });
     });
+    }
 });
 
 // Validation & Phone mask
