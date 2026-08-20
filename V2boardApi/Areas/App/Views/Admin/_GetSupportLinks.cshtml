@@ -1,0 +1,39 @@
+
+
+<p class="text-muted mb-3">راه‌های ارتباط با پشتیبانی را برای نمایش در اپلیکیشن وارد کنید؛ مثلاً روبیکا، بله، ایتا یا تلگرام.</p>
+
+<form class="row g-3" id="SupportLinksForm">
+    <input type="hidden" name="user_id" id="user_id" value="" />
+    <input type="hidden" name="Support_ID" id="id" value="" />
+    <div class="row">
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="Support_Title"> عنوان ارتباط <span class="text-danger"> * </span></label>
+            <input class="form-control" id="Support_Title" name="Support_Title" placeholder="تلگرام، روبیکا، بله، ایتا" type="text" />
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="Support_Link"> لینک ارتباط</label>
+            <input class="form-control" id="Support_Link" dir="ltr" name="Support_Link" placeholder="https://t.me/username" type="text" />
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="Support_Phone"> شماره تلفن</label>
+            <input class="form-control" id="Support_Phone" dir="ltr" name="Support_Phone" placeholder="09121234567" type="text" />
+        </div>
+    </div>
+    <div class="col-12" style="text-align:left;">
+        <button class="btn btn-primary me-sm-3 me-1" type="submit">ثبت</button>
+    </div>
+</form>
+<br />
+<div class="support-datatable table-responsive">
+    <table class="datatables-support table">
+        <thead class="border-top">
+            <tr>
+                <th></th>
+                <th>عنوان ارتباط</th>
+                <th>لینک ارتباط</th>
+                <th>شماره تلفن</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+    </table>
+</div>

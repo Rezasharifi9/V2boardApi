@@ -1,4 +1,4 @@
-﻿@section vendorStyle {
+@section vendorStyle {
     <link rel="stylesheet" href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
     <link rel="stylesheet" href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
     <link rel="stylesheet" href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
@@ -209,6 +209,9 @@
 
 @section customScripts {
 
+    <script>
+        window.PanelUserRole = '@(ViewBag.UserRole ?? string.Empty)';
+    </script>
     <script src="@PanelAssetHelper.Js("../../assets/js/app-user-list.js")"></script>
     <script src="~/assets/vendor/libs/jquery-form/jquery.form.js"></script>
 

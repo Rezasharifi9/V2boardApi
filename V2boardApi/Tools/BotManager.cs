@@ -120,7 +120,7 @@ namespace V2boardApi.Tools
 
 
             var url = "https://";
-            var Server = HttpRuntime.Cache["Server"] as tbServers;
+            var Server = ServerCacheHelper.Get();
             if (Server != null)
             {
                 url += Server.BotbaseAddress;

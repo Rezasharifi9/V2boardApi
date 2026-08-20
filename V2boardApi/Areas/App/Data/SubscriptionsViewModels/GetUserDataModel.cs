@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -25,6 +25,8 @@ namespace V2boardApi.Areas.App.Data.SubscriptionsViewModels
         public int OnlineUsers { get; set; }
         public int LimitUsers { get; set; }
         public bool Exceeded { get; set; }
+        public bool CanDelete { get; set; }
+        public bool CanEarlyDeleteRefund { get; set; }
 
     }
 }

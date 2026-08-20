@@ -145,29 +145,96 @@ namespace V2boardApi.Tools
             return message;
         }
 
+        public static string FormatTariffLabel(tbPlans plan)
+        {
+            if (plan == null)
+                return null;
+
+            string spec;
+            if (plan.IsRobotPlan)
+            {
+                spec = (plan.PlanMonth == 0 ? "نامحدود" : plan.PlanMonth + " ماهه") + " | نامحدود";
+                if (plan.device_limit.HasValue && plan.device_limit.Value > 0)
+                    spec += " | " + plan.device_limit.Value + " کاربر";
+            }
+            else
+            {
+                spec = (plan.PlanMonth == 0 ? "نامحدود" : plan.PlanMonth + " ماهه") + " | " + plan.PlanVolume + " گیگ";
+            }
+
+            if (!string.IsNullOrWhiteSpace(plan.Plan_Name))
+                return plan.Plan_Name.Trim() + " — " + spec;
+
+            return spec;
+        }
+
+        public static string BuildRenewedPackageConfirmMessage(
+            double volumeGb,
+            double? months,
+            string subscriptionName = null,
+            int? priceToman = null,
+            string tariffLabel = null)
+        {
+            var str = new StringBuilder();
+            str.AppendLine("✅ تراکنش شما با موفقیت تأیید شد.");
+            var name = FormatSubscriptionDisplayName(subscriptionName);
+            if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(tariffLabel))
+                str.AppendLine("اشتراک «" + name + "» با تعرفه «" + tariffLabel + "» تمدید شد.");
+            else
+                str.AppendLine("✅ بسته تو تمدید کردم");
+            str.AppendLine("");
+            AppendPackageDetails(str, volumeGb, months, subscriptionName, priceToman, tariffLabel);
+            str.AppendLine("");
+            str.AppendLine("♨️ میتونی توی بخش مدیریت اشتراک ها ببینی که تمدید شده");
+            return str.ToString();
+        }
+
         public static string BuildReservedPackageConfirmMessage(
             double volumeGb,
             double? months,
             string subscriptionName = null,
-            int? priceToman = null)
+            int? priceToman = null,
+            string tariffLabel = null)
         {
             var str = new StringBuilder();
             str.AppendLine("✅ تراکنش شما با موفقیت تأیید شد.");
-            str.AppendLine("به دلیل داشتن بسته فعال، بسته تمدیدی به حالت رزرو رفته و پس از پایان بسته فعلی فعال خواهد شد.");
+            var name = FormatSubscriptionDisplayName(subscriptionName);
+            if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(tariffLabel))
+                str.AppendLine("به دلیل داشتن بسته فعال، بسته تمدیدی اشتراک «" + name + "» با تعرفه «" + tariffLabel + "» به حالت رزرو رفته و پس از پایان بسته فعلی فعال خواهد شد.");
+            else
+                str.AppendLine("به دلیل داشتن بسته فعال، بسته تمدیدی به حالت رزرو رفته و پس از پایان بسته فعلی فعال خواهد شد.");
             str.AppendLine("");
+            AppendPackageDetails(str, volumeGb, months, subscriptionName, priceToman, tariffLabel);
+            return str.ToString();
+        }
+
+        private static string FormatSubscriptionDisplayName(string subscriptionName)
+        {
+            if (string.IsNullOrWhiteSpace(subscriptionName))
+                return null;
+            return subscriptionName.Contains("$")
+                ? subscriptionName.Split('$')[0]
+                : subscriptionName.Split('@')[0];
+        }
+
+        private static void AppendPackageDetails(
+            StringBuilder str,
+            double volumeGb,
+            double? months,
+            string subscriptionName,
+            int? priceToman,
+            string tariffLabel)
+        {
             str.AppendLine("📋 مشخصات بسته:");
-            if (!string.IsNullOrWhiteSpace(subscriptionName))
-            {
-                var name = subscriptionName.Contains("$")
-                    ? subscriptionName.Split('$')[0]
-                    : subscriptionName.Split('@')[0];
+            var name = FormatSubscriptionDisplayName(subscriptionName);
+            if (!string.IsNullOrWhiteSpace(name))
                 str.AppendLine("نام اشتراک: " + name);
-            }
+            if (!string.IsNullOrWhiteSpace(tariffLabel))
+                str.AppendLine("تعرفه: " + tariffLabel);
             str.AppendLine("♾ حجم: " + volumeGb + " گیگ");
             str.AppendLine("⏳ مدت: " + (months == null || months == 0 ? "نامحدود" : months + " ماه"));
             if (priceToman.HasValue)
                 str.AppendLine("💵 مبلغ: " + priceToman.Value.ConvertToMony() + " تومان");
-            return str.ToString();
         }
     }
 

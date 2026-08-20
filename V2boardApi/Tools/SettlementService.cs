@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace V2boardApi.Tools
 {
@@ -22,6 +24,24 @@ namespace V2boardApi.Tools
         public const int DefaultPreWarningDays = 2;
         public const int DefaultBlockGraceDays = 2;
         public const int OverdueReminderHours = 6;
+
+        // یادآوری درخواست تایید مسدودسازی به ادمین هر ۲ روز تا زمان تصمیم‌گیری
+        public const int BlockApprovalResendDays = 2;
+
+        // پیشوند callback_data دکمه‌های تایید/رد مسدودسازی در ربات ادمین
+        public const string ApproveBlockCallbackPrefix = "SettleBlockYes";
+        public const string DeclineBlockCallbackPrefix = "SettleBlockNo";
+
+        // مدت نمایش هشدارهای تسویه در بخش اعلانات پنل (روز)
+        private const int PanelNotificationVisibleDays = PanelNotificationService.DefaultVisibleDays;
+
+        // عناوین ثابت اعلانات پنل — برای جلوگیری از ساخت تکراری در هر چرخه تسویه.
+        // منبع اصلی در PanelNotificationService است تا دسته‌بندی و آیکون اعلان هماهنگ بماند.
+        private const string NotiTitlePreWarning = PanelNotificationService.TitlePreWarning;
+        private const string NotiTitleDueDay = PanelNotificationService.TitleDueDay;
+        private const string NotiTitleOverdue = PanelNotificationService.TitleOverdue;
+        private const string NotiTitlePreBlock = PanelNotificationService.TitlePreBlock;
+        private const string NotiTitleBlocked = PanelNotificationService.TitleBlocked;
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -63,6 +83,18 @@ namespace V2boardApi.Tools
             return DateTime.Now.Date;
         }
 
+        /// <summary>
+        /// موعد تسویه بعدی نماینده. اگر تسویه بدهی برای این کاربر تنظیم نشده باشد (یا کاربر ادمین باشد)
+        /// null برمی‌گرداند تا در پنل چیزی نمایش داده نشود.
+        /// </summary>
+        public static DateTime? GetNextDueDate(Entities db, tbUsers user)
+        {
+            if (user == null || !user.Settlement_Enabled || user.Role == 1)
+                return null;
+
+            return GetSettlementAnchor(db, user).AddDays(GetDaysAfterLastPayment(user));
+        }
+
         public static List<string> GetNetworkUsernames(tbUsers agent, Entities db)
         {
             var result = new List<string>();
@@ -91,32 +123,117 @@ namespace V2boardApi.Tools
             return result;
         }
 
-        public static async Task SendAgentTelegramMessage(tbUsers agent, string message)
+        /// <summary>
+        /// ارسال پیام به نماینده. توکن ربات همیشه از کاربر ادمین (Role = 1) خوانده می‌شود،
+        /// نه از ربات خود نماینده — تا نمایندگانی که ربات اختصاصی ندارند هم پیام دریافت کنند.
+        ///
+        /// همین پیام به‌صورت خودکار در بخش اعلانات پنل نماینده هم ثبت می‌شود؛ ثبت اعلان پنل
+        /// مستقل از موفقیت ارسال تلگرام انجام می‌گیرد تا نماینده‌ای که ربات را بلاک کرده یا
+        /// تلگرامش ثبت نشده هم اعلان را در پنل ببیند.
+        /// </summary>
+        /// <param name="mirrorToPanel">
+        /// اگر false باشد اعلان پنل ثبت نمی‌شود — برای نقاطی که خودشان اعلان پنل را
+        /// با منطق dedup اختصاصی می‌سازند (مراحل تسویه).
+        /// </param>
+        /// <param name="panelTitle">عنوان اعلان پنل؛ اگر خالی باشد از متن پیام ساخته می‌شود.</param>
+        /// <param name="panelDedupHours">بازه جلوگیری از ثبت اعلان تکراری با همان عنوان و متن.</param>
+        public static async Task<bool> SendAgentTelegramMessage(
+            tbUsers agent,
+            string message,
+            bool mirrorToPanel = true,
+            string panelTitle = null,
+            int panelDedupHours = PanelNotificationService.DefaultDedupHours)
+        {
+            if (agent == null)
+                return false;
+
+            if (mirrorToPanel)
+                MirrorMessageToPanel(agent, message, panelTitle, panelDedupHours);
+
+            try
+            {
+                using (var db = new Entities())
+                {
+                    var admin = GetOwnerAdmin(db, agent);
+                    if (admin == null)
+                        return false;
+
+                    var adminBotSetting = admin.tbBotSettings?.FirstOrDefault();
+                    if (adminBotSetting == null || string.IsNullOrEmpty(adminBotSetting.Bot_Token))
+                        return false;
+
+                    var chatId = ResolveAgentChatId(db, agent, adminBotSetting);
+                    if (string.IsNullOrEmpty(chatId))
+                        return false;
+
+                    var cached = BotManager.GetBot(admin.Username);
+                    var client = cached != null && string.Equals(cached.Token, adminBotSetting.Bot_Token, StringComparison.Ordinal)
+                        ? cached.Client
+                        : new TelegramBotClient(adminBotSetting.Bot_Token);
+
+                    return await TelegramNotifyHelper.TrySendMessageAsync(client, chatId, message);
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// ثبت نسخه پنلی پیام تلگرام. خطای ثبت اعلان هرگز مانع ارسال پیام تلگرام نمی‌شود.
+        /// </summary>
+        private static void MirrorMessageToPanel(tbUsers agent, string message, string panelTitle, int dedupHours)
         {
             try
             {
-                var botSetting = agent.tbBotSettings?.FirstOrDefault();
-                if (botSetting == null || string.IsNullOrEmpty(botSetting.Bot_Token))
+                var panelText = PanelNotificationService.BuildTextFromTelegramMessage(message);
+                if (string.IsNullOrWhiteSpace(panelText))
                     return;
 
-                TelegramBotClient client;
-                var cached = BotManager.GetBot(agent.Username);
-                client = cached != null ? cached.Client : new TelegramBotClient(botSetting.Bot_Token);
+                var title = string.IsNullOrWhiteSpace(panelTitle)
+                    ? PanelNotificationService.BuildTitleFromText(panelText)
+                    : panelTitle;
 
-                if (!string.IsNullOrEmpty(agent.TelegramID))
+                int creatorId;
+                using (var db = new Entities())
                 {
-                    using (var db = new Entities())
-                    {
-                        var telUser = db.tbTelegramUsers.FirstOrDefault(t => t.Tel_Username == agent.TelegramID);
-                        if (telUser != null)
-                            await client.SendMessage(telUser.Tel_UniqUserID, message);
-                    }
+                    creatorId = GetOwnerAdmin(db, agent)?.User_ID ?? agent.User_ID;
                 }
+
+                PanelNotificationService.CreateDeduplicated(
+                    agent.User_ID, creatorId, title, panelText, dedupHours);
             }
             catch (Exception ex)
             {
-                logger.Warn(ex, "خطا در ارسال پیام تسویه به نماینده " + agent.Username);
+                logger.Warn(ex, "خطا در میرور پیام تلگرام به اعلانات پنل نماینده " + agent.User_ID);
             }
+        }
+
+        /// <summary>
+        /// شناسه چت تلگرام نماینده: یوزرنیم تلگرامِ ثبت‌شده در پروفایل نماینده (tbUsers.TelegramID)
+        /// را با Tel_Username در جدول tbTelegramUsers مطابقت می‌دهد و شناسه یکتای همان کاربر را برمی‌گرداند.
+        /// عمداً هیچ fallback به AdminBot_ID ندارد تا پیام هرگز به ادمین ارسال نشود.
+        /// </summary>
+        private static string ResolveAgentChatId(Entities db, tbUsers agent, tbBotSettings adminBotSetting)
+        {
+            if (string.IsNullOrEmpty(agent.TelegramID))
+                return null;
+
+            // ترجیحاً رکورد مربوط به همان ربات ادمین (چون پیام با توکن ربات ادمین ارسال می‌شود)
+            tbTelegramUsers telUser = null;
+            if (!string.IsNullOrEmpty(adminBotSetting.Bot_ID))
+            {
+                telUser = db.tbTelegramUsers.FirstOrDefault(t =>
+                    t.Tel_Username == agent.TelegramID && t.Tel_RobotID == adminBotSetting.Bot_ID);
+            }
+
+            if (telUser == null)
+                telUser = db.tbTelegramUsers.FirstOrDefault(t => t.Tel_Username == agent.TelegramID);
+
+            return telUser != null && !string.IsNullOrEmpty(telUser.Tel_UniqUserID)
+                ? telUser.Tel_UniqUserID
+                : null;
         }
 
         public static async Task BlockAgentSubscriptions(tbUsers agent, Entities db)
@@ -180,7 +297,237 @@ namespace V2boardApi.Tools
             agent.Settlement_LastPreWarning = null;
             agent.Settlement_LastOverdueWarning = null;
             agent.Settlement_LastDueDayWarning = null;
+            agent.Settlement_BlockApprovalPending = false;
+            agent.Settlement_LastBlockApprovalSent = null;
         }
+
+        #region تاییدیه مسدودسازی توسط ادمین (Role = 1)
+
+        private static tbUsers GetOwnerAdmin(Entities db, tbUsers agent)
+        {
+            tbUsers admin = null;
+            if (agent.FK_Server_ID.HasValue)
+            {
+                admin = db.tbUsers
+                    .Include(u => u.tbBotSettings)
+                    .FirstOrDefault(u => u.Role == 1 && u.Status == true && u.FK_Server_ID == agent.FK_Server_ID);
+            }
+
+            if (admin == null)
+            {
+                admin = db.tbUsers
+                    .Include(u => u.tbBotSettings)
+                    .FirstOrDefault(u => u.Role == 1 && u.Status == true);
+            }
+
+            return admin;
+        }
+
+        /// <summary>
+        /// ساخت اعلان در بخش Notification پنل برای نماینده (هشدار قبل از موعد / قبل از مسدودسازی).
+        /// سازنده اعلان ادمین در نظر گرفته می‌شود و گیرنده خود نماینده است.
+        /// </summary>
+        private static void CreateAgentPanelNotification(Entities db, tbUsers agent, string title, string text)
+        {
+            var creatorId = GetOwnerAdmin(db, agent)?.User_ID ?? agent.User_ID;
+
+            PanelNotificationService.Create(
+                db, agent.User_ID, creatorId, title, text, PanelNotificationVisibleDays);
+        }
+
+        /// <summary>
+        /// اعلان پنل را فقط در صورتی می‌سازد که در چرخه تسویه جاری اعلانی با همین عنوان
+        /// برای این نماینده ثبت نشده باشد. عمداً به فلگ‌های ارسال تلگرام وابسته نیست تا اگر
+        /// مرحله‌ای قبلاً بدون ثبت اعلان پردازش شده باشد، در اجرای بعدی جبران شود.
+        /// </summary>
+        private static void EnsureAgentPanelNotification(
+            Entities db, tbUsers agent, string title, string text, DateTime cycleStart)
+        {
+            if (PanelNotificationService.ExistsByTitle(db, agent.User_ID, title, cycleStart))
+                return;
+
+            CreateAgentPanelNotification(db, agent, title, text);
+        }
+
+        /// <summary>
+        /// فاکتور در انتظار پرداخت تسویه را برمی‌گرداند؛ اگر وجود نداشته باشد می‌سازد.
+        /// مبلغ = بدهی (تومان) × ۱۰ + سه رقم رندوم، تا پرداخت کارت‌به‌کارت به‌صورت خودکار
+        /// با همین فاکتور مچ شود (TransactionHanderService بر اساس مبلغ دقیق مچ می‌کند).
+        /// اگر فاکتور در انتظار پرداختی وجود داشته باشد همان برگردانده می‌شود تا مبلغی که
+        /// قبلاً به نماینده اعلام شده تغییر نکند.
+        /// </summary>
+        private static double? EnsureSettlementFactor(Entities db, tbUsers agent)
+        {
+            if (agent.Wallet <= 0)
+                return null;
+
+            var pending = db.tbUserFactors
+                .Where(f => f.FK_User_ID == agent.User_ID && f.tbUf_Status == 1 && f.tbUf_Value.HasValue)
+                .OrderByDescending(f => f.tbUf_CreateTime)
+                .FirstOrDefault();
+
+            if (pending != null)
+                return pending.tbUf_Value.Value;
+
+            // seed مستقل تا در یک اجرای تایمر برای چند نماینده مبلغ تکراری تولید نشود
+            var random = new Random(Guid.NewGuid().GetHashCode());
+            double payAmount = 0;
+
+            for (var attempt = 0; attempt < 15; attempt++)
+            {
+                var candidate = (agent.Wallet * 10) + random.Next(1, 999);
+
+                // مبلغ باید بین فاکتورهای در انتظار پرداخت یکتا باشد وگرنه مچ خودکار پرداخت اشتباه می‌شود
+                var taken = db.tbUserFactors.Any(f => f.tbUf_Status == 1 && f.tbUf_Value == candidate);
+                if (!taken)
+                {
+                    payAmount = candidate;
+                    break;
+                }
+            }
+
+            if (payAmount <= 0)
+            {
+                logger.Warn("تولید مبلغ یکتا برای فاکتور تسویه نماینده " + agent.Username + " ناموفق بود");
+                return null;
+            }
+
+            db.tbUserFactors.Add(new tbUserFactors
+            {
+                FK_User_ID = agent.User_ID,
+                tbUf_CreateTime = DateTime.Now,
+                tbUf_Status = 1,
+                tbUf_Value = payAmount,
+                tbUf_Description = "فاکتور خودکار تسویه بدهی"
+            });
+
+            logger.Info("فاکتور خودکار تسویه به مبلغ " + payAmount + " برای نماینده " + agent.Username + " ساخته شد");
+            return payAmount;
+        }
+
+        private static string BuildFactorPaymentText(double? factorValue)
+        {
+            if (!factorValue.HasValue)
+                return null;
+
+            return "🧾 مبلغ قابل پرداخت: " + factorValue.Value.ConvertToMony() + " ریال"
+                 + Environment.NewLine
+                 + "⚠️ لطفاً دقیقاً همین مبلغ را واریز کنید؛ سه رقم آخر برای شناسایی خودکار پرداخت شما است.";
+        }
+
+        private static string BuildBlockApprovalMessage(tbUsers agent, Entities db, DateTime now)
+        {
+            var displayName = !string.IsNullOrWhiteSpace(agent.FullName) ? agent.FullName
+                : !string.IsNullOrWhiteSpace(agent.BussinesTitle) ? agent.BussinesTitle
+                : agent.Username;
+
+            var lastPaid = GetLastPaidFactorDate(db, agent);
+            var lastPaidLabel = lastPaid.HasValue ? lastPaid.Value.ConvertDateTimeToShamsi2() : "—";
+            var daysSince = Math.Max(0, (now.Date - GetSettlementAnchor(db, agent)).Days);
+
+            var sb = new StringBuilder();
+            sb.AppendLine("🚨 <b>درخواست تایید مسدودسازی نماینده</b>");
+            sb.AppendLine("");
+            sb.AppendLine("👤 <b>نام نماینده:</b> " + displayName);
+            sb.AppendLine("🆔 <b>نام کاربری نماینده:</b> " + agent.Username);
+            sb.AppendLine("💰 <b>مقدار بدهی:</b> " + agent.Wallet.ConvertToMony() + " تومان");
+
+            var pendingFactor = db.tbUserFactors
+                .Where(f => f.FK_User_ID == agent.User_ID && f.tbUf_Status == 1 && f.tbUf_Value.HasValue)
+                .OrderByDescending(f => f.tbUf_CreateTime)
+                .FirstOrDefault();
+            if (pendingFactor != null)
+                sb.AppendLine("🧾 <b>فاکتور در انتظار پرداخت:</b> " + pendingFactor.tbUf_Value.Value.ConvertToMony() + " ریال");
+
+            sb.AppendLine("📅 <b>تاریخ آخرین فاکتور پرداخت‌شده:</b> " + lastPaidLabel);
+            sb.AppendLine("⏳ <b>مدت بدون پرداخت:</b> " + daysSince + " روز");
+            sb.AppendLine("");
+            sb.AppendLine("در صورت تایید، تمامی اشتراک‌های زیرمجموعه این نماینده مسدود می‌شوند.");
+            sb.AppendLine("اگر تصمیمی نگیرید یا رد کنید، این پیام هر " + BlockApprovalResendDays + " روز یک‌بار تکرار می‌شود.");
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// ارسال درخواست تایید مسدودسازی به ربات ادمین (Role = 1) همراه با دکمه‌های تایید/رد.
+        /// </summary>
+        private static async Task<bool> SendBlockApprovalRequestToAdmin(tbUsers agent, Entities db, DateTime now)
+        {
+            try
+            {
+                var admin = GetOwnerAdmin(db, agent);
+                if (admin == null)
+                {
+                    logger.Warn("درخواست تایید مسدودسازی ارسال نشد: ادمین (Role=1) یافت نشد — نماینده " + agent.Username);
+                    return false;
+                }
+
+                var botSetting = admin.tbBotSettings?.FirstOrDefault();
+                if (botSetting == null || string.IsNullOrEmpty(botSetting.Bot_Token) || botSetting.AdminBot_ID <= 0)
+                {
+                    logger.Warn("درخواست تایید مسدودسازی ارسال نشد: توکن ربات یا شناسه تلگرام ادمین تنظیم نشده");
+                    return false;
+                }
+
+                var cached = BotManager.GetBot(admin.Username);
+                var client = cached != null ? cached.Client : new TelegramBotClient(botSetting.Bot_Token);
+
+                var keyboard = new InlineKeyboardMarkup(new List<List<InlineKeyboardButton>>
+                {
+                    new List<InlineKeyboardButton>
+                    {
+                        InlineKeyboardButton.WithCallbackData("✅ تایید و مسدودسازی", ApproveBlockCallbackPrefix + "%" + agent.User_ID),
+                        InlineKeyboardButton.WithCallbackData("❌ انصراف", DeclineBlockCallbackPrefix + "%" + agent.User_ID)
+                    }
+                });
+
+                var message = BuildBlockApprovalMessage(agent, db, now);
+                return await TelegramNotifyHelper.TrySendMessageAsync(
+                    client, botSetting.AdminBot_ID.ToString(), message, ParseMode.Html, keyboard);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ارسال درخواست تایید مسدودسازی نماینده " + agent.Username);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// اجرای مسدودسازی پس از تایید ادمین از داخل ربات. اشتراک‌ها را مسدود و نماینده را مطلع می‌کند.
+        /// </summary>
+        public static async Task ApproveAndBlockAsync(tbUsers agent, Entities db)
+        {
+            await BlockAgentSubscriptions(agent, db);
+
+            agent.Settlement_IsBlocked = true;
+            agent.Settlement_BlockApprovalPending = false;
+            await db.SaveChangesAsync();
+
+            var text = "بدهی شما تسویه نشده و تمامی اشتراک‌های زیرمجموعه شما مسدود گردید. " +
+                       "لطفاً نسبت به پرداخت بدهی اقدام کنید؛ پس از ثبت پرداخت، اشتراک‌ها خودکار فعال می‌شوند.";
+            CreateAgentPanelNotification(db, agent, NotiTitleBlocked, text);
+            await db.SaveChangesAsync();
+
+            var msg = new StringBuilder();
+            msg.AppendLine("🚫 نماینده گرامی");
+            msg.AppendLine("");
+            msg.AppendLine("تمامی اشتراک‌های زیرمجموعه شما مسدود گردید.");
+            msg.AppendLine("لطفاً نسبت به پرداخت بدهی اقدام کنید؛ پس از ثبت پرداخت، اشتراک‌ها خودکار فعال می‌شوند.");
+            // اعلان پنل بالاتر با CreateAgentPanelNotification ثبت شد
+            await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false);
+        }
+
+        /// <summary>
+        /// رد درخواست مسدودسازی توسط ادمین. اشتراک‌ها مسدود نمی‌شوند؛
+        /// تایمر یادآوری ری‌ست می‌شود تا پس از N روز دوباره درخواست ارسال گردد.
+        /// </summary>
+        public static async Task DeclineBlockAsync(tbUsers agent, Entities db, DateTime now)
+        {
+            agent.Settlement_BlockApprovalPending = true;
+            agent.Settlement_LastBlockApprovalSent = now;
+            await db.SaveChangesAsync();
+        }
+
+        #endregion
 
         public static async Task OnAgentPaymentConfirmed(tbUsers agent, Entities db)
         {
@@ -208,7 +555,11 @@ namespace V2boardApi.Tools
 
             var dueDate = GetSettlementAnchor(db, agent).AddDays(GetDaysAfterLastPayment(agent));
             msg.AppendLine("📅 موعد تسویه بعدی: " + dueDate.ToString("yyyy/MM/dd", CultureInfo.GetCultureInfo("fa-IR")));
-            await SendAgentTelegramMessage(agent, msg.ToString());
+
+            var paymentTitle = wasBlocked
+                ? PanelNotificationService.TitleUnblocked
+                : PanelNotificationService.TitleFactorPaid;
+            await SendAgentTelegramMessage(agent, msg.ToString(), panelTitle: paymentTitle);
         }
 
         public static async Task ProcessAgent(tbUsers agent, Entities db, DateTime now)
@@ -240,25 +591,54 @@ namespace V2boardApi.Tools
             if (now < preWarningDate)
                 return;
 
+            // در هر مرحله ابتدا فاکتور و اعلان پنل تضمین می‌شوند (idempotent و مستقل از فلگ‌های تلگرام)،
+            // سپس پیام تلگرام با گیت مخصوص خودش ارسال می‌شود.
+
+            // ── هشدار قبل از موعد ──
             if (now.Date >= preWarningDate.Date && now.Date < dueDate.Date)
             {
+                var remaining = (dueDate.Date - now.Date).Days;
+                var payText = BuildFactorPaymentText(EnsureSettlementFactor(db, agent));
+
+                var notiText = remaining + " روز تا موعد تسویه (" + dueLabel + ") باقی مانده است. لطفاً نسبت به پرداخت بدهی اقدام کنید.";
+                if (payText != null)
+                    notiText += " " + payText.Replace(Environment.NewLine, " ");
+
+                EnsureAgentPanelNotification(db, agent, NotiTitlePreWarning, notiText, anchor);
+                await db.SaveChangesAsync();
+
                 if (!agent.Settlement_LastPreWarning.HasValue ||
                     agent.Settlement_LastPreWarning.Value.Date < preWarningDate.Date)
                 {
-                    var remaining = (dueDate.Date - now.Date).Days;
                     var msg = new StringBuilder();
                     msg.AppendLine("⚠️ نماینده گرامی");
                     msg.AppendLine("");
                     msg.AppendLine(remaining + " روز تا موعد تسویه (" + dueLabel + ") باقی مانده است.");
                     msg.AppendLine("لطفاً در اسرع وقت نسبت به پرداخت بدهی اقدام کنید.");
-                    await SendAgentTelegramMessage(agent, msg.ToString());
+                    if (payText != null)
+                    {
+                        msg.AppendLine("");
+                        msg.AppendLine(payText);
+                    }
+
+                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false);
                     agent.Settlement_LastPreWarning = now;
                     await db.SaveChangesAsync();
                 }
             }
 
+            // ── روز سررسید ──
             if (now.Date == dueDate.Date)
             {
+                var payText = BuildFactorPaymentText(EnsureSettlementFactor(db, agent));
+
+                var notiText = "سررسید تسویه شما (" + dueLabel + ") فرا رسیده است. لطفاً نسبت به پرداخت بدهی اقدام کنید.";
+                if (payText != null)
+                    notiText += " " + payText.Replace(Environment.NewLine, " ");
+
+                EnsureAgentPanelNotification(db, agent, NotiTitleDueDay, notiText, anchor);
+                await db.SaveChangesAsync();
+
                 if (!agent.Settlement_LastDueDayWarning.HasValue ||
                     agent.Settlement_LastDueDayWarning.Value.Date < dueDate.Date)
                 {
@@ -267,14 +647,30 @@ namespace V2boardApi.Tools
                     msg.AppendLine("");
                     msg.AppendLine("سررسید تسویه شما (" + dueLabel + ") فرا رسیده است.");
                     msg.AppendLine("لطفاً در اسرع وقت نسبت به پرداخت بدهی اقدام کنید.");
-                    await SendAgentTelegramMessage(agent, msg.ToString());
+                    if (payText != null)
+                    {
+                        msg.AppendLine("");
+                        msg.AppendLine(payText);
+                    }
+
+                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false);
                     agent.Settlement_LastDueDayWarning = now;
                     await db.SaveChangesAsync();
                 }
             }
 
+            // ── پس از سررسید (یادآوری هر ۶ ساعت، اعلان پنل یک‌بار در هر چرخه) ──
             if (now > dueEnd && now < blockDate)
             {
+                var payText = BuildFactorPaymentText(EnsureSettlementFactor(db, agent));
+
+                var notiText = "مهلت پرداخت بدهی شما به اتمام رسیده است. لطفاً در اسرع وقت نسبت به پرداخت اقدام کنید.";
+                if (payText != null)
+                    notiText += " " + payText.Replace(Environment.NewLine, " ");
+
+                EnsureAgentPanelNotification(db, agent, NotiTitleOverdue, notiText, anchor);
+                await db.SaveChangesAsync();
+
                 if (!agent.Settlement_LastOverdueWarning.HasValue ||
                     (now - agent.Settlement_LastOverdueWarning.Value).TotalHours >= OverdueReminderHours)
                 {
@@ -283,24 +679,60 @@ namespace V2boardApi.Tools
                     msg.AppendLine("");
                     msg.AppendLine("مهلت پرداخت شما به اتمام رسیده است.");
                     msg.AppendLine("لطفاً در اسرع وقت نسبت به پرداخت بدهی اقدام کنید.");
-                    await SendAgentTelegramMessage(agent, msg.ToString());
+                    if (payText != null)
+                    {
+                        msg.AppendLine("");
+                        msg.AppendLine(payText);
+                    }
+
+                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false);
                     agent.Settlement_LastOverdueWarning = now;
                     await db.SaveChangesAsync();
                 }
             }
 
+            // ── مسدودسازی: فقط پس از تایید ادمین (Role=1) در ربات ──
+            // در صورت عدم تصمیم یا رد، هر BlockApprovalResendDays روز درخواست دوباره ارسال می‌شود.
             if (now >= blockDate && !agent.Settlement_IsBlocked)
             {
-                await BlockAgentSubscriptions(agent, db);
-                agent.Settlement_IsBlocked = true;
+                var payText = BuildFactorPaymentText(EnsureSettlementFactor(db, agent));
+
+                var notiText = "بدهی شما تسویه نشده است و اشتراک‌های زیرمجموعه شما در آستانه مسدودسازی قرار دارند. لطفاً فوراً نسبت به پرداخت بدهی اقدام کنید.";
+                if (payText != null)
+                    notiText += " " + payText.Replace(Environment.NewLine, " ");
+
+                EnsureAgentPanelNotification(db, agent, NotiTitlePreBlock, notiText, anchor);
                 await db.SaveChangesAsync();
 
-                var msg = new StringBuilder();
-                msg.AppendLine("🚫 نماینده گرامی");
-                msg.AppendLine("");
-                msg.AppendLine("تمامی اشتراک‌های زیرمجموعه شما مسدود گردید.");
-                msg.AppendLine("لطفاً نسبت به پرداخت بدهی اقدام کنید؛ پس از ثبت پرداخت، اشتراک‌ها خودکار فعال می‌شوند.");
-                await SendAgentTelegramMessage(agent, msg.ToString());
+                var firstRequest = !agent.Settlement_BlockApprovalPending;
+                var dueForRequest = firstRequest
+                    || !agent.Settlement_LastBlockApprovalSent.HasValue
+                    || (now - agent.Settlement_LastBlockApprovalSent.Value).TotalDays >= BlockApprovalResendDays;
+
+                if (dueForRequest)
+                {
+                    if (firstRequest)
+                    {
+                        var agentMsg = new StringBuilder();
+                        agentMsg.AppendLine("🚨 نماینده گرامی");
+                        agentMsg.AppendLine("");
+                        agentMsg.AppendLine("بدهی شما تسویه نشده و اشتراک‌های زیرمجموعه شما در آستانه مسدودسازی قرار دارند.");
+                        agentMsg.AppendLine("لطفاً فوراً نسبت به پرداخت بدهی اقدام کنید.");
+                        if (payText != null)
+                        {
+                            agentMsg.AppendLine("");
+                            agentMsg.AppendLine(payText);
+                        }
+
+                        await SendAgentTelegramMessage(agent, agentMsg.ToString(), mirrorToPanel: false);
+                    }
+
+                    await SendBlockApprovalRequestToAdmin(agent, db, now);
+
+                    agent.Settlement_BlockApprovalPending = true;
+                    agent.Settlement_LastBlockApprovalSent = now;
+                    await db.SaveChangesAsync();
+                }
             }
         }
 

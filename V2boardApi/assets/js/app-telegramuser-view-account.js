@@ -59,11 +59,13 @@ $(function () {
     }
 
     function renderOrderActions(full) {
-        if (full.Status !== 0 || !full.OrderId) {
+        var status = Number(full.Status);
+        var orderId = full.OrderId || full.orderId;
+        if (status !== 0 || !orderId) {
             return '<span class="text-muted">—</span>';
         }
         return '<button type="button" class="btn btn-sm btn-label-danger btn-cancel-reserved-order" ' +
-            'data-order-id="' + full.OrderId + '">' +
+            'data-order-id="' + orderId + '">' +
             '<i class="ti ti-x me-1"></i>لغو رزرو</button>';
     }
 
@@ -657,7 +659,7 @@ $(function () {
             },
             buttonsStyling: false
         }).then(function (result) {
-            if (!result.value) return;
+            if (!(result.isConfirmed || result.value)) return;
 
             BodyBlockUI();
             postTelegramUserAction('/App/TelegramUsers/DeleteTelegramAccount', {
@@ -677,34 +679,40 @@ $(function () {
     });
 
     $('body').on('click', '.btn-cancel-reserved-order', function () {
-        var orderId = $(this).data('order-id');
+        var orderId = $(this).attr('data-order-id') || $(this).data('order-id');
+        if (!orderId) {
+            showToast('خطا', 'شناسه سفارش یافت نشد', 'text-danger');
+            return;
+        }
 
-        Swal.fire({
-            text: 'آیا مطمئن هستید می‌خواهید این بسته تمدیدی را لغو کنید؟',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'بله، لغو می‌کنم',
-            cancelButtonText: 'انصراف',
-            customClass: {
-                confirmButton: 'btn btn-danger me-3 waves-effect waves-light',
-                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
-            },
-            buttonsStyling: false
-        }).then(function (result) {
-            if (!result.value) return;
+        closeResponsiveModal(function () {
+            Swal.fire({
+                text: 'آیا مطمئن هستید می‌خواهید این بسته تمدیدی را لغو کنید؟',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، لغو می‌کنم',
+                cancelButtonText: 'انصراف',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-3 waves-effect waves-light',
+                    cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+                },
+                buttonsStyling: false
+            }).then(function (result) {
+                if (!(result.isConfirmed || result.value)) return;
 
-            BodyBlockUI();
-            postTelegramUserAction('/App/Subscriptions/CancelReservedPackage', {
-                orderId: orderId
-            }).then(function (res) {
-                BodyUnblockUI();
-                eval(res.data);
-                if (res.status === 'success' && dt_orders) {
-                    dt_orders.ajax.reload(null, false);
-                }
-            }).catch(function () {
-                BodyUnblockUI();
-                showToast('خطا', 'خطا در لغو بسته تمدیدی', 'text-danger');
+                BodyBlockUI();
+                postTelegramUserAction('/App/TelegramUsers/CancelReservedOrder', {
+                    orderId: orderId
+                }).then(function (res) {
+                    BodyUnblockUI();
+                    eval(res.data);
+                    if (res.status === 'success' && dt_orders) {
+                        dt_orders.ajax.reload(null, false);
+                    }
+                }).catch(function () {
+                    BodyUnblockUI();
+                    showToast('خطا', 'خطا در لغو بسته تمدیدی', 'text-danger');
+                });
             });
         });
     });

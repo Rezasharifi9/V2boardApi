@@ -316,6 +316,119 @@ END
 GO
 
 -- =============================================================================
+-- ارتقا به 1.8.9 — تنظیمات نماینده، هشدار سقف، حذف نماینده، بهبود رزرو/تمدید
+-- (همچنین: Database/UpgradePanelChangelog_1.8.9.sql)
+-- =============================================================================
+IF EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.8.8')
+   AND NOT EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.8.9')
+BEGIN
+    UPDATE dbo.tbPanelChangelogVersions SET tbPclv_IsCurrent = 0 WHERE tbPclv_IsCurrent = 1;
+
+    INSERT INTO dbo.tbPanelChangelogVersions
+        (tbPclv_Version, tbPclv_ReleaseDate, tbPclv_SortOrder, tbPclv_IsCurrent, tbPclv_IsActive)
+    VALUES
+        ('1.8.9', '1405/04/12', 189, 1, 1);
+
+    DECLARE @v189 INT = (SELECT tbPclv_ID FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.8.9');
+
+    INSERT INTO dbo.tbPanelChangelogItems
+        (FK_Version_ID, tbPcli_Title, tbPcli_Description, tbPcli_Audience, tbPcli_SortOrder, tbPcli_IsActive)
+    VALUES
+        (@v189, N'[New] تنظیمات پیشرفته ربات نماینده', N'تنظیم درصد دعوت (InvitePercent) و امکان غیرفعال‌سازی فروش از طریق ربات در پروفایل نماینده.', 1, 10, 1),
+        (@v189, N'[New] کنترل فروش پنل برای ادمین', N'امکان غیرفعال‌سازی فروش کل پنل از پروفایل ادمین (IsNotActiveSell).', 1, 20, 1),
+        (@v189, N'[New] هشدار ۸۰٪ سقف اعتبار نماینده', N'ارسال خودکار پیام تلگرام به نماینده هنگام مصرف بیش از ۸۰٪ سقف بدهی/اعتبار اشتراک.', 1, 30, 1),
+        (@v189, N'[New] مرتب‌سازی لیست نمایندگان', N'نمایش نمایندگانی که سقف را رد کرده‌اند در ابتدای لیست و نمایندگانی که بالای ۸۰٪ سقف هستند در ردیف بعد.', 1, 40, 1),
+        (@v189, N'[New] حذف نماینده (فقط ادمین)', N'امکان حذف کامل نماینده پس از تأیید؛ فاکتورها، لاگ‌ها، کاربران تلگرام و داده‌های وابسته پنل پاک می‌شوند. اشتراک‌های سرور (Subscriptions) حفظ می‌شوند.', 1, 50, 1),
+        (@v189, N'[Updated] لاگ و بازگشت وجه بسته رزرو', N'ثبت لاگ «رزرو بسته» فقط هنگام رزرو؛ حذف لاگ‌های مرتبط هنگام لغو رزرو و ثبت بازگشت وجه در تاریخچه نماینده.', 1, 60, 1),
+        (@v189, N'[New] تنظیمات درصد دعوت و فروش ربات', N'مدیریت InvitePercent و غیرفعال‌سازی فروش ربات از بخش تنظیمات ربات در پروفایل.', 2, 10, 1),
+        (@v189, N'[New] هشدار ۸۰٪ سقف اعتبار', N'دریافت پیام تلگرام هنگام نزدیک شدن به سقف بدهی/اعتبار اشتراک (بالای ۸۰٪).', 2, 20, 1),
+        (@v189, N'[Updated] تأیید قبل از تمدید بدون بسته فعال', N'اگر بسته فعالی روی اشتراک نباشد، قبل از فعال‌سازی مستقیم بسته تمدیدی از کاربر تأیید گرفته می‌شود.', 2, 30, 1),
+        (@v189, N'[Updated] محدودیت حذف اشتراک', N'نماینده تا پایان بسته فعال امکان حذف اشتراک را ندارد.', 2, 40, 1),
+        (@v189, N'[Updated] لاگ و بازگشت وجه بسته رزرو', N'بهبود ثبت لاگ رزرو بسته و نمایش بازگشت وجه هنگام لغو یا حذف بسته رزرو.', 2, 50, 1),
+        (@v189, N'[Fixed] ارسال هشدار تلگرام', N'در صورت بلاک ربات یا خطای ارسال پیام هشدار، خطا در لاگ سیستم ثبت نمی‌شود و هشدار در ارسال بعدی تکرار می‌شود.', 2, 60, 1);
+END
+GO
+
+-- =============================================================================
+-- ارتقا به 1.9.0 — رفع باگ‌های گزارش‌شده
+-- (همچنین: Database/UpgradePanelChangelog_1.9.0.sql)
+-- =============================================================================
+IF EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.8.9')
+   AND NOT EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.9.0')
+BEGIN
+    UPDATE dbo.tbPanelChangelogVersions SET tbPclv_IsCurrent = 0 WHERE tbPclv_IsCurrent = 1;
+
+    INSERT INTO dbo.tbPanelChangelogVersions
+        (tbPclv_Version, tbPclv_ReleaseDate, tbPclv_SortOrder, tbPclv_IsCurrent, tbPclv_IsActive)
+    VALUES
+        ('1.9.0', '1405/04/15', 190, 1, 1);
+
+    DECLARE @v190 INT = (SELECT tbPclv_ID FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.9.0');
+
+    INSERT INTO dbo.tbPanelChangelogItems
+        (FK_Version_ID, tbPcli_Title, tbPcli_Description, tbPcli_Audience, tbPcli_SortOrder, tbPcli_IsActive)
+    VALUES
+        (@v190, N'[Fixed] رفع باگ‌های گزارش‌شده', N'رفع باگ‌های گزارش‌شده توسط کاربران.', 1, 10, 1),
+        (@v190, N'[Fixed] رفع باگ‌های گزارش‌شده', N'رفع باگ‌های گزارش‌شده توسط کاربران.', 2, 10, 1);
+END
+GO
+
+-- =============================================================================
+-- ارتقا به 1.9.0 (1001) — تاییدیه مسدودسازی نماینده در ربات + هشدارهای تسویه در اعلانات پنل
+-- (همچنین: Database/UpgradePanelChangelog_1.9.0_1001.sql)
+-- قالب: MAJOR.MINOR.PATCH (BUILD) — 1.9.0 نسخه معنایی، (1001) شماره بیلد
+-- =============================================================================
+IF EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.9.0')
+   AND NOT EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.9.0 (1001)')
+BEGIN
+    UPDATE dbo.tbPanelChangelogVersions SET tbPclv_IsCurrent = 0 WHERE tbPclv_IsCurrent = 1;
+
+    INSERT INTO dbo.tbPanelChangelogVersions
+        (tbPclv_Version, tbPclv_ReleaseDate, tbPclv_SortOrder, tbPclv_IsCurrent, tbPclv_IsActive)
+    VALUES
+        ('1.9.0 (1001)', '1405/04/24', 191, 1, 1);
+
+    DECLARE @v1001 INT = (SELECT tbPclv_ID FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.9.0 (1001)');
+
+    INSERT INTO dbo.tbPanelChangelogItems
+        (FK_Version_ID, tbPcli_Title, tbPcli_Description, tbPcli_Audience, tbPcli_SortOrder, tbPcli_IsActive)
+    VALUES
+        (@v1001, N'[New] تاییدیه مسدودسازی نماینده در ربات', N'هنگام رسیدن موعد مسدودسازی، به‌جای مسدودسازی خودکار، پیام تاییدیه با مشخصات نماینده (نام، نام کاربری، مقدار بدهی، تاریخ آخرین فاکتور پرداخت‌شده و مدت بدون پرداخت) به همراه دکمه تایید/رد به ربات ادمین ارسال می‌شود. مسدودسازی فقط پس از تایید ادمین انجام می‌گیرد و در صورت عدم تصمیم یا رد، هر ۲ روز یک‌بار یادآوری می‌شود.', 1, 10, 1),
+        (@v1001, N'[New] هشدارهای تسویه در اعلانات پنل', N'برای هر نماینده هشدار «قبل از موعد تسویه» و «قبل از مسدودسازی» علاوه بر تلگرام، در بخش اعلانات پنل نیز ثبت می‌شود.', 1, 20, 1),
+        (@v1001, N'[Fixed] ارسال پیام‌های اطلاع‌رسانی بدون parseMode', N'رفع مشکل ارسال پیام‌های هشدار تلگرام که بدون تعیین حالت parseMode ارسال می‌شدند.', 1, 30, 1),
+        (@v1001, N'[New] هشدار تسویه در پنل', N'دریافت هشدار قبل از موعد تسویه و قبل از مسدودسازی اشتراک‌ها در بخش اعلانات پنل.', 2, 10, 1);
+END
+GO
+
+-- =============================================================================
+-- ارتقا به 1.9.0 (1002) — رفع باگ برخی کاربران + بهبود صفحه فاکتورها و تنظیمات
+-- (همچنین: Database/UpgradePanelChangelog_1.9.0_1002.sql)
+-- =============================================================================
+IF EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.9.0 (1001)')
+   AND NOT EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.9.0 (1002)')
+BEGIN
+    UPDATE dbo.tbPanelChangelogVersions SET tbPclv_IsCurrent = 0 WHERE tbPclv_IsCurrent = 1;
+
+    INSERT INTO dbo.tbPanelChangelogVersions
+        (tbPclv_Version, tbPclv_ReleaseDate, tbPclv_SortOrder, tbPclv_IsCurrent, tbPclv_IsActive)
+    VALUES
+        ('1.9.0 (1002)', '1405/05/03', 192, 1, 1);
+
+    DECLARE @v1002 INT = (SELECT tbPclv_ID FROM dbo.tbPanelChangelogVersions WHERE tbPclv_Version = '1.9.0 (1002)');
+
+    INSERT INTO dbo.tbPanelChangelogItems
+        (FK_Version_ID, tbPcli_Title, tbPcli_Description, tbPcli_Audience, tbPcli_SortOrder, tbPcli_IsActive)
+    VALUES
+        (@v1002, N'[Fixed] رفع باگ‌های گزارش‌شده برخی کاربران', N'رفع کرش ربات هنگام حذف پیام منقضی (قدیمی‌تر از ۴۸ ساعت)، رفع خطای دریافت رسید بدون فاکتور، و رفع خطای ورود با فرم خالی به پنل.', 1, 10, 1),
+        (@v1002, N'[New] فیلتر پیشرفته فاکتورها', N'افزودن فیلتر کاربر، شماره پیگیری، بازه مبلغ و بازه تاریخ در صفحه فاکتورها برای جست‌وجوی آسان.', 1, 20, 1),
+        (@v1002, N'[New] یوزرنیم تلگرام ادمین در تنظیمات', N'امکان تنظیم آیدی پشتیبانی (AdminUsername) ادمین از صفحه تنظیمات پنل.', 1, 30, 1),
+        (@v1002, N'[Fixed] ارسال هشدارها و اعلانات تسویه', N'رفع مشکل ارسال نشدن پیام‌های تلگرام تسویه و ثبت نشدن اعلان‌های تسویه در پنل نماینده.', 1, 40, 1),
+        (@v1002, N'[New] فیلتر فاکتورها', N'فیلتر آسان فاکتورها بر اساس کاربر، شماره پیگیری، مبلغ و تاریخ.', 2, 10, 1),
+        (@v1002, N'[Fixed] هشدارهای تسویه در پنل', N'دریافت درست هشدارهای «قبل از موعد»، «سررسید»، «پس از سررسید» و «قبل از مسدودسازی» در بخش اعلانات پنل.', 2, 20, 1);
+END
+GO
+
+-- =============================================================================
 -- تعمیر tbPclv_IsCurrent — فقط آخرین نسخه فعال باید current باشد
 -- =============================================================================
 IF EXISTS (SELECT 1 FROM dbo.tbPanelChangelogVersions WHERE tbPclv_IsActive = 1)

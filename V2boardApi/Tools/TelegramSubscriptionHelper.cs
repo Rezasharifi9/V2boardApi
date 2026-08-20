@@ -22,6 +22,8 @@ namespace V2boardApi.Tools
             var orders = ordersRepository.table
                 .Include(o => o.tbLinkUserAndPlans)
                 .Include(o => o.tbLinkUserAndPlans.tbPlans)
+                .Include(o => o.tbTelegramUsers)
+                .Include(o => o.tbDepositWallet_Log)
                 .Where(o => o.AccountName == email && o.OrderStatus == "FOR_RESERVE")
                 .ToList();
 
@@ -57,7 +59,7 @@ namespace V2boardApi.Tools
 
                 var disc = new Dictionary<string, object> { { "@email", link.tbL_Email } };
                 var reader = await mySql.GetDataAsync(
-                    "SELECT id, email, u, d, expired_at FROM v2_user WHERE email=@email", disc);
+                    "SELECT id, email, u, d, transfer_enable, expired_at, created_at FROM v2_user WHERE email=@email", disc);
 
                 if (!await reader.ReadAsync())
                 {
@@ -71,38 +73,35 @@ namespace V2boardApi.Tools
                 var v2UserId = reader.GetInt32("id");
                 var name = reader.GetString("email").Split('@')[0];
                 var username = reader.GetString("email").Split('@')[1];
-                var totalUse = Utility.ConvertByteToGB(reader.GetInt64("u") + reader.GetInt64("d"));
+                var download = reader.GetInt64("d");
+                var upload = reader.GetInt64("u");
+                var transferEnable = reader.GetInt64("transfer_enable");
+                var expiredAtRaw = reader["expired_at"];
+                long? createdAtUnix = null;
+                var createdAtRaw = reader["created_at"]?.ToString();
+                if (!string.IsNullOrWhiteSpace(createdAtRaw))
+                    createdAtUnix = Convert.ToInt64(createdAtRaw);
 
-                var expireRaw = reader["expired_at"]?.ToString();
-                var expireTime = default(DateTime);
-                if (!string.IsNullOrEmpty(expireRaw))
-                    expireTime = Utility.ConvertSecondToDatetime(Convert.ToDouble(expireRaw));
+                if (!SubscriptionPackageHelper.CanAgentDeleteSubscription(
+                    agent.Role ?? 0, transferEnable, download, upload, expiredAtRaw, createdAtUnix))
+                {
+                    reader.Close();
+                    await mySql.CloseAsync();
+                    return false;
+                }
 
                 reader.Close();
 
-                var log = await logsRepository.FirstOrDefaultAsync(s =>
-                    s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
-
-                if (log != null)
+                try
                 {
-                    if (totalUse <= 0.5 && (expireTime != default(DateTime) && expireTime >= DateTime.Now))
-                    {
-                        var userAccount = await usersRepository.FirstOrDefaultAsync(s => s.Username == username);
-                        if (userAccount != null)
-                            await ApplyWalletRefundForDeletedLogAsync(
-                                userAccount, log, usersRepository, linkUserGroupRepository);
-                    }
-
-                    var logs = await logsRepository.WhereAsync(s =>
-                        s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
-
-                    if (totalUse <= 0.5 && (expireTime != default(DateTime) && expireTime >= DateTime.Now))
-                        await logsRepository.DeleteRangeAsync(logs);
-                    else
-                    {
-                        foreach (var item in logs)
-                            item.FK_NameUser_ID = "del_" + name;
-                    }
+                    await ReservedPackageHelper.ProcessSubscriptionDeleteLogsAsync(
+                        name, username, createdAtUnix, download, upload,
+                        logsRepository, usersRepository, linkUserGroupRepository);
+                }
+                catch (InvalidOperationException)
+                {
+                    await mySql.CloseAsync();
+                    return false;
                 }
 
                 using (var deleteReader = await mySql.GetDataAsync(
@@ -120,44 +119,6 @@ namespace V2boardApi.Tools
             await logsRepository.SaveChangesAsync();
             await usersRepository.SaveChangesAsync();
             return true;
-        }
-
-        private static async Task ApplyWalletRefundForDeletedLogAsync(
-            tbUsers userAccount,
-            tbLogs log,
-            Repository<tbUsers> usersRepository,
-            Repository<tbLinkServerGroupWithUsers> linkUserGroupRepository)
-        {
-            if (userAccount.Role == 2)
-            {
-                userAccount.Wallet -= (int)log.SalePrice;
-
-                if (userAccount.tbUsers2 != null && userAccount.tbUsers2.Role == 3)
-                {
-                    var groupId = log.tbLinkUserAndPlans.tbPlans.Group_Id;
-                    var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(
-                        s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.tbUsers2.User_ID);
-                    if (linkGroupUser != null)
-                    {
-                        userAccount.tbUsers2.Wallet -= (log.PlanVolume * linkGroupUser.PriceForGig)
-                            + (log.PlanMonth * linkGroupUser.PriceForMonth);
-                    }
-                }
-            }
-            else if (userAccount.Role == 3 && userAccount.tbUsers2 != null)
-            {
-                var groupId = log.tbLinkUserAndPlans.tbPlans.Group_Id;
-                var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(
-                    s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.User_ID);
-
-                if (log.PlanVolume != null && linkGroupUser != null)
-                {
-                    var amount = (log.PlanVolume * linkGroupUser.PriceForGig)
-                        + (log.PlanMonth * linkGroupUser.PriceForMonth)
-                        + ((double)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
-                    userAccount.Wallet -= amount;
-                }
-            }
         }
     }
 }

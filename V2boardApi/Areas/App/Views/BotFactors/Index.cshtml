@@ -9,11 +9,52 @@
     <link href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" rel="stylesheet" />
     <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
     <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
+    <link href="../../assets/libs/flatpickr/flatpickr.css" rel="stylesheet" />
 }
 
 <h4 class="py-3 mb-4">
     فاکتور ها
 </h4>
+
+<!-- فیلترهای فاکتور -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label" for="filterUser">کاربر</label>
+                <input type="text" id="filterUser" class="form-control" placeholder="یوزرنیم یا نام" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterTaxId">شماره پیگیری</label>
+                <input type="text" dir="ltr" id="filterTaxId" class="form-control" placeholder="شماره پیگیری تراکنش" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="filterAmountMin">از مبلغ (ریال)</label>
+                <input type="text" inputmode="numeric" dir="ltr" id="filterAmountMin" class="form-control" placeholder="0" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="filterAmountMax">تا مبلغ (ریال)</label>
+                <input type="text" inputmode="numeric" dir="ltr" id="filterAmountMax" class="form-control" placeholder="10000000" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="filterFromDate">از تاریخ</label>
+                <input type="text" dir="ltr" id="filterFromDate" class="form-control" placeholder="1404/01/01" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="filterToDate">تا تاریخ</label>
+                <input type="text" dir="ltr" id="filterToDate" class="form-control" placeholder="1404/03/01" />
+            </div>
+            <div class="col-md-4">
+                <button type="button" id="btnApplyFactorFilters" class="btn btn-primary me-2">
+                    <i class="ti ti-filter me-1"></i>اعمال فیلتر
+                </button>
+                <button type="button" id="btnClearFactorFilters" class="btn btn-label-secondary">
+                    پاک کردن
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- DataTable with Buttons -->
 <div class="card">
     <div class="card-datatable table-responsive pt-0">
@@ -42,6 +83,9 @@
     <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
     <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
     <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/jdate/jdate.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/flatpickr/flatpickr-jalali.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/flatpickr/l10n/fa.js")"></script>
     <!-- Form Validation -->
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/popular.js")"></script>
     <script src="@Url.Content("~/assets/vendor/libs/@form-validation/bootstrap5.js")"></script>

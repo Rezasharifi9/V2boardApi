@@ -97,6 +97,16 @@
           <Property Name="FK_User_ID" Type="int" />
           <Property Name="ch_Type" Type="varchar" MaxLength="50" />
         </EntityType>
+        <EntityType Name="tbSupportLinks">
+          <Key>
+            <PropertyRef Name="tbSl_ID" />
+          </Key>
+          <Property Name="tbSl_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_User_ID" Type="int" Nullable="false" />
+          <Property Name="tbSl_Title" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="tbSl_Link" Type="nvarchar" MaxLength="500" />
+          <Property Name="tbSl_Phone" Type="nvarchar" MaxLength="30" />
+        </EntityType>
         <EntityType Name="tbDepositWallet_Log">
           <Key>
             <PropertyRef Name="dw_ID" />
@@ -115,6 +125,7 @@
           <Property Name="FK_Order_ID" Type="int" />
           <Property Name="dw_Authority" Type="varchar" MaxLength="50" />
           <Property Name="FK_PayMethod_ID" Type="int" />
+          <Property Name="FK_MobileUser_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbLinks">
           <Key>
@@ -173,6 +184,37 @@
           <Property Name="PlanVolume" Type="float" Nullable="false" />
           <Property Name="PlanMonth" Type="float" Nullable="false" />
         </EntityType>
+        <EntityType Name="tbMobileUsers">
+          <Key>
+            <PropertyRef Name="tbMu_ID" />
+          </Key>
+          <Property Name="tbMu_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_User_ID" Type="int" />
+          <Property Name="tbMu_AndroidId" Type="varchar" MaxLength="64" Nullable="false" />
+          <Property Name="tbMu_FirebaseToken" Type="varchar" MaxLength="500" />
+          <Property Name="tbMu_NotificationEnabled" Type="bit" Nullable="false" />
+          <Property Name="tbMu_Manufacturer" Type="nvarchar" MaxLength="100" />
+          <Property Name="tbMu_Model" Type="nvarchar" MaxLength="100" />
+          <Property Name="tbMu_Device" Type="nvarchar" MaxLength="100" />
+          <Property Name="tbMu_Product" Type="nvarchar" MaxLength="100" />
+          <Property Name="tbMu_Hardware" Type="nvarchar" MaxLength="100" />
+          <Property Name="tbMu_AndroidVersion" Type="varchar" MaxLength="20" />
+          <Property Name="tbMu_Sdk" Type="int" />
+          <Property Name="tbMu_AppVersion" Type="varchar" MaxLength="30" />
+          <Property Name="tbMu_VersionCode" Type="int" />
+          <Property Name="tbMu_PackageName" Type="varchar" MaxLength="150" />
+          <Property Name="tbMu_Language" Type="varchar" MaxLength="10" />
+          <Property Name="tbMu_Country" Type="varchar" MaxLength="10" />
+          <Property Name="tbMu_Timezone" Type="varchar" MaxLength="60" />
+          <Property Name="tbMu_ScreenWidth" Type="int" />
+          <Property Name="tbMu_ScreenHeight" Type="int" />
+          <Property Name="tbMu_Density" Type="int" />
+          <Property Name="tbMu_Rooted" Type="bit" Nullable="false" />
+          <Property Name="tbMu_RegisterDate" Type="datetime" />
+          <Property Name="tbMu_LastSeenDate" Type="datetime" />
+          <Property Name="tbMu_LastIp" Type="varchar" MaxLength="64" />
+          <Property Name="tbMu_IsActive" Type="bit" Nullable="false" />
+        </EntityType>
         <EntityType Name="tbNotifications">
           <Key>
             <PropertyRef Name="tbNoti_ID" />
@@ -214,6 +256,7 @@
           <Property Name="Traffic" Type="float" Nullable="false" />
           <Property Name="Month" Type="float" Nullable="false" />
           <Property Name="Tel_RenewedDate" Type="datetime" />
+          <Property Name="FK_MobileUser_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbPanelChangelogItems">
           <Key>
@@ -441,6 +484,8 @@
           <Property Name="Settlement_IsBlocked" Type="bit" Nullable="false" />
           <Property Name="Settlement_BlockGraceDays" Type="int" />
           <Property Name="Settlement_LastDueDayWarning" Type="datetime" />
+          <Property Name="Settlement_BlockApprovalPending" Type="bit" Nullable="false" />
+          <Property Name="Settlement_LastBlockApprovalSent" Type="datetime" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
@@ -501,6 +546,54 @@
             </Principal>
             <Dependent Role="tbConnectionHelp">
               <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbSupportLinks_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="1" />
+          <End Role="tbSupportLinks" Type="Self.tbSupportLinks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbSupportLinks">
+              <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbDepositWallet_Log_tbMobileUsers">
+          <End Role="tbMobileUsers" Type="Self.tbMobileUsers" Multiplicity="0..1" />
+          <End Role="tbDepositWallet_Log" Type="Self.tbDepositWallet_Log" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbMobileUsers">
+              <PropertyRef Name="tbMu_ID" />
+            </Principal>
+            <Dependent Role="tbDepositWallet_Log">
+              <PropertyRef Name="FK_MobileUser_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbMobileUsers_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbMobileUsers" Type="Self.tbMobileUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbMobileUsers">
+              <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbOrders_tbMobileUsers">
+          <End Role="tbMobileUsers" Type="Self.tbMobileUsers" Multiplicity="0..1" />
+          <End Role="tbOrders" Type="Self.tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbMobileUsers">
+              <PropertyRef Name="tbMu_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_MobileUser_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -884,11 +977,13 @@
           <EntitySet Name="tbBankCardNumbers" EntityType="Self.tbBankCardNumbers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbBotSettings" EntityType="Self.tbBotSettings" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbConnectionHelp" EntityType="Self.tbConnectionHelp" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbSupportLinks" EntityType="Self.tbSupportLinks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbDepositWallet_Log" EntityType="Self.tbDepositWallet_Log" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinks" EntityType="Self.tbLinks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="Self.tbLinkServerGroupWithUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="Self.tbLinkUserAndPlans" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbLogs" EntityType="Self.tbLogs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbMobileUsers" EntityType="Self.tbMobileUsers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbNotifications" EntityType="Self.tbNotifications" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbNotificationUser" EntityType="Self.tbNotificationUser" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
@@ -927,9 +1022,25 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbSupportLinks_tbUsers" Association="Self.FK_tbSupportLinks_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbSupportLinks" EntitySet="tbSupportLinks" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbOrders" Association="Self.FK_tbDepositWallet_Log_tbOrders">
             <End Role="tbOrders" EntitySet="tbOrders" />
             <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbDepositWallet_Log_tbMobileUsers" Association="Self.FK_tbDepositWallet_Log_tbMobileUsers">
+            <End Role="tbMobileUsers" EntitySet="tbMobileUsers" />
+            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbMobileUsers_tbUsers" Association="Self.FK_tbMobileUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbMobileUsers" EntitySet="tbMobileUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbMobileUsers" Association="Self.FK_tbOrders_tbMobileUsers">
+            <End Role="tbMobileUsers" EntitySet="tbMobileUsers" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
           </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbPaymentMethods" Association="Self.FK_tbDepositWallet_Log_tbPaymentMethods">
             <End Role="tbPaymentMethods" EntitySet="tbPaymentMethods" />
@@ -1080,11 +1191,13 @@
           <EntitySet Name="tbBankCardNumbers" EntityType="V2boardSiteSharifiModel.tbBankCardNumbers" />
           <EntitySet Name="tbBotSettings" EntityType="V2boardSiteSharifiModel.tbBotSettings" />
           <EntitySet Name="tbConnectionHelp" EntityType="V2boardSiteSharifiModel.tbConnectionHelp" />
+          <EntitySet Name="tbSupportLinks" EntityType="V2boardSiteSharifiModel.tbSupportLinks" />
           <EntitySet Name="tbDepositWallet_Log" EntityType="V2boardSiteSharifiModel.tbDepositWallet_Log" />
           <EntitySet Name="tbLinks" EntityType="V2boardSiteSharifiModel.tbLinks" />
           <EntitySet Name="tbLinkServerGroupWithUsers" EntityType="V2boardSiteSharifiModel.tbLinkServerGroupWithUsers" />
           <EntitySet Name="tbLinkUserAndPlans" EntityType="V2boardSiteSharifiModel.tbLinkUserAndPlans" />
           <EntitySet Name="tbLogs" EntityType="V2boardSiteSharifiModel.tbLogs" />
+          <EntitySet Name="tbMobileUsers" EntityType="V2boardSiteSharifiModel.tbMobileUsers" />
           <EntitySet Name="tbNotifications" EntityType="V2boardSiteSharifiModel.tbNotifications" />
           <EntitySet Name="tbNotificationUser" EntityType="V2boardSiteSharifiModel.tbNotificationUser" />
           <EntitySet Name="tbOrders" EntityType="V2boardSiteSharifiModel.tbOrders" />
@@ -1121,6 +1234,10 @@
             <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
           </AssociationSet>
+          <AssociationSet Name="FK_tbSupportLinks_tbUsers" Association="V2boardSiteSharifiModel.FK_tbSupportLinks_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbSupportLinks" EntitySet="tbSupportLinks" />
+          </AssociationSet>
           <AssociationSet Name="FK_tbPaymentMethodUser_tbConnectionHelp" Association="V2boardSiteSharifiModel.FK_tbPaymentMethodUser_tbConnectionHelp">
             <End Role="tbConnectionHelp" EntitySet="tbConnectionHelp" />
             <End Role="tbPaymentMethodUser" EntitySet="tbPaymentMethodUser" />
@@ -1128,6 +1245,18 @@
           <AssociationSet Name="FK_tbDepositWallet_Log_tbOrders" Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbOrders">
             <End Role="tbOrders" EntitySet="tbOrders" />
             <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbDepositWallet_Log_tbMobileUsers" Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbMobileUsers">
+            <End Role="tbMobileUsers" EntitySet="tbMobileUsers" />
+            <End Role="tbDepositWallet_Log" EntitySet="tbDepositWallet_Log" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbMobileUsers_tbUsers" Association="V2boardSiteSharifiModel.FK_tbMobileUsers_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
+            <End Role="tbMobileUsers" EntitySet="tbMobileUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbOrders_tbMobileUsers" Association="V2boardSiteSharifiModel.FK_tbOrders_tbMobileUsers">
+            <End Role="tbMobileUsers" EntitySet="tbMobileUsers" />
+            <End Role="tbOrders" EntitySet="tbOrders" />
           </AssociationSet>
           <AssociationSet Name="FK_tbDepositWallet_Log_tbPaymentMethods" Association="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbPaymentMethods">
             <End Role="tbPaymentMethods" EntitySet="tbPaymentMethods" />
@@ -1388,6 +1517,17 @@
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteSharifiModel.FK_tbConnectionHelp_tbUsers" FromRole="tbConnectionHelp" ToRole="tbUsers" />
           <NavigationProperty Name="tbPaymentMethodUser" Relationship="V2boardSiteSharifiModel.FK_tbPaymentMethodUser_tbConnectionHelp" FromRole="tbConnectionHelp" ToRole="tbPaymentMethodUser" />
         </EntityType>
+        <EntityType Name="tbSupportLinks">
+          <Key>
+            <PropertyRef Name="tbSl_ID" />
+          </Key>
+          <Property Name="tbSl_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
+          <Property Name="tbSl_Title" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="tbSl_Link" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="tbSl_Phone" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteSharifiModel.FK_tbSupportLinks_tbUsers" FromRole="tbSupportLinks" ToRole="tbUsers" />
+        </EntityType>
         <EntityType Name="tbDepositWallet_Log">
           <Key>
             <PropertyRef Name="dw_ID" />
@@ -1406,9 +1546,11 @@
           <Property Name="FK_Order_ID" Type="Int32" />
           <Property Name="dw_Authority" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="FK_PayMethod_ID" Type="Int32" />
+          <Property Name="FK_MobileUser_ID" Type="Int32" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbOrders" FromRole="tbDepositWallet_Log" ToRole="tbOrders" />
           <NavigationProperty Name="tbPaymentMethods" Relationship="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbPaymentMethods" FromRole="tbDepositWallet_Log" ToRole="tbPaymentMethods" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbTelegramUsers" FromRole="tbDepositWallet_Log" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbMobileUsers" Relationship="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbMobileUsers" FromRole="tbDepositWallet_Log" ToRole="tbMobileUsers" />
         </EntityType>
         <EntityType Name="tbLinks">
           <Key>
@@ -1476,6 +1618,40 @@
           <Property Name="PlanMonth" Type="Double" Nullable="false" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteSharifiModel.FK_tbLogs_tbLinkUserAndPlans" FromRole="tbLogs" ToRole="tbLinkUserAndPlans" />
         </EntityType>
+        <EntityType Name="tbMobileUsers">
+          <Key>
+            <PropertyRef Name="tbMu_ID" />
+          </Key>
+          <Property Name="tbMu_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_User_ID" Type="Int32" />
+          <Property Name="tbMu_AndroidId" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_FirebaseToken" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_NotificationEnabled" Type="Boolean" Nullable="false" />
+          <Property Name="tbMu_Manufacturer" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="tbMu_Model" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="tbMu_Device" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="tbMu_Product" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="tbMu_Hardware" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="tbMu_AndroidVersion" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_Sdk" Type="Int32" />
+          <Property Name="tbMu_AppVersion" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_VersionCode" Type="Int32" />
+          <Property Name="tbMu_PackageName" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_Language" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_Country" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_Timezone" Type="String" MaxLength="60" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_ScreenWidth" Type="Int32" />
+          <Property Name="tbMu_ScreenHeight" Type="Int32" />
+          <Property Name="tbMu_Density" Type="Int32" />
+          <Property Name="tbMu_Rooted" Type="Boolean" Nullable="false" />
+          <Property Name="tbMu_RegisterDate" Type="DateTime" Precision="3" />
+          <Property Name="tbMu_LastSeenDate" Type="DateTime" Precision="3" />
+          <Property Name="tbMu_LastIp" Type="String" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="tbMu_IsActive" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteSharifiModel.FK_tbMobileUsers_tbUsers" FromRole="tbMobileUsers" ToRole="tbUsers" />
+          <NavigationProperty Name="tbOrders" Relationship="V2boardSiteSharifiModel.FK_tbOrders_tbMobileUsers" FromRole="tbMobileUsers" ToRole="tbOrders" />
+          <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbMobileUsers" FromRole="tbMobileUsers" ToRole="tbDepositWallet_Log" />
+        </EntityType>
         <EntityType Name="tbNotifications">
           <Key>
             <PropertyRef Name="tbNoti_ID" />
@@ -1520,9 +1696,11 @@
           <Property Name="Traffic" Type="Double" Nullable="false" />
           <Property Name="Month" Type="Double" Nullable="false" />
           <Property Name="Tel_RenewedDate" Type="DateTime" Precision="3" />
+          <Property Name="FK_MobileUser_ID" Type="Int32" />
           <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbOrders" FromRole="tbOrders" ToRole="tbDepositWallet_Log" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteSharifiModel.FK_tbOrders_tbLinkUserAndPlans" FromRole="tbOrders" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteSharifiModel.FK_tbOrders_tbTelegramUsers" FromRole="tbOrders" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbMobileUsers" Relationship="V2boardSiteSharifiModel.FK_tbOrders_tbMobileUsers" FromRole="tbOrders" ToRole="tbMobileUsers" />
         </EntityType>
         <EntityType Name="tbPanelChangelogSeen">
           <Key>
@@ -1749,9 +1927,12 @@
           <Property Name="Settlement_IsBlocked" Type="Boolean" Nullable="false" />
           <Property Name="Settlement_BlockGraceDays" Type="Int32" />
           <Property Name="Settlement_LastDueDayWarning" Type="DateTime" Precision="3" />
+          <Property Name="Settlement_BlockApprovalPending" Type="Boolean" Nullable="false" />
+          <Property Name="Settlement_LastBlockApprovalSent" Type="DateTime" Precision="3" />
           <NavigationProperty Name="tbBankCardNumbers" Relationship="V2boardSiteSharifiModel.FK_tbBankCardNumbers_tbUsers" FromRole="tbUsers" ToRole="tbBankCardNumbers" />
           <NavigationProperty Name="tbBotSettings" Relationship="V2boardSiteSharifiModel.FK_tbBotSettings_tbUsers" FromRole="tbUsers" ToRole="tbBotSettings" />
           <NavigationProperty Name="tbConnectionHelp" Relationship="V2boardSiteSharifiModel.FK_tbConnectionHelp_tbUsers" FromRole="tbUsers" ToRole="tbConnectionHelp" />
+          <NavigationProperty Name="tbSupportLinks" Relationship="V2boardSiteSharifiModel.FK_tbSupportLinks_tbUsers" FromRole="tbUsers" ToRole="tbSupportLinks" />
           <NavigationProperty Name="tbLinkServerGroupWithUsers" Relationship="V2boardSiteSharifiModel.FK_tbLinkServerGroupWithUsers_tbUsers" FromRole="tbUsers" ToRole="tbLinkServerGroupWithUsers" />
           <NavigationProperty Name="tbLinkUserAndPlans" Relationship="V2boardSiteSharifiModel.FK_tbLinkUserAndPlans_tbUsers" FromRole="tbUsers" ToRole="tbLinkUserAndPlans" />
           <NavigationProperty Name="tbNotificationUser" Relationship="V2boardSiteSharifiModel.FK_tbNotificationUser_tbUsers1" FromRole="tbUsers" ToRole="tbNotificationUser" />
@@ -1763,6 +1944,7 @@
           <NavigationProperty Name="tbUserFactors" Relationship="V2boardSiteSharifiModel.FK_tbUserFactors_tbUsers" FromRole="tbUsers" ToRole="tbUserFactors" />
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteSharifiModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteSharifiModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
+          <NavigationProperty Name="tbMobileUsers" Relationship="V2boardSiteSharifiModel.FK_tbMobileUsers_tbUsers" FromRole="tbUsers" ToRole="tbMobileUsers" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="V2boardSiteSharifiModel.tbUsers" Role="tbUsers" Multiplicity="1" />
@@ -1826,6 +2008,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbSupportLinks_tbUsers">
+          <End Type="V2boardSiteSharifiModel.tbUsers" Role="tbUsers" Multiplicity="1" />
+          <End Type="V2boardSiteSharifiModel.tbSupportLinks" Role="tbSupportLinks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbSupportLinks">
+              <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbPaymentMethodUser_tbConnectionHelp">
           <End Type="V2boardSiteSharifiModel.tbConnectionHelp" Role="tbConnectionHelp" Multiplicity="0..1" />
           <End Type="V2boardSiteSharifiModel.tbPaymentMethodUser" Role="tbPaymentMethodUser" Multiplicity="*" />
@@ -1835,6 +2029,42 @@
             </Principal>
             <Dependent Role="tbPaymentMethodUser">
               <PropertyRef Name="FK_Learn_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbDepositWallet_Log_tbMobileUsers">
+          <End Type="V2boardSiteSharifiModel.tbMobileUsers" Role="tbMobileUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteSharifiModel.tbDepositWallet_Log" Role="tbDepositWallet_Log" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbMobileUsers">
+              <PropertyRef Name="tbMu_ID" />
+            </Principal>
+            <Dependent Role="tbDepositWallet_Log">
+              <PropertyRef Name="FK_MobileUser_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbMobileUsers_tbUsers">
+          <End Type="V2boardSiteSharifiModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteSharifiModel.tbMobileUsers" Role="tbMobileUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbMobileUsers">
+              <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbOrders_tbMobileUsers">
+          <End Type="V2boardSiteSharifiModel.tbMobileUsers" Role="tbMobileUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteSharifiModel.tbOrders" Role="tbOrders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbMobileUsers">
+              <PropertyRef Name="tbMu_ID" />
+            </Principal>
+            <Dependent Role="tbOrders">
+              <PropertyRef Name="FK_MobileUser_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -2331,9 +2561,21 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="tbSupportLinks">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbSupportLinks">
+              <MappingFragment StoreEntitySet="tbSupportLinks">
+                <ScalarProperty Name="tbSl_Phone" ColumnName="tbSl_Phone" />
+                <ScalarProperty Name="tbSl_Link" ColumnName="tbSl_Link" />
+                <ScalarProperty Name="tbSl_Title" ColumnName="tbSl_Title" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="tbSl_ID" ColumnName="tbSl_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tbDepositWallet_Log">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbDepositWallet_Log">
               <MappingFragment StoreEntitySet="tbDepositWallet_Log">
+                <ScalarProperty Name="FK_MobileUser_ID" ColumnName="FK_MobileUser_ID" />
                 <ScalarProperty Name="FK_PayMethod_ID" ColumnName="FK_PayMethod_ID" />
                 <ScalarProperty Name="dw_Authority" ColumnName="dw_Authority" />
                 <ScalarProperty Name="FK_Order_ID" ColumnName="FK_Order_ID" />
@@ -2412,6 +2654,38 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="tbMobileUsers">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbMobileUsers">
+              <MappingFragment StoreEntitySet="tbMobileUsers">
+                <ScalarProperty Name="tbMu_IsActive" ColumnName="tbMu_IsActive" />
+                <ScalarProperty Name="tbMu_LastIp" ColumnName="tbMu_LastIp" />
+                <ScalarProperty Name="tbMu_LastSeenDate" ColumnName="tbMu_LastSeenDate" />
+                <ScalarProperty Name="tbMu_RegisterDate" ColumnName="tbMu_RegisterDate" />
+                <ScalarProperty Name="tbMu_Rooted" ColumnName="tbMu_Rooted" />
+                <ScalarProperty Name="tbMu_Density" ColumnName="tbMu_Density" />
+                <ScalarProperty Name="tbMu_ScreenHeight" ColumnName="tbMu_ScreenHeight" />
+                <ScalarProperty Name="tbMu_ScreenWidth" ColumnName="tbMu_ScreenWidth" />
+                <ScalarProperty Name="tbMu_Timezone" ColumnName="tbMu_Timezone" />
+                <ScalarProperty Name="tbMu_Country" ColumnName="tbMu_Country" />
+                <ScalarProperty Name="tbMu_Language" ColumnName="tbMu_Language" />
+                <ScalarProperty Name="tbMu_PackageName" ColumnName="tbMu_PackageName" />
+                <ScalarProperty Name="tbMu_VersionCode" ColumnName="tbMu_VersionCode" />
+                <ScalarProperty Name="tbMu_AppVersion" ColumnName="tbMu_AppVersion" />
+                <ScalarProperty Name="tbMu_Sdk" ColumnName="tbMu_Sdk" />
+                <ScalarProperty Name="tbMu_AndroidVersion" ColumnName="tbMu_AndroidVersion" />
+                <ScalarProperty Name="tbMu_Hardware" ColumnName="tbMu_Hardware" />
+                <ScalarProperty Name="tbMu_Product" ColumnName="tbMu_Product" />
+                <ScalarProperty Name="tbMu_Device" ColumnName="tbMu_Device" />
+                <ScalarProperty Name="tbMu_Model" ColumnName="tbMu_Model" />
+                <ScalarProperty Name="tbMu_Manufacturer" ColumnName="tbMu_Manufacturer" />
+                <ScalarProperty Name="tbMu_NotificationEnabled" ColumnName="tbMu_NotificationEnabled" />
+                <ScalarProperty Name="tbMu_FirebaseToken" ColumnName="tbMu_FirebaseToken" />
+                <ScalarProperty Name="tbMu_AndroidId" ColumnName="tbMu_AndroidId" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="tbMu_ID" ColumnName="tbMu_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tbNotifications">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbNotifications">
               <MappingFragment StoreEntitySet="tbNotifications">
@@ -2439,6 +2713,7 @@
           <EntitySetMapping Name="tbOrders">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbOrders">
               <MappingFragment StoreEntitySet="tbOrders">
+                <ScalarProperty Name="FK_MobileUser_ID" ColumnName="FK_MobileUser_ID" />
                 <ScalarProperty Name="Tel_RenewedDate" ColumnName="Tel_RenewedDate" />
                 <ScalarProperty Name="Month" ColumnName="Month" />
                 <ScalarProperty Name="Traffic" ColumnName="Traffic" />
@@ -2635,6 +2910,8 @@
           <EntitySetMapping Name="tbUsers">
             <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbUsers">
               <MappingFragment StoreEntitySet="tbUsers">
+                <ScalarProperty Name="Settlement_BlockApprovalPending" ColumnName="Settlement_BlockApprovalPending" />
+                <ScalarProperty Name="Settlement_LastBlockApprovalSent" ColumnName="Settlement_LastBlockApprovalSent" />
                 <ScalarProperty Name="Settlement_LastDueDayWarning" ColumnName="Settlement_LastDueDayWarning" />
                 <ScalarProperty Name="Settlement_BlockGraceDays" ColumnName="Settlement_BlockGraceDays" />
                 <ScalarProperty Name="Settlement_IsBlocked" ColumnName="Settlement_IsBlocked" />

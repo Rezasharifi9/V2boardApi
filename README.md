@@ -12,6 +12,7 @@ API و پنل مدیریت متصل به [V2board](https://github.com/v2board/v2
 - درگاه‌های پرداخت: زرین‌پال، تتراپی، پلیسیو، هاب‌اسمارت، کارت‌به‌کارت
 - تحویل کانفیگ به کلاینت‌های VPN از `/api/v1/client/subscribe`
 - کیف پول، فاکتور، لینک پرداخت و داشبورد فروش
+- ثبت دستگاه‌های اپلیکیشن موبایل و تخصیص آن‌ها به نماینده (`tbMobileUsers`)
 - تمدید خودکار و هشدار اتمام حجم/زمان
 
 ## معماری
@@ -86,6 +87,24 @@ msbuild V2boardApi.sln /p:Configuration=Release
 | POST | `/User/VerifyPlisio` | وب‌هوک پلیسیو |
 | POST | `/Bot/Update?botName=` | وب‌هوک ربات تلگرام |
 | GET | `/MobileApp/GetSubscriptionInfo` | اطلاعات اشتراک (هدر Authorization) |
+| GET | `/User/GetAgentPlans` | تعرفه‌های نماینده (هدر Authorization) — [مستندات](Docs/API-AgentPlans.md) |
+| GET | `/User/GetFaq` | سوالات متداول ربات تلگرام (هدر Authorization) — [مستندات](Docs/API-Faq.md) |
+| GET | `/User/GetSupportLinks` | لینک‌های ارتباطی پشتیبانی نماینده (هدر Authorization) — [مستندات](Docs/API-SupportLinks.md) |
+| POST | `/User/GetTelegramWallet` | موجودی کیف پول ربات تلگرام صاحب اشتراک (هدر Authorization) — [مستندات](Docs/API-TelegramWallet.md) |
+| POST | `/User/CreateAgentInvoice` | ساخت فاکتور پرداخت مستقیم نماینده (هدر Authorization) — [مستندات](Docs/API-AgentInvoice.md) |
+| POST | `/User/UploadAgentInvoiceReceipt` | آپلود عکس رسید فاکتور و ارسال به ادمین ربات (هدر Authorization، multipart) — [مستندات](Docs/API-AgentInvoice.md#api-آپلود-رسید-فاکتور-upload-agent-invoice-receipt) |
+| POST | `/User/CheckAgentInvoice` | بررسی وضعیت فاکتور نماینده، جزئیات اشتراک بعد از تائید، یا پرداخت از کیف پول ربات (`PayFromWallet`) — [مستندات](Docs/API-AgentInvoice.md#api-بررسی-وضعیت-فاکتور-check-agent-invoice) |
+| POST | `/MobileDevice/Register` | ثبت دستگاه در اولین اجرای اپلیکیشن و تخصیص آن به نماینده (هدر Authorization) — [مستندات](Docs/API-MobileDevice.md) |
+| POST | `/MobileDevice/UpdateToken` | به‌روزرسانی توکن نوتیفیکیشن دستگاه — [مستندات](Docs/API-MobileDevice.md#api-بهروزرسانی-توکن-نوتیفیکیشن) |
+
+### MVC — `api/v1/{controller}/{action}`
+
+| متد | مسیر | توضیح |
+|-----|------|-------|
+| GET | `/api/v1/Sub/Info?token=` | خلاصه وضعیت اشتراک با توکن ساب — [مستندات](Docs/API-SubscriptionInfo.md) |
+| GET | `/api/v1/Sub/Usage?token=` | تاریخچه مصرف ۳۰ روز گذشته با توکن ساب — [مستندات](Docs/API-SubscriptionUsage.md) |
+| GET | `/api/v1/Sub/Agent?token=` | تشخیص نماینده صاحب اشتراک و برگرداندن توکن او — [مستندات](Docs/API-SubAgent.md) |
+| POST | `/api/v1/Sub/ResetLink?token=` | تغییر لینک اشتراک و برگرداندن توکن/لینک جدید — [مستندات](Docs/API-SubscriptionResetLink.md) |
 
 ### کلاینت VPN — `api/v1/client/{action}?token=`
 

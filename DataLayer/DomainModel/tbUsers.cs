@@ -28,6 +28,8 @@ namespace DataLayer.DomainModel
             this.tbTelegramUsers = new HashSet<tbTelegramUsers>();
             this.tbUserFactors = new HashSet<tbUserFactors>();
             this.tbUsers1 = new HashSet<tbUsers>();
+            this.tbMobileUsers = new HashSet<tbMobileUsers>();
+            this.tbSupportLinks = new HashSet<tbSupportLinks>();
         }
     
         public int User_ID { get; set; }
@@ -65,6 +67,8 @@ namespace DataLayer.DomainModel
         public bool Settlement_IsBlocked { get; set; }
         public Nullable<int> Settlement_BlockGraceDays { get; set; }
         public Nullable<System.DateTime> Settlement_LastDueDayWarning { get; set; }
+        public bool Settlement_BlockApprovalPending { get; set; }
+        public Nullable<System.DateTime> Settlement_LastBlockApprovalSent { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbBankCardNumbers> tbBankCardNumbers { get; set; }
@@ -91,5 +95,9 @@ namespace DataLayer.DomainModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbUsers> tbUsers1 { get; set; }
         public virtual tbUsers tbUsers2 { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbMobileUsers> tbMobileUsers { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbSupportLinks> tbSupportLinks { get; set; }
     }
 }

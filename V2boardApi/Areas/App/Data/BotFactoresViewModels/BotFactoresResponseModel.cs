@@ -15,5 +15,11 @@ namespace V2boardApi.Areas.App.Data.BotFactoresViewModels
         public int Status  { get; set; }
         public string Price { get; set; }
         public string PayMethod { get; set; }
+
+        /// <summary>فاکتور از داخل اپلیکیشن موبایل ساخته شده است</summary>
+        public bool IsMobile { get; set; }
+
+        /// <summary>شناسه دستگاه در جدول tbMobileUsers ، صفر یعنی فاکتور به دستگاهی متصل نیست</summary>
+        public int DeviceId { get; set; }
     }
 }

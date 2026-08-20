@@ -1,4 +1,4 @@
-﻿
+
 $(function () {
 
     var dt_basic_table = $('.datatables-plan'),
@@ -361,7 +361,7 @@ $(function () {
                             '<button class="dropdown-item item-history" data-id="' + user_id + '" data-name="' + $Name + '">تاریخچه مصرف</button>' +
                             '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state + '</button>' +
                             '<div class="dropdown-divider"></div>' +
-                            '<li><button data-used="' + $UsedVolume + '" data-id="' + user_id + '"data-user="' + $Name + '"  data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
+                            '<li><button data-used="' + $UsedVolume + '" data-id="' + user_id + '"data-user="' + $Name + '"  data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" data-can-delete="' + (full["CanDelete"] ? '1' : '0') + '" data-early-refund="' + (full["CanEarlyDeleteRefund"] ? '1' : '0') + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
                             '</ul>' +
                             '</div>' + menu +
                             '</div>'
@@ -495,6 +495,7 @@ $(function () {
     $('body').on('click', '.item-refresh', function () {
         $(".dtr-bs-modal").modal("hide");
         var user_id = $(this).attr("data-id");
+        $("#confirmDirectActivation").val("false");
         $("#modalRenew").modal("show");
         $("#modalRenew input[name='user_id']").val(user_id);
     });
@@ -588,7 +589,7 @@ $(function () {
             },
             buttonsStyling: false
         }).then(function (result) {
-            if (!result.value) return;
+            if (!(result.isConfirmed || result.value)) return;
 
             BodyBlockUI();
             postReservedPackageAction('/App/Subscriptions/ActivateReservedPackage', orderId).then(function (res) {
@@ -619,7 +620,7 @@ $(function () {
             },
             buttonsStyling: false
         }).then(function (result) {
-            if (!result.value) return;
+            if (!(result.isConfirmed || result.value)) return;
 
             BodyBlockUI();
             postReservedPackageAction('/App/Subscriptions/CancelReservedPackage', orderId).then(function (res) {
@@ -712,11 +713,17 @@ $(function () {
         var time = $(this).attr("data-id-time");
         var Name = $(this).attr("data-user");
         var Used = $(this).attr("data-used");
+        var canDelete = $(this).attr("data-can-delete") === '1';
+        var earlyRefund = $(this).attr("data-early-refund") === '1';
 
-        if ((vol < 0 || time == 0) || Role == "1" || Role == "4" || Used <= 1) {
+        if (Role == "1" || Role == "4" || canDelete) {
+            var deleteText = earlyRefund
+                ? "اشتراک «" + Name + "» حذف می‌شود و هزینه به حساب شما برمی‌گردد. مطمئن هستید؟"
+                : "مطمئنی میخای لینک " + Name + " رو حذف کنی !؟";
+
             Swal.fire({
                 title: 'هشدار',
-                text: "مطمئنی میخای لینک " + Name + " رو حذف کنی !؟",
+                text: deleteText,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'بله',
@@ -747,7 +754,7 @@ $(function () {
             });
         }
         else {
-            showToast("هشدار", "حذف لینک بعد پایان مدت زمان یا اتمام حجم فعال می شود", "text-warning");
+            showToast("هشدار", "تا پایان بسته فعال امکان حذف نیست؛ فقط اشتراک‌های کمتر از ۱ روز و کمتر از ۱ گیگ مصرف با بازگشت هزینه قابل حذف هستند", "text-warning");
         }
 
 
@@ -1180,10 +1187,7 @@ $(function () {
         }
     });
 
-    // اگر فرم صحیح بود
-    fv_Renew.on('core.form.valid', function (e) {
-
-
+    function submitRenewForm() {
         blockUI("#modalRenew .section-block");
 
         AjaxFormPost('/App/Subscriptions/ReservePackage', "#RenewUserForm").then(res => {
@@ -1192,11 +1196,68 @@ $(function () {
             if (res.status == "success") {
 
                 document.getElementById('RenewUserForm').reset();
+                $("#confirmDirectActivation").val("false");
                 $("#modalRenew").modal("hide");
                 dt_basic.ajax.reload(null, false);
                 Plans("#userPlanRenew");
             }
 
+        });
+    }
+
+    // اگر فرم صحیح بود
+    fv_Renew.on('core.form.valid', function (e) {
+
+        var user_id = $("#RenewUserForm input[name='user_id']").val();
+        var userPlan = $("#userPlanRenew").val();
+
+        if (!userPlan || userPlan === '-1') {
+            $("#userPlanMessage").removeClass('d-none');
+            return;
+        }
+        $("#userPlanMessage").addClass('d-none');
+
+        blockUI("#modalRenew .section-block");
+        AjaxGet('/App/Subscriptions/PreviewRenewPackage?user_id=' + user_id + '&userPlan=' + userPlan).then(function (res) {
+            UnblockUI("#modalRenew .section-block");
+
+            if (res.status !== 'success') {
+                showToast('خطا', res.message || 'خطا در بررسی وضعیت اشتراک', 'text-danger');
+                return;
+            }
+
+            if (res.data.willActivateImmediately) {
+                var planLabel = res.data.planName || 'انتخاب‌شده';
+                var planPrice = res.data.planPrice || '';
+                Swal.fire({
+                    title: 'فعال‌سازی مستقیم بسته',
+                    html: 'بسته فعالی روی این اشتراک وجود ندارد و بسته <strong>' + planLabel + '</strong>' +
+                        (planPrice ? ' (' + planPrice + ' تومان)' : '') +
+                        ' <strong>بلافاصله</strong> فعال می‌شود.<br><br>' +
+                        'هزینه بسته <strong>قابل برگشت نیست</strong>.<br><br>آیا مطمئن هستید؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'بله، فعال شود',
+                    cancelButtonText: 'انصراف',
+                    customClass: {
+                        confirmButton: 'btn btn-warning me-3 waves-effect waves-light',
+                        cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+                    },
+                    buttonsStyling: false
+                }).then(function (result) {
+                    if (!result.value)
+                        return;
+
+                    $("#confirmDirectActivation").val("true");
+                    submitRenewForm();
+                });
+            } else {
+                $("#confirmDirectActivation").val("false");
+                submitRenewForm();
+            }
+        }).catch(function () {
+            UnblockUI("#modalRenew .section-block");
+            showToast('خطا', 'خطا در بررسی وضعیت اشتراک', 'text-danger');
         });
     });
 

@@ -1,4 +1,4 @@
-﻿@{
+@{
     var panelRole = V2boardApi.Tools.JwtToken.GetUserRole() ?? "";
     var showAgentFilter = panelRole == "1" || panelRole == "3";
 }
@@ -336,6 +336,7 @@
                     @Html.AntiForgeryToken()
                     <div class="modal-body">
                         <input type="hidden" value="" id="user_id" name="user_id" />
+                        <input type="hidden" value="false" name="confirmDirectActivation" id="confirmDirectActivation" />
                         <div class="row">
                             <div class="mb-3">
                                 <label class="form-label" for="userPlan">تعرفه<span class="text-danger"> * </span></label>

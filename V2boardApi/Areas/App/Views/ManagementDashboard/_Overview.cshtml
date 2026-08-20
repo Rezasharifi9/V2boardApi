@@ -1,0 +1,350 @@
+@model V2boardApi.Areas.App.Data.ManagementDashboard.ManagementDashboardViewModel
+@{
+    Layout = null;
+}
+
+@helper Delta(double value, string hint)
+{
+    var cls = value > 0 ? "text-success" : (value < 0 ? "text-danger" : "text-muted");
+    var sign = value > 0 ? "+" : "";
+    <span class="@cls fw-medium me-1">@sign@value%</span>
+    <small class="text-muted">@hint</small>
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="mb-1">داشبورد مدیریت</h4>
+        <p class="text-muted mb-0">شاخص‌های فروش و مشتریان — @Model.PeriodTitle</p>
+    </div>
+    <span class="badge bg-label-primary rounded-pill px-3 py-2">به‌روزرسانی: @Model.TodayLabel</span>
+</div>
+
+<div class="row">
+    <div class="col-sm-6 col-xl-3 mb-4">
+        <div class="card card-border-shadow-primary h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2 pb-1">
+                    <div class="avatar me-2">
+                        <span class="avatar-initial rounded bg-label-primary"><i class="ti ti-report-money ti-md"></i></span>
+                    </div>
+                    <h4 class="ms-1 mb-0">@Model.MonthSales.ConvertToMony()</h4>
+                </div>
+                <p class="mb-1">فروش ماه جاری</p>
+                <p class="mb-0">@Delta(Model.MonthSalesChangePercent, "نسبت به مدت مشابه ماه قبل")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 mb-4">
+        <div class="card card-border-shadow-success h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2 pb-1">
+                    <div class="avatar me-2">
+                        <span class="avatar-initial rounded bg-label-success"><i class="ti ti-calendar-stats ti-md"></i></span>
+                    </div>
+                    <h4 class="ms-1 mb-0">@Model.TodaySales.ConvertToMony()</h4>
+                </div>
+                <p class="mb-1">فروش امروز</p>
+                <p class="mb-0">@Delta(Model.TodaySalesChangePercent, "نسبت به دیروز")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 mb-4">
+        <div class="card card-border-shadow-info h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2 pb-1">
+                    <div class="avatar me-2">
+                        <span class="avatar-initial rounded bg-label-info"><i class="ti ti-users ti-md"></i></span>
+                    </div>
+                    <h4 class="ms-1 mb-0">@Model.ActiveCustomers.ConvertToMony()</h4>
+                </div>
+                <p class="mb-1">مشتریان فعال</p>
+                <p class="mb-0">
+                    <span class="fw-medium me-1">@Model.NewCustomersThisMonth.ConvertToMony()</span>
+                    <small class="text-muted">جدید این ماه</small>
+                    <span class="ms-1">@Delta(Model.NewCustomersChangePercent, "")</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 mb-4">
+        <div class="card card-border-shadow-warning h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2 pb-1">
+                    <div class="avatar me-2">
+                        <span class="avatar-initial rounded bg-label-warning"><i class="ti ti-alert-triangle ti-md"></i></span>
+                    </div>
+                    <h4 class="ms-1 mb-0">@Model.ExpiringSoonCount.ConvertToMony()</h4>
+                </div>
+                <p class="mb-1">در آستانه انقضا (۷ روز)</p>
+                <p class="mb-0">
+                    <span class="text-danger fw-medium me-1">@Model.ChurnRatePercent%</span>
+                    <small class="text-muted">نرخ ریزش ماه جاری</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-1 text-muted">میانگین ارزش سفارش</p>
+                        <h5 class="mb-0">@Model.AverageOrderValue.ConvertToMony()</h5>
+                    </div>
+                    <span class="avatar-initial rounded bg-label-secondary p-2"><i class="ti ti-receipt"></i></span>
+                </div>
+                <small class="text-muted">از @Model.MonthOrderCount.ConvertToMony() سفارش این ماه</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-1 text-muted">درآمد به ازای مشتری فعال</p>
+                        <h5 class="mb-0">@Model.Arpu.ConvertToMony()</h5>
+                    </div>
+                    <span class="avatar-initial rounded bg-label-secondary p-2"><i class="ti ti-chart-dots"></i></span>
+                </div>
+                <small class="text-muted">میانگین فروش روزانه: @Model.DailyAverage.ConvertToMony()</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-1 text-muted">نرخ تمدید</p>
+                        <h5 class="mb-0">@Model.RenewRatePercent%</h5>
+                    </div>
+                    <span class="avatar-initial rounded bg-label-success p-2"><i class="ti ti-refresh"></i></span>
+                </div>
+                <small class="text-muted">@Model.RenewSalesCount.ConvertToMony() تمدید از @((Model.NewSalesCount + Model.RenewSalesCount).ConvertToMony()) فروش</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-1 text-muted">مطالبات نمایندگان</p>
+                        <h5 class="mb-0">@Model.AgentReceivables.ConvertToMony()</h5>
+                    </div>
+                    <span class="avatar-initial rounded bg-label-danger p-2"><i class="ti ti-wallet"></i></span>
+                </div>
+                <small class="text-muted">@Model.PendingInvoiceCount.ConvertToMony() فاکتور در انتظار — @Model.PendingInvoiceAmount.ConvertToMony()</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between">
+                <div class="card-title mb-0">
+                    <h5 class="mb-0">روند فروش ۱۴ روز اخیر</h5>
+                    <small class="text-muted">مجموع فروش ربات و نمایندگان</small>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="mgmtTrendChart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">ترکیب کانال فروش</h5>
+            </div>
+            <div class="card-body">
+                <div id="mgmtChannelChart"></div>
+                <div class="d-flex justify-content-between mt-3">
+                    <div>
+                        <small class="text-muted d-block">ربات</small>
+                        <span class="fw-medium">@Model.BotSales.ConvertToMony()</span>
+                        <small class="text-muted">(@Model.BotSalesPercent%)</small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block">نمایندگان</small>
+                        <span class="fw-medium">@Model.AgentSales.ConvertToMony()</span>
+                        <small class="text-muted">(@Model.AgentSalesPercent%)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">سلامت مشتریان</h5>
+                <span class="badge bg-label-success">آنلاین: @Model.OnlineNow.ConvertToMony()</span>
+            </div>
+            <div class="card-body">
+                <div id="mgmtCustomerChart"></div>
+                <div class="table-responsive mt-2">
+                    <table class="table card-table mb-0">
+                        <tbody class="table-border-bottom-0">
+                            <tr>
+                                <td class="ps-0">کل اشتراک‌ها</td>
+                                <td class="text-end pe-0 fw-medium">@Model.TotalCustomers.ConvertToMony()</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-0">ترافیک تمام‌شده</td>
+                                <td class="text-end pe-0 fw-medium">@Model.TrafficExhaustedCount.ConvertToMony()</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-0">مسدود در پنل V2</td>
+                                <td class="text-end pe-0 fw-medium">@Model.BannedCustomers.ConvertToMony()</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-0">مشترکین فعال ربات</td>
+                                <td class="text-end pe-0 fw-medium">@Model.TelegramActiveCount.ConvertToMony()</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-0">نمایندگان فعال / مسدود</td>
+                                <td class="text-end pe-0 fw-medium">@Model.ActiveAgentCount.ConvertToMony() / @Model.BlockedAgentCount.ConvertToMony()</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">خرید جدید در برابر تمدید</h5>
+                <small class="text-muted">سهم تمدید از فروش ماه جاری: @Model.RenewRatePercent%</small>
+            </div>
+            <div class="card-body">
+                <div id="mgmtMixChart"></div>
+                <div class="d-flex justify-content-between mt-3">
+                    <div>
+                        <small class="text-muted d-block">خرید جدید</small>
+                        <span class="fw-medium">@Model.NewSalesAmount.ConvertToMony()</span>
+                        <small class="text-muted">(@Model.NewSalesCount.ConvertToMony() مورد)</small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block">تمدید</small>
+                        <span class="fw-medium">@Model.RenewSalesAmount.ConvertToMony()</span>
+                        <small class="text-muted">(@Model.RenewSalesCount.ConvertToMony() مورد)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">نمایندگان برتر ماه</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>نماینده</th>
+                            <th class="text-end">فروش</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.TopAgents != null && Model.TopAgents.Count > 0)
+                        {
+                            foreach (var item in Model.TopAgents)
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td class="text-end fw-medium">@item.Amount.ConvertToMony()</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="2" class="text-center text-muted">داده‌ای برای نمایش نیست</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">پرفروش‌ترین تعرفه‌ها</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>تعرفه</th>
+                            <th class="text-end">تعداد</th>
+                            <th class="text-end">مبلغ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.TopPlans != null && Model.TopPlans.Count > 0)
+                        {
+                            foreach (var item in Model.TopPlans)
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td class="text-end">@item.Count.ConvertToMony()</td>
+                                    <td class="text-end fw-medium">@item.Amount.ConvertToMony()</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="3" class="text-center text-muted">داده‌ای برای نمایش نیست</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">بیشترین بدهی نمایندگان</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>نماینده</th>
+                            <th class="text-end">بدهی</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.TopDebtors != null && Model.TopDebtors.Count > 0)
+                        {
+                            foreach (var item in Model.TopDebtors)
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td class="text-end fw-medium text-danger">@item.Amount.ConvertToMony()</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="2" class="text-center text-muted">بدهی ثبت‌شده‌ای نیست</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

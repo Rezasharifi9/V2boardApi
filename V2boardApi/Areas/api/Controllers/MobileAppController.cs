@@ -45,7 +45,7 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryFactor = new Repository<tbUserFactors>(db);
             RepositoryServerGroups = new Repository<tbServerGroups>(db);
 
-            Server = HttpRuntime.Cache["Server"] as tbServers;
+            Server = ServerCacheHelper.Get();
 
         }
         [System.Web.Http.HttpGet]

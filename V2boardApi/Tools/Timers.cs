@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System;
 using DataLayer.DomainModel;
 using DataLayer.Repository;
@@ -28,22 +28,48 @@ public class TimerService
     private System.Threading.Timer AlertDeleteFactoresCard;
     private System.Threading.Timer RemoveFactoresCard;
     private System.Threading.Timer CheckSettlement;
+    private System.Threading.Timer CheckAgentLimitWarning;
     private System.Threading.Timer DailySalesReportTimer;
     private static readonly object DailyReportLock = new object();
     private static DateTime? _lastDailyReportDate;
     private tbServers Server;
     public TimerService()
     {
-        // تنظیم تایمرها
-        CheckLink = new System.Threading.Timer(async _ => await CheckSubTimerCallback(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
-        AlertDeleteFactoresCard = new System.Threading.Timer(async _ => await CheckExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
-        CheckRenewAccount = new System.Threading.Timer(async _ => await CheckRenewAccountFun(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(60000));
-        //CheckSubLimitedUser = new System.Threading.Timer(async _ => await CheckSubLimitedUsers(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(180000));
-        DeleteTestAccount = new System.Threading.Timer(async _ => await DeleteTestSub(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
-        RemoveFactoresCard = new System.Threading.Timer(async _ => await RemoveExpireFactores(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
-        CheckSettlement = new System.Threading.Timer(async _ => await SettlementService.ProcessAllAgents(), null, TimeSpan.FromMinutes(5), TimeSpan.FromHours(1));
-        DailySalesReportTimer = new System.Threading.Timer(async _ => await CheckDailySalesReport(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        Server = HttpRuntime.Cache["Server"] as tbServers;
+        // تنظیم تایمرها — همه از SafeRun رد می شوند تا هیچ استثنایی به تِرد پس زمینه نشت نکند
+        CheckLink = new System.Threading.Timer(_ => SafeRun(CheckSubTimerCallback, "CheckSubTimerCallback"), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(900000));
+        AlertDeleteFactoresCard = new System.Threading.Timer(_ => SafeRun(CheckExpireFactores, "CheckExpireFactores"), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(3600000));
+        CheckRenewAccount = new System.Threading.Timer(_ => SafeRun(CheckRenewAccountFun, "CheckRenewAccountFun"), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(60000));
+        //CheckSubLimitedUser = new System.Threading.Timer(_ => SafeRun(CheckSubLimitedUsers, "CheckSubLimitedUsers"), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(180000));
+        DeleteTestAccount = new System.Threading.Timer(_ => SafeRun(DeleteTestSub, "DeleteTestSub"), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
+        RemoveFactoresCard = new System.Threading.Timer(_ => SafeRun(RemoveExpireFactores, "RemoveExpireFactores"), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(86400000));
+        CheckSettlement = new System.Threading.Timer(_ => SafeRun(SettlementService.ProcessAllAgents, "ProcessAllAgents"), null, TimeSpan.FromMinutes(5), TimeSpan.FromHours(1));
+        CheckAgentLimitWarning = new System.Threading.Timer(_ => SafeRun(AgentLimitNotificationService.ProcessAllAgentsAsync, "ProcessAllAgentsAsync"), null, TimeSpan.FromMinutes(10), TimeSpan.FromHours(1));
+        DailySalesReportTimer = new System.Threading.Timer(_ => SafeRun(CheckDailySalesReport, "CheckDailySalesReport"), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+        Server = ServerCacheHelper.Get();
+    }
+
+    /// <summary>
+    /// اجرای کال بک تایمر با گارد کامل؛ بدون این گارد یک استثنای مدیریت نشده
+    /// (مثل قطع بودن MySQL) کل پروسه IIS را می بندد.
+    /// </summary>
+    private static async void SafeRun(Func<Task> callback, string name)
+    {
+        try
+        {
+            await callback().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            try { logger.Error(ex, "خطای مدیریت نشده در تایمر " + name); }
+            catch { }
+        }
+    }
+
+    private tbServers EnsureServer()
+    {
+        if (Server == null)
+            Server = ServerCacheHelper.Get();
+        return Server;
     }
 
     #region گزارش فروش روزانه — هر شب ساعت 23:59
@@ -63,8 +89,8 @@ public class TimerService
                 _lastDailyReportDate = now.Date;
             }
 
-            if (Server == null)
-                Server = HttpRuntime.Cache["Server"] as tbServers;
+            if (EnsureServer() == null)
+                return;
 
             await DailySalesReportService.SendDailyReportsAsync(Server);
         }
@@ -82,7 +108,7 @@ public class TimerService
     {
         try
         {
-            if (Server == null)
+            if (EnsureServer() == null)
                 return;
 
             using (Entities db = new Entities())
@@ -153,23 +179,17 @@ public class TimerService
                                     var sent = new List<ReserveWarnItem>();
                                     foreach (var warning in warnings)
                                     {
-                                        try
-                                        {
-                                            var message = warning.Message;
-                                            message += Environment.NewLine;
-                                            message += Environment.NewLine;
-                                            message += "〰️〰️〰️〰️〰️";
-                                            message += Environment.NewLine;
-                                            message += "🚀@" + botSetting.Bot_ID;
+                                        var message = warning.Message;
+                                        message += Environment.NewLine;
+                                        message += Environment.NewLine;
+                                        message += "〰️〰️〰️〰️〰️";
+                                        message += Environment.NewLine;
+                                        message += "🚀@" + botSetting.Bot_ID;
 
-                                            await bot.Client.SendMessage(
-                                                item.Tel_UniqUserID, message, parseMode: ParseMode.Html);
+                                        var delivered = await TelegramNotifyHelper.TrySendMessageAsync(
+                                            bot.Client, item.Tel_UniqUserID, message, ParseMode.Html);
+                                        if (delivered)
                                             sent.Add(warning);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            logger.Warn(ex, "خطا در ارسال هشدار بسته رزرو به کاربر " + item.Tel_UserID);
-                                        }
                                     }
 
                                     if (sent.Count > 0)
@@ -202,40 +222,57 @@ public class TimerService
 
     private async Task DeleteTestSub()
     {
-        using (Entities db = new Entities())
+        try
         {
-            var BotSettingRepository = new Repository<tbBotSettings>(db);
-            var botsetting = await BotSettingRepository
-            .WhereAsync(p => p.Enabled == true && p.Bot_Token != null)
-            .ConfigureAwait(false);
+            if (EnsureServer() == null)
+                return;
 
-
-            foreach (var item in botsetting)
+            using (Entities db = new Entities())
             {
-                using (MySqlEntities mySql = new MySqlEntities(Server.ConnectionString))
+                var BotSettingRepository = new Repository<tbBotSettings>(db);
+                var botsetting = await BotSettingRepository
+                .WhereAsync(p => p.Enabled == true && p.Bot_Token != null)
+                .ConfigureAwait(false);
+
+
+                foreach (var item in botsetting)
                 {
-                    await mySql.OpenAsync().ConfigureAwait(false);
-
-                    string query = "DELETE FROM v2_user WHERE ((v2_user.d + v2_user.u) > v2_user.transfer_enable OR expired_at < UNIX_TIMESTAMP()) AND email LIKE @BotID";
-
-                    using (var command = new MySqlConnector.MySqlCommand(query, mySql.MySqlConnection))
+                    try
                     {
-                        command.Parameters.AddWithValue("@BotID", item.Bot_ID + "%");
-
-                        using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
+                        using (MySqlEntities mySql = new MySqlEntities(Server.ConnectionString))
                         {
-                            while (await reader.ReadAsync().ConfigureAwait(false))
+                            await mySql.OpenAsync().ConfigureAwait(false);
+
+                            string query = "DELETE FROM v2_user WHERE ((v2_user.d + v2_user.u) > v2_user.transfer_enable OR expired_at < UNIX_TIMESTAMP()) AND email LIKE @BotID";
+
+                            using (var command = new MySqlConnector.MySqlCommand(query, mySql.MySqlConnection))
                             {
-                                // پردازش در صورت نیاز
+                                command.Parameters.AddWithValue("@BotID", item.Bot_ID + "%");
+
+                                using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
+                                {
+                                    while (await reader.ReadAsync().ConfigureAwait(false))
+                                    {
+                                        // پردازش در صورت نیاز
+                                    }
+                                    reader.Close();
+                                }
                             }
-                            reader.Close();
+                            await mySql.CloseAsync().ConfigureAwait(false);
                         }
                     }
-                    await mySql.CloseAsync().ConfigureAwait(false);
+                    catch (Exception ex)
+                    {
+                        // قطع بودن MySQL نباید بقیه ربات ها را متوقف کند
+                        logger.Error(ex, "خطا در حذف اشتراک های تست ربات " + item.Bot_ID);
+                    }
                 }
             }
         }
-
+        catch (Exception ex)
+        {
+            logger.Error(ex, "خطا در تایمر حذف اشتراک های تست");
+        }
     }
 
 
@@ -246,6 +283,9 @@ public class TimerService
     {
         try
         {
+            if (EnsureServer() == null)
+                return;
+
             using (Entities db = new Entities())
             {
                 var tbOrdersRepository = new Repository<tbOrders>(db);
@@ -292,7 +332,9 @@ public class TimerService
                                     var link = tbLinksRepository.Where(p => p.tbL_Email == item.AccountName).FirstOrDefault();
                                     if (bot != null && link?.tbTelegramUsers != null)
                                     {
-                                        await bot.Client.SendMessage(link.tbTelegramUsers.Tel_UniqUserID,
+                                        await TelegramNotifyHelper.TrySendMessageAsync(
+                                            bot.Client,
+                                            link.tbTelegramUsers.Tel_UniqUserID,
                                             "✅ بسته رزرو شده شما فعال شد. از بخش مدیریت اشتراک‌ها جزئیات را مشاهده کنید.");
                                     }
                                 }
@@ -319,6 +361,18 @@ public class TimerService
     #region پیغام پاک شدن فاکتور های کارت به کارت
     public async Task CheckExpireFactores()
     {
+        try
+        {
+            await CheckExpireFactoresCore();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "خطا در تایمر هشدار انقضای فاکتورها");
+        }
+    }
+
+    private async Task CheckExpireFactoresCore()
+    {
         var DateNow_CardToCard = DateTime.Now.AddHours(-BotInvoiceGuard.InvoiceWarningHours);
         var DateNow_TetraPay = DateTime.Now.AddHours(-1);
 
@@ -342,9 +396,15 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.SendMessage(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html,replyParameters: item.dw_message_id);
+                        var delivered = await TelegramNotifyHelper.TrySendMessageAsync(
+                            botClient,
+                            item.tbTelegramUsers.Tel_UniqUserID,
+                            str.ToString(),
+                            ParseMode.Html,
+                            replyParameters: item.dw_message_id);
 
-                        item.dw_Alerted = true;
+                        if (delivered)
+                            item.dw_Alerted = true;
 
                     }
                 }
@@ -393,9 +453,15 @@ public class TimerService
                         str.AppendLine("");
                         str.AppendLine("🚀 @" + BotSetting.Bot_ID);
 
-                        await botClient.SendMessage(item.tbTelegramUsers.Tel_UniqUserID, str.ToString(), parseMode: ParseMode.Html, replyParameters: item.dw_message_id);
+                        var delivered = await TelegramNotifyHelper.TrySendMessageAsync(
+                            botClient,
+                            item.tbTelegramUsers.Tel_UniqUserID,
+                            str.ToString(),
+                            ParseMode.Html,
+                            replyParameters: item.dw_message_id);
 
-                        item.dw_Alerted = true;
+                        if (delivered)
+                            item.dw_Alerted = true;
 
                     }
                 }
@@ -439,14 +505,29 @@ public class TimerService
     #region  پاک کردن فاکتور های کارت به کارت
     public async Task RemoveExpireFactores()
     {
+        try
+        {
+            await RemoveExpireFactoresCore();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "خطا در تایمر حذف فاکتورهای منقضی");
+        }
+    }
+
+    private async Task RemoveExpireFactoresCore()
+    {
         var deleteBefore = DateTime.Now.AddHours(-BotInvoiceGuard.InvoiceDeleteHours);
 
         using (Entities db = new Entities())
         {
+            // فاکتورهای اپلیکیشن هم اینجا پاک می شوند ؛ مسیر هشدار تلگرامی بالاتر
+            // فقط CardToCard را می بیند ، پس برای این فاکتورها پیامی فرستاده نمی شود.
             var CardToCardFactores = db.tbDepositWallet_Log
                 .Where(s => s.dw_CreateDatetime <= deleteBefore
                     && s.dw_Status == "FOR_PAY"
-                    && s.tbPaymentMethods.tbpm_Key == "CardToCard")
+                    && (s.tbPaymentMethods.tbpm_Key == "CardToCard"
+                        || s.tbPaymentMethods.tbpm_Key == PaymentMethodIds.AppKey))
                 .ToList();
             foreach (var item in CardToCardFactores)
             {

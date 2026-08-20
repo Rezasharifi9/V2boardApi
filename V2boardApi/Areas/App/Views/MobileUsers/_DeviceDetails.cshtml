@@ -1,0 +1,96 @@
+@model V2boardApi.Areas.App.Data.MobileUsersViewModels.MobileUserDetailsModel
+
+<div class="row g-4">
+
+    <div class="col-md-6">
+        <h6 class="text-muted mb-2">دستگاه</h6>
+        <table class="table table-sm table-borderless mb-0">
+            <tbody>
+                <tr><td class="text-muted">سازنده</td><td>@Model.Manufacturer</td></tr>
+                <tr><td class="text-muted">مدل</td><td dir="ltr">@Model.Model</td></tr>
+                <tr><td class="text-muted">نام دستگاه</td><td dir="ltr">@Model.Device</td></tr>
+                <tr><td class="text-muted">محصول</td><td dir="ltr">@Model.Product</td></tr>
+                <tr><td class="text-muted">سخت افزار</td><td dir="ltr">@Model.Hardware</td></tr>
+                <tr><td class="text-muted">شناسه دستگاه</td><td dir="ltr"><code>@Model.AndroidId</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h6 class="text-muted mb-2">سیستم عامل و برنامه</h6>
+        <table class="table table-sm table-borderless mb-0">
+            <tbody>
+                <tr><td class="text-muted">اندروید</td><td dir="ltr">@Model.AndroidVersion @(Model.Sdk.HasValue ? "(SDK " + Model.Sdk.Value + ")" : "")</td></tr>
+                <tr><td class="text-muted">نسخه برنامه</td><td dir="ltr">@Model.AppVersion @(Model.VersionCode.HasValue ? "(" + Model.VersionCode.Value + ")" : "")</td></tr>
+                <tr><td class="text-muted">پکیج</td><td dir="ltr">@Model.PackageName</td></tr>
+                <tr><td class="text-muted">زبان</td><td dir="ltr">@Model.Language / @Model.Country</td></tr>
+                <tr><td class="text-muted">منطقه زمانی</td><td dir="ltr">@Model.Timezone</td></tr>
+                <tr>
+                    <td class="text-muted">نمایشگر</td>
+                    <td dir="ltr">@Model.Screen @(Model.Density.HasValue ? "- " + Model.Density.Value + " dpi" : "")</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h6 class="text-muted mb-2">نماینده</h6>
+        <table class="table table-sm table-borderless mb-0">
+            <tbody>
+                <tr><td class="text-muted">یوزرنیم</td><td dir="ltr">@Model.Agent</td></tr>
+                <tr><td class="text-muted">نام تجاری</td><td>@Model.BusinessName</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h6 class="text-muted mb-2">فعالیت</h6>
+        <table class="table table-sm table-borderless mb-0">
+            <tbody>
+                <tr><td class="text-muted">تاریخ ثبت</td><td>@Model.RegisterDate</td></tr>
+                <tr><td class="text-muted">آخرین بازدید</td><td>@Model.LastSeenDate</td></tr>
+                <tr><td class="text-muted">آخرین آی پی</td><td dir="ltr">@Model.LastIp</td></tr>
+                <tr><td class="text-muted">فاکتورها</td><td>@Model.FactorCount</td></tr>
+                <tr><td class="text-muted">سفارشات</td><td>@Model.OrderCount</td></tr>
+                <tr><td class="text-muted">مجموع پرداختی</td><td>@Model.TotalPaid ریال</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-12">
+        <h6 class="text-muted mb-2">وضعیت</h6>
+
+        @if (Model.NotificationEnabled)
+        {
+            <span class="badge bg-label-success me-1">اجازه نوتیفیکیشن دارد</span>
+        }
+        else
+        {
+            <span class="badge bg-label-secondary me-1">اجازه نوتیفیکیشن ندارد</span>
+        }
+
+        @if (Model.HasFirebaseToken)
+        {
+            <span class="badge bg-label-success me-1">توکن Firebase ثبت شده</span>
+        }
+        else
+        {
+            <span class="badge bg-label-warning me-1">توکن Firebase ندارد</span>
+        }
+
+        @if (Model.Rooted)
+        {
+            <span class="badge bg-label-danger me-1">روت شده</span>
+        }
+
+        @if (Model.IsActive)
+        {
+            <span class="badge bg-label-primary me-1">فعال</span>
+        }
+        else
+        {
+            <span class="badge bg-label-secondary me-1">غیرفعال</span>
+        }
+    </div>
+
+</div>

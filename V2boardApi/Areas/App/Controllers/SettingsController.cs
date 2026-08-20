@@ -30,6 +30,8 @@ namespace V2boardApi.Areas.App.Controllers
         public ActionResult Index()
         {
             var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+            ViewBag.AdminUsername = user?.tbBotSettings?.FirstOrDefault()?.AdminUsername;
+
             if (user?.tbServers == null)
                 return View(new tbServers());
 
@@ -124,11 +126,12 @@ namespace V2boardApi.Areas.App.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AuthorizeApp(Roles = "1")]
-        public ActionResult SaveBotServerSettings(double? Discount_Percent, long? AdminTelegramUniqID, string Channel_ID, string BotbaseAddress, string Robot_Token, string Robot_ID, long? BotID)
+        public ActionResult SaveBotServerSettings(double? Discount_Percent, long? AdminTelegramUniqID, string Channel_ID, string BotbaseAddress, string Robot_Token, string Robot_ID, long? BotID, string AdminUsername = null)
         {
             try
             {
-                var server = GetCurrentServer();
+                var user = RepositoryUser.Where(p => p.Username == User.Identity.Name).FirstOrDefault();
+                var server = user?.tbServers;
                 if (server == null)
                     return Json(new { status = "danger", message = "سرور یافت نشد" }, JsonRequestBehavior.AllowGet);
 
@@ -139,6 +142,11 @@ namespace V2boardApi.Areas.App.Controllers
                 server.Robot_Token = Robot_Token?.Trim();
                 server.Robot_ID = Robot_ID?.Trim();
                 server.BotID = BotID;
+
+                // یوزرنیم تلگرام ادمین روی tbBotSettings کاربر Role=1 ذخیره می‌شود (بدون @)
+                var botSetting = user.tbBotSettings.FirstOrDefault();
+                if (botSetting != null)
+                    botSetting.AdminUsername = AdminUsername?.Trim().TrimStart('@');
 
                 RepositoryServer.Save();
                 logger.Info("تنظیمات ربات سرور ذخیره شد");

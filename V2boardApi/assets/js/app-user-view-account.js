@@ -1076,6 +1076,13 @@ $(function () {
             $("input[name='IsActiveCardToCard']").val("false");
         }
 
+        if ($("input[name='IsNotActiveSell']").is(':checked')) {
+            $("input[name='IsNotActiveSell']").val("True");
+        }
+        else {
+            $("input[name='IsNotActiveSell']").val("False");
+        }
+
         $("#botSettingForm").find("#user_id").val(getUrlParameter("user_id"));
 
         blockUI(".section-block");
@@ -1751,5 +1758,204 @@ $(function () {
         });
     });
 
+
+    $(document).on('change', '#adminPanelIsNotActiveSell', function () {
+        var $toggle = $(this);
+        var userId = $toggle.data('user-id');
+        var isNotActiveSell = $toggle.is(':checked');
+        blockUI('.section-block');
+        $.ajax({
+            url: '/App/Admin/SaveAdminPanelSellSetting',
+            type: 'POST',
+            dataType: 'json',
+            data: { user_id: userId, isNotActiveSell: isNotActiveSell },
+            success: function (res) {
+                UnblockUI('.section-block');
+                if (res && res.data) {
+                    eval(res.data);
+                }
+            },
+            error: function () {
+                UnblockUI('.section-block');
+                $toggle.prop('checked', !isNotActiveSell);
+            }
+        });
+    });
+
+
+});
+// Support links
+
+let SupportFv;
+
+$(function () {
+
+    var dt_support_table = $('.datatables-support');
+    var dt_support;
+
+    if (dt_support_table.length) {
+        dt_support = dt_support_table.DataTable({
+            ajax: '/App/Admin/GetSupportLinks?user_id=' + getUrlParameter("user_id"),
+            columns: [
+                { data: '' },
+                { data: 'Support_Title' },
+                { data: 'Support_Link' },
+                { data: 'Support_Phone' },
+                { data: '' },
+            ],
+            initComplete: function () {
+                $('[data-bs-toggle="popover"]').tooltip();
+            },
+            drawCallback: function () {
+                $('[data-bs-toggle="popover"]').tooltip();
+            },
+            columnDefs: [
+                {
+                    className: 'control',
+                    orderable: false,
+                    searchable: false,
+                    responsivePriority: 2,
+                    targets: 0,
+                    render: function () {
+                        return '';
+                    }
+                },
+                {
+                    targets: 1,
+                    responsivePriority: 1,
+                    render: function (data, type, full) {
+                        return "<span>" + (full['Support_Title'] || '') + "</span>";
+                    }
+                },
+                {
+                    targets: 2,
+                    responsivePriority: 2,
+                    render: function (data, type, full) {
+                        var $name = full['Support_Link'] || '';
+                        return "<span dir='ltr'>" + $name + "</span>";
+                    }
+                },
+                {
+                    targets: 3,
+                    render: function (data, type, full) {
+                        var $name = full['Support_Phone'] || '';
+                        return "<span dir='ltr'>" + $name + "</span>";
+                    }
+                },
+                {
+                    targets: -1,
+                    title: 'عملیات',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, full) {
+                        return (
+                            '<button type="button" data-bs-toggle="popover" title="ویرایش" class="btn btn-sm btn-icon item-edit EditSupport" data-id="' + full["Support_ID"] + '" data-Support_Title="' + (full["Support_Title"] || '') + '" data-Support_Link="' + (full["Support_Link"] || '') + '" data-Support_Phone="' + (full["Support_Phone"] || '') + '"><i class="text-primary ti ti-pencil"></i></button>' +
+                            '<a data-bs-toggle="popover" title="حذف" class="btn btn-sm btn-icon item-edit DeleteSupport" data-id="' + full["Support_ID"] + '"><i class="text-primary ti ti-trash"></i></a>'
+                        );
+                    }
+                }
+            ],
+            "language": {
+                "paginate": {
+                    "first": "اولین",
+                    "last": "آخرین",
+                    "next": "بعدی",
+                    "previous": "قبلی"
+                },
+                "info": "نمایش _START_ تا _END_ از _TOTAL_ ورودی",
+                "lengthMenu": "نمایش _MENU_ ورودی",
+                "search": "جستجو:",
+                "zeroRecords": "موردی یافت نشد",
+                "infoEmpty": "هیچ موردی موجود نیست",
+                "infoFiltered": "(فیلتر شده از _MAX_ ورودی)",
+                sLengthMenu: '_MENU_',
+                search: '',
+                searchPlaceholder: 'جستجوی ارتباط',
+                loadingRecords: "در حال بارگزاری ..."
+            },
+            lengthChange: false,
+            displayLength: 10,
+            lengthMenu: [10, 25, 50, 75, 100]
+        });
+    }
+
+    $('body').on('click', '.EditSupport', function () {
+        var id = $(this).attr("data-id");
+        $("#Support_Title").val($(this).attr("data-Support_Title"));
+        $("#Support_Link").val($(this).attr("data-Support_Link"));
+        $("#Support_Phone").val($(this).attr("data-Support_Phone"));
+        $("#SupportLinksForm").find("#id").val(id);
+    });
+
+    $('body').on('click', '.DeleteSupport', function () {
+        var id = $(this).attr("data-id");
+
+        Swal.fire({
+            title: 'هشدار',
+            text: "آیا مطمئن هستی ؟",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله',
+            cancelButtonText: 'بازگشت',
+            customClass: {
+                confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+                blockUI(".section-block");
+                AjaxGet("/App/Admin/DeleteSupportLink?Support_ID=" + id + "&user_id=" + getUrlParameter("user_id")).then(res => {
+                    UnblockUI(".section-block");
+                    eval(res.data);
+                    if (res.status == "success") {
+                        dt_support.ajax.reload(null, false);
+                    }
+                });
+            }
+        });
+    });
+
+    const SupportLinksForm = document.getElementById('SupportLinksForm');
+    if (!SupportLinksForm) {
+        return;
+    }
+
+    SupportFv = FormValidation.formValidation(SupportLinksForm, {
+        fields: {
+            Support_Title: {
+                validators: {
+                    notEmpty: {
+                        message: 'عنوان ارتباط را وارد کنید'
+                    }
+                }
+            }
+        },
+        plugins: {
+            trigger: new FormValidation.plugins.Trigger(),
+            bootstrap5: new FormValidation.plugins.Bootstrap5({
+                eleValidClass: '',
+                rowSelector: '.mb-3'
+            }),
+            submitButton: new FormValidation.plugins.SubmitButton(),
+            autoFocus: new FormValidation.plugins.AutoFocus()
+        }
+    });
+
+    SupportFv.on('core.form.valid', function () {
+        $("#SupportLinksForm").find("#user_id").val(getUrlParameter("user_id"));
+        blockUI(".section-block");
+        AjaxFormPost('/App/Admin/SaveSupportLink', "#SupportLinksForm").then(res => {
+            UnblockUI(".section-block");
+            eval(res.data);
+            if (res.status == "success") {
+                dt_support.ajax.reload(null, false);
+                $("#Support_Title").val('');
+                $("#Support_Link").val('');
+                $("#Support_Phone").val('');
+                $("#SupportLinksForm").find("#id").val('');
+            }
+        });
+    });
 
 });

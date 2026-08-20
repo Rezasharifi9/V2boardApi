@@ -1,0 +1,1524 @@
+{
+	"info": {
+		"_postman_id": "a7e3f1c2-9b4d-4e56-8a01-2f6c5d3e7b90",
+		"name": "V2boardApi — جریان نماینده (Agent Flow)",
+		"description": "زنجیره کامل: توکن ساب مشتری → تشخیص نماینده → تعرفه‌ها → سوالات متداول → لینک‌های پشتیبانی → موجودی کیف پول ربات → فاکتور → آپلود رسید → بررسی وضعیت / پرداخت از کیف پول.\n\n## قبل از اجرا\n\nفقط دو متغیر را پر کنید (تب Variables همین Collection):\n\n| متغیر | مقدار |\n|-------|-------|\n| `baseUrl` | آدرس پنل، بدون اسلش انتهایی — مثل `https://panel.example.com` |\n| `subToken` | توکن لینک ساب یک اشتراک واقعی |\n\nبقیه متغیرها (`agentToken`, `planId`, `trackingCode`, `agentUsername`) **خودکار** از پاسخ درخواست‌های قبلی پر می‌شوند.\n\n## نحوه اجرا\n\nپوشه‌ها را به ترتیب ۱ تا ۴ اجرا کنید، یا با Collection Runner کل Collection را یکجا Run کنید (پوشه ۴ عمداً خطا برمی‌گرداند و تست‌هایش هم همان خطا را انتظار دارند).\n\n> ⚠️ پوشه ۳ رکورد واقعی در دیتابیس می‌سازد (`tbOrders` + `tbDepositWallet_Log` با وضعیت `FOR_PAY`). این فاکتورها با `TimerService.RemoveExpireFactores` خودکار پاک می‌شوند، ولی روی محیط پروداکشن با احتیاط اجرا کنید.\n\n> ⚠️ درخواست «CheckAgentInvoice — پرداخت از کیف پول» اگر اشتراک به کاربر ربات وصل باشد و موجودی کافی داشته باشد، **واقعاً مبلغ را کسر و اشتراک را تمدید می‌کند**. روی پروداکشن فقط وقتی اجرا کنید که این را می‌خواهید.\n\n> ⚠️ درخواست «Sub/ResetLink» لینک ساب را واقعاً عوض می‌کند و لینک قبلی را قطع می‌کند. در صورت موفقیت `subToken` با توکن جدید جایگزین می‌شود.\n\nمستندات: `Docs/API-SubAgent.md` · `Docs/API-AgentPlans.md` · `Docs/API-Faq.md` · `Docs/API-SupportLinks.md` · `Docs/API-TelegramWallet.md` · `Docs/API-AgentInvoice.md` · `Docs/API-SubscriptionInfo.md` · `Docs/API-SubscriptionUsage.md` · `Docs/API-SubscriptionResetLink.md` · `Docs/API-MobileDevice.md`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "۱ - اشتراک مشتری",
+			"description": "اندپوینت‌های عمومی که فقط با توکن ساب کار می‌کنند. مسیرشان پیشوند api/v1 دارد چون SubController یک کنترلر MVC است.",
+			"item": [
+				{
+					"name": "Sub/Info — خلاصه وضعیت اشتراک",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('success برابر true است', function () {",
+									"    pm.expect(j.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test('نام اشتراک برگشته است', function () {",
+									"    pm.expect(j.name).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('حجم کل و مصرفی عدد هستند', function () {",
+									"    pm.expect(j.totalVolumeGb).to.be.a('number');",
+									"    pm.expect(j.usedVolumeGb).to.be.a('number');",
+									"});",
+									"",
+									"pm.test('قرارداد remainingDays رعایت شده (0 یعنی منقضی، -1 یعنی نامحدود)', function () {",
+									"    pm.expect(j.remainingDays).to.be.a('number').and.to.be.at.least(-1);",
+									"});",
+									"",
+									"if (j.success) {",
+									"    console.log('اشتراک: ' + j.name + ' | مصرف: ' + j.usedVolumeGb + '/' + j.totalVolumeGb + ' GB | باقی‌مانده: ' + j.remainingDays + ' روز | انقضا: ' + j.expireDate);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/Sub/Info?token={{subToken}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Sub",
+								"Info"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{subToken}}",
+									"description": "توکن لینک ساب مشتری"
+								}
+							]
+						},
+						"description": "خلاصه وضعیت اشتراک: نام، حجم کل، حجم مصرف‌شده، روز باقی‌مانده و تاریخ انقضای شمسی.\n\nپاسخ ۱۰ ثانیه سمت سرور کش می‌شود.\n\nمستندات: Docs/API-SubscriptionInfo.md"
+					},
+					"response": []
+				},
+				{
+					"name": "Sub/Usage — تاریخچه مصرف ۳۰ روز",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('success برابر true است', function () {",
+									"    pm.expect(j.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test('نام اشتراک برگشته است', function () {",
+									"    pm.expect(j.name).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('بازه تاریخ شمسی برگشته است', function () {",
+									"    pm.expect(j.fromDate).to.be.a('string').and.not.empty;",
+									"    pm.expect(j.toDate).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('مجموع مصرف عدد است', function () {",
+									"    pm.expect(j.totalDownloadGb).to.be.a('number');",
+									"    pm.expect(j.totalUploadGb).to.be.a('number');",
+									"    pm.expect(j.totalGb).to.be.a('number');",
+									"});",
+									"",
+									"pm.test('items آرایه است', function () {",
+									"    pm.expect(j.items).to.be.an('array');",
+									"});",
+									"",
+									"if (j.items && j.items.length) {",
+									"    pm.test('هر روز فیلدهای مصرف را دارد', function () {",
+									"        pm.expect(j.items[0].date).to.be.a('string');",
+									"        pm.expect(j.items[0].downloadGb).to.be.a('number');",
+									"        pm.expect(j.items[0].uploadGb).to.be.a('number');",
+									"        pm.expect(j.items[0].totalGb).to.be.a('number');",
+									"    });",
+									"}",
+									"",
+									"if (j.success) {",
+									"    console.log('اشتراک: ' + j.name + ' | بازه: ' + j.fromDate + ' تا ' + j.toDate + ' | مجموع: ' + j.totalGb + ' GB | روزها: ' + (j.items ? j.items.length : 0));",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/Sub/Usage?token={{subToken}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Sub",
+								"Usage"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{subToken}}",
+									"description": "توکن لینک ساب مشتری"
+								}
+							]
+						},
+						"description": "مصرف روزانه ۳۰ روز گذشته: دانلود، آپلود و مجموع به گیگابایت.\n\nروزهای بدون ترافیک در items نیستند. پاسخ ۶۰ ثانیه سمت سرور کش می‌شود.\n\nمستندات: Docs/API-SubscriptionUsage.md"
+					},
+					"response": []
+				},
+				{
+					"name": "Sub/Agent — تشخیص نماینده (توکن در Query)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('success برابر true است', function () {",
+									"    pm.expect(j.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test('توکن نماینده برگشته است', function () {",
+									"    pm.expect(j.agentToken).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('نام کاربری نماینده برگشته است', function () {",
+									"    pm.expect(j.agentUsername).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('نام اشتراک بدون $ و @ است', function () {",
+									"    pm.expect(j.subscriptionName).to.be.a('string');",
+									"    pm.expect(j.subscriptionName).to.not.include('@');",
+									"    pm.expect(j.subscriptionName).to.not.include('$');",
+									"});",
+									"",
+									"pm.test('sellEnabled بولین است', function () {",
+									"    pm.expect(j.sellEnabled).to.be.a('boolean');",
+									"});",
+									"",
+									"pm.test('آیدی تلگرام بدون @ برگشته است', function () {",
+									"    if (j.botUsername) { pm.expect(j.botUsername.charAt(0)).to.not.eql('@'); }",
+									"    if (j.supportUsername) { pm.expect(j.supportUsername.charAt(0)).to.not.eql('@'); }",
+									"});",
+									"",
+									"pm.test('پاسخ کش پراکسی نمی‌شود', function () {",
+									"    pm.expect(String(pm.response.headers.get('Cache-Control') || '')).to.include('no-cache');",
+									"});",
+									"",
+									"// ↓ زنجیره: این دو متغیر خوراک همه درخواست‌های بعدی هستند",
+									"if (j.agentToken) {",
+									"    pm.collectionVariables.set('agentToken', j.agentToken);",
+									"    pm.collectionVariables.set('agentUsername', j.agentUsername);",
+									"    console.log('نماینده: ' + j.agentUsername + ' | نام تجاری: ' + (j.businessTitle || '—') + ' | فروش فعال: ' + j.sellEnabled);",
+									"    console.log('agentToken ذخیره شد؛ درخواست‌های بعدی آماده اجرا هستند.');",
+									"} else {",
+									"    console.warn('agentToken دریافت نشد — پوشه‌های ۲ و ۳ کار نخواهند کرد.');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/Sub/Agent?token={{subToken}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Sub",
+								"Agent"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{subToken}}",
+									"description": "توکن لینک ساب مشتری"
+								}
+							]
+						},
+						"description": "**نقطه شروع زنجیره.**\n\nنام اشتراک از ستون `email` جدول `v2_user` در MySQL خوانده و با `@` جدا می‌شود؛ بخش دوم نام کاربری نماینده است. سپس اطلاعات نماینده از SQL Server خوانده و `agentToken` برگردانده می‌شود.\n\nاین درخواست متغیرهای `agentToken` و `agentUsername` را خودکار ست می‌کند.\n\n> ⚠️ خروجی یک اعتبارنامه است، نه اطلاعات نمایشی. توکن نماینده را در URL عمومی، لاگ یا اسکرین‌شات قرار ندهید.\n\nمستندات: Docs/API-SubAgent.md"
+					},
+					"response": []
+				},
+				{
+					"name": "Sub/Agent — تشخیص نماینده (توکن در Header)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('هدر Authorization جایگزین معتبر query است', function () {",
+									"    pm.expect(j.success).to.eql(true);",
+									"    pm.expect(j.agentToken).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('خروجی با حالت query یکسان است', function () {",
+									"    var expected = pm.collectionVariables.get('agentUsername');",
+									"    if (expected) { pm.expect(j.agentUsername).to.eql(expected); }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{subToken}}",
+								"description": "توکن ساب — فرم Bearer {{subToken}} هم پذیرفته می‌شود"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/Sub/Agent",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Sub",
+								"Agent"
+							]
+						},
+						"description": "همان اندپوینت، ولی توکن در هدر `Authorization`.\n\n**این حالت توصیه‌شده است:** URLها در لاگ IIS، تاریخچه مرورگر و لاگ reverse proxy ذخیره می‌شوند و توکن ساب کلید رسیدن به توکن نماینده است.\n\nهر دو فرم `Authorization: <token>` و `Authorization: Bearer <token>` پذیرفته می‌شوند. اگر `token` در کوئری‌استرینگ بیاید، اولویت با آن است."
+					},
+					"response": []
+				},
+				{
+					"name": "Sub/ResetLink — تغییر لینک اشتراک",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('success برابر true است', function () {",
+									"    pm.expect(j.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test('توکن جدید برگشته و با توکن قبلی فرق دارد', function () {",
+									"    pm.expect(j.token).to.be.a('string').and.not.empty;",
+									"    var oldToken = pm.collectionVariables.get('subToken');",
+									"    if (oldToken) { pm.expect(j.token).to.not.eql(oldToken); }",
+									"});",
+									"",
+									"pm.test('لینک اشتراک توکن جدید را دارد', function () {",
+									"    if (j.subscriptionLink) {",
+									"        pm.expect(j.subscriptionLink).to.include(j.token);",
+									"        pm.expect(j.subscriptionLink).to.include('/api/v1/client/subscribe?token=');",
+									"    }",
+									"});",
+									"",
+									"if (j.token) {",
+									"    pm.collectionVariables.set('subToken', j.token);",
+									"    console.log('لینک قبلی قطع شد. توکن جدید ذخیره شد: ' + j.token);",
+									"    if (j.subscriptionLink) { console.log('لینک جدید: ' + j.subscriptionLink); }",
+									"    if (j.backupSubscriptionLink) { console.log('لینک پشتیبان: ' + j.backupSubscriptionLink); }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{subToken}}",
+								"description": "توکن ساب فعلی — فرم Bearer {{subToken}} هم پذیرفته می‌شود"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/Sub/ResetLink",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Sub",
+								"ResetLink"
+							]
+						},
+						"description": "معادل گزینه «تغییر لینک» در ربات. توکن و UUID اشتراک عوض می‌شود و لینک قبلی قطع می‌گردد.\n\n> ⚠️ عملیات مخرب است. لینک قبلی برای همیشه بی‌اعتبار می‌شود. در صورت موفقیت، متغیر `subToken` خودکار با توکن جدید جایگزین می‌شود تا بقیهٔ Collection کار کند.\n\nمستندات: Docs/API-SubscriptionResetLink.md"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "۲ - تعرفه‌ها، کیف پول و دستگاه",
+			"description": "با توکن نمایندهٔ به‌دست‌آمده از پوشه ۱ کار می‌کنند. مسیرشان بدون پیشوند api/v1 است چون روی روت Web API یعنی {controller}/{action} می‌نشینند. شامل تعرفه‌ها، سوالات متداول ربات، موجودی کیف پول و ثبت دستگاه.",
+			"item": [
+				{
+					"name": "User/GetAgentPlans — لیست تعرفه‌ها",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('آرایه result برگشته است', function () {",
+									"    pm.expect(j.result).to.be.an('array');",
+									"});",
+									"",
+									"var list = j.result || [];",
+									"",
+									"pm.test('هر تعرفه فیلدهای لازم را دارد', function () {",
+									"    list.forEach(function (p) {",
+									"        pm.expect(p).to.have.property('planId');",
+									"        pm.expect(p).to.have.property('planPrice');",
+									"        pm.expect(p).to.have.property('isUnlimited');",
+									"    });",
+									"});",
+									"",
+									"pm.test('قیمت همه تعرفه‌ها ثبت شده است (L_SellPrice تهی فیلتر می‌شود)', function () {",
+									"    list.forEach(function (p) {",
+									"        pm.expect(p.planPrice, 'planId ' + p.planId).to.be.a('number').and.above(0);",
+									"    });",
+									"});",
+									"",
+									"pm.test('مرتب‌سازی بر اساس ماه صعودی است', function () {",
+									"    for (var i = 1; i < list.length; i++) {",
+									"        pm.expect(list[i].planMonth).to.be.at.least(list[i - 1].planMonth);",
+									"    }",
+									"});",
+									"",
+									"// ↓ زنجیره: اولین تعرفه برای ساخت فاکتور انتخاب می‌شود",
+									"if (list.length > 0) {",
+									"    pm.collectionVariables.set('planId', list[0].planId);",
+									"",
+									"    console.log('تعداد تعرفه فعال: ' + list.length);",
+									"    list.forEach(function (p) {",
+									"        var name = p.isUnlimited",
+									"            ? p.planMonth + ' ماهه | نامحدود | ' + p.deviceLimit + ' کاربر'",
+									"            : p.planMonth + ' ماهه | ' + p.planVolume + ' گیگ';",
+									"        console.log('  #' + p.planId + '  ' + name + '  →  ' + p.planPrice.toLocaleString('fa-IR') + ' تومان');",
+									"    });",
+									"    console.log('planId انتخابی برای فاکتور: ' + list[0].planId);",
+									"} else {",
+									"    console.warn('این نماینده تعرفه‌ای با تیک «نمایش در ربات» و قیمت ثبت‌شده ندارد — ساخت فاکتور ممکن نیست.');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}",
+								"description": "توکن نماینده — از Sub/Agent"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/User/GetAgentPlans",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"GetAgentPlans"
+							]
+						},
+						"description": "تعرفه‌هایی که به نماینده تخصیص داده شده، تیک «نمایش در ربات» دارند، فعال‌اند و مبلغ فروش نماینده برایشان ثبت شده.\n\n`planId` شناسه رکورد **لینک نماینده به تعرفه** است (`tbLinkUserAndPlans.Link_PU_ID`)، نه `tbPlans.Plan_ID`.\n\nاین درخواست متغیر `planId` را با اولین تعرفه پر می‌کند.\n\nمستندات: Docs/API-AgentPlans.md"
+					},
+					"response": []
+				},
+				{
+					"name": "User/GetFaq — سوالات متداول ربات",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('عنوان و آرایه سوالات برگشته است', function () {",
+									"    pm.expect(j.title).to.be.a('string').and.not.empty;",
+									"    pm.expect(j.items).to.be.an('array').and.to.have.lengthOf.at.least(1);",
+									"    pm.expect(j.footer).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('هر آیتم سوال و پاسخ دارد', function () {",
+									"    (j.items || []).forEach(function (item) {",
+									"        pm.expect(item.question).to.be.a('string').and.not.empty;",
+									"        pm.expect(item.answer).to.be.a('string').and.not.empty;",
+									"    });",
+									"});",
+									"",
+									"if (j.items) {",
+									"    console.log(j.title + ' — ' + j.items.length + ' سوال');",
+									"    if (j.supportUsername) {",
+									"        console.log('پشتیبانی: @' + j.supportUsername);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}",
+								"description": "توکن نماینده — از Sub/Agent"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/User/GetFaq",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"GetFaq"
+							]
+						},
+						"description": "همان پرسش‌وپاسخ دکمه «❓ سؤالات رایج» ربات تلگرام، به‌همراه آیدی پشتیبانی نماینده (`supportUsername` بدون @).\n\nمستندات: Docs/API-Faq.md"
+					},
+					"response": []
+				},
+				{
+					"name": "User/GetSupportLinks — لینک‌های ارتباطی پشتیبانی",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('آرایه items برگشته است', function () {",
+									"    pm.expect(j.items).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('هر آیتم عنوان دارد', function () {",
+									"    (j.items || []).forEach(function (item) {",
+									"        pm.expect(item.id).to.be.a('number');",
+									"        pm.expect(item.title).to.be.a('string').and.not.empty;",
+									"    });",
+									"});",
+									"",
+									"if (j.items) {",
+									"    console.log('پشتیبانی: ' + j.items.length + ' راه ارتباطی');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}",
+								"description": "توکن نماینده — از Sub/Agent"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/User/GetSupportLinks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"GetSupportLinks"
+							]
+						},
+						"description": "لیست لینک‌های ارتباطی پشتیبانی نماینده (عنوان، لینک، شماره تلفن) که در تب تنظیمات ← پشتیبانی ثبت شده‌اند.\n\nمستندات: Docs/API-SupportLinks.md"
+					},
+					"response": []
+				},
+				{
+					"name": "User/GetTelegramWallet — موجودی کیف پول ربات",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('فیلد hasWallet وجود دارد', function () {",
+									"    pm.expect(j).to.have.property('hasWallet');",
+									"    pm.expect(j.hasWallet).to.be.a('boolean');",
+									"});",
+									"",
+									"pm.test('موجودی عدد است', function () {",
+									"    pm.expect(j.balance).to.be.a('number').and.to.be.at.least(0);",
+									"});",
+									"",
+									"if (j.hasWallet) {",
+									"    console.log('موجودی کیف پول ربات: ' + j.balance.toLocaleString('fa-IR') + ' تومان — اشتراک: ' + j.subscriptionName);",
+									"} else {",
+									"    console.log('این اشتراک به حساب ربات تلگرام متصل نیست — دکمه پرداخت از کیف پول را نشان ندهید.');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"SubscriptionToken\": \"{{subToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/User/GetTelegramWallet",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"GetTelegramWallet"
+							]
+						},
+						"description": "موجودی کیف پول ربات تلگرام صاحب همین اشتراک (`tbTelegramUsers.Tel_Wallet`) به تومان.\n\nاگر `hasWallet` برابر `false` باشد این اشتراک در ربات ساخته نشده و پرداخت از کیف پول ممکن نیست.\n\nمستندات: Docs/API-TelegramWallet.md"
+					},
+					"response": []
+				},
+				{
+					"name": "MobileDevice/Register — ثبت دستگاه تست",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('شناسه دستگاه برگشته است', function () {",
+									"    pm.expect(j.deviceId).to.be.a('number').and.above(0);",
+									"});",
+									"",
+									"pm.test('دستگاه به همین نماینده تخصیص یافت', function () {",
+									"    var expected = pm.collectionVariables.get('agentUsername');",
+									"    if (expected) { pm.expect(j.agentUsername).to.eql(expected); }",
+									"});",
+									"",
+									"pm.test('idempotent است — اجرای دوباره رکورد تکراری نمی‌سازد', function () {",
+									"    pm.expect(j).to.have.property('isExisting');",
+									"});",
+									"",
+									"if (j.deviceId) {",
+									"    pm.collectionVariables.set('deviceId', j.deviceId);",
+									"    console.log((j.isExisting ? 'دستگاه از قبل ثبت بود و به‌روز شد' : 'دستگاه جدید ثبت شد') + ' — deviceId: ' + j.deviceId);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deviceId\": \"{{androidId}}\",\n  \"firebaseToken\": null,\n  \"manufacturer\": \"Postman\",\n  \"model\": \"API-Test\",\n  \"device\": \"postman\",\n  \"product\": \"postman_test\",\n  \"hardware\": \"virtual\",\n  \"osVersion\": \"15\",\n  \"sdk\": 35,\n  \"appVersion\": \"0.0.0-test\",\n  \"versionCode\": 1,\n  \"packageName\": \"com.postman.test\",\n  \"language\": \"fa\",\n  \"country\": \"IR\",\n  \"timezone\": \"Asia/Tehran\",\n  \"screenWidth\": 1080,\n  \"screenHeight\": 2400,\n  \"density\": 420,\n  \"notificationEnabled\": true,\n  \"rooted\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/MobileDevice/Register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"MobileDevice",
+								"Register"
+							]
+						},
+						"description": "ثبت یک دستگاه تستی و تخصیص آن به نماینده. اختیاری است — فقط برای اینکه فاکتور مرحله بعد به یک دستگاه وصل شود و در پنل با نام «Postman API-Test» دیده شود.\n\nidempotent است: اجرای دوباره با همان `deviceId` رکورد موجود را به‌روز می‌کند.\n\n> دستگاه‌های تستی در پنل، بخش «کاربران موبایل» قابل غیرفعال کردن هستند.\n\nمستندات: Docs/API-MobileDevice.md"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "۳ - فاکتور و سفارش",
+			"description": "⚠️ این پوشه رکورد واقعی FOR_PAY در دیتابیس می‌سازد. تائید پرداخت با آپلود رسید (ادمین ربات مبلغ را انتخاب می‌کند) یا از صفحه فاکتورهای پنل انجام می‌شود.",
+			"item": [
+				{
+					"name": "User/CreateAgentInvoice — اشتراک جدید",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (!pm.collectionVariables.get('planId')) {",
+									"    console.warn('planId خالی است — اول «User/GetAgentPlans» را اجرا کنید.');",
+									"}"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('کد پیگیری با فرمت {guid8}#{User_ID} است', function () {",
+									"    pm.expect(j.trackingCode).to.be.a('string').and.not.empty;",
+									"    pm.expect(j.trackingCode).to.include('#');",
+									"});",
+									"",
+									"pm.test('مبلغ ریالی عدد مثبت است', function () {",
+									"    pm.expect(j.amount).to.be.a('number').and.above(0);",
+									"});",
+									"",
+									"pm.test('شماره کارت فعال نماینده برگشته است', function () {",
+									"    pm.expect(j.cardNumber).to.be.a('string').and.not.empty;",
+									"    pm.expect(j.cardHolderName).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('نام اشتراک بدون $ و @ برگشته است', function () {",
+									"    pm.expect(j.subscriptionName).to.be.a('string').and.not.empty;",
+									"    pm.expect(j.subscriptionName).to.not.include('@');",
+									"    pm.expect(j.subscriptionName).to.not.include('$');",
+									"});",
+									"",
+									"pm.test('amount ریالی است و از planPrice تومانی بزرگ‌تر است', function () {",
+									"    pm.expect(j.amount).to.be.above(j.planPrice);",
+									"});",
+									"",
+									"// ↓ زنجیره: کد پیگیری خوراک CheckAgentInvoice است",
+									"if (j.trackingCode) {",
+									"    pm.collectionVariables.set('trackingCode', j.trackingCode);",
+									"    pm.collectionVariables.set('newSubscriptionName', j.subscriptionName);",
+									"    console.log('کد پیگیری: ' + j.trackingCode);",
+									"    console.log('مبلغ واریزی: ' + j.amount.toLocaleString('fa-IR') + ' ریال');",
+									"    console.log('کارت: ' + j.cardNumber + ' — ' + j.cardHolderName);",
+									"    console.log('نام اشتراک: ' + j.subscriptionName);",
+									"    console.log('برای تائید، فاکتور را در پنل → فاکتورها تائید کنید، سپس CheckAgentInvoice را اجرا کنید.');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"PlanId\": {{planId}},\n  \"SubscriptionToken\": \"\",\n  \"DeviceId\": \"{{androidId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/User/CreateAgentInvoice",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"CreateAgentInvoice"
+							]
+						},
+						"description": "ساخت فاکتور کارت‌به‌کارت برای یک اشتراک **جدید**.\n\n`SubscriptionToken` خالی یعنی نام اشتراک جدید تولید شود و `OrderType` برابر `جدید` ثبت شود.\n\n`amount` مبلغ **ریالی نهایی** با تخفیف اعمال‌شده و سه رقم یکتاست؛ `planPrice` قیمت **تومانی خام** تعرفه است. این دو عمداً متفاوت‌اند.\n\nاین درخواست متغیر `trackingCode` را ست می‌کند.\n\nمستندات: Docs/API-AgentInvoice.md"
+					},
+					"response": []
+				},
+				{
+					"name": "User/CreateAgentInvoice — تمدید اشتراک موجود",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('کد پیگیری برگشته است', function () {",
+									"    pm.expect(j.trackingCode).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('اشتراک موجود انتخاب شده، نه اشتراک جدید', function () {",
+									"    var created = pm.collectionVariables.get('newSubscriptionName');",
+									"    if (created) { pm.expect(j.subscriptionName).to.not.eql(created); }",
+									"});",
+									"",
+									"if (j.trackingCode) {",
+									"    pm.collectionVariables.set('renewTrackingCode', j.trackingCode);",
+									"    console.log('فاکتور تمدید برای اشتراک «' + j.subscriptionName + '» — کد پیگیری: ' + j.trackingCode);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"PlanId\": {{planId}},\n  \"SubscriptionToken\": \"{{subToken}}\",\n  \"DeviceId\": \"{{androidId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/User/CreateAgentInvoice",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"CreateAgentInvoice"
+							]
+						},
+						"description": "همان اندپوینت، ولی `SubscriptionToken` پر است ⇒ `OrderType` برابر `تمدید` ثبت می‌شود و نام اشتراک موجود استفاده می‌شود.\n\nاینجا از `{{subToken}}` استفاده شده، یعنی همان اشتراکی که در پوشه ۱ نماینده‌اش را پیدا کردیم — پس شرط مالکیت (`tbL_Email` ختم‌شده به `@{agentUsername}`) قطعاً برقرار است.\n\n> اگر `404` با پیام «اشتراکی با این توکن برای این نماینده یافت نشد» گرفتید، یعنی اشتراک در `tbLinks` ثبت نشده — نه اینکه توکن غلط باشد."
+					},
+					"response": []
+				},
+				{
+					"name": "User/UploadAgentInvoiceReceipt — آپلود رسید",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (!pm.collectionVariables.get('trackingCode')) {",
+									"    console.warn('trackingCode خالی است — اول CreateAgentInvoice را اجرا کنید.');",
+									"}"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('فایل رسید ذخیره شده است', function () {",
+									"    pm.expect(j.receiptUploaded).to.eql(true);",
+									"});",
+									"",
+									"pm.test('کد پیگیری با فاکتور یکی است', function () {",
+									"    pm.expect(j.trackingCode).to.eql(pm.collectionVariables.get('trackingCode'));",
+									"});",
+									"",
+									"console.log('رسید ذخیره شد: ' + j.receiptUploaded + ' | ارسال به ادمین: ' + j.sentToAdmin);",
+									"console.log('پیام: ' + j.message);",
+									"if (j.sentToAdmin) {",
+									"    console.log('در ربات ادمین روی تائید بزنید، مبلغ را انتخاب کنید، بعد CheckAgentInvoice را اجرا کنید.');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "TaxId",
+									"value": "{{trackingCode}}",
+									"type": "text"
+								},
+								{
+									"key": "Receipt",
+									"type": "file",
+									"src": [],
+									"description": "یک فایل jpg/png/webp تا ۴ مگابایت انتخاب کنید"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/User/UploadAgentInvoiceReceipt",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"UploadAgentInvoiceReceipt"
+							]
+						},
+						"description": "آپلود عکس رسید برای فاکتور ساخته‌شده و ارسال آن به ادمین ربات تلگرام نماینده.\n\nادمین مثل تائید دستی ربات ابتدا **تائید** می‌زند و بعد **مبلغ فاکتور** را انتخاب می‌کند. بعد از آن `CheckAgentInvoice` فیلد `isConfirmed` و جزئیات اشتراک را برمی‌گرداند.\n\nدر Postman روی فیلد `Receipt` یک فایل عکس انتخاب کنید. هدر `Content-Type` را دستی نگذارید تا boundary درست ساخته شود.\n\nمستندات: Docs/API-AgentInvoice.md#api-آپلود-رسید-فاکتور-upload-agent-invoice-receipt"
+					},
+					"response": []
+				},
+				{
+					"name": "User/CheckAgentInvoice — بررسی وضعیت فاکتور",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است (تائید نشدن خطا نیست، یک وضعیت است)', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('فیلد isConfirmed وجود دارد', function () {",
+									"    pm.expect(j).to.have.property('isConfirmed');",
+									"    pm.expect(j.isConfirmed).to.be.a('boolean');",
+									"});",
+									"",
+									"pm.test('کد پیگیری با درخواست یکی است', function () {",
+									"    pm.expect(j.trackingCode).to.eql(pm.collectionVariables.get('trackingCode'));",
+									"});",
+									"",
+									"pm.test('پیام فارسی قابل نمایش دارد', function () {",
+									"    pm.expect(j.message).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"pm.test('سفارش جدیدِ تائیدشده لینک اشتراک دارد', function () {",
+									"    if (j.isConfirmed && j.orderType === 'جدید' && j.status === 'FINISH') {",
+									"        pm.expect(j.subscriptionLink, 'اگر اینجا تهی است یعنی اشتراک هنوز روی v2board ساخته نشده').to.be.a('string').and.not.empty;",
+									"    } else {",
+									"        pm.expect(true).to.eql(true);",
+									"    }",
+									"});",
+									"",
+									"console.log('وضعیت: ' + j.status + ' | نوع: ' + j.orderType + ' | تائید شده: ' + j.isConfirmed + ' | رسید: ' + j.hasReceipt);",
+									"console.log('پیام: ' + j.message);",
+									"",
+									"if (j.isConfirmed) {",
+									"    console.log('حجم: ' + j.usedVolumeGb + '/' + j.totalVolumeGb + ' GB | باقی‌مانده: ' + j.remainingDays + ' روز | انقضا: ' + j.expireDate);",
+									"}",
+									"",
+									"if (j.subscriptionLink) {",
+									"    pm.collectionVariables.set('newSubLink', j.subscriptionLink);",
+									"    console.log('لینک اشتراک: ' + j.subscriptionLink);",
+									"    if (j.backupSubscriptionLink) { console.log('لینک پشتیبان: ' + j.backupSubscriptionLink); }",
+									"} else if (!j.isConfirmed) {",
+									"    console.log('هنوز تائید نشده — فاکتور را در پنل → فاکتورها تائید کنید و دوباره این درخواست را بزنید.');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"TaxId\": \"{{trackingCode}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/User/CheckAgentInvoice",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"CheckAgentInvoice"
+							]
+						},
+						"description": "بررسی تائید شدن فاکتور. تا وقتی فاکتور در پنل تائید نشود، `isConfirmed` برابر `false` و `status` برابر `FOR_PAY` است — و این **خطا نیست**، پاسخ همچنان `200` است.\n\nکلاینت واقعی این را هر ۱۰ ثانیه poll می‌کند تا `isConfirmed` برابر `true` شود.\n\n| حالت | خروجی |\n|------|-------|\n| سفارش `جدید` تائیدشده | `subscriptionLink` پر می‌شود |\n| سفارش `تمدید` تائیدشده | لینک برنمی‌گردد (مشتری از قبل دارد) |\n\n**برای تست کامل:** فاکتور را در پنل → فاکتورها تائید کنید، سپس این درخواست را دوباره بزنید."
+					},
+					"response": []
+				},
+				{
+					"name": "User/CheckAgentInvoice — پرداخت از کیف پول",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('فیلد isConfirmed وجود دارد', function () {",
+									"    pm.expect(j).to.have.property('isConfirmed');",
+									"    pm.expect(j.isConfirmed).to.be.a('boolean');",
+									"});",
+									"",
+									"pm.test('پیام فارسی دارد', function () {",
+									"    pm.expect(j.message).to.be.a('string').and.not.empty;",
+									"});",
+									"",
+									"console.log('پرداخت از کیف پول — تائید شده: ' + j.isConfirmed + ' | ' + j.message);",
+									"if (!j.isConfirmed) {",
+									"    console.log('اگر موجودی کافی نیست یا اشتراک به ربات وصل نیست، این پیام درست است و فاکتور FOR_PAY مانده.');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"TaxId\": \"{{trackingCode}}\",\n  \"PayFromWallet\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/User/CheckAgentInvoice",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"CheckAgentInvoice"
+							]
+						},
+						"description": "همان `CheckAgentInvoice` با `PayFromWallet: true`.\n\nاگر اشتراک به کاربر ربات وصل باشد و موجودی کافی باشد، مبلغ از `Tel_Wallet` کسر و اشتراک تمدید می‌شود — **روی پروداکشن با احتیاط**.\n\nاگر موجودی کافی نباشد پاسخ همچنان `200` است با `isConfirmed: false` و پیام «موجودی کیف پول کافی نیست». فاکتور `FOR_PAY` می‌ماند.\n\nبرای این تست بهتر است از فاکتور **تمدید** (`{{renewTrackingCode}}`) استفاده کنید، چون اشتراک جدید اپلیکیشن معمولاً کاربر تلگرام ندارد.\n\nمستندات: Docs/API-AgentInvoice.md#پرداخت-از-کیف-پول-payfromwallet"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "۴ - تست خطاها",
+			"description": "این درخواست‌ها عمداً خطا برمی‌گردانند و تست‌هایشان همان خطا را انتظار دارند — پس در Collection Runner همگی سبز می‌شوند.",
+			"item": [
+				{
+					"name": "400 — بدون توکن",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 400 است', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('success برابر false است', function () {",
+									"    pm.expect(j.success).to.eql(false);",
+									"});",
+									"",
+									"pm.test('پیام درست است', function () {",
+									"    pm.expect(j.message).to.eql('پارامتر token ارسال نشده است');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/Sub/Agent",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Sub",
+								"Agent"
+							]
+						},
+						"description": "نه `token` در کوئری‌استرینگ و نه هدر `Authorization` ⇒ `400`."
+					},
+					"response": []
+				},
+				{
+					"name": "404 — توکن ساب نامعتبر",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 404 است', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('پیام «اشتراک یافت نشد» است', function () {",
+									"    pm.expect(j.message).to.eql('اشتراک یافت نشد');",
+									"});",
+									"",
+									"pm.test('توکن نماینده لو نمی‌رود', function () {",
+									"    pm.expect(pm.response.text()).to.not.include('agentToken');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/Sub/Agent?token=00000000000000000000invalid",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Sub",
+								"Agent"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "00000000000000000000invalid",
+									"description": "توکنی که در جدول v2_user وجود ندارد"
+								}
+							]
+						},
+						"description": "توکن در جدول `v2_user` پیدا نمی‌شود ⇒ `404` با پیام «اشتراک یافت نشد»."
+					},
+					"response": []
+				},
+				{
+					"name": "404 — Usage توکن ساب نامعتبر",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 404 است', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('پیام «اشتراک یافت نشد» است', function () {",
+									"    pm.expect(j.message).to.eql('اشتراک یافت نشد');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/Sub/Usage?token=00000000000000000000invalid",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Sub",
+								"Usage"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "00000000000000000000invalid",
+									"description": "توکنی که در جدول v2_user وجود ندارد"
+								}
+							]
+						},
+						"description": "توکن در جدول `v2_user` پیدا نمی‌شود ⇒ `404` با پیام «اشتراک یافت نشد»."
+					},
+					"response": []
+				},
+				{
+					"name": "400 — GetAgentPlans بدون هدر Authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('وضعیت 400 است', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('پیام فارسی راهنما برمی‌گردد', function () {",
+									"    pm.expect(pm.response.text()).to.include('Authorization');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/User/GetAgentPlans",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"GetAgentPlans"
+							]
+						},
+						"description": "بدون هدر `Authorization` ⇒ `400` با پیام «توکن در هدر Authorization ارسال نشده است».\n\n> بدنه خطای اندپوینت‌های `/User/*` یک **رشته JSON ساده** است، نه شیء `{success, message}` — خروجی استاندارد `IHttpActionResult` در این پروژه."
+					},
+					"response": []
+				},
+				{
+					"name": "404 — توکن نماینده نامعتبر",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('وضعیت 404 است', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('پیام «کاربری با این توکن یافت نشد» است', function () {",
+									"    pm.expect(pm.response.text()).to.include('یافت نشد');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer 00000000invalid-agent-token"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/User/GetAgentPlans",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"GetAgentPlans"
+							]
+						},
+						"description": "توکنی که در `tbUsers.Token` نیست ⇒ `404`.\n\nاین درخواست همچنین نشان می‌دهد پیشوند `Bearer ` درست حذف می‌شود."
+					},
+					"response": []
+				},
+				{
+					"name": "404 — فاکتور نمایندهٔ دیگر",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('وضعیت 404 است، نه 403', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('لینک اشتراک لو نمی‌رود', function () {",
+									"    pm.expect(pm.response.text()).to.not.include('subscribe?token=');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"TaxId\": \"00000000#0\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/User/CheckAgentInvoice",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"CheckAgentInvoice"
+							]
+						},
+						"description": "کد پیگیری ناموجود.\n\nنکته طراحی: فاکتور نمایندهٔ **دیگر** هم عمداً همین `404` را می‌گیرد، نه `403` — این‌طور نمی‌شود از روی پاسخ فهمید که یک کد پیگیری وجود دارد ولی مال کس دیگری است."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"var baseUrl = pm.collectionVariables.get('baseUrl');",
+					"",
+					"if (!baseUrl || baseUrl.indexOf('panel.example.com') !== -1) {",
+					"    console.warn('متغیر baseUrl هنوز مقدار نمونه دارد — آدرس پنل واقعی را در تب Variables ست کنید.');",
+					"}",
+					"",
+					"if (baseUrl && baseUrl.slice(-1) === '/') {",
+					"    pm.collectionVariables.set('baseUrl', baseUrl.slice(0, -1));",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://panel.example.com",
+			"type": "string",
+			"description": "آدرس پنل بدون اسلش انتهایی — این را پر کنید"
+		},
+		{
+			"key": "subToken",
+			"value": "8f3a1b2c4d5e6f7a8b9c",
+			"type": "string",
+			"description": "توکن لینک ساب یک اشتراک واقعی — این را پر کنید"
+		},
+		{
+			"key": "agentToken",
+			"value": "",
+			"type": "string",
+			"description": "خودکار از Sub/Agent پر می‌شود"
+		},
+		{
+			"key": "agentUsername",
+			"value": "",
+			"type": "string",
+			"description": "خودکار از Sub/Agent پر می‌شود"
+		},
+		{
+			"key": "planId",
+			"value": "",
+			"type": "string",
+			"description": "خودکار از GetAgentPlans پر می‌شود (اولین تعرفه)"
+		},
+		{
+			"key": "trackingCode",
+			"value": "",
+			"type": "string",
+			"description": "خودکار از CreateAgentInvoice پر می‌شود"
+		},
+		{
+			"key": "renewTrackingCode",
+			"value": "",
+			"type": "string",
+			"description": "خودکار از فاکتور تمدید پر می‌شود"
+		},
+		{
+			"key": "newSubscriptionName",
+			"value": "",
+			"type": "string",
+			"description": "خودکار پر می‌شود"
+		},
+		{
+			"key": "newSubLink",
+			"value": "",
+			"type": "string",
+			"description": "خودکار از CheckAgentInvoice بعد از تائید پر می‌شود"
+		},
+		{
+			"key": "deviceId",
+			"value": "",
+			"type": "string",
+			"description": "خودکار از MobileDevice/Register پر می‌شود"
+		},
+		{
+			"key": "androidId",
+			"value": "postman0test0001",
+			"type": "string",
+			"description": "شناسه یکتای دستگاه تستی — در JSON به‌صورت deviceId فرستاده می‌شود. عمداً ثابت است تا رکورد تکراری ساخته نشود"
+		}
+	]
+}

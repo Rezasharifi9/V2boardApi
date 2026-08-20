@@ -7,11 +7,32 @@ $(function () {
     // DataTable with buttons
     // --------------------------------------------------------------------
 
+    if (typeof flatpickr !== 'undefined') {
+        var fpOpts = {
+            disableMobile: "true",
+            altInput: true,
+            altFormat: 'j F Y',
+            dateFormat: 'Y/m/d',
+            locale: 'fa'
+        };
+        flatpickr('#filterFromDate', fpOpts);
+        flatpickr('#filterToDate', fpOpts);
+    }
+
     if (dt_basic_table.length) {
         dt_basic = dt_basic_table.DataTable({
             ajax: {
                 url: '/App/BotFactors/GetAll',
                 type: 'POST',
+                data: function (d) {
+                    d.filterUser = $('#filterUser').val() || '';
+                    d.filterTaxId = $('#filterTaxId').val() || '';
+                    d.filterAmountMin = $('#filterAmountMin').val() || '';
+                    d.filterAmountMax = $('#filterAmountMax').val() || '';
+                    d.filterFromDate = $('#filterFromDate').val() || '';
+                    d.filterToDate = $('#filterToDate').val() || '';
+                    return d;
+                },
                 error: function () {
                     location.replace(location.href);
                 }
@@ -58,6 +79,15 @@ $(function () {
                         var $name = full['User'];
                         var $id = full['UserId'];
 
+                        // فاکتور اپلیکیشن کاربر تلگرام ندارد — به صفحه دستگاه لینک می شود
+                        if (full['IsMobile']) {
+                            var $icon = "<i class='ti ti-device-mobile me-1'></i>";
+                            if (full['DeviceId']) {
+                                return "<a href='/App/MobileUsers/Details?device_id=" + full['DeviceId'] + "'>" + $icon + $name + "</a>";
+                            }
+                            return "<span>" + $icon + $name + "</span>";
+                        }
+
                         // Creates full output for row
                         var $row_output = "<a href='/App/TelegramUsers/Details?user_id=" + $id + "'>" + $name + "</a>";
                         return $row_output;
@@ -81,9 +111,9 @@ $(function () {
                     render: function (data, type, full, meta) {
                         var $PayMethod = full['PayMethod'];
 
+                        var $class = full['IsMobile'] ? 'bg-label-info' : 'bg-label-success';
 
-
-                        var $row_output = "<span class='badge bg-label-success'>" + $PayMethod + "</span>";
+                        var $row_output = "<span class='badge " + $class + "'>" + $PayMethod + "</span>";
 
                         return $row_output;
                     }
@@ -185,6 +215,23 @@ $(function () {
         });
         $('div.head-label').html('<h5 class="card-title mb-0">فاکتور ها</h5>');
     }
+
+    $('#btnApplyFactorFilters').on('click', function () {
+        if (dt_basic) {
+            dt_basic.ajax.reload();
+        }
+    });
+
+    $('#btnClearFactorFilters').on('click', function () {
+        $('#filterUser, #filterTaxId, #filterAmountMin, #filterAmountMax').val('');
+        var fromPicker = document.querySelector('#filterFromDate')._flatpickr;
+        var toPicker = document.querySelector('#filterToDate')._flatpickr;
+        if (fromPicker) { fromPicker.clear(); } else { $('#filterFromDate').val(''); }
+        if (toPicker) { toPicker.clear(); } else { $('#filterToDate').val(''); }
+        if (dt_basic) {
+            dt_basic.ajax.reload();
+        }
+    });
 
     $('body').on('click', '.item-accpet', function () {
 

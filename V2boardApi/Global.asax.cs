@@ -18,12 +18,14 @@ using Newtonsoft.Json;
 using V2boardApi.Models.V2boardModel;
 using V2boardApi.Tools;
 using V2boardApi.Areas.api;
-using System.Web.Caching;
 
 namespace V2boardApi
 {
     public class MvcApplication : System.Web.HttpApplication
     {
+        // بدون نگه داشتن ارجاع، GC شیء و تایمرهای داخلش را جمع می کند و تایمرها بی صدا از کار می افتند
+        private static TimerService _backgroundTimers;
+
         protected void Application_Start()
         {
 
@@ -41,19 +43,29 @@ namespace V2boardApi
 
             var User = Res.FirstOrDefault();
 
-            if (User != null)
+            if (User != null && User.tbServers != null)
             {
-                HttpRuntime.Cache.Insert("Server", User.tbServers, null, Cache.NoAbsoluteExpiration, Cache.NoSlidingExpiration);
+                ServerCacheHelper.Set(User.tbServers);
             }
             else
             {
-                var user = Rep.GetAll().First();
-                HttpRuntime.Cache.Insert("Server", user.tbServers, null, Cache.NoAbsoluteExpiration, Cache.NoSlidingExpiration);
+                // اگر استارت با دیتابیس همزمان نشود، Get در اولین درخواست دوباره از DB پر می‌کند
+                ServerCacheHelper.Get();
             }
 
-            TimerService timer = new TimerService();
+            // در محیط توسعه می توان با EnableBackgroundTimers=false در Web.config
+            // تایمرها را خاموش کرد تا به سرورهای ریموت وصل نشوند
+            if (BackgroundTimersEnabled())
+                _backgroundTimers = new TimerService();
 
             StimulsoftBootstrap.Initialize();
+        }
+
+        private static bool BackgroundTimersEnabled()
+        {
+            var setting = System.Configuration.ConfigurationManager.AppSettings["EnableBackgroundTimers"];
+            bool enabled;
+            return string.IsNullOrWhiteSpace(setting) || !bool.TryParse(setting, out enabled) || enabled;
         }
 
         void Application_Error(object sender, EventArgs e)

@@ -1,4 +1,4 @@
-﻿using DataLayer.DomainModel;
+using DataLayer.DomainModel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -116,11 +116,12 @@ namespace V2boardApi.Tools
 
             var result = valueStr.Substring(0, valueStr.Length - 3) + "000";
             userFactor.tbUf_Status = 3;
-            userFactor.tbUsers.Wallet -= (Convert.ToDouble(result) / 10);
+            var agent = userFactor.tbUsers;
+            var walletBefore = agent.Wallet;
+            agent.Wallet -= (Convert.ToDouble(result) / 10);
 
             tbBotSettings botSetting = null;
             TelegramBotClient botClient = null;
-            var agent = userFactor.tbUsers;
             if (agent?.Parent_ID != null)
             {
                 var admin = await RepositoryUser.FirstOrDefaultAsync(u => u.User_ID == agent.Parent_ID);
@@ -150,6 +151,7 @@ namespace V2boardApi.Tools
             }
 
             RepositoryFactor.Save();
+            AgentLimitNotificationService.ScheduleCheckAfterWalletChange(agent.User_ID, walletBefore);
             if (agent.Settlement_Enabled)
                 await SettlementService.OnAgentPaymentConfirmed(agent, db);
 
@@ -268,9 +270,10 @@ namespace V2boardApi.Tools
                                         var group = RepositoryServerGroups.Where(s => s.Group_Id == order.tbLinkUserAndPlans.tbPlans.Group_Id).First();
                                         Disc3.Add("@group_id", group.V2_Group_Id);
                                         var DeviceLimit_Structur = "";
-                                        if (order.tbLinkUserAndPlans.tbPlans.device_limit != null)
+                                        var resolvedRenewDeviceLimit = SubscriptionPackageHelper.ResolveDeviceLimitForV2(order.tbLinkUserAndPlans.tbPlans);
+                                        if (resolvedRenewDeviceLimit.HasValue)
                                         {
-                                            Disc3.Add("@device_limit", order.tbLinkUserAndPlans.tbPlans.device_limit);
+                                            Disc3.Add("@device_limit", resolvedRenewDeviceLimit.Value);
 
                                         }
 
@@ -295,9 +298,12 @@ namespace V2boardApi.Tools
                                         transaction.Commit();
 
                                         StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("✅ بسته تو تمدید کردم");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("♨️ میتونی توی بخش مدیریت اشتراک ها ببینی که تمدید شده");
+                                        str2.Append(BotMessages.BuildRenewedPackageConfirmMessage(
+                                            order.tbLinkUserAndPlans.tbPlans.PlanVolume,
+                                            order.tbLinkUserAndPlans.tbPlans.PlanMonth,
+                                            order.AccountName,
+                                            Convert.ToInt32(order.Order_Price),
+                                            BotMessages.FormatTariffLabel(order.tbLinkUserAndPlans.tbPlans)));
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
                                         await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
@@ -323,7 +329,8 @@ namespace V2boardApi.Tools
                                             order.tbLinkUserAndPlans.tbPlans.PlanVolume,
                                             order.tbLinkUserAndPlans.tbPlans.PlanMonth,
                                             order.AccountName,
-                                            Convert.ToInt32(order.Order_Price)));
+                                            Convert.ToInt32(order.Order_Price),
+                                            BotMessages.FormatTariffLabel(order.tbLinkUserAndPlans.tbPlans)));
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
                                         await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
@@ -375,10 +382,11 @@ namespace V2boardApi.Tools
                                     var DeviceLimit_Structur = "";
                                     var DeviceLimit_data = "";
 
-                                    if (Order.tbLinkUserAndPlans.tbPlans.device_limit != null)
+                                    var resolvedCreateDeviceLimit = SubscriptionPackageHelper.ResolveDeviceLimitForV2(Order.tbLinkUserAndPlans.tbPlans);
+                                    if (resolvedCreateDeviceLimit.HasValue)
                                     {
                                         DeviceLimit_Structur = ",device_limit";
-                                        Disc3.Add("@device_limit", Order.tbLinkUserAndPlans.tbPlans.device_limit);
+                                        Disc3.Add("@device_limit", resolvedCreateDeviceLimit.Value);
                                         DeviceLimit_data = ",@device_limit";
                                     }
 
@@ -637,9 +645,10 @@ namespace V2boardApi.Tools
                                         var group = RepositoryServerGroups.Where(s => s.Group_Id == order.tbLinkUserAndPlans.tbPlans.Group_Id).First();
                                         Disc3.Add("@group_id", group.V2_Group_Id);
                                         var DeviceLimit_Structur = "";
-                                        if (order.tbLinkUserAndPlans.tbPlans.device_limit != null)
+                                        var resolvedRenewDeviceLimit = SubscriptionPackageHelper.ResolveDeviceLimitForV2(order.tbLinkUserAndPlans.tbPlans);
+                                        if (resolvedRenewDeviceLimit.HasValue)
                                         {
-                                            Disc3.Add("@device_limit", order.tbLinkUserAndPlans.tbPlans.device_limit);
+                                            Disc3.Add("@device_limit", resolvedRenewDeviceLimit.Value);
 
                                         }
 
@@ -664,9 +673,12 @@ namespace V2boardApi.Tools
                                         transaction.Commit();
 
                                         StringBuilder str2 = new StringBuilder();
-                                        str2.AppendLine("✅ بسته تو تمدید کردم");
-                                        str2.AppendLine("");
-                                        str2.AppendLine("♨️ میتونی توی بخش مدیریت اشتراک ها ببینی که تمدید شده");
+                                        str2.Append(BotMessages.BuildRenewedPackageConfirmMessage(
+                                            order.tbLinkUserAndPlans.tbPlans.PlanVolume,
+                                            order.tbLinkUserAndPlans.tbPlans.PlanMonth,
+                                            order.AccountName,
+                                            Convert.ToInt32(order.Order_Price),
+                                            BotMessages.FormatTariffLabel(order.tbLinkUserAndPlans.tbPlans)));
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
                                         await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
@@ -692,7 +704,8 @@ namespace V2boardApi.Tools
                                             order.tbLinkUserAndPlans.tbPlans.PlanVolume,
                                             order.tbLinkUserAndPlans.tbPlans.PlanMonth,
                                             order.AccountName,
-                                            Convert.ToInt32(order.Order_Price)));
+                                            Convert.ToInt32(order.Order_Price),
+                                            BotMessages.FormatTariffLabel(order.tbLinkUserAndPlans.tbPlans)));
                                         await RealUser.SetEmptyState(order.tbTelegramUsers.Tel_UniqUserID, db, order.tbTelegramUsers.tbUsers.Username);
                                         var kyes = Keyboards.GetHomeButton();
                                         await botClient.SendMessage(order.tbTelegramUsers.Tel_UniqUserID, str2.ToString(), parseMode: ParseMode.Html, replyMarkup: kyes);
@@ -744,10 +757,11 @@ namespace V2boardApi.Tools
                                     var DeviceLimit_Structur = "";
                                     var DeviceLimit_data = "";
 
-                                    if (Order.tbLinkUserAndPlans.tbPlans.device_limit != null)
+                                    var resolvedCreateDeviceLimit = SubscriptionPackageHelper.ResolveDeviceLimitForV2(Order.tbLinkUserAndPlans.tbPlans);
+                                    if (resolvedCreateDeviceLimit.HasValue)
                                     {
                                         DeviceLimit_Structur = ",device_limit";
-                                        Disc3.Add("@device_limit", Order.tbLinkUserAndPlans.tbPlans.device_limit);
+                                        Disc3.Add("@device_limit", resolvedCreateDeviceLimit.Value);
                                         DeviceLimit_data = ",@device_limit";
                                     }
 

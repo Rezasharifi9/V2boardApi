@@ -1,0 +1,37 @@
+@{
+    ViewBag.Title = "داشبورد مدیریت";
+}
+
+<div class="row section-loading" id="mgmtOverview">
+</div>
+
+@section vendorScripts {
+    <script src="../../assets/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+}
+
+@section customScripts {
+    <script src="@PanelAssetHelper.Js("../../assets/js/app-management-dashboard.js")"></script>
+    <script>
+        $(function () {
+            $.ajax({
+                url: "@Url.Action("GetOverview", "ManagementDashboard", new { area = "App" })",
+                type: "get",
+                dataType: "html",
+                beforeSend: function () {
+                    blockUI(".section-loading");
+                },
+                success: function (res) {
+                    UnblockUI(".section-loading");
+                    $("#mgmtOverview").html(res);
+                    if (window.ManagementDashboard && typeof window.ManagementDashboard.loadCharts === "function") {
+                        window.ManagementDashboard.loadCharts();
+                    }
+                },
+                error: function () {
+                    UnblockUI(".section-loading");
+                }
+            });
+        });
+    </script>
+}

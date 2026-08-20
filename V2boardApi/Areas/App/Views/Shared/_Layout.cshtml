@@ -67,6 +67,12 @@
                                 <span class="menu-header-text" data-i18n="Components">گزارشات</span>
                             </li>
                             <li class="menu-item" style="">
+                                <a class="menu-link" href="@Url.Action("Index","ManagementDashboard",new {area="App"})">
+                                    <i class="menu-icon tf-icons ti ti-dashboard"></i>
+                                    <div>داشبورد مدیریت</div>
+                                </a>
+                            </li>
+                            <li class="menu-item" style="">
                                 <a class="menu-link" href="@Url.Action("Index","AdminDashboard",new {area="App"})">
                                     <i class="menu-icon tf-icons ti ti-report-analytics"></i>
                                     <div>گزارش سالانه</div>
@@ -184,6 +190,19 @@
                             <div>مشترکین</div>
                         </a>
                     </li>
+                    @if (Role == "1")
+                    {
+                        <!-- اپلیکیشن -->
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text" data-i18n="Components">اپلیکیشن</span>
+                        </li>
+                        <li class="menu-item" style="">
+                            <a class="menu-link" href="@Url.Action("Index","MobileUsers",new {area="App"})">
+                                <i class="menu-icon tf-icons ti ti-device-mobile"></i>
+                                <div>کاربران موبایل</div>
+                            </a>
+                        </li>
+                    }
                     <!-- پیکربندی -->
                     <li class="menu-header small text-uppercase">
                         <span class="menu-header-text" data-i18n="Components">پیکربندی</span>
@@ -617,6 +636,9 @@
                                         <li>
                                             <span class="dropdown-item"> <i class="ti ti-cash me-2 ti-sm"></i> <span class="align-middle">بدهی : <span id="UserPerPrice">در حال محاسبه</span> تومان </span></span>
                                         </li>
+                                        <li id="settlementDueItem" class="d-none">
+                                            <span class="dropdown-item"> <i class="ti ti-calendar-due me-2 ti-sm"></i> <span class="align-middle">موعد تسویه بعدی : <span id="settlement_due"></span></span> </span>
+                                        </li>
                                         <li>
                                             <span class="dropdown-item"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت واحد (گیگ) : <span id="pricePerGig">...</span> تومان</span> </span>
                                         </li>
@@ -638,6 +660,9 @@
                                         <li>
                                             <span class="dropdown-item"> <i class="ti ti-cash me-2 ti-sm"></i> <span class="align-middle">بدهی : <span id="user_debt">...</span> تومان</span> </span>
                                         </li>
+                                        <li id="settlementDueItem" class="d-none">
+                                            <span class="dropdown-item"> <i class="ti ti-calendar-due me-2 ti-sm"></i> <span class="align-middle">موعد تسویه بعدی : <span id="settlement_due"></span></span> </span>
+                                        </li>
                                         <li>
                                             <span class="dropdown-item"> <i class="ti ti-currency-dollar me-2 ti-sm"></i> <span class="align-middle">قیمت واحد (گیگ) : <span id="pricePerGig">...</span> تومان</span> </span>
                                         </li>
@@ -655,6 +680,9 @@
                                         </li>
                                         <li>
                                             <span class="dropdown-item"> <i class="ti ti-cash me-2 ti-sm"></i> <span class="align-middle">بدهی : <span id="user_debt">...</span> تومان</span> </span>
+                                        </li>
+                                        <li id="settlementDueItem" class="d-none">
+                                            <span class="dropdown-item"> <i class="ti ti-calendar-due me-2 ti-sm"></i> <span class="align-middle">موعد تسویه بعدی : <span id="settlement_due"></span></span> </span>
                                         </li>
                                     }
                                     @*<li>
@@ -739,6 +767,29 @@
                     <div class="modal-footer">
                         <a href="@Url.Action("Index", "Changelog", new { area = "App" })" class="btn btn-label-secondary">مشاهده همه تغییرات</a>
                         <button type="button" class="btn btn-primary" id="panelChangelogDismiss">متوجه شدم</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Role != "1" && Role != null)
+    {
+        <div class="modal fade" id="userNotificationsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="ti ti-bell-ringing me-2 text-warning"></i>
+                            اعلانات جدید <span class="badge bg-danger rounded-pill ms-1" id="userNotificationsCount">0</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="userNotificationsItems" class="list-group list-group-flush"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="userNotificationsDismiss">متوجه شدم</button>
                     </div>
                 </div>
             </div>
@@ -962,7 +1013,7 @@
             $('input').attr("autocomplete", "off");
 
 
-            @if (Role != "1")
+            @if (Role != "1" && Role != null)
             {
                 <text>
 
@@ -979,30 +1030,78 @@
             });
 
 
-            $.ajax({
-                url: "@Url.Action("GetCountNotSeenNotification", "Admin",new {area="App"})",
-                dataType: "json",
-                type: "get",
-                success: function (res) {
-                    console.log(res);
-                    var NumberOfNotif = parseInt(res.count);
-                    if (NumberOfNotif > 0) {
-                        $("#CountNotif").text(res.count);
+            // ── اعلانات خوانده‌نشده: همه در یک مودال، و فقط همان‌ها seen می‌شوند ──
+            var shownNotificationIds = [];
+            var notificationsMarked = false;
 
-                        Swal.fire({
-                            title: res.title,
-                            text: res.message,
-                            icon: 'info',
-                            confirmButtonText: 'باشه',
-                            customClass: {
-                                confirmButton: 'btn btn-success waves-effect waves-light'
+            function escapeNotifHtml(value) {
+                return $("<div>").text(value == null ? "" : value).html();
+            }
+
+            function markShownNotificationsSeen() {
+                if (notificationsMarked || shownNotificationIds.length === 0) return;
+                notificationsMarked = true;
+                $.ajax({
+                    url: "@Url.Action("SeenNotifications", "Admin", new { area = "App" })",
+                    type: "post",
+                    traditional: true,
+                    data: { ids: shownNotificationIds }
+                });
+            }
+
+            function showUserNotificationsModal(items) {
+                shownNotificationIds = $.map(items, function (item) { return item.id; });
+                notificationsMarked = false;
+
+                $("#userNotificationsCount").text(items.length);
+
+                var $list = $("#userNotificationsItems").empty();
+                $.each(items, function (_, item) {
+                    $list.append(
+                        '<div class="list-group-item px-0 d-flex">' +
+                            '<div class="flex-shrink-0 me-3">' +
+                                '<div class="avatar">' +
+                                    '<span class="avatar-initial rounded-circle ' + escapeNotifHtml(item.color) + '">' +
+                                        '<i class="' + escapeNotifHtml(item.icon) + '"></i>' +
+                                    '</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="flex-grow-1">' +
+                                '<div class="d-flex align-items-center flex-wrap mb-1">' +
+                                    '<h6 class="mb-0 me-2">' + escapeNotifHtml(item.title) + '</h6>' +
+                                    '<span class="badge ' + escapeNotifHtml(item.color) + '">' + escapeNotifHtml(item.category) + '</span>' +
+                                '</div>' +
+                                '<p class="mb-1 text-muted small" style="white-space:pre-line;">' + escapeNotifHtml(item.text) + '</p>' +
+                                '<small class="text-muted">' + escapeNotifHtml(item.date) + '</small>' +
+                            '</div>' +
+                        '</div>'
+                    );
+                });
+
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('userNotificationsModal')).show();
+            }
+
+            window.checkUserNotifications = function (delayMs) {
+                setTimeout(function () {
+                    $.ajax({
+                        url: "@Url.Action("GetUnseenNotifications", "Admin", new { area = "App" })",
+                        type: "get",
+                        dataType: "json",
+                        success: function (res) {
+                            if (res && res.show && res.items && res.items.length > 0) {
+                                showUserNotificationsModal(res.items);
                             }
-                        }).then(function (result) {
-                            SeenNotif();
-                        });
+                        }
+                    });
+                }, delayMs || 0);
+            };
 
-                    }
-                }
+            $("#userNotificationsDismiss").on("click", function () {
+                bootstrap.Modal.getInstance(document.getElementById('userNotificationsModal')).hide();
+            });
+
+            $("#userNotificationsModal").on("hidden.bs.modal", function () {
+                markShownNotificationsSeen();
             });
 
         </text>
@@ -1043,9 +1142,21 @@
                 modal.show();
             }
 
+            // اعلانات فقط بعد از بسته‌شدن مودال تغییرات نسخه بررسی می‌شوند تا دو مودال روی هم نیفتند
+            var userNotificationsChecked = false;
+
+            function checkUserNotificationsOnce(delayMs) {
+                if (userNotificationsChecked) return;
+                userNotificationsChecked = true;
+                if (typeof window.checkUserNotifications === "function")
+                    window.checkUserNotifications(delayMs);
+            }
+
             function checkPanelChangelogPopup(delayMs) {
-                if (window.location.pathname.toLowerCase().indexOf('/changelog') >= 0)
+                if (window.location.pathname.toLowerCase().indexOf('/changelog') >= 0) {
+                    checkUserNotificationsOnce(delayMs);
                     return;
+                }
                 setTimeout(function () {
                     $.ajax({
                         url: "@Url.Action("GetPendingPopup", "Changelog", new { area = "App" })",
@@ -1054,7 +1165,12 @@
                         success: function (res) {
                             if (res && res.show && res.items && res.items.length > 0) {
                                 showPanelChangelogPopup(res);
+                            } else {
+                                checkUserNotificationsOnce(0);
                             }
+                        },
+                        error: function () {
+                            checkUserNotificationsOnce(0);
                         }
                     });
                 }, delayMs || 0);
@@ -1067,6 +1183,7 @@
 
             $("#panelChangelogModal").on("hidden.bs.modal", function () {
                 markPanelChangelogSeen();
+                checkUserNotificationsOnce(400);
             });
 
             @if (Role == "1")
@@ -1232,6 +1349,12 @@ else if(Role == "2")
                         $("#pricePerUser").html(res.data.pricePerUser);
                         </text>
             }
+
+                        // موعد تسویه بعدی فقط وقتی نمایش داده می‌شود که تسویه بدهی برای کاربر تنظیم شده باشد
+                        if (res.data.settlementDue) {
+                            $("#settlement_due").text(res.data.settlementDue);
+                            $("#settlementDueItem").removeClass("d-none");
+                        }
 
                     }
                 }

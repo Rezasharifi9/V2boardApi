@@ -1,4 +1,4 @@
-﻿using DataLayer.DomainModel;
+using DataLayer.DomainModel;
 using DataLayer.Repository;
 using System;
 using System.Collections.Generic;
@@ -100,7 +100,7 @@ namespace V2boardApi.Areas.App.Controllers
                         filterAgent = candidate;
                 }
 
-                string baseQuery = "SELECT v2.id, v2.email, v2.t, v2.u, v2.d, v2.transfer_enable, v2.banned, v2.token, v2.expired_at, v2.plan_id, pl.name " +
+                string baseQuery = "SELECT v2.id, v2.email, v2.t, v2.u, v2.d, v2.transfer_enable, v2.banned, v2.token, v2.expired_at, v2.plan_id, v2.created_at, pl.name " +
                                    "FROM `v2_user` AS v2 JOIN v2_plan AS pl ON v2.plan_id = pl.id WHERE 1=1 ";
                 string filterQuery = BuildRoleScopeFilter(user, userRole, filterAgent);
                 filterQuery += BuildDateFilter(filterFromDate, filterToDate);
@@ -210,6 +210,11 @@ namespace V2boardApi.Areas.App.Controllers
                                 var usedVolume = Utility.ConvertByteToGB(u + d);
                                 getuserData.UsedVolume = $"{Math.Round(usedVolume, 2)}";
 
+                                long? createdAtUnix = null;
+                                var createdAtRaw = reader["created_at"]?.ToString();
+                                if (!string.IsNullOrWhiteSpace(createdAtRaw))
+                                    createdAtUnix = Convert.ToInt64(createdAtRaw);
+
                                 var remainingVolume = reader.GetInt64(reader.GetOrdinal("transfer_enable")) - (u + d);
                                 var remainingVolumeGB = Utility.ConvertByteToGB(remainingVolume);
                                 if (remainingVolumeGB <= 2) getuserData.CanEdit = true;
@@ -220,6 +225,12 @@ namespace V2boardApi.Areas.App.Controllers
                                 {
                                     getuserData.IsActive = 4;
                                 }
+
+                                var transferEnable = reader.GetInt64(reader.GetOrdinal("transfer_enable"));
+                                getuserData.CanEarlyDeleteRefund = SubscriptionPackageHelper.IsEligibleForEarlyDeleteWithRefund(
+                                    createdAtUnix, u, d);
+                                getuserData.CanDelete = SubscriptionPackageHelper.CanAgentDeleteSubscription(
+                                    userRole, transferEnable, u, d, reader["expired_at"], createdAtUnix);
 
                                 users.Add(getuserData);
                             }
@@ -430,6 +441,10 @@ namespace V2boardApi.Areas.App.Controllers
                                     {
                                         return MessageBox.Warning("هشدار", "مبلغ تعرفه انتخابی بیشتر از موجودی حساب شما می باشد لطفا بدهی خود را پرداخت کنید");
                                     }
+
+                                    var walletBefore = user.Wallet;
+                                    double? parentWalletBefore = user.tbUsers2 != null ? user.tbUsers2.Wallet : (double?)null;
+
                                     string exp = "";
                                     if (plan.PlanMonth == 0)
                                     {
@@ -498,13 +513,10 @@ namespace V2boardApi.Areas.App.Controllers
                                     var DeviceLimit = "";
                                     var DeviceLimitCol = "";
 
-                                    if (plan.device_limit == null || plan.device_limit.Value == 0)
+                                    var resolvedDeviceLimit = SubscriptionPackageHelper.ResolveDeviceLimitForV2(plan);
+                                    if (resolvedDeviceLimit.HasValue)
                                     {
-
-                                    }
-                                    else
-                                    {
-                                        Disc3.Add("@device_limit", plan.device_limit + 1);
+                                        Disc3.Add("@device_limit", resolvedDeviceLimit.Value);
                                         DeviceLimit = ",@device_limit";
                                         DeviceLimitCol = ",device_limit";
                                     }
@@ -533,6 +545,7 @@ namespace V2boardApi.Areas.App.Controllers
                                     await mySql.CloseAsync();
                                     linkUserAndPlansRepository.Save();
                                     usersRepository.Save();
+                                    NotifyAgentLimitAfterWalletChange(user, walletBefore, parentWalletBefore);
                                     AddLog(Resource.LogActions.U_Created, link.Link_PU_ID, userSubname, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, token);
                                     logger.Info("اشتراک جدید توسط نماینده ایجاد گردید");
                                     return Toaster.Success("موفق", "اشتراک با موفقیت ایجاد گردید");
@@ -586,11 +599,13 @@ namespace V2boardApi.Areas.App.Controllers
 
         }
 
-        #region افزودن لاگ تمدید یا ساخت کاربر
         private bool AddLog(string Action, int LinkUserID, string V2User, int price, string planName, double planVolume, double planMonth, string subToken = null)
         {
             try
             {
+                if (!SubscriptionLogHelper.IsAllowedSubscriptionLogAction(Action))
+                    return false;
+
                 tbLogs tbLogs = new tbLogs();
                 tbLogs.FK_Link_User_Plan_ID = LinkUserID;
                 tbLogs.Action = Action;
@@ -612,8 +627,12 @@ namespace V2boardApi.Areas.App.Controllers
             }
         }
 
-        #endregion
-
+        private static void NotifyAgentLimitAfterWalletChange(tbUsers user, double walletBefore, double? parentWalletBefore = null)
+        {
+            AgentLimitNotificationService.ScheduleCheckAfterWalletChange(user.User_ID, walletBefore);
+            if (parentWalletBefore.HasValue && user.tbUsers2 != null)
+                AgentLimitNotificationService.ScheduleCheckAfterWalletChange(user.tbUsers2.User_ID, parentWalletBefore.Value);
+        }
 
         #endregion
 
@@ -801,9 +820,9 @@ namespace V2boardApi.Areas.App.Controllers
         [System.Web.Http.HttpPost]
         [AuthorizeApp(Roles = "1,2,3,4")]
         [ValidateAntiForgeryToken]
-        public Task<ActionResult> Renew(int user_id, int userPlan)
+        public Task<ActionResult> Renew(int user_id, int userPlan, bool confirmDirectActivation = false)
         {
-            return ReservePackage(user_id, userPlan);
+            return ReservePackage(user_id, userPlan, confirmDirectActivation);
         }
 
         #endregion
@@ -905,10 +924,62 @@ namespace V2boardApi.Areas.App.Controllers
             }
         }
 
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        public async Task<ActionResult> PreviewRenewPackage(int user_id, int userPlan)
+        {
+            try
+            {
+                var user = usersRepository.table.FirstOrDefault(p => p.Username == User.Identity.Name);
+                if (user?.tbServers == null)
+                    return Json(new { status = "error", message = "کاربر یافت نشد" }, JsonRequestBehavior.AllowGet);
+
+                var plan = plansRepository.table
+                    .FirstOrDefault(p => p.Plan_ID == userPlan && p.FK_Server_ID == user.tbServers.ServerID && p.Status == true);
+                if (plan == null)
+                    return Json(new { status = "error", message = "تعرفه انتخابی معتبر نیست" }, JsonRequestBehavior.AllowGet);
+
+                using (var mySql = new MySqlEntities(user.tbServers.ConnectionString))
+                {
+                    await mySql.OpenAsync();
+                    var disc = new Dictionary<string, object> { { "@id", user_id } };
+                    using (var reader = await mySql.GetDataAsync(
+                        "SELECT u, d, transfer_enable, expired_at FROM v2_user WHERE id=@id", disc))
+                    {
+                        if (!await reader.ReadAsync())
+                            return Json(new { status = "error", message = "اشتراک یافت نشد" }, JsonRequestBehavior.AllowGet);
+
+                        var packageEnded = SubscriptionPackageHelper.IsPackageEnded(
+                            reader.GetInt64("transfer_enable"),
+                            reader.GetInt64("d"),
+                            reader.GetInt64("u"),
+                            reader["expired_at"]);
+                        reader.Close();
+
+                        return Json(new
+                        {
+                            status = "success",
+                            data = new
+                            {
+                                willActivateImmediately = packageEnded,
+                                planName = plan.Plan_Name,
+                                planPrice = plan.Price.ConvertToMony()
+                            }
+                        }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در پیش‌نمایش تمدید اشتراک");
+                return Json(new { status = "error", message = "خطا در بررسی وضعیت اشتراک" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         [System.Web.Http.HttpPost]
         [AuthorizeApp(Roles = "1,2,3,4")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ReservePackage(int user_id, int userPlan)
+        public async Task<ActionResult> ReservePackage(int user_id, int userPlan, bool confirmDirectActivation = false)
         {
             try
             {
@@ -936,30 +1007,6 @@ namespace V2boardApi.Areas.App.Controllers
                 if (linkPlan == null)
                     return MessageBox.Warning("هشدار", "تعرفه برای حساب شما فعال نیست");
 
-                if (user.Role == 3)
-                {
-                    if (user.tbUsers2 == null)
-                        return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
-
-                    var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.User_ID);
-                    user.Wallet += (int)((plan.PlanVolume * linkGroupUser.PriceForGig) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (plan.device_limit * linkGroupUser.PriceForUser));
-                }
-
-                if (user.Role == 2)
-                {
-                    if (user.tbUsers2 == null)
-                        return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
-
-                    if (user.tbUsers2.Wallet >= user.tbUsers2.Limit)
-                        return MessageBox.Warning("هشدار", "فروش موقتا توسط ادمین متوقف شده است لطفا با پشتیبانی ارتباط بگیرید !!");
-
-                    if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
-                    {
-                        var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
-                        user.tbUsers2.Wallet += (plan.PlanVolume * linkGroupUser.PriceForGig) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + ((double)plan.device_limit * linkGroupUser.PriceForUser);
-                    }
-                }
-
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                 await mySql.OpenAsync();
 
@@ -986,6 +1033,52 @@ namespace V2boardApi.Areas.App.Controllers
                 var packageEnded = SubscriptionPackageHelper.IsPackageEnded(transferEnable, download, upload, expiredAt);
                 var link = linksRepository.Where(l => l.tbL_Email == email).FirstOrDefault();
 
+                if (packageEnded && !confirmDirectActivation)
+                {
+                    await mySql.CloseAsync();
+                    return MessageBox.Warning("تأیید لازم است",
+                        "بسته فعالی روی این اشتراک وجود ندارد و بسته انتخابی بلافاصله فعال می‌شود. هزینه بسته قابل برگشت نیست. لطفاً پس از تأیید مجدداً اقدام کنید.");
+                }
+
+                var walletBefore = user.Wallet;
+                double? parentWalletBefore = user.tbUsers2 != null ? user.tbUsers2.Wallet : (double?)null;
+
+                if (user.Role == 3)
+                {
+                    if (user.tbUsers2 == null)
+                        return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+
+                    var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.User_ID);
+                    if (linkGroupUser == null)
+                    {
+                        await mySql.CloseAsync();
+                        return MessageBox.Warning("هشدار", "تنظیمات قیمت‌گذاری گروه برای کاربر یافت نشد");
+                    }
+                    var deviceLimitForPrice = plan.device_limit ?? 0;
+                    user.Wallet += (int)((plan.PlanVolume * linkGroupUser.PriceForGig) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (deviceLimitForPrice * linkGroupUser.PriceForUser));
+                }
+
+                if (user.Role == 2)
+                {
+                    if (user.tbUsers2 == null)
+                        return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
+
+                    if (user.tbUsers2.Wallet >= user.tbUsers2.Limit)
+                        return MessageBox.Warning("هشدار", "فروش موقتا توسط ادمین متوقف شده است لطفا با پشتیبانی ارتباط بگیرید !!");
+
+                    if (user.tbUsers2.Role != 1 && user.tbUsers2.Role == 3)
+                    {
+                        var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == plan.Group_Id && s.FK_User_Id == user.tbUsers2.User_ID);
+                        if (linkGroupUser == null)
+                        {
+                            await mySql.CloseAsync();
+                            return MessageBox.Warning("هشدار", "تنظیمات قیمت‌گذاری گروه مدیر والد یافت نشد");
+                        }
+                        var deviceLimitForPrice = plan.device_limit ?? 0;
+                        user.tbUsers2.Wallet += (plan.PlanVolume * linkGroupUser.PriceForGig) + (plan.PlanMonth * linkGroupUser.PriceForMonth) + (deviceLimitForPrice * linkGroupUser.PriceForUser);
+                    }
+                }
+
                 if (packageEnded)
                 {
                     var t = Utility.ConvertGBToByte(Convert.ToInt64(plan.PlanVolume));
@@ -1004,9 +1097,10 @@ namespace V2boardApi.Areas.App.Controllers
                     discUp.Add("@group", group.V2_Group_Id);
 
                     var deviceLimit = "";
-                    if (plan.device_limit != null && plan.device_limit.Value != 0)
+                    var resolvedUpdateDeviceLimit = SubscriptionPackageHelper.ResolveDeviceLimitForV2(plan);
+                    if (resolvedUpdateDeviceLimit.HasValue)
                     {
-                        discUp.Add("@device_limit", plan.device_limit + 1);
+                        discUp.Add("@device_limit", resolvedUpdateDeviceLimit.Value);
                         deviceLimit = ",device_limit=@device_limit ";
                     }
 
@@ -1022,6 +1116,7 @@ namespace V2boardApi.Areas.App.Controllers
                     AddLog(Resource.LogActions.U_Edited, linkPlan.Link_PU_ID, subName, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, subToken);
                     usersRepository.Save();
                     linkUserAndPlansRepository.Save();
+                    NotifyAgentLimitAfterWalletChange(user, walletBefore, parentWalletBefore);
 
                     logger.Info("بسته اشتراک بلافاصله فعال شد (بسته قبلی تمام شده بود)");
                     return Toaster.Success("موفق", "بسته فعلی تمام شده بود و بسته جدید بلافاصله فعال شد");
@@ -1051,9 +1146,10 @@ namespace V2boardApi.Areas.App.Controllers
                 ordersRepository.Save();
                 usersRepository.Save();
                 linkUserAndPlansRepository.Save();
+                NotifyAgentLimitAfterWalletChange(user, walletBefore, parentWalletBefore);
                 await mySql.CloseAsync();
 
-                AddLog("رزرو بسته", linkPlan.Link_PU_ID, subName, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, subToken);
+                AddLog(ReservedPackageHelper.ReserveLogAction, linkPlan.Link_PU_ID, subName, (int)plan.Price, plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, subToken);
 
                 logger.Info("بسته برای اشتراک رزرو شد");
                 return Toaster.Success("موفق", "بسته با موفقیت رزرو شد");
@@ -1089,24 +1185,6 @@ namespace V2boardApi.Areas.App.Controllers
                     if (!applied)
                         return Toaster.Error("ناموفق", "خطا در فعال‌سازی اشتراک");
 
-                    var subName = order.AccountName.Split('@')[0];
-                    var plan = order.tbLinkUserAndPlans?.tbPlans
-                        ?? plansRepository.Where(p => p.Plan_ID_V2 == order.V2_Plan_ID).FirstOrDefault();
-                    var linkPlanId = order.FK_Link_Plan_ID ?? order.tbLinkUserAndPlans?.Link_PU_ID ?? 0;
-
-                    string subToken = null;
-                    var disc = new Dictionary<string, object> { { "@email", order.AccountName } };
-                    var tokenReader = await mySql.GetDataAsync("SELECT token FROM v2_user WHERE email=@email", disc);
-                    if (await tokenReader.ReadAsync())
-                        subToken = tokenReader["token"]?.ToString();
-                    tokenReader.Close();
-
-                    if (linkPlanId > 0 && plan != null)
-                    {
-                        AddLog("فعال‌سازی بسته رزرو", linkPlanId, subName,
-                            (int)(order.Order_Price ?? plan.Price), plan.Plan_Name, plan.PlanVolume, plan.PlanMonth, subToken);
-                    }
-
                     logger.Info("بسته رزرو به‌صورت دستی فعال شد");
                     return Toaster.Success("موفق", "اشتراک با موفقیت فعال شد");
                 }
@@ -1126,24 +1204,36 @@ namespace V2boardApi.Areas.App.Controllers
             try
             {
                 var agent = usersRepository.table.FirstOrDefault(p => p.Username == User.Identity.Name);
-                if (agent?.tbServers == null)
+                if (agent == null)
                     return Toaster.Error("ناموفق", "کاربر یافت نشد");
 
                 var order = await GetValidatedReservedOrderAsync(orderId, agent);
                 if (order == null)
                     return MessageBox.Warning("هشدار", "اشتراک رزرو یافت نشد");
 
-                if (!await ReservedPackageHelper.RefundReservedOrderWalletAsync(
-                    order, usersRepository, plansRepository, linkUserAndPlansRepository, linkUserGroupRepository))
-                    return Toaster.Error("ناموفق", "خطا در بازگشت مبلغ به حساب شما");
+                int? refundAmount = 0;
+                double? telRefund = null;
+
+                // ادمین سیستم: فقط حذف رزرو، بدون برگشت کیف
+                if ((agent.Role ?? 0) != 1)
+                {
+                    refundAmount = await ReservedPackageHelper.RefundReservedOrderWalletAsync(
+                        order, usersRepository, plansRepository, linkUserAndPlansRepository, linkUserGroupRepository);
+                    if (!refundAmount.HasValue)
+                        return Toaster.Error("ناموفق", "خطا در بازگشت مبلغ به حساب شما");
+
+                    telRefund = ReservedPackageHelper.RefundTelegramWalletForReservedOrder(order);
+                }
 
                 ReservedPackageHelper.RemoveReservePackageLogs(logsRepository, order);
 
                 ordersRepository.Delete(order);
                 ordersRepository.Save();
 
-                logger.Info("بسته رزرو لغو شد و مبلغ به حساب نماینده برگشت");
-                return Toaster.Success("موفق", "اشتراک با موفقیت حذف گردید و مبلغ به حساب شما برگشت خورد");
+                logger.Info("بسته رزرو لغو شد");
+                if ((refundAmount ?? 0) > 0 || telRefund.HasValue)
+                    return Toaster.Success("موفق", "رزرو لغو شد و مبلغ بازگشت داده شد");
+                return Toaster.Success("موفق", "رزرو با موفقیت لغو شد");
             }
             catch (Exception ex)
             {
@@ -1157,6 +1247,8 @@ namespace V2boardApi.Areas.App.Controllers
             var order = await ordersRepository.table
                 .Include(o => o.tbLinkUserAndPlans)
                 .Include(o => o.tbLinkUserAndPlans.tbPlans)
+                .Include(o => o.tbTelegramUsers)
+                .Include(o => o.tbDepositWallet_Log)
                 .FirstOrDefaultAsync(o => o.Order_ID == orderId && o.OrderStatus == "FOR_RESERVE");
 
             if (order == null || string.IsNullOrEmpty(order.AccountName) || !order.AccountName.Contains("@"))
@@ -1235,103 +1327,50 @@ namespace V2boardApi.Areas.App.Controllers
                 await mySql.OpenAsync();
 
 
-                var Query = "select email,u,d,expired_at from v2_user where id=" + user_id;
+                var Query = "select email,u,d,transfer_enable,expired_at,created_at from v2_user where id=" + user_id;
                 var reader = await mySql.GetDataAsync(Query);
                 await reader.ReadAsync();
                 var name = reader.GetString("email").Split('@')[0];
                 var username = reader.GetString("email").Split('@')[1];
 
-                var totalUse = Utility.ConvertByteToGB(reader.GetInt64("u") + reader.GetInt64("d"));
+                var download = reader.GetInt64("d");
+                var upload = reader.GetInt64("u");
+                var transferEnable = reader.GetInt64("transfer_enable");
+                var expiredAtRaw = reader["expired_at"];
+                long? createdAtUnix = null;
+                var createdAtRaw = reader["created_at"]?.ToString();
+                if (!string.IsNullOrWhiteSpace(createdAtRaw))
+                    createdAtUnix = Convert.ToInt64(createdAtRaw);
 
-                var Expire = reader["expired_at"]?.ToString();
-                var ExpireTime = new DateTime();
-                if (Expire != "")
+                if (!SubscriptionPackageHelper.CanAgentDeleteSubscription(
+                    user.Role ?? 0, transferEnable, download, upload, expiredAtRaw, createdAtUnix))
                 {
-                    ExpireTime = Utility.ConvertSecondToDatetime(Convert.ToDouble(Expire));
+                    reader.Close();
+                    await mySql.CloseAsync();
+                    return MessageBox.Warning("هشدار",
+                        "تا پایان بسته فعال امکان حذف وجود ندارد؛ فقط اشتراک‌های تازه‌ساخته (کمتر از ۱ روز و کمتر از ۱ گیگ مصرف) قابل حذف با بازگشت هزینه هستند.");
                 }
-
-                var log = await logsRepository.FirstOrDefaultAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
-                if (log != null)
-                {
-
-                    if (totalUse <= 0.5 && (ExpireTime != default(DateTime) && ExpireTime >= DateTime.Now))
-                    {
-                        var userAccount = await usersRepository.FirstOrDefaultAsync(s => s.Username == username);
-                        if (userAccount != null)
-                        {
-                            //چک می کنیم اگر نماینده مبلغ تعرفه رو به کیف پولش برمیگردونیم
-                            if (userAccount.Role == 2)
-                            {
-                                var price = (int)log.SalePrice;
-
-                                userAccount.Wallet -= price;
-                            }
-                            else
-                            // گار نماینده کل بود محاسبات بر اساس قیمت مصوبه صورت میگرد
-                            if (userAccount.Role == 3)
-                            {
-                                if (userAccount.tbUsers2 != null)
-                                {
-                                    var groupId = log.tbLinkUserAndPlans.tbPlans.Group_Id;
-                                    var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.User_ID);
-                                    if (log.PlanVolume != null)
-                                    {
-                                        var s = (log.PlanVolume * (linkGroupUser.PriceForGig)) + (log.PlanMonth * linkGroupUser.PriceForMonth) + ((double)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
-                                        userAccount.Wallet -= s;
-                                    }
-                                    else
-                                    {
-                                        userAccount.Wallet -= (int)((log.tbLinkUserAndPlans.tbPlans.PlanVolume * (linkGroupUser.PriceForGig)) + (log.tbLinkUserAndPlans.tbPlans.PlanMonth * linkGroupUser.PriceForMonth)) + ((int)log.tbLinkUserAndPlans.tbPlans.device_limit * linkGroupUser.PriceForUser);
-                                    }
-                                }
-                                else
-                                {
-                                    return MessageBox.Warning("هشدار", "مدیر والدی برای شما تعریف نشده است لطفا با مدیر سامانه تماس بگیرید !!");
-                                }
-                            }
-                            //اگر نماینده معمولی بود این قسمت به حساب نماینده کل بر اساس قیمت تصویب شده اضافه میگردد
-                            if (userAccount.Role == 2)
-                            {
-                                if (userAccount.tbUsers2 != null)
-                                {
-                                    if (userAccount.tbUsers2.Role == 3)
-                                    {
-                                        var groupId = log.tbLinkUserAndPlans.tbPlans.Group_Id;
-                                        var linkGroupUser = await linkUserGroupRepository.FirstOrDefaultAsync(s => s.FK_Group_Id == groupId && s.FK_User_Id == userAccount.tbUsers2.User_ID);
-                                        userAccount.tbUsers2.Wallet -= (log.PlanVolume * linkGroupUser.PriceForGig) + (log.PlanMonth * linkGroupUser.PriceForMonth);
-
-                                    }
-                                }
-                                else
-                                {
-                                    return Toaster.Error("ناموفق", "عدم صحت نام کاربری لطفا با مدیر تماس بگیرید !!");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            return Toaster.Error("ناموفق", "عدم صحت نام کاربری لطفا با مدیر تماس بگیرید !!");
-                        }
-
-
-
-                        var logs = await logsRepository.WhereAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
-                        await logsRepository.DeleteRangeAsync(logs);
-
-
-                    }
-                    else
-                    {
-                        var logs = await logsRepository.WhereAsync(s => s.FK_NameUser_ID == name && s.tbLinkUserAndPlans.tbUsers.Username == username);
-                        foreach (var item in logs)
-                        {
-                            item.FK_NameUser_ID = "del_" + name;
-                        }
-                    }
-                }
-
 
                 reader.Close();
+
+                var email = name + "@" + username;
+                await TelegramSubscriptionHelper.CancelReservedOrdersForEmailAsync(
+                    email, ordersRepository, logsRepository, usersRepository,
+                    plansRepository, linkUserAndPlansRepository, linkUserGroupRepository);
+
+                int? refundAmount = null;
+                try
+                {
+                    refundAmount = await ReservedPackageHelper.ProcessSubscriptionDeleteLogsAsync(
+                        name, username, createdAtUnix, download, upload,
+                        logsRepository, usersRepository, linkUserGroupRepository);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    await mySql.CloseAsync();
+                    return Toaster.Error("ناموفق", ex.Message);
+                }
+
                 var Query1 = "delete from v2_user where id=" + user_id;
                 var reader1 = await mySql.GetDataAsync(Query1);
                 reader1.Close();
@@ -1342,6 +1381,9 @@ namespace V2boardApi.Areas.App.Controllers
                 await logsRepository.SaveChangesAsync();
 
                 logger.Info("اشتراک حذف شد");
+                if (refundAmount.HasValue && refundAmount.Value > 0)
+                    return Toaster.Success("موفق", "اشتراک حذف شد و مبلغ " + refundAmount.Value.ConvertToMony() + " تومان به حساب شما برگشت.");
+
                 return Toaster.Success("موفق", "اشتراک با موفقیت حذف شد");
 
             }

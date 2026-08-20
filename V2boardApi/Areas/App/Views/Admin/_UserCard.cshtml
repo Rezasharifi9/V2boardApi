@@ -1,4 +1,9 @@
 ﻿@model DataLayer.DomainModel.tbUsers
+@{
+    // فقط وقتی مقدار دارد که تسویه بدهی برای این نماینده تنظیم شده باشد
+    string settlementDueDate = ViewBag.SettlementDueDate as string;
+    int settlementRemainingDays = settlementDueDate != null ? (int)ViewBag.SettlementRemainingDays : 0;
+}
 <div class="card mb-4">
     <div class="card-body">
         <div class="user-avatar-section">
@@ -106,13 +111,35 @@
                     </span>
                 </li>
 
+                @if (settlementDueDate != null)
+                {
+                    <li class="mb-2 pt-1">
+                        <span class="fw-medium me-1">موعد تسویه بعدی:</span>
+                        <span>
+                            <bdi>@settlementDueDate</bdi>
+                        </span>
+                        @if (settlementRemainingDays > 0)
+                        {
+                            <span class="badge bg-label-info">@settlementRemainingDays روز مانده</span>
+                        }
+                        else if (settlementRemainingDays == 0)
+                        {
+                            <span class="badge bg-label-warning">امروز</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-label-danger">@(-settlementRemainingDays) روز گذشته</span>
+                        }
+                    </li>
+                }
+
             </ul>
 
             @{
                 var Role = Request.Cookies["Role"].Value;
             }
 
-            @if (Role == "1")
+            @if (Role == "1" && Model.Role != 1)
             {
 
                 <label class="switch">

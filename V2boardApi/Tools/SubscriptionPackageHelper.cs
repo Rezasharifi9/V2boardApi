@@ -10,6 +10,19 @@ namespace V2boardApi.Tools
     public static class SubscriptionPackageHelper
     {
         public const long MinRemainingBytes = 50L * 1024 * 1024;
+        public const double MaxEarlyDeleteUsageGb = 1.0;
+        public static readonly TimeSpan MaxEarlyDeleteAge = TimeSpan.FromDays(1);
+
+        /// <summary>
+        /// مقدار device_limit تعرفه را بدون تغییر برای ذخیره در v2_user برمی‌گرداند.
+        /// </summary>
+        public static int? ResolveDeviceLimitForV2(tbPlans plan)
+        {
+            if (plan?.device_limit == null || plan.device_limit.Value <= 0)
+                return null;
+
+            return (int)plan.device_limit.Value;
+        }
 
         public static bool IsPackageEnded(long transferEnable, long download, long upload, object expiredAtUnix)
         {
@@ -25,6 +38,40 @@ namespace V2boardApi.Tools
             }
 
             return false;
+        }
+
+        public static bool IsEligibleForEarlyDeleteWithRefund(long? createdAtUnix, long download, long upload)
+        {
+            if (!createdAtUnix.HasValue || createdAtUnix.Value <= 0)
+                return false;
+
+            if (Utility.ConvertByteToGB(download + upload) >= MaxEarlyDeleteUsageGb)
+                return false;
+
+            var createdAt = Utility.ConvertSecondToDatetime(createdAtUnix.Value);
+            return DateTime.Now - createdAt <= MaxEarlyDeleteAge;
+        }
+
+        public static bool CanAgentDeleteSubscription(
+            int userRole,
+            long transferEnable,
+            long download,
+            long upload,
+            object expiredAtUnix,
+            long? createdAtUnix = null)
+        {
+            if (userRole == 1 || userRole == 4)
+                return true;
+
+            if (IsEligibleForEarlyDeleteWithRefund(createdAtUnix, download, upload))
+                return true;
+
+            return IsPackageEnded(transferEnable, download, upload, expiredAtUnix);
+        }
+
+        public static bool CanAgentDeleteSubscription(int userRole, long transferEnable, long download, long upload, object expiredAtUnix)
+        {
+            return CanAgentDeleteSubscription(userRole, transferEnable, download, upload, expiredAtUnix, null);
         }
 
         public static async Task<bool> ApplyReservedOrderAsync(
@@ -59,8 +106,9 @@ namespace V2boardApi.Tools
             reader2.Close();
 
             var deviceLimitPart = ",device_limit=20";
-            if (order.tbLinkUserAndPlans?.tbPlans?.device_limit != null)
-                deviceLimitPart = ",device_limit=" + (order.tbLinkUserAndPlans.tbPlans.device_limit + 1);
+            var resolvedDeviceLimit = ResolveDeviceLimitForV2(order.tbLinkUserAndPlans?.tbPlans);
+            if (resolvedDeviceLimit.HasValue)
+                deviceLimitPart = ",device_limit=" + resolvedDeviceLimit.Value;
 
             var query = "update v2_user set u=0,d=0,t=0,plan_id=@plan_id" + deviceLimitPart +
                         ",group_id=@group_id,transfer_enable=@transfer_enable,expired_at=@expired_at where email=@email";

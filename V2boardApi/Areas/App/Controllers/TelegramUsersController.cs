@@ -1,4 +1,4 @@
-﻿using DataLayer.DomainModel;
+using DataLayer.DomainModel;
 using DataLayer.Repository;
 using NLog;
 using System;
@@ -610,7 +610,8 @@ namespace V2boardApi.Areas.App.Controllers
                     RepositoryUser, RepositoryPlans, RepositoryLinkUserAndPlans, RepositoryLinkUserGroup);
 
                 if (!deleted)
-                    return MessageBox.Error("ناموفق", "خطا در حذف اشتراک");
+                    return MessageBox.Warning("هشدار",
+                        "تا پایان بسته فعال امکان حذف وجود ندارد؛ فقط اشتراک‌های تازه‌ساخته (کمتر از ۱ روز و کمتر از ۱ گیگ مصرف) قابل حذف با بازگشت هزینه هستند.");
 
                 logger.Info("اشتراک تلگرام " + link.tbL_Email + " حذف شد");
                 return Toaster.Success("موفق", "اشتراک با موفقیت حذف شد");
@@ -619,6 +620,68 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 logger.Error(ex, "خطا در حذف اشتراک تلگرام");
                 return MessageBox.Error("ناموفق", "خطا در حذف اشتراک");
+            }
+        }
+
+        [AuthorizeApp(Roles = "1,2,3,4")]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<ActionResult> CancelReservedOrder(int orderId)
+        {
+            try
+            {
+                var agent = await RepositoryUser.FirstOrDefaultAsync(p => p.Username == User.Identity.Name);
+                if (agent == null)
+                    return Toaster.Error("ناموفق", "کاربر یافت نشد");
+
+                var order = await RepositoryOrders.table
+                    .Include(o => o.tbLinkUserAndPlans)
+                    .Include(o => o.tbLinkUserAndPlans.tbPlans)
+                    .Include(o => o.tbTelegramUsers)
+                    .Include(o => o.tbDepositWallet_Log)
+                    .FirstOrDefaultAsync(o => o.Order_ID == orderId && o.OrderStatus == "FOR_RESERVE");
+
+                if (order == null)
+                    return MessageBox.Warning("هشدار", "سفارش رزرو یافت نشد");
+
+                if (!order.FK_Tel_UserID.HasValue)
+                    return MessageBox.Warning("هشدار", "این سفارش به مشترک تلگرام متصل نیست");
+
+                var telOwner = await RepositoryTelegramUsers.FirstOrDefaultAsync(t =>
+                    t.Tel_UserID == order.FK_Tel_UserID.Value && t.FK_User_ID == agent.User_ID);
+                if (telOwner == null)
+                    return MessageBox.Warning("هشدار", "دسترسی به این سفارش مجاز نیست");
+
+                // Ensure navigation is set for Tel_Wallet refund
+                if (order.tbTelegramUsers == null)
+                    order.tbTelegramUsers = telOwner;
+
+                // ادمین سیستم: فقط حذف رزرو، بدون برگشت کیف
+                int? refundAmount = 0;
+                double? telRefund = null;
+                if ((agent.Role ?? 0) != 1)
+                {
+                    refundAmount = await ReservedPackageHelper.RefundReservedOrderWalletAsync(
+                        order, RepositoryUser, RepositoryPlans, RepositoryLinkUserAndPlans, RepositoryLinkUserGroup);
+                    if (!refundAmount.HasValue)
+                        return Toaster.Error("ناموفق", "خطا در بازگشت مبلغ نماینده");
+
+                    telRefund = ReservedPackageHelper.RefundTelegramWalletForReservedOrder(order);
+                }
+
+                ReservedPackageHelper.RemoveReservePackageLogs(RepositoryLogs, order);
+                RepositoryOrders.Delete(order);
+                RepositoryOrders.Save();
+
+                logger.Info("رزرو سفارش " + orderId + " از پروفایل مشترک لغو شد");
+                if ((refundAmount ?? 0) > 0 || telRefund.HasValue)
+                    return Toaster.Success("موفق", "رزرو لغو شد و مبلغ بازگشت داده شد");
+                return Toaster.Success("موفق", "رزرو با موفقیت لغو شد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در لغو رزرو از پروفایل مشترک");
+                return Toaster.Error("ناموفق", "خطا در لغو رزرو");
             }
         }
 

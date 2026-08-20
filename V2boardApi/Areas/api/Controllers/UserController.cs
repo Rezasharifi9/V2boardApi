@@ -381,7 +381,8 @@ namespace V2boardApi.Areas.api.Controllers
         public async Task<IHttpActionResult> GetFactors()
         {
             var Date = DateTime.Now.AddDays(-1);
-            var Factors = await db.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= Date && p.dw_Status == "FOR_PAY").OrderByDescending(p => p.dw_CreateDatetime).ToListAsync();
+            // فاکتورهای بدون کاربر تلگرام ( فاکتورهای ساخته شده از طریق API ) در این لیست جایی ندارند
+            var Factors = await db.tbDepositWallet_Log.Where(p => p.dw_CreateDatetime >= Date && p.dw_Status == "FOR_PAY" && p.FK_TelegramUser_ID != null).OrderByDescending(p => p.dw_CreateDatetime).ToListAsync();
             var AgentFactors = await db.tbUserFactors.Where(p => p.tbUf_CreateTime >= Date && p.tbUf_Status == 1).OrderByDescending(p => p.tbUf_CreateTime).ToListAsync();
             List<GetFactorsViewModel> data = new List<GetFactorsViewModel>();
             foreach (var item in Factors)
@@ -402,6 +403,780 @@ namespace V2boardApi.Areas.api.Controllers
             }
 
             return Ok(new { reuslt = data });
+        }
+
+        #endregion
+
+        #region دریافت لیست تعرفه های نماینده که در ربات نمایش داده می شوند
+
+        /// <summary>
+        /// خواندن توکن نماینده از هدر Authorization (با یا بدون پیشوند Bearer)
+        /// </summary>
+        private string GetAgentTokenFromHeader()
+        {
+            IEnumerable<string> AuthValues;
+            if (!Request.Headers.TryGetValues("Authorization", out AuthValues))
+            {
+                return null;
+            }
+
+            var token = AuthValues.FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(token) && token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                token = token.Substring("Bearer ".Length);
+            }
+
+            token = token?.Trim();
+            return string.IsNullOrWhiteSpace(token) ? null : token;
+        }
+
+        [System.Web.Http.HttpGet]
+        public async Task<IHttpActionResult> GetAgentPlans()
+        {
+            try
+            {
+                var token = GetAgentTokenFromHeader();
+                if (token == null)
+                {
+                    return BadRequest("توکن در هدر Authorization ارسال نشده است");
+                }
+
+                var User = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == token);
+                if (User == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                var PlanLinks = await db.tbLinkUserAndPlans
+                    .Where(p => p.L_FK_U_ID == User.User_ID && p.L_ShowInBot == true && p.L_Status == true && p.L_SellPrice != null)
+                    .OrderBy(p => p.tbPlans.PlanMonth)
+                    .ThenBy(p => p.tbPlans.PlanVolume)
+                    .ToListAsync();
+
+                List<AgentPlanViewModel> data = new List<AgentPlanViewModel>();
+                foreach (var item in PlanLinks)
+                {
+                    AgentPlanViewModel plan = new AgentPlanViewModel();
+                    plan.PlanId = item.Link_PU_ID;
+                    plan.PlanVolume = item.tbPlans.PlanVolume;
+                    plan.PlanMonth = item.tbPlans.PlanMonth;
+                    plan.PlanPrice = item.L_SellPrice.Value;
+                    plan.DeviceLimit = item.tbPlans.device_limit;
+                    plan.IsUnlimited = item.tbPlans.IsRobotPlan;
+                    data.Add(plan);
+                }
+
+                return Ok(new { result = data });
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در دریافت لیست تعرفه های نماینده");
+                return Content(HttpStatusCode.InternalServerError, "خطا در دریافت لیست تعرفه ها");
+            }
+        }
+
+        #endregion
+
+        #region سوالات متداول ربات تلگرام
+
+        /// <summary>
+        /// همان پرسش و پاسخ دکمه «❓ سؤالات رایج» ربات را برمی گرداند
+        /// تا اپلیکیشن همان متن را بدون وابستگی به تلگرام نشان دهد.
+        /// توکن نماینده از هدر Authorization خوانده می شود تا آیدی پشتیبانی همان نماینده هم برگردد.
+        /// </summary>
+        [System.Web.Http.HttpGet]
+        public async Task<IHttpActionResult> GetFaq()
+        {
+            try
+            {
+                var token = GetAgentTokenFromHeader();
+                if (token == null)
+                {
+                    return BadRequest("توکن در هدر Authorization ارسال نشده است");
+                }
+
+                var User = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == token);
+                if (User == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                var BotSettings = User.tbBotSettings.FirstOrDefault();
+                string supportUsername = null;
+                if (BotSettings != null && !string.IsNullOrWhiteSpace(BotSettings.AdminUsername))
+                {
+                    supportUsername = BotSettings.AdminUsername.Trim().TrimStart('@');
+                }
+
+                return Ok(FaqViewModel.ForAgent(supportUsername));
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در دریافت سوالات متداول");
+                return Content(HttpStatusCode.InternalServerError, "خطا در دریافت سوالات متداول");
+            }
+        }
+
+        #endregion
+
+        #region لینک های ارتباطی پشتیبانی نماینده
+
+        /// <summary>
+        /// لیست لینک های ارتباطی پشتیبانی همان نماینده را برمی گرداند
+        /// تا اپلیکیشن صفحه ارتباط با پشتیبانی را بسازد.
+        /// توکن نماینده از هدر Authorization خوانده می شود.
+        /// </summary>
+        [System.Web.Http.HttpGet]
+        public async Task<IHttpActionResult> GetSupportLinks()
+        {
+            try
+            {
+                var token = GetAgentTokenFromHeader();
+                if (token == null)
+                {
+                    return BadRequest("توکن در هدر Authorization ارسال نشده است");
+                }
+
+                var User = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == token);
+                if (User == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                var rows = await db.tbSupportLinks
+                    .Where(s => s.FK_User_ID == User.User_ID)
+                    .OrderBy(s => s.tbSl_ID)
+                    .ToListAsync();
+
+                var items = new List<SupportLinkItemViewModel>();
+                foreach (var row in rows)
+                {
+                    SupportLinkItemViewModel item = new SupportLinkItemViewModel();
+                    item.Id = row.tbSl_ID;
+                    item.Title = row.tbSl_Title;
+                    item.Link = row.tbSl_Link;
+                    item.Phone = row.tbSl_Phone;
+                    items.Add(item);
+                }
+
+                return Ok(new SupportLinkListViewModel { Items = items });
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در دریافت لینک های ارتباطی پشتیبانی");
+                return Content(HttpStatusCode.InternalServerError, "خطا در دریافت لینک های ارتباطی");
+            }
+        }
+
+        #endregion
+
+        #region موجودی کیف پول ربات تلگرام مشتری
+
+        /// <summary>
+        /// موجودی کیف پول ربات تلگرام صاحب یک اشتراک را برمی گرداند
+        /// تا اپلیکیشن بتواند دکمه پرداخت از کیف پول را نشان دهد.
+        /// توکن نماینده از هدر Authorization و توکن ساب از بدنه خوانده می شود.
+        /// </summary>
+        [System.Web.Http.HttpPost]
+        public async Task<IHttpActionResult> GetTelegramWallet(GetTelegramWalletModel model)
+        {
+            try
+            {
+                if (model == null || string.IsNullOrWhiteSpace(model.SubscriptionToken))
+                {
+                    return BadRequest("توکن اشتراک ارسال نشده است");
+                }
+
+                var token = GetAgentTokenFromHeader();
+                if (token == null)
+                {
+                    return BadRequest("توکن در هدر Authorization ارسال نشده است");
+                }
+
+                var Agent = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == token);
+                if (Agent == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                var Link = await FindAgentSubscriptionAsync(model.SubscriptionToken.Trim(), Agent.Username);
+                if (Link == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "اشتراکی با این توکن برای این نماینده یافت نشد");
+                }
+
+                TelegramWalletViewModel data = new TelegramWalletViewModel();
+                data.SubscriptionName = GetDisplayNameOfAccount(Link.tbL_Email);
+
+                tbTelegramUsers TelUser = null;
+                if (Link.FK_TelegramUserID != null)
+                {
+                    TelUser = await db.tbTelegramUsers.FirstOrDefaultAsync(p => p.Tel_UserID == Link.FK_TelegramUserID.Value && p.FK_User_ID == Agent.User_ID);
+                }
+
+                if (TelUser == null)
+                {
+                    data.HasWallet = false;
+                    data.Balance = 0;
+                    data.Message = "این اشتراک به حساب ربات تلگرام متصل نیست";
+                    return Ok(data);
+                }
+
+                data.HasWallet = true;
+                data.Balance = TelUser.Tel_Wallet == null ? 0 : Convert.ToInt64(TelUser.Tel_Wallet.Value);
+                data.Message = "موجودی کیف پول ربات";
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در دریافت موجودی کیف پول تلگرام");
+                return Content(HttpStatusCode.InternalServerError, "خطا در دریافت موجودی کیف پول");
+            }
+        }
+
+        #endregion
+
+        #region ساخت فاکتور پرداخت مستقیم برای مشتری نماینده
+
+        /// <summary>
+        /// ساخت فاکتور پرداخت مستقیم (کارت به کارت) برای مشتری نماینده
+        /// توکن نماینده از هدر Authorization و شناسه تعرفه از بدنه درخواست خوانده می شود.
+        /// خالی بودن SubscriptionToken یعنی اشتراک جدید ساخته شود و پر بودن آن یعنی تمدید همان اشتراک.
+        /// </summary>
+        [System.Web.Http.HttpPost]
+        public async Task<IHttpActionResult> CreateAgentInvoice(CreateAgentInvoiceModel model)
+        {
+            try
+            {
+                if (model == null)
+                {
+                    return BadRequest("اطلاعات درخواست ارسال نشده است");
+                }
+
+                var token = GetAgentTokenFromHeader();
+                if (token == null)
+                {
+                    return BadRequest("توکن در هدر Authorization ارسال نشده است");
+                }
+
+                var Agent = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == token);
+                if (Agent == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                var PlanLink = await db.tbLinkUserAndPlans
+                    .FirstOrDefaultAsync(p => p.Link_PU_ID == model.PlanId
+                                           && p.L_FK_U_ID == Agent.User_ID
+                                           && p.L_Status == true
+                                           && p.L_SellPrice != null);
+                if (PlanLink == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "تعرفه ای با این شناسه برای این نماینده یافت نشد");
+                }
+
+                var Card = Agent.tbBankCardNumbers.Where(p => p.Active).FirstOrDefault();
+                if (Card == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "برای این نماینده کارت بانکی فعالی ثبت نشده است");
+                }
+
+                // تعیین اشتراک : توکن خالی یعنی اشتراک جدید ، توکن پر یعنی تمدید اشتراک موجود همین نماینده
+                string AccountName;
+                string OrderType;
+                var RequestedToken = model.SubscriptionToken == null ? "" : model.SubscriptionToken.Trim();
+                if (RequestedToken.Length == 0)
+                {
+                    AccountName = await GenerateAccountNameAsync(Agent.Username);
+                    if (AccountName == null)
+                    {
+                        return Content(HttpStatusCode.InternalServerError, "ساخت نام اشتراک جدید با خطا مواجه شد");
+                    }
+                    OrderType = "جدید";
+                }
+                else
+                {
+                    var Link = await FindAgentSubscriptionAsync(RequestedToken, Agent.Username);
+                    if (Link == null)
+                    {
+                        return Content(HttpStatusCode.NotFound, "اشتراکی با این توکن برای این نماینده یافت نشد");
+                    }
+                    AccountName = Link.tbL_Email;
+                    OrderType = "تمدید";
+                }
+
+                // قیمت به تومان ، مشابه گزینه پرداخت مستقیم ربات تخفیف فعال نماینده هم اعمال می شود
+                var Price = PlanLink.L_SellPrice.Value;
+                var BotSettings = Agent.tbBotSettings.FirstOrDefault();
+                if (BotSettings != null && BotSettings.Present_Discount != null && BotSettings.Present_Discount != 0)
+                {
+                    Price -= (int)(Price * BotSettings.Present_Discount.Value);
+                }
+
+                var FullPrice = await BuildUniqueInvoicePriceAsync(Price);
+                var TaxId = Guid.NewGuid().ToString().Split('-')[0] + "#" + Agent.User_ID;
+
+                // دستگاهی که فاکتور را ساخته ، فقط اگر متعلق به همین نماینده باشد
+                var MobileUserId = await FindMobileUserIdAsync(model.ResolveDeviceId(), Agent.User_ID);
+
+                tbOrders Order = new tbOrders();
+                Order.Order_Guid = Guid.NewGuid();
+                Order.AccountName = AccountName;
+                Order.OrderDate = DateTime.Now;
+                Order.OrderStatus = "FOR_PAY";
+                Order.OrderType = OrderType;
+                Order.Order_Price = Price;
+                Order.PriceWithOutDiscount = PlanLink.L_SellPrice.Value;
+                Order.Traffic = PlanLink.tbPlans.PlanVolume;
+                Order.Month = PlanLink.tbPlans.PlanMonth;
+                Order.V2_Plan_ID = PlanLink.tbPlans.Plan_ID_V2;
+                Order.FK_Link_Plan_ID = PlanLink.Link_PU_ID;
+                Order.Tel_RenewedDate = DateTime.Now;
+                Order.FK_MobileUser_ID = MobileUserId;
+
+                tbDepositWallet_Log Deposit = new tbDepositWallet_Log();
+                Deposit.dw_Price = FullPrice;
+                Deposit.dw_CreateDatetime = DateTime.Now;
+                Deposit.dw_Status = "FOR_PAY";
+                Deposit.dw_PayMethod = "ApiCard";
+                Deposit.dw_TaxId = TaxId;
+                // روش پرداخت «اپلیکیشن» — این فاکتورها وارد مسیر تائید خودکار پیامک نمی شوند
+                // چون CheckOrder فقط روی tbpm_Key == "CardToCard" فیلتر می کند
+                Deposit.FK_PayMethod_ID = PaymentMethodIds.App;
+                Deposit.FK_MobileUser_ID = MobileUserId;
+
+                Order.tbDepositWallet_Log.Add(Deposit);
+                db.tbOrders.Add(Order);
+                await db.SaveChangesAsync();
+
+                AgentInvoiceViewModel data = new AgentInvoiceViewModel();
+                data.TrackingCode = TaxId;
+                data.Amount = Convert.ToInt64(FullPrice);
+                data.CardNumber = Card.CardNumber;
+                data.CardHolderName = Card.InTheNameOf;
+                data.SubscriptionName = GetDisplayNameOfAccount(AccountName);
+                data.PlanPrice = PlanLink.L_SellPrice.Value;
+                data.PlanVolume = PlanLink.tbPlans.PlanVolume;
+                data.PlanMonth = PlanLink.tbPlans.PlanMonth;
+                data.DeviceLimit = PlanLink.tbPlans.device_limit;
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ساخت فاکتور پرداخت مستقیم نماینده");
+                return Content(HttpStatusCode.InternalServerError, "خطا در ساخت فاکتور");
+            }
+        }
+
+        /// <summary>
+        /// جدا کردن بخش نمایشی نام اشتراک ( بخش قبل از $ و @ )
+        /// </summary>
+        private static string GetDisplayNameOfAccount(string AccountName)
+        {
+            if (string.IsNullOrEmpty(AccountName))
+            {
+                return AccountName;
+            }
+
+            var Cut = AccountName.IndexOfAny(new char[] { '$', '@' });
+            return Cut >= 0 ? AccountName.Substring(0, Cut) : AccountName;
+        }
+
+        /// <summary>
+        /// ساخت یک نام اشتراک جدید و یکتا با ساختار name$random@AgentUsername
+        /// </summary>
+        private async Task<string> GenerateAccountNameAsync(string AgentUsername)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                var Name = Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + AgentUsername;
+                var Exists = await db.tbLinks.AnyAsync(p => p.tbL_Email == Name);
+                if (!Exists)
+                {
+                    return Name;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// پیدا کردن رکورد دستگاه بر اساس deviceId ، فقط اگر به همین نماینده تخصیص داده شده باشد.
+        /// برنگرداندن رکورد خطا نیست ؛ فاکتور بدون اتصال به دستگاه هم ساخته می شود.
+        /// </summary>
+        private async Task<int?> FindMobileUserIdAsync(string DeviceId, int AgentUserId)
+        {
+            if (string.IsNullOrWhiteSpace(DeviceId))
+            {
+                return null;
+            }
+
+            var Id = DeviceId.Trim();
+            var Device = await db.tbMobileUsers.FirstOrDefaultAsync(p => p.tbMu_AndroidId == Id && p.FK_User_ID == AgentUserId);
+            if (Device == null)
+            {
+                logger.Warn("دستگاه " + Id + " برای نماینده " + AgentUserId + " یافت نشد ، فاکتور بدون اتصال به دستگاه ساخته می شود");
+                return null;
+            }
+
+            Device.tbMu_LastSeenDate = DateTime.Now;
+            return Device.tbMu_ID;
+        }
+
+        /// <summary>
+        /// پیدا کردن اشتراک بر اساس توکن لینک ساب ، فقط در صورتی که متعلق به همین نماینده باشد
+        /// </summary>
+        private async Task<tbLinks> FindAgentSubscriptionAsync(string SubscriptionToken, string AgentUsername)
+        {
+            var Suffix = "@" + AgentUsername;
+
+            return await db.tbLinks.FirstOrDefaultAsync(p => p.tbL_Token == SubscriptionToken && p.tbL_Email.EndsWith(Suffix));
+        }
+
+        /// <summary>
+        /// تبدیل مبلغ تومان به ریال و افزودن سه رقم یکتا به انتهای آن
+        /// یکتایی نسبت به فاکتورهای در انتظار پرداخت با همان مبلغ پایه بررسی می شود.
+        /// </summary>
+        private async Task<double> BuildUniqueInvoicePriceAsync(double PriceToman)
+        {
+            var BasePrice = Math.Round(PriceToman) * 10;
+
+            var PendingPrices = await db.tbDepositWallet_Log
+                .Where(p => p.dw_Status == "FOR_PAY"
+                         && p.dw_Price != null
+                         && p.dw_Price > BasePrice
+                         && p.dw_Price <= BasePrice + 999)
+                .Select(p => p.dw_Price.Value)
+                .ToListAsync();
+
+            var UsedSuffixes = new HashSet<int>(PendingPrices.Select(p => (int)(p - BasePrice)));
+
+            Random ran = new Random();
+            var Start = ran.Next(1, 1000);
+            for (int i = 0; i < 999; i++)
+            {
+                var Suffix = ((Start - 1 + i) % 999) + 1;
+                if (!UsedSuffixes.Contains(Suffix))
+                {
+                    return BasePrice + Suffix;
+                }
+            }
+
+            return BasePrice + Start;
+        }
+
+        #endregion
+
+        #region آپلود رسید فاکتور اپلیکیشن و ارسال به ادمین ربات
+
+        /// <summary>
+        /// آپلود عکس رسید برای فاکتور ساخته شده با CreateAgentInvoice.
+        /// فایل روی سرور ذخیره و همان عکس برای ادمین ربات تلگرام نماینده ارسال می شود.
+        /// ادمین مثل تائید دستی ربات ابتدا تائید می زند و بعد مبلغ فاکتور را انتخاب می کند.
+        /// </summary>
+        [System.Web.Http.HttpPost]
+        public async Task<IHttpActionResult> UploadAgentInvoiceReceipt()
+        {
+            try
+            {
+                var token = GetAgentTokenFromHeader();
+                if (token == null)
+                {
+                    return BadRequest("توکن در هدر Authorization ارسال نشده است");
+                }
+
+                var Agent = await db.tbUsers
+                    .Include(p => p.tbBotSettings)
+                    .FirstOrDefaultAsync(p => p.Token == token);
+                if (Agent == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                string taxId;
+                HttpPostedFile postedFile;
+                if (!TryReadReceiptUpload(out taxId, out postedFile))
+                {
+                    if (string.IsNullOrWhiteSpace(taxId))
+                    {
+                        return BadRequest("کد پیگیری ارسال نشده است");
+                    }
+
+                    return BadRequest("فایل رسید ارسال نشده است");
+                }
+
+                if (!AppInvoiceReceiptService.IsAllowedImage(postedFile.FileName, postedFile.ContentLength))
+                {
+                    return BadRequest("فقط عکس jpg و png و webp تا سقف ۴ مگابایت پذیرفته می‌شود");
+                }
+
+                var Deposit = await db.tbDepositWallet_Log
+                    .Include(p => p.tbOrders)
+                    .Include(p => p.tbMobileUsers)
+                    .FirstOrDefaultAsync(p => p.dw_TaxId == taxId);
+                if (Deposit == null || Deposit.tbOrders == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "فاکتوری با این کد پیگیری یافت نشد");
+                }
+
+                var Order = Deposit.tbOrders;
+                var Suffix = "@" + Agent.Username;
+                if (Order.AccountName == null || !Order.AccountName.EndsWith(Suffix))
+                {
+                    return Content(HttpStatusCode.NotFound, "فاکتوری با این کد پیگیری یافت نشد");
+                }
+
+                if (Deposit.FK_PayMethod_ID != PaymentMethodIds.App)
+                {
+                    return BadRequest("این فاکتور مربوط به اپلیکیشن نیست");
+                }
+
+                if (Deposit.dw_Status != "FOR_PAY")
+                {
+                    return BadRequest("این فاکتور قبلا تائید شده است");
+                }
+
+                var folder = HttpContext.Current.Server.MapPath(AppInvoiceReceiptService.FolderVirtualPath);
+                var sendResult = await AppInvoiceReceiptService.SaveAndNotifyAdminAsync(
+                    Deposit, Agent, postedFile.InputStream, postedFile.FileName, folder);
+
+                Deposit.dw_payment_id = sendResult.FileName;
+                await db.SaveChangesAsync();
+
+                AgentInvoiceReceiptViewModel data = new AgentInvoiceReceiptViewModel();
+                data.TrackingCode = taxId;
+                data.ReceiptUploaded = true;
+                data.SentToAdmin = sendResult.SentToAdmin;
+                data.Message = sendResult.Message;
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در آپلود رسید فاکتور نماینده");
+                return Content(HttpStatusCode.InternalServerError, "خطا در آپلود رسید فاکتور");
+            }
+        }
+
+        /// <summary>
+        /// خواندن TaxId و فایل از multipart فرم ASP.NET.
+        /// نام فیلدها: TaxId / taxId و Receipt / receipt. اگر نام فایل مشخص نباشد اولین فایل گرفته می شود.
+        /// </summary>
+        private static bool TryReadReceiptUpload(out string taxId, out HttpPostedFile postedFile)
+        {
+            taxId = null;
+            postedFile = null;
+            if (HttpContext.Current == null || HttpContext.Current.Request == null)
+            {
+                return false;
+            }
+
+            var request = HttpContext.Current.Request;
+            taxId = request.Form["TaxId"] ?? request.Form["taxId"] ?? request["TaxId"] ?? request["taxId"];
+            if (!string.IsNullOrWhiteSpace(taxId))
+            {
+                taxId = taxId.Trim();
+            }
+
+            postedFile = request.Files["Receipt"] ?? request.Files["receipt"];
+            if (postedFile == null && request.Files.Count > 0)
+            {
+                postedFile = request.Files[0];
+            }
+
+            return !string.IsNullOrWhiteSpace(taxId) && postedFile != null && postedFile.ContentLength > 0;
+        }
+
+        #endregion
+
+        #region بررسی وضعیت فاکتور پرداخت مستقیم نماینده
+
+        /// <summary>
+        /// بررسی اینکه فاکتور ساخته شده با CreateAgentInvoice تائید شده است یا خیر
+        /// کد پیگیری (TaxId) از بدنه درخواست و توکن نماینده از هدر Authorization خوانده می شود.
+        /// اگر PayFromWallet برابر true باشد و فاکتور هنوز FOR_PAY باشد ،
+        /// موجودی کیف پول ربات تلگرام صاحب اشتراک بررسی و در صورت کافی بودن کسر و اشتراک تمدید/ساخته می شود.
+        /// بعد از تائید جزئیات اشتراک (حجم، روز باقی‌مانده، تاریخ انقضا) هم برگردانده می شود.
+        /// در سفارش جدید لینک اشتراک هم برمی گردد.
+        /// </summary>
+        [System.Web.Http.HttpPost]
+        public async Task<IHttpActionResult> CheckAgentInvoice(CheckAgentInvoiceModel model)
+        {
+            try
+            {
+                if (model == null || string.IsNullOrWhiteSpace(model.TaxId))
+                {
+                    return BadRequest("کد پیگیری ارسال نشده است");
+                }
+
+                var token = GetAgentTokenFromHeader();
+                if (token == null)
+                {
+                    return BadRequest("توکن در هدر Authorization ارسال نشده است");
+                }
+
+                var Agent = await db.tbUsers
+                    .Include(p => p.tbServers)
+                    .FirstOrDefaultAsync(p => p.Token == token);
+                if (Agent == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                var TaxId = model.TaxId.Trim();
+                var Deposit = await db.tbDepositWallet_Log.FirstOrDefaultAsync(p => p.dw_TaxId == TaxId);
+                if (Deposit == null || Deposit.tbOrders == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "فاکتوری با این کد پیگیری یافت نشد");
+                }
+
+                // فاکتور باید متعلق به همین نماینده باشد
+                var Order = Deposit.tbOrders;
+                var Suffix = "@" + Agent.Username;
+                if (Order.AccountName == null || !Order.AccountName.EndsWith(Suffix))
+                {
+                    return Content(HttpStatusCode.NotFound, "فاکتوری با این کد پیگیری یافت نشد");
+                }
+
+                if (model.PayFromWallet && Deposit.dw_Status == "FOR_PAY")
+                {
+                    var appService = new AppInvoiceService();
+                    var walletResult = await appService.ConfirmFromWalletAsync(Deposit.dw_ID, Agent.User_ID);
+                    if (!walletResult.Success)
+                    {
+                        AgentInvoiceStatusViewModel fail = new AgentInvoiceStatusViewModel();
+                        fail.TrackingCode = TaxId;
+                        fail.Status = Deposit.dw_Status;
+                        fail.OrderType = Order.OrderType;
+                        fail.SubscriptionName = GetDisplayNameOfAccount(Order.AccountName);
+                        fail.Amount = Deposit.dw_Price == null ? 0 : Convert.ToInt64(Deposit.dw_Price.Value);
+                        fail.IsConfirmed = false;
+                        fail.HasReceipt = HasInvoiceReceipt(Deposit);
+                        fail.Message = walletResult.Message;
+                        return Ok(fail);
+                    }
+
+                    await db.Entry(Deposit).ReloadAsync();
+                    await db.Entry(Order).ReloadAsync();
+                }
+
+                AgentInvoiceStatusViewModel data = new AgentInvoiceStatusViewModel();
+                data.TrackingCode = TaxId;
+                data.Status = Deposit.dw_Status;
+                data.OrderType = Order.OrderType;
+                data.SubscriptionName = GetDisplayNameOfAccount(Order.AccountName);
+                data.Amount = Deposit.dw_Price == null ? 0 : Convert.ToInt64(Deposit.dw_Price.Value);
+                data.IsConfirmed = Deposit.dw_Status == "FINISH";
+                data.HasReceipt = HasInvoiceReceipt(Deposit);
+
+                if (!data.IsConfirmed)
+                {
+                    data.Message = "هنوز فاکتور شما تمدید نشده است. این فرایند ممکن است ۵ تا ۱۵ دقیقه طول بکشد. در صورت عدم تائید، رسید خودتان را ارسال کنید";
+                    return Ok(data);
+                }
+
+                await AttachSubscriptionDetailsAsync(data, Order, Agent);
+
+                if (Order.OrderType == "تمدید")
+                {
+                    data.Message = Order.OrderStatus == "FOR_RESERVE"
+                        ? "پرداخت تائید شد و بسته به صورت رزرو ثبت شد"
+                        : "اشتراک شما با موفقیت تمدید شد";
+                    return Ok(data);
+                }
+
+                // سفارش جدید : لینک اشتراک از روی توکن ثبت شده در tbLinks ساخته می شود
+                var Link = await db.tbLinks.FirstOrDefaultAsync(p => p.tbL_Email == Order.AccountName);
+                if (Link == null || string.IsNullOrWhiteSpace(Link.tbL_Token))
+                {
+                    data.Message = "پرداخت تائید شد ولی اشتراک هنوز ساخته نشده است";
+                    return Ok(data);
+                }
+
+                var Server = Link.tbServers != null ? Link.tbServers : Agent.tbServers;
+                if (Server == null || string.IsNullOrWhiteSpace(Server.SubAddress))
+                {
+                    data.Message = "پرداخت تائید شد ولی آدرس لینک اشتراک روی سرور تنظیم نشده است";
+                    return Ok(data);
+                }
+
+                data.SubscriptionLink = "https://" + Server.SubAddress + "/api/v1/client/subscribe?token=" + Link.tbL_Token;
+                if (!string.IsNullOrWhiteSpace(Server.BackupSubAddr))
+                {
+                    data.BackupSubscriptionLink = "https://" + Server.BackupSubAddr + "/api/v1/client/subscribe?token=" + Link.tbL_Token;
+                }
+                data.Message = "پرداخت تائید شد و اشتراک ساخته شده است";
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در بررسی وضعیت فاکتور نماینده");
+                return Content(HttpStatusCode.InternalServerError, "خطا در بررسی وضعیت فاکتور");
+            }
+        }
+
+        private static bool HasInvoiceReceipt(tbDepositWallet_Log deposit)
+        {
+            if (deposit == null || string.IsNullOrWhiteSpace(deposit.dw_payment_id))
+            {
+                return false;
+            }
+
+            var ext = Path.GetExtension(deposit.dw_payment_id).ToLowerInvariant();
+            return AppInvoiceReceiptService.AllowedExtensions.Contains(ext);
+        }
+
+        /// <summary>
+        /// پر کردن جزئیات اشتراک از v2_user — همان فیلدهایی که Sub/Info و تائید دستی ربات نشان می‌دهند.
+        /// خطا اینجا وضعیت فاکتور را خراب نمی‌کند.
+        /// </summary>
+        private async Task AttachSubscriptionDetailsAsync(AgentInvoiceStatusViewModel data, tbOrders order, tbUsers agent)
+        {
+            try
+            {
+                var server = agent.tbServers;
+                if (server == null || string.IsNullOrWhiteSpace(server.ConnectionString) || string.IsNullOrWhiteSpace(order.AccountName))
+                {
+                    return;
+                }
+
+                using (MySqlEntities mySql = new MySqlEntities(server.ConnectionString))
+                {
+                    await mySql.OpenAsync();
+                    var parameters = new Dictionary<string, object> { { "@email", order.AccountName } };
+                    using (var reader = await mySql.GetDataAsync(
+                        "SELECT u,d,transfer_enable,expired_at FROM v2_user WHERE email=@email LIMIT 1", parameters))
+                    {
+                        if (!await reader.ReadAsync())
+                        {
+                            return;
+                        }
+
+                        var usedBytes = Convert.ToDouble(reader.GetValue(0)) + Convert.ToDouble(reader.GetValue(1));
+                        var totalBytes = Convert.ToDouble(reader.GetValue(2));
+                        data.TotalVolumeGb = Math.Round(Utility.ConvertByteToGB(totalBytes), 2);
+                        data.UsedVolumeGb = Math.Round(Utility.ConvertByteToGB(usedBytes), 2);
+                        data.RemainingDays = -1;
+                        data.ExpireDate = null;
+
+                        if (!reader.IsDBNull(3))
+                        {
+                            var expireSeconds = Convert.ToInt64(reader.GetValue(3));
+                            if (expireSeconds > 0)
+                            {
+                                var expire = Utility.ConvertSecondToDatetime(expireSeconds);
+                                data.RemainingDays = Utility.CalculateLeftDayes(expire);
+                                data.ExpireDate = Utility.ConvertDateTimeToShamsi5(expire);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, "خواندن جزئیات اشتراک بعد از تائید فاکتور " + data.TrackingCode + " ناموفق بود");
+            }
         }
 
         #endregion

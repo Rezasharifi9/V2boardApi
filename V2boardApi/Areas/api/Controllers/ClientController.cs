@@ -59,7 +59,7 @@ namespace V2boardApi.Areas.api.Controllers
             RepositoryOrders = new Repository<tbOrders>(db);
             RepositoryPlans = new Repository<tbPlans>(db);
             RepositoryLinks = new Repository<tbLinks>(db);
-            server = HttpRuntime.Cache["Server"] as tbServers;
+            server = ServerCacheHelper.Get();
         }
 
         public async Task<ActionResult> subscribe(string token)

@@ -115,6 +115,11 @@
                             <input type="number" dir="ltr" class="form-control" id="AdminTelegramUniqID" name="AdminTelegramUniqID" placeholder="65845695212" value="@Model.AdminTelegramUniqID" />
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label" for="AdminUsername">یوزرنیم تلگرام ادمین (پشتیبانی)</label>
+                            <input type="text" dir="ltr" class="form-control" id="AdminUsername" name="AdminUsername" placeholder="admin_support" value="@ViewBag.AdminUsername" />
+                            <small class="text-muted">بدون @@ وارد کنید — برای نمایش آیدی پشتیبانی به کاربران در ربات.</small>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label" for="Channel_ID">آیدی کانال</label>
                             <input type="text" dir="ltr" class="form-control" id="Channel_ID" name="Channel_ID" placeholder="mychannel" value="@Model.Channel_ID" />
                         </div>

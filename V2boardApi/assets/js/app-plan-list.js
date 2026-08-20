@@ -133,8 +133,8 @@ $(function () {
                     render: function (data, type, full, meta) {
                         var statusText = "";
                         var statusIcon = "";
-                        var Status = full["Status"];
-                        if (Status == "1") {
+                        var Status = parseInt(full["Status"], 10);
+                        if (Status === 1) {
                             statusText = "غیر فعال کردن";
                             statusIcon = "ti-lock";
                         }
@@ -272,14 +272,24 @@ $(function () {
             },
             buttonsStyling: false
         }).then(function (result) {
-            if (result.value) {
+            if (result.isConfirmed || result.value) {
 
                 $.ajax({
                     url: "/App/Plan/ChangeStatus?id=" + id,
                     type: "get",
                     dataType: "json",
                     success: function (res) {
+                        if (res && res.data) {
+                            eval(res.data);
+                        }
                         dt_basic.ajax.reload(null, false);
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطا',
+                            text: 'تغییر وضعیت تعرفه با خطا مواجه شد'
+                        });
                     }
                 })
 

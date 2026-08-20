@@ -374,22 +374,42 @@
     <Compile Include="Areas\api\Controllers\BotController.cs" />
     <Compile Include="Areas\api\Controllers\ClientController.cs" />
     <Compile Include="Areas\api\Controllers\MobileAppController.cs" />
+    <Compile Include="Areas\api\Controllers\MobileDeviceController.cs" />
+    <Compile Include="Areas\api\Controllers\SubController.cs" />
     <Compile Include="Areas\api\Controllers\UserController.cs" />
     <Compile Include="Areas\api\Data\ApiModels\AddFirebaseTokenModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\CheckAgentInvoiceModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\CreateAgentInvoiceModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\GetTelegramWalletModel.cs" />
     <Compile Include="Areas\api\Data\ApiModels\PlisioRespModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\RegisterMobileDeviceModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\SubscriptionAgentModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\SubscriptionResetLinkModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\SubscriptionTokenInfoModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\SubscriptionUsageHistoryModel.cs" />
     <Compile Include="Areas\api\Data\ApiModels\TetraRespModel.cs" />
     <Compile Include="Areas\api\Data\AppModels\SubscriptionInfoModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AccountHistoryViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AddAccountWithOutPlanInputModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\AgentInvoiceReceiptViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\AgentInvoiceStatusViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\AgentInvoiceViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\AgentPlanViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\FaqViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\SupportLinkViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\TelegramWalletViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\GetFactorsViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\MobileDeviceViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\NotPayedUserModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\ReservedPackageViewModel.cs" />
     <Compile Include="Areas\App\Controllers\AdminDashboardController.cs" />
     <Compile Include="Areas\App\AppAreaRegistration.cs" />
     <Compile Include="Areas\App\Controllers\AdminController.cs" />
     <Compile Include="Areas\App\Controllers\BotFactorsController.cs" />
+    <Compile Include="Areas\App\Controllers\MobileUsersController.cs" />
     <Compile Include="Areas\App\Controllers\ClientController.cs" />
     <Compile Include="Areas\App\Controllers\DashboardController.cs" />
+    <Compile Include="Areas\App\Controllers\ManagementDashboardController.cs" />
     <Compile Include="Areas\App\Controllers\ErrorController.cs" />
     <Compile Include="Areas\App\Controllers\ChangelogController.cs" />
     <Compile Include="Areas\App\Controllers\LearnsController.cs" />
@@ -405,7 +425,9 @@
     <Compile Include="Areas\App\Data\AdminDashboard\OverallSalesPerformanceViewModel.cs" />
     <Compile Include="Areas\App\Data\AdminDashboard\SalesSummaryViewModel.cs" />
     <Compile Include="Areas\App\Data\AdminDashboard\TopAgentsViewModel.cs" />
+    <Compile Include="Areas\App\Data\ManagementDashboard\ManagementDashboardViewModel.cs" />
     <Compile Include="Areas\App\Data\BotFactoresViewModels\BotFactoresResponseModel.cs" />
+    <Compile Include="Areas\App\Data\MobileUsersViewModels\MobileUsersResponseModel.cs" />
     <Compile Include="Areas\App\Data\BotViewModel\UseageViewModel.cs" />
     <Compile Include="Areas\App\Data\CountAccountCreatedFromMajorModel.cs" />
     <Compile Include="Areas\App\Data\DashboardViewModel.cs" />
@@ -430,6 +452,7 @@
     <Compile Include="Areas\App\Data\UserFactorsViewModels\UserFactor_ListViewModel.cs" />
     <Compile Include="Areas\App\Data\UsersViewModels\AgentHistoryPdfResultViewModel.cs" />
     <Compile Include="Areas\App\Data\UsersViewModels\AgentHistorySummaryViewModel.cs" />
+    <Compile Include="Areas\App\Data\UsersViewModels\AgentDeletePreviewViewModel.cs" />
     <Compile Include="Areas\App\Data\UsersViewModels\SelectUserViewModel.cs" />
     <Compile Include="Areas\App\Data\UsersViewModels\UserViewModel.cs" />
     <Compile Include="Global.asax.cs">
@@ -438,6 +461,7 @@
     <Compile Include="Models\AdminModel\AccountsViewModel.cs" />
     <Compile Include="Models\AdminModel\BankNumberViewModel.cs" />
     <Compile Include="Models\AdminModel\LearnsViewModel.cs" />
+    <Compile Include="Models\AdminModel\SupportLinkViewModel.cs" />
     <Compile Include="Models\AdminModel\LoginModel.cs" />
     <Compile Include="Models\AdminModel\UserLogViewModel.cs" />
     <Compile Include="Models\AdminModel\UserPlansViewModel.cs" />
@@ -463,8 +487,10 @@
     <Compile Include="Tools\OrderStatusHelper.cs" />
     <Compile Include="Tools\ReservedPackageHelper.cs" />
     <Compile Include="Tools\TelegramSubscriptionHelper.cs" />
+    <Compile Include="Tools\SubscriptionLogHelper.cs" />
     <Compile Include="Tools\SubscriptionPackageHelper.cs" />
     <Compile Include="Tools\SubscriptionReserveWarnHelper.cs" />
+    <Compile Include="Tools\ServerCacheHelper.cs" />
     <Compile Include="Tools\AuthSession.cs" />
     <Compile Include="Tools\JwtToken.cs" />
     <Compile Include="Tools\NowPayment.cs" />
@@ -495,6 +521,7 @@
     <Compile Include="Tools\StartUpOwin.cs" />
     <Compile Include="Tools\PanelAssetHelper.cs" />
     <Compile Include="Tools\PanelChangelogService.cs" />
+    <Compile Include="Tools\PanelNotificationService.cs" />
     <Compile Include="Tools\AgentHistoryPdfHelper.cs" />
     <Compile Include="Tools\UsageHistoryPdfHelper.cs" />
     <Compile Include="Tools\StimulsoftBootstrap.cs" />
@@ -916,6 +943,7 @@
     <Content Include="assets\js\app-access-permission.js" />
     <Content Include="assets\js\app-access-roles.js" />
     <Content Include="assets\js\app-botfactores-list.js" />
+    <Content Include="assets\js\app-mobileusers-list.js" />
     <Content Include="assets\js\app-calendar-events.js" />
     <Content Include="assets\js\app-calendar-jalali.js" />
     <Content Include="assets\js\app-calendar.js" />
@@ -942,6 +970,7 @@
     <Content Include="assets\js\app-kanban.js" />
     <Content Include="assets\js\app-logistics-admindashboard.js" />
     <Content Include="assets\js\app-logistics-dashboard.js" />
+    <Content Include="assets\js\app-management-dashboard.js" />
     <Content Include="assets\js\app-logistics-fleet-mapbox.js" />
     <Content Include="assets\js\app-logistics-fleet.js" />
     <Content Include="assets\js\app-paymentlinks-list.js" />
@@ -1880,6 +1909,8 @@
     <Content Include="Areas\App\Views\TelegramUsers\_PartialGetAllUsers.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\_PartialPublicMessage.cshtml" />
     <Content Include="Areas\App\Views\Dashboard\Index.cshtml" />
+    <Content Include="Areas\App\Views\ManagementDashboard\Index.cshtml" />
+    <Content Include="Areas\App\Views\ManagementDashboard\_Overview.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\_EditWallet.cshtml" />
     <Content Include="Areas\App\Views\Plan\Index.cshtml" />
     <Content Include="Areas\App\Views\Error\Error404.cshtml" />
@@ -1892,6 +1923,8 @@
     <Content Include="Areas\App\Views\Settings\_BotSetting.cshtml" />
     <Content Include="Areas\App\Views\Settings\_BankNumbers.cshtml" />
     <Content Include="Areas\App\Views\BotFactors\Index.cshtml" />
+    <Content Include="Areas\App\Views\MobileUsers\Index.cshtml" />
+    <Content Include="Areas\App\Views\MobileUsers\_DeviceDetails.cshtml" />
     <Content Include="Areas\App\Views\Settings\_EditBankNumber.cshtml" />
     <Content Include="Areas\App\Views\Learns\Index.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\_MoveAccount.cshtml" />
@@ -1908,6 +1941,7 @@
     <Content Include="Areas\App\Views\Admin\_GetSetting.cshtml" />
     <Content Include="Areas\App\Views\ServerGroups\Index.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetBotSetting.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_AdminPanelSellSetting.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetSettlementSetting.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetBankNumbers.cshtml" />
     <Content Include="Areas\App\Views\Dashboard\_WeeklyDataReport.cshtml" />
@@ -1928,6 +1962,7 @@
     <Content Include="Areas\App\Views\OnlineChat\GetContacts.cshtml" />
     <Content Include="Areas\App\Views\OnlineChat\GetChat.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetLearns.cshtml" />
+    <Content Include="Areas\App\Views\Admin\_GetSupportLinks.cshtml" />
     <Content Include="Areas\App\Views\AdminDashboard\Index.cshtml" />
     <Content Include="Areas\App\Views\AdminDashboard\_SalesSummaryReport.cshtml" />
     <Content Include="Areas\App\Views\PaymentLinks\Index.cshtml" />
@@ -1994,10 +2029,16 @@
     <Content Include="Scripts\jquery-3.4.1.min.map" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Compile Include="Tools\DataTablesRequest.cs" />
+    <Compile Include="Tools\TelegramNotifyHelper.cs" />
+    <Compile Include="Tools\AgentDeleteService.cs" />
+    <Compile Include="Tools\AgentLimitNotificationService.cs" />
     <Compile Include="Tools\DailySalesReportService.cs" />
     <Compile Include="Tools\DashboardSalesHelper.cs" />
     <Compile Include="Tools\SettlementService.cs" />
     <Compile Include="Tools\SecretKeyGenerator.cs" />
+    <Compile Include="Tools\PaymentMethodIds.cs" />
+    <Compile Include="Tools\AppInvoiceReceiptService.cs" />
+    <Compile Include="Tools\AppInvoiceService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -2005,6 +2046,7 @@
     <Folder Include="Areas\api\Views\MobileApp\" />
     <Folder Include="Areas\App\Views\Client\" />
     <Folder Include="assets\img\UserAgentFactorImages\" />
+    <Folder Include="assets\img\AppInvoiceReceipts\" />
     <Folder Include="Controllers\" />
     <Folder Include="CoreBot\" />
   </ItemGroup>

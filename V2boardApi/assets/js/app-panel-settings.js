@@ -109,7 +109,8 @@ $(function () {
                 BotbaseAddress: $('#BotbaseAddress').val(),
                 Robot_Token: $('#Robot_Token').val(),
                 Robot_ID: robotId,
-                BotID: $('#BotID').val() || null
+                BotID: $('#BotID').val() || null,
+                AdminUsername: $('#AdminUsername').val()
             },
             success: function (res) {
                 showAlert(res.status, res.message);

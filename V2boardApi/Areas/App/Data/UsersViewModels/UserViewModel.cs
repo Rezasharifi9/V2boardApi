@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -16,5 +16,7 @@ namespace V2boardApi.Areas.App.Data.UsersViewModels
         public string limit { get; set; }
         public string used { get; set; }
         public short RobotStatus { get; set; }
+        /// <summary>اولویت نمایش: ۰ = عبور از سقف، ۱ = بالای ۸۰٪، ۲ = عادی</summary>
+        public int sortPriority { get; set; }
     }
 }

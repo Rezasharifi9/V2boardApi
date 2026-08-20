@@ -1,4 +1,4 @@
-﻿@model DataLayer.DomainModel.tbBotSettings
+@model DataLayer.DomainModel.tbBotSettings
 <form id="botSettingForm">
     <input type="hidden" value="" name="user_id" id="user_id" />
     <input type="hidden" value="@Model.botSettingID" name="id" id="id" />
@@ -28,6 +28,13 @@
                 }
             }
             <input class="form-control ltr" id="formtabs-linkedin" type="text" value="@Model.Present_Discount" name="Present_Discount" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="formtabs-invite-percent">درصد زیرمجموعه‌گیری (%) <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="درصد اعتبار رایگان برای دعوت‌کننده از خرید زیرمجموعه"></i></label>
+            @{
+                double? invitePercentDisplay = Model.InvitePercent != null ? Model.InvitePercent * 100 : null;
+            }
+            <input class="form-control ltr" id="formtabs-invite-percent" type="text" value="@invitePercentDisplay" name="InvitePercent" />
         </div>
         <div class="col-md-3">
             <label class="form-label" for="formtabs-instagram"> آیدی ادمین <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="آیدی عددی تلگرام ادمین دریافت شده توسط ربات getmyid_bot"></i></label>
@@ -99,6 +106,25 @@
                     </span>
                 </span>
                 <span class="switch-label"> تایید رسید <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="تائید تراکنش به صورت دستی داخل ربات توسط ادمین"></i></span>
+            </label>
+            <label class="switch switch-square">
+                @if (Model.IsNotActiveSell)
+                {
+                    <input class="switch-input" type="checkbox" checked name="IsNotActiveSell" value="true" />
+                }
+                else
+                {
+                    <input class="switch-input" type="checkbox" name="IsNotActiveSell" value="false" />
+                }
+                <span class="switch-toggle-slider">
+                    <span class="switch-on">
+                        <i class="ti ti-check"></i>
+                    </span>
+                    <span class="switch-off">
+                        <i class="ti ti-x"></i>
+                    </span>
+                </span>
+                <span class="switch-label">بستن فروش ربات <i class="ti ti-exclamation-circle" data-bs-toggle="popover" title="در صورت فعال بودن، خرید و تمدید از طریق ربات غیرفعال می‌شود"></i></span>
             </label>
         </div>
     </div>

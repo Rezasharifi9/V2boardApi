@@ -1,4 +1,4 @@
-﻿@model int
+@model int
 @{
     ViewBag.Title = "Deatils";
     Layout = "~/Areas/App/Views/Shared/_Layout.cshtml";
@@ -258,6 +258,10 @@
         }
         else if (ViewBag.Type == "Settings")
         {
+            if (Role == "1")
+            {
+                @Html.Action("_GetAdminPanelSellSetting", "Admin", new { area = "App", user_id = Model })
+            }
             <div class="card mb-3">
                 <div class="card-header pt-2">
                     <ul class="nav nav-tabs card-header-tabs" role="tablist">
@@ -272,6 +276,9 @@
                         }
                         <li class="nav-item">
                             <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-social" data-bs-toggle="tab" role="tab" id="botSettingTab">ربات</button>
+                        </li>
+                        <li class="nav-item">
+                            <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-support" data-bs-toggle="tab" role="tab">پشتیبانی</button>
                         </li>
                         <li class="nav-item">
                             <button aria-selected="false" class="nav-link" data-bs-target="#form-tabs-cards" data-bs-toggle="tab" role="tab">کارت ها</button>
@@ -336,6 +343,9 @@
                     }
                     <div class="tab-pane fade" id="form-tabs-social" role="tabpanel">
                         @Html.Action("_GetBotSetting", "Admin", new { area = "App", user_id = Model })
+                    </div>
+                    <div class="tab-pane fade" id="form-tabs-support" role="tabpanel">
+                        @Html.Action("_GetSupportLinks", "Admin", new { area = "App" })
                     </div>
                     <div class="tab-pane fade" id="form-tabs-cards" role="tabpanel">
                         @Html.Action("_GetBankNumbers", "Admin", new { area = "App", user_id = Model })

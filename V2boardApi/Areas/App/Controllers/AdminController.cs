@@ -142,6 +142,8 @@ namespace V2boardApi.Areas.App.Controllers
         [AuthorizeApp(Roles = "1,3,4")]
         public ActionResult Index()
         {
+            var currentUser = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            ViewBag.UserRole = currentUser?.Role?.ToString() ?? string.Empty;
             return View();
         }
 
@@ -155,30 +157,56 @@ namespace V2boardApi.Areas.App.Controllers
                 if (adminUser != null && usersList.All(u => u == null || u.User_ID != adminUser.User_ID))
                     usersList.Add(adminUser);
 
+                usersList = usersList
+                    .Where(u => u != null && !string.IsNullOrWhiteSpace(u.Username))
+                    .OrderBy(GetAgentLimitSortPriority)
+                    .ThenByDescending(u =>
+                    {
+                        var limit = u.Limit ?? 0;
+                        return limit > 0 ? u.Wallet / limit : 0;
+                    })
+                    .ThenBy(u => u.Username)
+                    .ToList();
+
+                var agentIds = usersList.Select(u => u.User_ID).ToList();
+                var allowedActions = new[]
+                {
+                    ReservedPackageHelper.CreatedLogAction,
+                    ReservedPackageHelper.EditedLogAction,
+                    ReservedPackageHelper.ReserveLogAction
+                };
+                var deletedPrefix = SubscriptionLogHelper.DeletedNamePrefix;
+
+                var salesByAgent = db.tbLogs
+                    .Where(l => l.tbLinkUserAndPlans != null
+                        && l.tbLinkUserAndPlans.L_FK_U_ID != null
+                        && agentIds.Contains(l.tbLinkUserAndPlans.L_FK_U_ID.Value)
+                        && allowedActions.Contains(l.Action)
+                        && (l.FK_NameUser_ID == null || !l.FK_NameUser_ID.StartsWith(deletedPrefix)))
+                    .GroupBy(l => l.tbLinkUserAndPlans.L_FK_U_ID.Value)
+                    .Select(g => new
+                    {
+                        UserId = g.Key,
+                        SellCount = g.Count(),
+                        SumSell = g.Sum(x => x.SalePrice ?? 0)
+                    })
+                    .ToList()
+                    .ToDictionary(x => x.UserId);
+
                 var result = new List<UserViewModel>();
                 foreach (var item in usersList)
                 {
-                    if (item == null || string.IsNullOrWhiteSpace(item.Username))
-                        continue;
-
                     var limit = item.Limit ?? 0;
+                    salesByAgent.TryGetValue(item.User_ID, out var sales);
                     var user = new UserViewModel
                     {
                         id = item.User_ID,
                         profile = item.Profile_Filename,
                         username = item.Username,
                         status = 1,
-                        sellCount = RepositoryLogs
-                            .Where(p => p.tbLinkUserAndPlans != null
-                                && p.tbLinkUserAndPlans.tbUsers != null
-                                && p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID)
-                            .Count(),
-                        sumSellCount = RepositoryLogs
-                            .Where(p => p.tbLinkUserAndPlans != null
-                                && p.tbLinkUserAndPlans.tbUsers != null
-                                && p.tbLinkUserAndPlans.tbUsers.User_ID == item.User_ID)
-                            .Sum(s => (long)(s.SalePrice ?? 0))
-                            .ConvertToMony() + " تومان",
+                        sortPriority = GetAgentLimitSortPriority(item),
+                        sellCount = sales?.SellCount ?? 0,
+                        sumSellCount = ((long)(sales?.SumSell ?? 0)).ConvertToMony() + " تومان",
                         used = item.Wallet.ConvertToMony() + " تومان",
                         limit = limit.ConvertToMony() + " تومان",
                         RobotStatus = 0
@@ -209,6 +237,21 @@ namespace V2boardApi.Areas.App.Controllers
                 logger.Error(ex, "خطا در لود لیست نمایندگان");
                 return Json(new { data = new List<UserViewModel>() }, JsonRequestBehavior.AllowGet);
             }
+        }
+
+        private static int GetAgentLimitSortPriority(tbUsers agent)
+        {
+            var limit = agent.Limit ?? 0;
+            if (limit <= 0)
+                return 2;
+
+            if (agent.Wallet >= limit)
+                return 0;
+
+            if (agent.Wallet >= limit * 0.8)
+                return 1;
+
+            return 2;
         }
 
         #endregion
@@ -494,6 +537,15 @@ namespace V2boardApi.Areas.App.Controllers
                 return RedirectToAction("Error404", "Error", new { area = "App" });
             }
 
+            // موعد تسویه بعدی فقط وقتی نمایش داده می‌شود که تسویه بدهی برای این نماینده تنظیم شده باشد
+            ViewBag.SettlementDueDate = null;
+            var settlementDue = SettlementService.GetNextDueDate(db, user);
+            if (settlementDue.HasValue)
+            {
+                ViewBag.SettlementDueDate = settlementDue.Value.ConvertDateTimeToShamsi5();
+                ViewBag.SettlementRemainingDays = (settlementDue.Value.Date - DateTime.Now.Date).Days;
+            }
+
             return PartialView(user);
         }
 
@@ -543,6 +595,74 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 logger.Error(ex, "در تغییر وضعیت کاربر خطایی رخ داد");
                 return MessageBox.Error("ناموفق", "در تغییر وضعیت نماینده خطایی رخ داد");
+            }
+        }
+
+        #endregion
+
+        #region حذف نماینده
+
+        private tbUsers ResolveManagedAgent(int id)
+        {
+            var current = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            if (current == null || current.Role != 1 || current.User_ID == id)
+                return null;
+
+            var agent = RepositoryUser.Where(s => s.User_ID == id).FirstOrDefault();
+            if (agent == null || agent.Role == 1)
+                return null;
+
+            if (agent.tbUsers2 != null && agent.tbUsers2.Username == User.Identity.Name)
+                return agent;
+
+            return null;
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpGet]
+        public ActionResult GetDeleteAgentPreview(int id)
+        {
+            try
+            {
+                var agent = ResolveManagedAgent(id);
+                if (agent == null)
+                    return Json(new { status = "error", message = "نماینده یافت نشد یا مجوز حذف ندارید." }, JsonRequestBehavior.AllowGet);
+
+                var preview = AgentDeleteService.BuildPreview(db, agent);
+                return Json(new { status = "success", data = preview }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در آماده‌سازی حذف نماینده " + id);
+                return Json(new { status = "error", message = "خطا در آماده‌سازی اطلاعات حذف" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> DeleteAgent(int id)
+        {
+            try
+            {
+                var agent = ResolveManagedAgent(id);
+                if (agent == null)
+                    return MessageBox.Warning("ناموفق", "نماینده یافت نشد یا مجوز حذف ندارید.");
+
+                var agentName = agent.Username;
+
+                using (var transaction = db.Database.BeginTransaction())
+                {
+                    await AgentDeleteService.DeleteAgentAsync(db, agent);
+                    transaction.Commit();
+                }
+
+                logger.Info("نماینده " + agentName + " به همراه وابستگی‌های پنل حذف شد");
+                return Toaster.Success("موفق", "نماینده و داده‌های وابسته پنل با موفقیت حذف شدند");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در حذف نماینده " + id);
+                return MessageBox.Error("ناموفق", "حذف نماینده با خطا مواجه شد");
             }
         }
 
@@ -787,6 +907,66 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
 
+        /// <summary>
+        /// تمام اعلانات خوانده‌نشده و منقضی‌نشده کاربر برای نمایش در مودال هنگام ورود.
+        /// برخلاف GetCountNotSeenNotification که فقط یک اعلان برمی‌گرداند، اینجا کل لیست
+        /// برگردانده می‌شود تا هیچ اعلانی بدون دیده‌شدن، seen نخورد.
+        /// </summary>
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "3,2,4")]
+        public ActionResult GetUnseenNotifications()
+        {
+            var user = RepositoryUser.table.FirstOrDefault(s => s.Username == User.Identity.Name);
+            if (user == null)
+                return Json(new { show = false, items = new List<object>() }, JsonRequestBehavior.AllowGet);
+
+            var items = user.tbNotificationUser
+                .Where(s => s.tbNotifications.tbNoti_EndDate >= DateTime.Now && s.tbNotiUser_Seen == false)
+                .OrderByDescending(s => s.tbNotifications.tbNoti_RegisterDate)
+                .ToList()
+                .Select(s => new
+                {
+                    id = s.tbNotiUser_ID,
+                    title = s.tbNotifications.tbNoti_Title,
+                    text = s.tbNotifications.tbNoti_Text,
+                    date = Utility.GetTimeDifference(s.tbNotifications.tbNoti_RegisterDate, DateTime.Now),
+                    icon = PanelNotificationService.GetIconClass(s.tbNotifications.tbNoti_Title),
+                    color = PanelNotificationService.GetColorClass(s.tbNotifications.tbNoti_Title),
+                    category = PanelNotificationService.GetCategoryLabel(s.tbNotifications.tbNoti_Title)
+                })
+                .ToList();
+
+            return Json(new { show = items.Any(), items }, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <summary>
+        /// فقط اعلاناتی که واقعاً به کاربر نمایش داده شده‌اند را seen می‌کند.
+        /// </summary>
+        [System.Web.Mvc.HttpPost]
+        [AuthorizeApp(Roles = "3,2,4")]
+        public ActionResult SeenNotifications(List<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return Content("Ok");
+
+            var user = RepositoryUser.table.FirstOrDefault(s => s.Username == User.Identity.Name);
+            if (user == null)
+                return Content("Error");
+
+            var targets = user.tbNotificationUser
+                .Where(s => ids.Contains(s.tbNotiUser_ID) && s.tbNotiUser_Seen == false)
+                .ToList();
+
+            foreach (var item in targets)
+            {
+                item.tbNotiUser_Seen = true;
+                item.tbNotiUser_DateSeen = DateTime.Now;
+            }
+
+            RepositoryUser.Save();
+            return Content("Ok");
+        }
+
         #endregion
 
         #region سین اطلاعیه کاربر
@@ -927,7 +1107,7 @@ namespace V2boardApi.Areas.App.Controllers
                         ViewBag.CanContinue = true;
                         ViewBag.ContinueUserName = string.IsNullOrWhiteSpace(user.FullName) ? user.Username : user.FullName;
                         ViewBag.ContinueRedirectUrl = user.Role == 1
-                            ? Url.Action("Index", "Admin")
+                            ? Url.Action("Index", "ManagementDashboard")
                             : Url.Action("Index", "Subscriptions");
                     }
                 }
@@ -975,7 +1155,7 @@ namespace V2boardApi.Areas.App.Controllers
                 FormsAuthentication.SetAuthCookie(user.Username, true);
 
                 var redirectUrl = user.Role == 1
-                    ? Url.Action("Index", "Admin")
+                    ? Url.Action("Index", "ManagementDashboard")
                     : Url.Action("Index", "Subscriptions");
 
                 logger.Info("ورود با ادامه نشست ذخیره‌شده");
@@ -1003,6 +1183,9 @@ namespace V2boardApi.Areas.App.Controllers
                 //var d = (System.Collections.Hashtable)s.Deserialize(key); 
 
 
+
+                if (string.IsNullOrEmpty(userUsername) || string.IsNullOrEmpty(userPassword))
+                    return MessageBox.Warning("خطا", "نام کاربری و رمز عبور را وارد کنید");
 
                 var Sha = userPassword.ToSha256();
                 tbUsers User = RepositoryUser.table.Where(p => p.Username == userUsername && p.Password == Sha).FirstOrDefault();
@@ -1194,7 +1377,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                     if (User.Role == 1)
                     {
-                        var URL = Url.Action("Index", "Admin");
+                        var URL = Url.Action("Index", "ManagementDashboard");
                         return Json(new { status = "success", redirectURL = URL });
 
                     }
@@ -1299,12 +1482,21 @@ namespace V2boardApi.Areas.App.Controllers
 
             var createdAction = Resource.LogActions.U_Created;
             var editedAction = Resource.LogActions.U_Edited;
+            var reserveAction = ReservedPackageHelper.ReserveLogAction;
+
+            var historyLogs = logs
+                .Where(SubscriptionLogHelper.ShouldAppearInAgentHistory)
+                .ToList();
 
             var summary = new AgentHistorySummaryViewModel
             {
-                CreatedCount = logs.Count(l => l.Action == createdAction),
-                RenewedCount = logs.Count(l => l.Action == editedAction || l.Action == "رزرو بسته"),
-                TotalSalesAmount = logs.Where(l => l.SalePrice.HasValue).Sum(l => l.SalePrice.Value),
+                CreatedCount = historyLogs.Count(l =>
+                    (l.Action == createdAction || l.Action == ReservedPackageHelper.CreatedLogAction)
+                    && !SubscriptionLogHelper.IsDeletedSubscriptionLogName(l.FK_NameUser_ID)),
+                RenewedCount = historyLogs.Count(l =>
+                    (l.Action == editedAction || l.Action == reserveAction || l.Action == ReservedPackageHelper.EditedLogAction)
+                    && !SubscriptionLogHelper.IsDeletedSubscriptionLogName(l.FK_NameUser_ID)),
+                TotalSalesAmount = historyLogs.Where(SubscriptionLogHelper.CountsTowardSalesSummary).Sum(l => l.SalePrice ?? 0),
                 PaidInvoicesAmount = user.tbUserFactors
                     .Where(f => f.tbUf_CreateTime.HasValue && f.tbUf_Value.HasValue && (f.tbUf_Status == 2 || f.tbUf_Status == 3))
                     .Where(f =>
@@ -1319,21 +1511,7 @@ namespace V2boardApi.Areas.App.Controllers
             summary.TotalSalesAmountFormatted = summary.TotalSalesAmount.ConvertToMony();
             summary.PaidInvoicesAmountFormatted = summary.PaidInvoicesAmount.ConvertToMony();
 
-            var logModels = logs.Select(item =>
-            {
-                var model = new UserLogResponseModel
-                {
-                    id = item.log_ID,
-                    SubName = item.FK_NameUser_ID?.Split('@')[0] ?? "-",
-                    Event = item.Action,
-                    CreateDate = item.CreateDatetime.Value.ConvertDateTimeToShamsi2(),
-                    SellPrice = item.SalePrice.HasValue ? item.SalePrice.Value.ConvertToMony() : "0",
-                    Plan = item.PlanName
-                };
-                if (model.SubName.Length > 20)
-                    model.SubName = model.SubName.Substring(0, 10);
-                return model;
-            }).ToList();
+            var logModels = SubscriptionLogHelper.MapAgentHistoryItems(historyLogs);
 
             var displayName = string.IsNullOrWhiteSpace(user.FullName) ? user.Username : user.FullName;
 
@@ -1582,6 +1760,28 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region دریافت کیف پول کاربر
 
+        /// <summary>
+        /// برچسب موعد تسویه بعدی برای دراپ‌داون پروفایل در هدر.
+        /// اگر تسویه بدهی برای کاربر تنظیم نشده باشد null برمی‌گرداند تا در هدر چیزی نمایش داده نشود.
+        /// </summary>
+        private string BuildSettlementDueLabel(tbUsers user)
+        {
+            var dueDate = SettlementService.GetNextDueDate(db, user);
+            if (!dueDate.HasValue)
+                return null;
+
+            var label = dueDate.Value.ConvertDateTimeToShamsi5();
+            var remainingDays = (dueDate.Value.Date - DateTime.Now.Date).Days;
+
+            if (remainingDays > 0)
+                return label + " (" + remainingDays + " روز مانده)";
+
+            if (remainingDays == 0)
+                return label + " (امروز)";
+
+            return label + " (" + (-remainingDays) + " روز گذشته)";
+        }
+
         [AuthorizeApp(Roles = "1,2,3,4")]
         public async Task<ActionResult> GetWallet()
         {
@@ -1666,7 +1866,7 @@ namespace V2boardApi.Areas.App.Controllers
                             userPerMonth += item.PriceForMonth;
                             userPerGig += item.PriceForGig;
                         }
-                        return Json(new { status = "success", data = new { UserPerPrice = Utility.ConvertToMony(Math.Round((Useage * (userPerGig + userPerMonth)))), Useage = Math.Round(Useage, 2).ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth } }, JsonRequestBehavior.AllowGet);
+                        return Json(new { status = "success", data = new { UserPerPrice = Utility.ConvertToMony(Math.Round((Useage * (userPerGig + userPerMonth)))), Useage = Math.Round(Useage, 2).ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth, settlementDue = BuildSettlementDueLabel(user) } }, JsonRequestBehavior.AllowGet);
                     }
                 }
                 else
@@ -1684,12 +1884,12 @@ namespace V2boardApi.Areas.App.Controllers
                             userPerUser += item.PriceForUser;
                         }
 
-                        return Json(new { status = "success", data = new { debt = user.Wallet.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth, pricePerUser = userPerUser } }, JsonRequestBehavior.AllowGet);
+                        return Json(new { status = "success", data = new { debt = user.Wallet.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(), pricePerGig = userPerGig, pricePerMonth = userPerMonth, pricePerUser = userPerUser, settlementDue = BuildSettlementDueLabel(user) } }, JsonRequestBehavior.AllowGet);
 
                     }
                     else
                     {
-                        return Json(new { status = "success", data = new { debt = user.Wallet.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony() } }, JsonRequestBehavior.AllowGet);
+                        return Json(new { status = "success", data = new { debt = user.Wallet.ConvertToMony(), inventory = (user.Limit - user.Wallet).Value.ConvertToMony(), settlementDue = BuildSettlementDueLabel(user) } }, JsonRequestBehavior.AllowGet);
 
                     }
                 }
@@ -1739,6 +1939,9 @@ namespace V2boardApi.Areas.App.Controllers
                 var User = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
                 if (User != null)
                 {
+                    if (User.Role == 1)
+                        return MessageBox.Warning("هشدار", "این گزینه برای پروفایل ادمین قابل تنظیم نیست");
+
                     if (User.tbLinkServerGroupWithUsers.Count() == 0)
                     {
                         return MessageBox.Warning("هشدار", "لطفا اول وضعیت دسته بندی های کاربر را تعیین کنید");
@@ -1865,24 +2068,74 @@ namespace V2boardApi.Areas.App.Controllers
 
         [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpGet]
+        public ActionResult _GetAdminPanelSellSetting(int user_id)
+        {
+            var user = RepositoryUser.Where(s => s.User_ID == user_id).FirstOrDefault();
+            if (user == null)
+                return Content(string.Empty);
+            if (user.Role != 1)
+                return Content(string.Empty);
+
+            return PartialView("_AdminPanelSellSetting", user);
+        }
+
+        [System.Web.Mvc.HttpPost]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult SaveAdminPanelSellSetting(int user_id, bool isNotActiveSell)
+        {
+            try
+            {
+                var user = RepositoryUser.Where(s => s.User_ID == user_id && s.Role == 1).FirstOrDefault();
+                if (user == null)
+                    return MessageBox.Warning("ناموفق", "فقط برای پروفایل ادمین قابل تنظیم است");
+
+                user.IsNotActiveSell = isNotActiveSell;
+                RepositoryUser.Save();
+                logger.Info("وضعیت فروش نمایندگی پنل برای ادمین " + user.Username + " به " + isNotActiveSell + " تغییر یافت");
+                return Toaster.Success("موفق", isNotActiveSell ? "فروش نمایندگی در پنل بسته شد" : "فروش نمایندگی در پنل فعال شد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ذخیره وضعیت فروش نمایندگی پنل");
+                return MessageBox.Error("ناموفق", "خطا در ذخیره تنظیمات");
+            }
+        }
+
+        private static void ApplyBotSettingExtras(tbBotSettings botSettings, double? presentDiscount, double? invitePercent, bool? isNotActiveSell)
+        {
+            if (presentDiscount != null && presentDiscount != 0)
+                botSettings.Present_Discount = presentDiscount / 100;
+            else
+                botSettings.Present_Discount = null;
+
+            if (invitePercent != null && invitePercent != 0)
+                botSettings.InvitePercent = invitePercent / 100;
+            else
+                botSettings.InvitePercent = null;
+
+            botSettings.IsNotActiveSell = isNotActiveSell == true;
+        }
+
+        [AuthorizeApp(Roles = "1,3,4")]
+        [System.Web.Mvc.HttpGet]
         public ActionResult _GetBotSetting(int user_id)
         {
             var user = RepositoryUser.Where(s => s.User_ID == user_id).FirstOrDefault();
-            var botSetting = user.tbBotSettings.FirstOrDefault();
+            if (user == null)
+                return Content("کاربر یافت نشد");
+
+            var botSettings = user.tbBotSettings;
+            var botSetting = botSettings != null ? botSettings.FirstOrDefault() : null;
             if (botSetting != null)
-            {
                 return PartialView(botSetting);
-            }
-            else
-            {
-                return PartialView(new tbBotSettings());
-            }
+
+            return PartialView(new tbBotSettings { FK_User_ID = user_id });
         }
 
 
         [System.Web.Mvc.HttpPost]
         [AuthorizeApp(Roles = "1,3,4")]
-        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, bool? Enabled, bool? RequiredJoinChannel , bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null)
+        public async Task<ActionResult> SaveBotSetting(int id, int user_id, string BotId, string BotToken, long TelegramUserId, string ChannelId, bool? Enabled, bool? RequiredJoinChannel , bool? IsActiveSendReceipt, int userPlan, double? Present_Discount = null, double? InvitePercent = null, bool? IsNotActiveSell = null)
         {
 
             try
@@ -1961,14 +2214,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         botSettings.ChannelID = ChannelId;
                     }
-                    if (Present_Discount != null && Present_Discount != 0)
-                    {
-                        botSettings.Present_Discount = Present_Discount / 100;
-                    }
-                    else
-                    {
-                        botSettings.Present_Discount = null;
-                    }
+                    ApplyBotSettingExtras(botSettings, Present_Discount, InvitePercent, IsNotActiveSell);
                     var ress = BotManager.GetBot(Use.Username);
                     if (ress == null)
                     {
@@ -2030,10 +2276,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         botSettings.ChannelID = ChannelId;
                     }
-                    if (Present_Discount != null && Present_Discount != 0)
-                    {
-                        botSettings.Present_Discount = Present_Discount / 100;
-                    }
+                    ApplyBotSettingExtras(botSettings, Present_Discount, InvitePercent, IsNotActiveSell);
 
                     var ress = BotManager.GetBot(Use.Username);
                     if (ress == null)
@@ -2359,6 +2602,113 @@ namespace V2boardApi.Areas.App.Controllers
             }
         }
 
+
+        #endregion
+
+        #region تنظیمات پشتیبانی
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public ActionResult _GetSupportLinks()
+        {
+            return PartialView("_GetSupportLinks");
+        }
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> GetSupportLinks(int user_id)
+        {
+            var user = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == user_id);
+            if (user == null)
+                return Json(new { status = "success", data = new List<SupportLinkViewModel>() }, JsonRequestBehavior.AllowGet);
+
+            List<SupportLinkViewModel> links = new List<SupportLinkViewModel>();
+            foreach (var item in user.tbSupportLinks.OrderBy(s => s.tbSl_ID))
+            {
+                SupportLinkViewModel link = new SupportLinkViewModel();
+                link.Support_ID = item.tbSl_ID;
+                link.Support_Title = item.tbSl_Title;
+                link.Support_Link = item.tbSl_Link;
+                link.Support_Phone = item.tbSl_Phone;
+                links.Add(link);
+            }
+
+            return Json(new { status = "success", data = links }, JsonRequestBehavior.AllowGet);
+        }
+
+        [AuthorizeApp(Roles = "1,3,4")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> SaveSupportLink(int user_id, string Support_Title, string Support_Link, string Support_Phone, int Support_ID = 0)
+        {
+            try
+            {
+                Support_Title = (Support_Title ?? string.Empty).Trim();
+                Support_Link = string.IsNullOrWhiteSpace(Support_Link) ? null : Support_Link.Trim();
+                Support_Phone = string.IsNullOrWhiteSpace(Support_Phone) ? null : Support_Phone.Trim();
+
+                if (string.IsNullOrEmpty(Support_Title))
+                    return MessageBox.Warning("ناموفق", "عنوان ارتباط را وارد کنید");
+
+                if (Support_Link == null && Support_Phone == null)
+                    return MessageBox.Warning("ناموفق", "حداقل لینک ارتباط یا شماره تلفن را وارد کنید");
+
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+                if (user == null)
+                    return MessageBox.Warning("ناموفق", "کاربر یافت نشد");
+
+                if (Support_ID != 0)
+                {
+                    var Link = user.tbSupportLinks.Where(s => s.tbSl_ID == Support_ID).FirstOrDefault();
+                    if (Link == null)
+                        return MessageBox.Warning("هشدار", "لینک ارتباطی یافت نشد");
+
+                    Link.tbSl_Title = Support_Title;
+                    Link.tbSl_Link = Support_Link;
+                    Link.tbSl_Phone = Support_Phone;
+                    await RepositoryUser.SaveChangesAsync();
+                    return Toaster.Success("موفق", "لینک ارتباطی ویرایش شد");
+                }
+
+                tbSupportLinks item = new tbSupportLinks();
+                item.tbSl_Title = Support_Title;
+                item.tbSl_Link = Support_Link;
+                item.tbSl_Phone = Support_Phone;
+                user.tbSupportLinks.Add(item);
+                await RepositoryUser.SaveChangesAsync();
+                return Toaster.Success("موفق", "لینک ارتباطی اضافه شد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ذخیره لینک ارتباطی پشتیبانی");
+                return MessageBox.Error("ناموفق", "خطا در ذخیره لینک ارتباطی");
+            }
+        }
+
+        [System.Web.Mvc.HttpGet]
+        [AuthorizeApp(Roles = "1,3,4")]
+        public async Task<ActionResult> DeleteSupportLink(int Support_ID, int user_id)
+        {
+            try
+            {
+                var user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+                if (user == null)
+                    return MessageBox.Warning("هشدار", "کاربر یافت نشد");
+
+                var Link = user.tbSupportLinks.Where(s => s.tbSl_ID == Support_ID).FirstOrDefault();
+                if (Link == null)
+                    return MessageBox.Warning("هشدار", "لینک ارتباطی یافت نشد");
+
+                user.tbSupportLinks.Remove(Link);
+                await RepositoryUser.SaveChangesAsync();
+                logger.Info("لینک ارتباطی پشتیبانی حذف شد");
+                return Toaster.Success("موفق", "لینک ارتباطی حذف گردید");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در حذف لینک ارتباطی پشتیبانی");
+                return MessageBox.Error("خطا", "خطا در حذف لینک ارتباطی");
+            }
+        }
 
         #endregion
 

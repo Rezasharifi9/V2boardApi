@@ -19,17 +19,15 @@ $(function () {
         headingColor = config.colors.headingColor;
     }
 
-    var Role = "";
-    if (document.cookie.split(';').length != 0) {
+    var Role = window.PanelUserRole || "";
+    if (!Role && document.cookie.split(';').length != 0) {
         var Cookies = document.cookie.split(';');
         var RoleCookie = Cookies.find(cookie => cookie.trim().startsWith("Role="));
         if (RoleCookie) {
             Role = RoleCookie.split('=')[1];
         }
-    } else {
-        Role = document.cookie;
-        Role = Role.split('=')[1];
-
+    } else if (!Role && document.cookie) {
+        Role = document.cookie.split('=')[1];
     }
 
     // Variable declaration for table
@@ -71,6 +69,7 @@ $(function () {
                 { data: 'used' }
 
             ],
+            order: [],
             columnDefs: [
                 {
                     // For Responsive
@@ -210,6 +209,11 @@ $(function () {
                             menuRobot = '<a href="javascript:;" class="dropdown-item StartBot" data-id=' + $id + '>' + "تغییر وضعیت ربات" + '</a>';
                         }
 
+                        var menuDelete = "";
+                        if (Role == "1") {
+                            menuDelete = '<a href="javascript:;" class="dropdown-item DeleteAgent text-danger" data-id=' + $id + ' data-username="' + (full['username'] || full['Username'] || '') + '">حذف نماینده</a>';
+                        }
+
                         return (
                             '<div class="d-flex align-items-center">' +
                             '<a href="javascript:;" class="text-body EditUser" data-id=' + $id + '><i class="ti ti-edit ti-sm me-2"></i></a>' +
@@ -218,6 +222,7 @@ $(function () {
                             '<a href="/App/Admin/Details?user_id=' + userId +
                             '" class="dropdown-item">نمایش</a>' +
                             '<a href="javascript:;" class="dropdown-item BanUser" data-id=' + $id + '>' + $StatusTitle + '</a>' +
+                            menuDelete +
                             menuRobot +
                             '</div>' +
                             '</div>'
@@ -490,6 +495,61 @@ $(function () {
                     }
                 })
 
+            }
+        });
+    });
+
+    $('body').on('click', '.DeleteAgent', function () {
+        var id = $(this).attr('data-id');
+        var username = $(this).attr('data-username') || '';
+
+        $.ajax({
+            url: '/App/Admin/GetDeleteAgentPreview?id=' + id,
+            type: 'get',
+            dataType: 'json',
+            success: function (previewRes) {
+                if (previewRes.status !== 'success' || !previewRes.data) {
+                    Swal.fire({
+                        title: 'خطا',
+                        text: previewRes.message || 'امکان حذف این نماینده وجود ندارد.',
+                        icon: 'error',
+                        confirmButtonText: 'باشه'
+                    });
+                    return;
+                }
+
+                var preview = previewRes.data;
+                var confirmText = preview.message || preview.Message || '';
+                confirmText = confirmText.replace(/\n/g, '<br>');
+
+                Swal.fire({
+                    title: 'حذف نماینده «' + (preview.username || preview.Username || username) + '»',
+                    html: '<div class="text-start" style="white-space:normal;line-height:1.8;">' + confirmText + '</div>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'بله، حذف شود',
+                    cancelButtonText: 'انصراف',
+                    customClass: {
+                        confirmButton: 'btn btn-danger me-3 waves-effect waves-light',
+                        cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+                    },
+                    buttonsStyling: false
+                }).then(function (result) {
+                    if (!result.value)
+                        return;
+
+                    $.ajax({
+                        url: '/App/Admin/DeleteAgent?id=' + id,
+                        type: 'post',
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.data)
+                                eval(res.data);
+                            if (res.status === 'success')
+                                dt_user.ajax.reload(null, false);
+                        }
+                    });
+                });
             }
         });
     });

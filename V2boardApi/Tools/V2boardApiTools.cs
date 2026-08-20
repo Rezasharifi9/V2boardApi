@@ -18,7 +18,12 @@ namespace V2boardApi.Tools
         private static bool IsInit = false;
         public static void init()
         {
-            Server = HttpRuntime.Cache["Server"] as tbServers;
+            Server = ServerCacheHelper.Get();
+            if (Server == null)
+            {
+                IsInit = false;
+                return;
+            }
 
             BaseUrl = Server.ServerAddress + "/api/v1/server/";
 
@@ -31,6 +36,12 @@ namespace V2boardApi.Tools
         {
             try
             {
+                if (!IsInit)
+                {
+                    init();
+                    if (!IsInit)
+                        return null;
+                }
                 if (IsInit)
                 {
                     HttpClient client = new HttpClient();
@@ -65,37 +76,31 @@ namespace V2boardApi.Tools
 
         public static async Task<List<SubInfo>> GetSubOnlineList()
         {
-            if (IsInit)
+            if (!IsInit)
+                init();
+
+            if (!IsInit)
+                return new List<SubInfo>();
+
+            if (Server.ApiToken_V2board != null)
             {
-                if (Server.ApiToken_V2board != null)
+                HttpClient client = new HttpClient();
+                client.BaseAddress = new Uri(BaseUrl);
+                var response = await client.GetAsync(client.BaseAddress + "info/alivelist?token=" + Token);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    HttpClient client = new HttpClient();
-                    client.BaseAddress = new Uri(BaseUrl);
-                    var response = await client.GetAsync(client.BaseAddress + "info/alivelist?token=" + Token);
+                    var result = await response.Content.ReadAsStringAsync();
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var result = await response.Content.ReadAsStringAsync();
+                    var model = JsonConvert.DeserializeObject<List<SubInfo>>(result);
 
-                        var model = JsonConvert.DeserializeObject<List<SubInfo>>(result);
-
-                        return model;
-                    }
-                    else
-                    {
-                        return new List<SubInfo>();
-                    }
+                    return model;
                 }
-                else
-                {
-                    return new List<SubInfo>();
-                }
-            }
-            else
-            {
+
                 return new List<SubInfo>();
             }
 
+            return new List<SubInfo>();
         }
 
 

@@ -61,7 +61,7 @@ namespace V2boardApi.Areas.App.Controllers
                 var user = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
                 if (user != null)
                 {
-                    var result = user.tbPlans.Where(a=> a.Status == true).ToList();
+                    var result = user.tbPlans.ToList();
 
 
                     foreach (var item in result)

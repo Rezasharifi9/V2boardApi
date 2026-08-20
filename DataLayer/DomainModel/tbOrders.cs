@@ -35,10 +35,12 @@ namespace DataLayer.DomainModel
         public double Traffic { get; set; }
         public double Month { get; set; }
         public Nullable<System.DateTime> Tel_RenewedDate { get; set; }
-    
+        public Nullable<int> FK_MobileUser_ID { get; set; }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }
         public virtual tbLinkUserAndPlans tbLinkUserAndPlans { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
+        public virtual tbMobileUsers tbMobileUsers { get; set; }
     }
 }

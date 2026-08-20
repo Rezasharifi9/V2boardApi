@@ -21,6 +21,32 @@ namespace V2boardApi.Tools
         public DateTime LastWeekEnd { get; set; }
     }
 
+    public class PersianMonthRange
+    {
+        public int Year { get; set; }
+        public int Month { get; set; }
+        public int PassedDays { get; set; }
+        public int LastYear { get; set; }
+        public int LastMonth { get; set; }
+        public DateTime ThisMonthStart { get; set; }
+        public DateTime ThisMonthEnd { get; set; }
+        public DateTime LastMonthStart { get; set; }
+        public DateTime LastMonthEnd { get; set; }
+        public DateTime LastMonthComparableEnd { get; set; }
+        public DateTime TodayStart { get; set; }
+        public DateTime TodayEnd { get; set; }
+        public DateTime YesterdayStart { get; set; }
+        public DateTime YesterdayEnd { get; set; }
+    }
+
+    public class ChannelSalesBreakdown
+    {
+        public double Bot { get; set; }
+        public double Agent { get; set; }
+        public double Master { get; set; }
+        public double Total { get { return Bot + Agent + Master; } }
+    }
+
     public static class DashboardSalesHelper
     {
         public static SalesDataSnapshot LoadSalesData(Entities db)
@@ -133,6 +159,76 @@ namespace V2boardApi.Tools
         {
             var pc = new PersianCalendar();
             return pc.GetDayOfMonth(today);
+        }
+
+        public static PersianMonthRange GetPersianMonthRange(DateTime today)
+        {
+            today = today.Date;
+            var pc = new PersianCalendar();
+            var year = pc.GetYear(today);
+            var month = pc.GetMonth(today);
+            var day = pc.GetDayOfMonth(today);
+            var thisMonthStart = pc.ToDateTime(year, month, 1, 0, 0, 0, 0);
+
+            int lastYear;
+            int lastMonth;
+            if (month == 1)
+            {
+                lastYear = year - 1;
+                lastMonth = 12;
+            }
+            else
+            {
+                lastYear = year;
+                lastMonth = month - 1;
+            }
+
+            var lastMonthStart = pc.ToDateTime(lastYear, lastMonth, 1, 0, 0, 0, 0);
+            var lastMonthDays = pc.GetDaysInMonth(lastYear, lastMonth);
+            var lastMonthEnd = EndOfDay(pc.ToDateTime(lastYear, lastMonth, lastMonthDays, 0, 0, 0, 0));
+            var comparableDay = Math.Min(day, lastMonthDays);
+            var lastMonthComparableEnd = EndOfDay(pc.ToDateTime(lastYear, lastMonth, comparableDay, 0, 0, 0, 0));
+
+            return new PersianMonthRange
+            {
+                Year = year,
+                Month = month,
+                PassedDays = day,
+                LastYear = lastYear,
+                LastMonth = lastMonth,
+                ThisMonthStart = thisMonthStart,
+                ThisMonthEnd = EndOfDay(today),
+                LastMonthStart = lastMonthStart,
+                LastMonthEnd = lastMonthEnd,
+                LastMonthComparableEnd = lastMonthComparableEnd,
+                TodayStart = today,
+                TodayEnd = EndOfDay(today),
+                YesterdayStart = today.AddDays(-1),
+                YesterdayEnd = EndOfDay(today.AddDays(-1))
+            };
+        }
+
+        public static int CountSalesInRange(SalesDataSnapshot data, DateTime start, DateTime end)
+        {
+            if (data == null)
+                return 0;
+
+            return FilterBotSales(data.BotSales, start, end).Count
+                + FilterUserSales(data.UserSales, start, end).Count
+                + FilterMasterSales(data.MasterSales, start, end).Count;
+        }
+
+        public static ChannelSalesBreakdown SumChannelSales(SalesDataSnapshot data, DateTime start, DateTime end)
+        {
+            if (data == null)
+                return new ChannelSalesBreakdown();
+
+            return new ChannelSalesBreakdown
+            {
+                Bot = FilterBotSales(data.BotSales, start, end).Sum(s => s.SalePrice ?? 0),
+                Agent = FilterUserSales(data.UserSales, start, end).Sum(s => s.SalePrice ?? 0),
+                Master = FilterMasterSales(data.MasterSales, start, end).Sum(s => s.SalePrice ?? 0)
+            };
         }
 
         private static DateTime EndOfDay(DateTime date)

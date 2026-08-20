@@ -1,0 +1,22 @@
+@model DataLayer.DomainModel.tbUsers
+<div class="card mb-3 border-warning">
+    <div class="card-body py-3">
+        <h6 class="mb-2">تنظیمات فروش نمایندگی در پنل</h6>
+        <p class="text-muted small mb-3">فقط برای حساب ادمین — با فعال‌سازی، ثبت اشتراک جدید توسط نمایندگان در پنل متوقف می‌شود.</p>
+        <label class="switch switch-square">
+            @if (Model.IsNotActiveSell)
+            {
+                <input class="switch-input" type="checkbox" checked id="adminPanelIsNotActiveSell" data-user-id="@Model.User_ID" />
+            }
+            else
+            {
+                <input class="switch-input" type="checkbox" id="adminPanelIsNotActiveSell" data-user-id="@Model.User_ID" />
+            }
+            <span class="switch-toggle-slider">
+                <span class="switch-on"><i class="ti ti-check"></i></span>
+                <span class="switch-off"><i class="ti ti-x"></i></span>
+            </span>
+            <span class="switch-label">بستن فروش نمایندگی (پنل)</span>
+        </label>
+    </div>
+</div>

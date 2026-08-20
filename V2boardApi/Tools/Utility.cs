@@ -24,6 +24,9 @@ namespace V2boardApi.Tools
     {
         public static string ToSha256(this string text)
         {
+            if (text == null)
+                return null;
+
             byte[] bytes = Encoding.Unicode.GetBytes(text);
             SHA256Managed hashstring = new SHA256Managed();
             byte[] hash = hashstring.ComputeHash(bytes);

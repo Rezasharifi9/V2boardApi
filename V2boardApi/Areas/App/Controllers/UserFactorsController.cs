@@ -1,4 +1,4 @@
-﻿using Antlr.Runtime.Misc;
+using Antlr.Runtime.Misc;
 using DataLayer.DomainModel;
 using DataLayer.Repository;
 using MySqlX.XDevAPI.Common;
@@ -153,6 +153,7 @@ namespace V2boardApi.Areas.App.Controllers
                     var PayedFactores = await RepositoryFactors.WhereAsync(s => s.tbUf_Status == 2 && s.FK_User_ID == UserAgent.User_ID);
 
                     var PaySum = PayedFactores.Sum(s => s.tbUf_Value.Value);
+                    var walletBefore = UserAgent.Wallet;
 
                     if (PaySum >= UserAgent.Wallet)
                     {
@@ -176,6 +177,8 @@ namespace V2boardApi.Areas.App.Controllers
                     await RepositoryUsers.SaveChangesAsync();
                     tr.Commit();
 
+                    AgentLimitNotificationService.ScheduleCheckAfterWalletChange(UserAgent.User_ID, walletBefore);
+
                     if (UserAgent.Settlement_Enabled &&
                         (userFactor.tbUf_Status == 3 || PayedFactores.Any(f => f.tbUf_Status == 3)))
                         await SettlementService.OnAgentPaymentConfirmed(UserAgent, db);
@@ -194,7 +197,10 @@ namespace V2boardApi.Areas.App.Controllers
                         telegramMsg.AppendLine("💰 مبلغ: " + userFactor.tbUf_Value.Value.ConvertToMony());
                         if (UserAgent.Wallet > 0)
                             telegramMsg.AppendLine("📊 بدهی باقی‌مانده: " + UserAgent.Wallet.ConvertToMony());
-                        await SettlementService.SendAgentTelegramMessage(UserAgent, telegramMsg.ToString());
+                        await SettlementService.SendAgentTelegramMessage(
+                            UserAgent,
+                            telegramMsg.ToString(),
+                            panelTitle: PanelNotificationService.TitleFactorPaid);
                     }
 
                     logger.Warn("پرداخت جدید اضافه گردید");
