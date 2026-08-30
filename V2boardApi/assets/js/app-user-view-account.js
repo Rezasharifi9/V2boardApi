@@ -281,7 +281,7 @@ $(function () {
                     render: function (data, type, full, meta) {
                         var $due_date = full['Price'];
                         return (
-                            "<span>" + $due_date + "</span>"
+                            "<span>" + $due_date + " تومان</span>"
                         );
                     }
                 },

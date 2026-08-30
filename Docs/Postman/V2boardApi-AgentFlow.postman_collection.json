@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "a7e3f1c2-9b4d-4e56-8a01-2f6c5d3e7b90",
 		"name": "V2boardApi — جریان نماینده (Agent Flow)",
-		"description": "زنجیره کامل: توکن ساب مشتری → تشخیص نماینده → تعرفه‌ها → سوالات متداول → لینک‌های پشتیبانی → موجودی کیف پول ربات → فاکتور → آپلود رسید → بررسی وضعیت / پرداخت از کیف پول.\n\n## قبل از اجرا\n\nفقط دو متغیر را پر کنید (تب Variables همین Collection):\n\n| متغیر | مقدار |\n|-------|-------|\n| `baseUrl` | آدرس پنل، بدون اسلش انتهایی — مثل `https://panel.example.com` |\n| `subToken` | توکن لینک ساب یک اشتراک واقعی |\n\nبقیه متغیرها (`agentToken`, `planId`, `trackingCode`, `agentUsername`) **خودکار** از پاسخ درخواست‌های قبلی پر می‌شوند.\n\n## نحوه اجرا\n\nپوشه‌ها را به ترتیب ۱ تا ۴ اجرا کنید، یا با Collection Runner کل Collection را یکجا Run کنید (پوشه ۴ عمداً خطا برمی‌گرداند و تست‌هایش هم همان خطا را انتظار دارند).\n\n> ⚠️ پوشه ۳ رکورد واقعی در دیتابیس می‌سازد (`tbOrders` + `tbDepositWallet_Log` با وضعیت `FOR_PAY`). این فاکتورها با `TimerService.RemoveExpireFactores` خودکار پاک می‌شوند، ولی روی محیط پروداکشن با احتیاط اجرا کنید.\n\n> ⚠️ درخواست «CheckAgentInvoice — پرداخت از کیف پول» اگر اشتراک به کاربر ربات وصل باشد و موجودی کافی داشته باشد، **واقعاً مبلغ را کسر و اشتراک را تمدید می‌کند**. روی پروداکشن فقط وقتی اجرا کنید که این را می‌خواهید.\n\n> ⚠️ درخواست «Sub/ResetLink» لینک ساب را واقعاً عوض می‌کند و لینک قبلی را قطع می‌کند. در صورت موفقیت `subToken` با توکن جدید جایگزین می‌شود.\n\nمستندات: `Docs/API-SubAgent.md` · `Docs/API-AgentPlans.md` · `Docs/API-Faq.md` · `Docs/API-SupportLinks.md` · `Docs/API-TelegramWallet.md` · `Docs/API-AgentInvoice.md` · `Docs/API-SubscriptionInfo.md` · `Docs/API-SubscriptionUsage.md` · `Docs/API-SubscriptionResetLink.md` · `Docs/API-MobileDevice.md`",
+		"description": "زنجیره کامل: توکن ساب مشتری → تشخیص نماینده → تعرفه‌ها → سوالات متداول → لینک‌های پشتیبانی → نسخه اپلیکیشن → موجودی کیف پول ربات → فاکتور → آپلود رسید → بررسی وضعیت / پرداخت از کیف پول.\n\n## قبل از اجرا\n\nفقط دو متغیر را پر کنید (تب Variables همین Collection):\n\n| متغیر | مقدار |\n|-------|-------|\n| `baseUrl` | آدرس پنل، بدون اسلش انتهایی — مثل `https://panel.example.com` |\n| `subToken` | توکن لینک ساب یک اشتراک واقعی |\n\nبقیه متغیرها (`agentToken`, `planId`, `trackingCode`, `agentUsername`) **خودکار** از پاسخ درخواست‌های قبلی پر می‌شوند.\n\n## نحوه اجرا\n\nپوشه‌ها را به ترتیب ۱ تا ۴ اجرا کنید، یا با Collection Runner کل Collection را یکجا Run کنید (پوشه ۴ عمداً خطا برمی‌گرداند و تست‌هایش هم همان خطا را انتظار دارند).\n\n> ⚠️ پوشه ۳ رکورد واقعی در دیتابیس می‌سازد (`tbOrders` + `tbDepositWallet_Log` با وضعیت `FOR_PAY`). این فاکتورها با `TimerService.RemoveExpireFactores` خودکار پاک می‌شوند، ولی روی محیط پروداکشن با احتیاط اجرا کنید.\n\n> ⚠️ درخواست «CheckAgentInvoice — پرداخت از کیف پول» اگر اشتراک به کاربر ربات وصل باشد و موجودی کافی داشته باشد، **واقعاً مبلغ را کسر و اشتراک را تمدید می‌کند**. روی پروداکشن فقط وقتی اجرا کنید که این را می‌خواهید.\n\n> ⚠️ درخواست «Sub/ResetLink» لینک ساب را واقعاً عوض می‌کند و لینک قبلی را قطع می‌کند. در صورت موفقیت `subToken` با توکن جدید جایگزین می‌شود.\n\nمستندات: `Docs/API-SubAgent.md` · `Docs/API-AgentPlans.md` · `Docs/API-Faq.md` · `Docs/API-SupportLinks.md` · `Docs/API-AppRelease.md` · `Docs/API-TelegramWallet.md` · `Docs/API-AgentInvoice.md` · `Docs/API-SubscriptionInfo.md` · `Docs/API-SubscriptionUsage.md` · `Docs/API-SubscriptionResetLink.md` · `Docs/API-MobileDevice.md` · `Docs/API-ClientLog.md`",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -387,7 +387,7 @@
 		},
 		{
 			"name": "۲ - تعرفه‌ها، کیف پول و دستگاه",
-			"description": "با توکن نمایندهٔ به‌دست‌آمده از پوشه ۱ کار می‌کنند. مسیرشان بدون پیشوند api/v1 است چون روی روت Web API یعنی {controller}/{action} می‌نشینند. شامل تعرفه‌ها، سوالات متداول ربات، موجودی کیف پول و ثبت دستگاه.",
+			"description": "با توکن نمایندهٔ به‌دست‌آمده از پوشه ۱ کار می‌کنند. مسیرشان بدون پیشوند api/v1 است چون روی روت Web API یعنی {controller}/{action} می‌نشینند. شامل تعرفه‌ها، سوالات متداول ربات، نسخه اپلیکیشن، موجودی کیف پول و ثبت دستگاه.",
 			"item": [
 				{
 					"name": "User/GetAgentPlans — لیست تعرفه‌ها",
@@ -602,6 +602,63 @@
 					"response": []
 				},
 				{
+					"name": "User/GetAppRelease — نسخه اپلیکیشن",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('فیلد forceInstall بولی است', function () {",
+									"    pm.expect(j.forceInstall).to.be.a('boolean');",
+									"});",
+									"",
+									"pm.test('changelog آرایه است', function () {",
+									"    pm.expect(j.changelog).to.be.an('array');",
+									"});",
+									"",
+									"if (j.version) {",
+									"    console.log('نسخه: ' + j.version + ' (' + j.versionCode + ') force=' + j.forceInstall);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}",
+								"description": "توکن نماینده — از Sub/Agent"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/User/GetAppRelease",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"User",
+								"GetAppRelease"
+							]
+						},
+						"description": "نسخه منتشرشده، لینک دانلود، متن تغییرات و پرچم نصب اجباری که ادمین در پیکربندی ← نسخه اپلیکیشن وارد کرده.\n\nمستندات: Docs/API-AppRelease.md"
+					},
+					"response": []
+				},
+				{
 					"name": "User/GetTelegramWallet — موجودی کیف پول ربات",
 					"event": [
 						{
@@ -737,6 +794,71 @@
 							]
 						},
 						"description": "ثبت یک دستگاه تستی و تخصیص آن به نماینده. اختیاری است — فقط برای اینکه فاکتور مرحله بعد به یک دستگاه وصل شود و در پنل با نام «Postman API-Test» دیده شود.\n\nidempotent است: اجرای دوباره با همان `deviceId` رکورد موجود را به‌روز می‌کند.\n\n> دستگاه‌های تستی در پنل، بخش «کاربران موبایل» قابل غیرفعال کردن هستند.\n\nمستندات: Docs/API-MobileDevice.md"
+					},
+					"response": []
+				},
+				{
+					"name": "MobileDevice/LogError — ثبت خطای اپ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"let j = {};",
+									"try { j = pm.response.json(); } catch (e) { }",
+									"",
+									"pm.test('وضعیت 200 است', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('ok برابر true است', function () {",
+									"    pm.expect(j.ok).to.eql(true);",
+									"});",
+									"",
+									"pm.test('logger با AndroidApp شروع می‌شود', function () {",
+									"    pm.expect(j.logger).to.be.a('string').and.match(/^AndroidApp/);",
+									"});",
+									"",
+									"if (j.logger) {",
+									"    console.log('لاگ با تگ ' + j.logger + ' ثبت شد');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{agentToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"level\": \"Error\",\n  \"tag\": \"vpn-core\",\n  \"message\": \"VPN start failed (Postman test)\",\n  \"exception\": \"java.lang.IllegalStateException: tun fd is null\",\n  \"deviceId\": \"{{androidId}}\",\n  \"packageName\": \"com.postman.test\",\n  \"appVersion\": \"0.0.0-test\",\n  \"versionCode\": 1,\n  \"manufacturer\": \"Postman\",\n  \"model\": \"API-Test\",\n  \"device\": \"android\",\n  \"osVersion\": \"15\",\n  \"sdk\": 35,\n  \"screen\": \"Postman\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/MobileDevice/LogError",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"MobileDevice",
+								"LogError"
+							]
+						},
+						"description": "یک خطای تستی از طرف اپ را در جدول NLog با Logger برابر AndroidApp.com.postman.test ثبت می‌کند. در پنل، پیکربندی ← لاگ سیستم، دکمه «لاگ اپلیکیشن» را بزنید.\n\nمستندات: Docs/API-ClientLog.md"
 					},
 					"response": []
 				}

@@ -1,3 +1,5 @@
+using DataLayer.DomainModel;
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace V2boardApi.Tools
@@ -9,6 +11,38 @@ namespace V2boardApi.Tools
 
         /// <summary>برای نمایش «منقضی شده» در پنل — هم‌راستا با هشدار ۲۴ ساعته.</summary>
         public const int PendingInvoiceDays = 1;
+
+        public const string BuyInvoiceStep = "WaitForBuyInvoicePay";
+        public const string DuplicatePayClickMessage = "⚠️ فاکتور این تعرفه قبلا ثبت شده و هنوز اعتبار داره. همون مبلغ رو واریز کن یا تعرفه دیگری انتخاب کن";
+
+        private static readonly ConcurrentDictionary<string, byte> PayClickLocks = new ConcurrentDictionary<string, byte>();
+
+        public static bool TryEnterPayLock(string userUniqId)
+        {
+            return !string.IsNullOrEmpty(userUniqId) && PayClickLocks.TryAdd(userUniqId, 1);
+        }
+
+        public static void ExitPayLock(string userUniqId)
+        {
+            if (!string.IsNullOrEmpty(userUniqId))
+                PayClickLocks.TryRemove(userUniqId, out _);
+        }
+
+        public static bool TryClaimPaymentClick(tbTelegramUsers user)
+        {
+            if (user == null)
+                return false;
+            if (user.Tel_Step != "WaitForPay" && user.Tel_Step != BuyInvoiceStep)
+                return false;
+            user.Tel_Step = BuyInvoiceStep;
+            return true;
+        }
+
+        public static void ReleasePaymentClick(tbTelegramUsers user)
+        {
+            if (user != null && user.Tel_Step == BuyInvoiceStep)
+                user.Tel_Step = "WaitForPay";
+        }
 
         public static string BuildCardToCardPaymentMessage(
             string taxId,

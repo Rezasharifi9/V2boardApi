@@ -149,6 +149,12 @@
     <Compile Include="DomainModel\sysdiagrams.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="DomainModel\tbAlertSendLogs.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DomainModel\tbAppRelease.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="DomainModel\tbBankCardNumbers.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>

@@ -96,6 +96,7 @@ msbuild V2boardApi.sln /p:Configuration=Release
 | POST | `/User/CheckAgentInvoice` | بررسی وضعیت فاکتور نماینده، جزئیات اشتراک بعد از تائید، یا پرداخت از کیف پول ربات (`PayFromWallet`) — [مستندات](Docs/API-AgentInvoice.md#api-بررسی-وضعیت-فاکتور-check-agent-invoice) |
 | POST | `/MobileDevice/Register` | ثبت دستگاه در اولین اجرای اپلیکیشن و تخصیص آن به نماینده (هدر Authorization) — [مستندات](Docs/API-MobileDevice.md) |
 | POST | `/MobileDevice/UpdateToken` | به‌روزرسانی توکن نوتیفیکیشن دستگاه — [مستندات](Docs/API-MobileDevice.md#api-بهروزرسانی-توکن-نوتیفیکیشن) |
+| POST | `/MobileDevice/LogError` | ثبت خطای اپلیکیشن در NLog با تگ `AndroidApp` (هدر Authorization) — [مستندات](Docs/API-ClientLog.md) |
 
 ### MVC — `api/v1/{controller}/{action}`
 

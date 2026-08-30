@@ -151,7 +151,9 @@ $(function () {
                     targets: 1,
                     responsivePriority: 4,
                     render: function (data, type, full, meta) {
-                        var $name = full['Name'].split('@')[0];
+                        var nameParts = String(full['Name'] || '').split('@');
+                        var $name = nameParts[0];
+                        var $agent = nameParts.length > 1 ? nameParts[1] : '';
                         var $IsOnline = full['IsOnline'];
                         var $LastTimeOnline = full['LastTimeOnline'];
                         // Creates full output for row
@@ -178,8 +180,12 @@ $(function () {
                                 '</span>';
                         }
 
-
-
+                        if ($agent) {
+                            $row_output = '<div class="d-flex flex-column align-items-center">' +
+                                $row_output +
+                                '<small class="text-muted">نماینده: ' + $agent + '</small>' +
+                                '</div>';
+                        }
 
                         return $row_output;
                     }
@@ -335,7 +341,13 @@ $(function () {
                         }
                         else {
                             $state = "مسدود";
+                        }
 
+                        var accessBtn;
+                        if ($IsActive == 4 && full['IsAdminBlocked'] && Role != "1") {
+                            accessBtn = '<button type="button" class="dropdown-item disabled" disabled>رفع مسدودی (مسدود توسط مدیریت)</button>';
+                        } else {
+                            accessBtn = '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state + '</button>';
                         }
 
 
@@ -347,8 +359,8 @@ $(function () {
 
                         return (
                             '<div class="d-flex align-items-center">' +
-                            '<button data-bs-toggle="popover" title="QR Code Link" onclick="ShowQRCode(\'' + $link + '\')" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
-                            '<button data-bs-toggle="popover" title="QR Code Backup Link" onclick="ShowQRCode(\'' + $Suplink + '\')" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
+                            '<button data-bs-toggle="popover" title="QR لینک اصلی" onclick="ShowQRCode(\'' + $link + '\', false)" class="btn btn-sm btn-icon item-qrcode"><i class="text-primary ti ti-qrcode"></i></button>' +
+                            '<button data-bs-toggle="popover" title="QR لینک پشتیبان" onclick="ShowQRCode(\'' + $Suplink + '\', true)" class="btn btn-sm btn-icon item-qrcode"><i class="text-warning ti ti-qrcode"></i></button>' +
                             '<a href="javascript:;" class="text-primary dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical ti-sm mx-1"></i></a>' +
                             '<div class="dropdown-menu dropdown-menu-start m-0">' +
                             (Role == "1" ? '<button data-id="' + user_id + '" class="dropdown-item item-edit">ویرایش</button>' : '') +
@@ -359,7 +371,7 @@ $(function () {
                             '<button  data-id="' + user_id + '" class="dropdown-item item-unlink">تغییر لینک</button>' +
                             '<button  data-id="' + user_id + '" class="dropdown-item item-changename" data-id2="' + full["Name"] + '">تغییر نام</button>' +
                             '<button class="dropdown-item item-history" data-id="' + user_id + '" data-name="' + $Name + '">تاریخچه مصرف</button>' +
-                            '<button data-bs-toggle="popover" data-id="' + $IsActive + '" data-id2="' + user_id + '" class="dropdown-item item-access">' + $state + '</button>' +
+                            accessBtn +
                             '<div class="dropdown-divider"></div>' +
                             '<li><button data-used="' + $UsedVolume + '" data-id="' + user_id + '"data-user="' + $Name + '"  data-id-vol="' + $Volume + '" data-id-time="' + full["DaysLeft"] + '" data-can-delete="' + (full["CanDelete"] ? '1' : '0') + '" data-early-refund="' + (full["CanEarlyDeleteRefund"] ? '1' : '0') + '" class="dropdown-item text-danger item-delete">حذف</button></li>' +
                             '</ul>' +
@@ -639,17 +651,19 @@ $(function () {
 
     //مربوط به مسدود و رفع مسدود اشتراک
     $('body').on('click', '.item-access', function () {
+        if ($(this).prop('disabled') || $(this).hasClass('disabled')) {
+            return;
+        }
 
-        BodyBlockUI();
         var active = $(this).attr("data-id");
         var user_id = $(this).attr("data-id2");
-
         var Status = true;
 
         if (active == "4") {
             Status = false;
         }
 
+        BodyBlockUI();
         AjaxGet("/App/Subscriptions/BanUser?user_id=" + user_id + "&" + "status=" + Status).then(res => {
 
             BodyUnblockUI();

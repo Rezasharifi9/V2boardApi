@@ -3,6 +3,7 @@ using DataLayer.Repository;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -40,6 +41,9 @@ namespace V2boardApi.Tools
         /// <summary>بازه جلوگیری از ثبت اعلان تکراری با عنوان و متن یکسان (ساعت).</summary>
         public const int DefaultDedupHours = 24;
 
+        /// <summary>حداکثر طول عنوان مطابق ستون tbNoti_Title.</summary>
+        public const int TitleMaxLength = 200;
+
         // ── عناوین ثابت اعلانات ──────────────────────────────────────────────
         public const string TitlePreWarning = "هشدار تسویه بدهی (قبل از موعد)";
         public const string TitleDueDay = "سررسید تسویه بدهی";
@@ -50,6 +54,7 @@ namespace V2boardApi.Tools
         public const string TitleUnblocked = "فعال‌سازی مجدد اشتراک‌ها";
         public const string TitleFactorPaid = "ثبت فاکتور پرداخت";
         public const string TitleGeneral = "اطلاعیه سیستم";
+        public const string TitleAdminMessage = "پیام مدیریت";
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -90,8 +95,8 @@ namespace V2boardApi.Tools
             var noti = new tbNotifications
             {
                 tbNoti_FK_User_ID = creatorUserId > 0 ? creatorUserId : agentUserId,
-                tbNoti_Title = Truncate(title, 200),
-                tbNoti_Text = text,
+                tbNoti_Title = Truncate(title, TitleMaxLength),
+                tbNoti_Text = text.Trim(),
                 tbNoti_RegisterDate = DateTime.Now,
                 tbNoti_Status = 1,
                 tbNoti_EndDate = DateTime.Now.AddDays(visibleDays)
@@ -152,6 +157,12 @@ namespace V2boardApi.Tools
             if (agentUserId <= 0 || string.IsNullOrWhiteSpace(text))
                 return false;
 
+            if (string.IsNullOrWhiteSpace(title))
+                title = TitleGeneral;
+
+            title = Truncate(title, TitleMaxLength);
+            text = text.Trim();
+
             try
             {
                 using (var db = new Entities())
@@ -171,6 +182,11 @@ namespace V2boardApi.Tools
                     db.SaveChanges();
                     return true;
                 }
+            }
+            catch (DbEntityValidationException ex)
+            {
+                logger.Warn(ex, "خطا در ثبت اعلان پنل برای کاربر " + agentUserId + " — " + FormatValidationErrors(ex));
+                return false;
             }
             catch (Exception ex)
             {
@@ -258,7 +274,23 @@ namespace V2boardApi.Tools
             if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
                 return value;
 
-            return value.Substring(0, maxLength).TrimEnd() + "…";
+            const string suffix = "…";
+            var keep = maxLength - suffix.Length;
+            if (keep <= 0)
+                return value.Substring(0, maxLength);
+
+            return value.Substring(0, keep).TrimEnd() + suffix;
+        }
+
+        private static string FormatValidationErrors(DbEntityValidationException ex)
+        {
+            if (ex == null || ex.EntityValidationErrors == null)
+                return string.Empty;
+
+            return string.Join("; ",
+                ex.EntityValidationErrors
+                    .SelectMany(e => e.ValidationErrors)
+                    .Select(e => e.PropertyName + ": " + e.ErrorMessage));
         }
 
         #endregion
@@ -287,6 +319,9 @@ namespace V2boardApi.Tools
                 case TitleFactorPaid:
                 case TitleUnblocked:
                     return PanelNotificationCategory.Payment;
+
+                case TitleAdminMessage:
+                    return PanelNotificationCategory.General;
             }
 
             // اعلانات دستی ادمین یا عناوین مشتق‌شده از متن پیام

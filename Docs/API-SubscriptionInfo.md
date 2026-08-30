@@ -5,7 +5,7 @@
 - کنترلر: `V2boardApi/Areas/api/Controllers/SubController.cs` → متد `Info`
 - مدل خروجی: `V2boardApi/Areas/api/Data/ApiModels/SubscriptionTokenInfoModel.cs`
 
-> اندپوینت هم‌خانواده: [`GET /api/v1/Sub/Agent`](API-SubAgent.md) با همان توکن، **نماینده‌ی صاحب اشتراک** و توکن او را برمی‌گرداند. تاریخچه مصرف ۳۰ روز: [`GET /api/v1/Sub/Usage`](API-SubscriptionUsage.md). تغییر لینک اشتراک: [`POST /api/v1/Sub/ResetLink`](API-SubscriptionResetLink.md). موجودی کیف پول ربات تلگرام همان اشتراک: [`POST /User/GetTelegramWallet`](API-TelegramWallet.md). سوالات متداول ربات: [`GET /User/GetFaq`](API-Faq.md). لینک‌های پشتیبانی نماینده: [`GET /User/GetSupportLinks`](API-SupportLinks.md).
+> اندپوینت هم‌خانواده: [`GET /api/v1/Sub/Agent`](API-SubAgent.md) با همان توکن، **نماینده‌ی صاحب اشتراک** و توکن او را برمی‌گرداند. تاریخچه مصرف ۳۰ روز: [`GET /api/v1/Sub/Usage`](API-SubscriptionUsage.md). تغییر لینک اشتراک: [`POST /api/v1/Sub/ResetLink`](API-SubscriptionResetLink.md). موجودی کیف پول ربات تلگرام همان اشتراک: [`POST /User/GetTelegramWallet`](API-TelegramWallet.md). سوالات متداول ربات: [`GET /User/GetFaq`](API-Faq.md). لینک‌های پشتیبانی نماینده: [`GET /User/GetSupportLinks`](API-SupportLinks.md). نسخه اپلیکیشن: [`GET /User/GetAppRelease`](API-AppRelease.md).
 
 ---
 

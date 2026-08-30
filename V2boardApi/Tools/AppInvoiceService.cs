@@ -76,7 +76,7 @@ namespace V2boardApi.Tools
         /// نماینده ای که تائید را انجام می دهد. null یعنی ادمین و بررسی مالکیت انجام نمی شود.
         /// </param>
         /// <param name="payFromWallet">
-        /// true یعنی مبلغ از Tel_Wallet کاربر تلگرام کسر شود و بدهی نماینده هم مثل مسیر AccpetWallet ربات افزایش یابد.
+        /// true یعنی مبلغ از Tel_Wallet کاربر تلگرام کسر شود. بدهی نماینده در هر دو مسیر (کارت و کیف پول) اعمال می‌شود.
         /// </param>
         public async Task<ConfirmResult> ConfirmAsync(int depositId, int? agentUserId, bool payFromWallet = false)
         {
@@ -141,14 +141,16 @@ namespace V2boardApi.Tools
                         }
                     }
 
+                    ReservedPackageHelper.ApplySubscriptionAgentDebt(Agent, PlanLink);
+
                     ConfirmResult result;
                     using (MySqlEntities mySql = new MySqlEntities(Server.ConnectionString))
                     {
                         await mySql.OpenAsync();
 
                         result = Link == null
-                            ? await CreateSubscriptionAsync(mySql, Order, PlanLink, Server)
-                            : await RenewSubscriptionAsync(mySql, Order, PlanLink, Link);
+                            ? await CreateSubscriptionAsync(mySql, Order, PlanLink, Server, Agent.User_ID)
+                            : await RenewSubscriptionAsync(mySql, Order, PlanLink, Link, Agent.User_ID);
 
                         await mySql.CloseAsync();
                     }
@@ -163,10 +165,7 @@ namespace V2boardApi.Tools
                     await db.SaveChangesAsync();
                     transaction.Commit();
 
-                    if (payFromWallet)
-                    {
-                        AgentLimitNotificationService.ScheduleCheckAfterWalletChange(Agent.User_ID, agentWalletBefore);
-                    }
+                    AgentLimitNotificationService.ScheduleCheckAfterWalletChange(Agent.User_ID, agentWalletBefore);
 
                     logger.Info("فاکتور اپلیکیشن " + Deposit.dw_TaxId + (payFromWallet ? " از کیف پول تائید شد" : " تائید شد"));
                     return result;
@@ -181,8 +180,8 @@ namespace V2boardApi.Tools
         }
 
         /// <summary>
-        /// کسر از کیف پول ربات تلگرام صاحب اشتراک و افزایش بدهی نماینده ،
-        /// همان منطق callback AccpetWallet در BotController.
+        /// کسر از کیف پول ربات تلگرام صاحب اشتراک.
+        /// بدهی نماینده در ConfirmAsync جدا اعمال می‌شود تا پرداخت مستقیم هم همان بدهی را بگیرد.
         /// موجودیت ها فقط در حافظه عوض می شوند ؛ ذخیره با تراکنش بیرونی است.
         /// </summary>
         private ConfirmResult ApplyWalletPayment(tbDepositWallet_Log Deposit, tbOrders Order, tbUsers Agent, tbLinkUserAndPlans PlanLink, tbLinks Link)
@@ -222,8 +221,6 @@ namespace V2boardApi.Tools
                 {
                     return ConfirmResult.Fail("امکان پرداخت از کیف پول در حال حاضر وجود ندارد لطفا با پشتیبانی ارتباط بگیرید");
                 }
-
-                Agent.Wallet += (int)FinalPrice;
             }
             else if (Agent.Role == 2)
             {
@@ -231,8 +228,6 @@ namespace V2boardApi.Tools
                 {
                     return ConfirmResult.Fail("امکان پرداخت از کیف پول در حال حاضر وجود ندارد لطفا با پشتیبانی ارتباط بگیرید");
                 }
-
-                Agent.Wallet += PlanLink.tbPlans.Price;
             }
 
             TelUser.Tel_Wallet = Wallet - Price;
@@ -260,7 +255,7 @@ namespace V2boardApi.Tools
         }
 
         /// <summary>ساخت اشتراک جدید روی v2board و ثبت آن در tbLinks</summary>
-        private async Task<ConfirmResult> CreateSubscriptionAsync(MySqlEntities mySql, tbOrders Order, tbLinkUserAndPlans PlanLink, tbServers Server)
+        private async Task<ConfirmResult> CreateSubscriptionAsync(MySqlEntities mySql, tbOrders Order, tbLinkUserAndPlans PlanLink, tbServers Server, int agentUserId)
         {
             var Token = Guid.NewGuid().ToString().Split('-')[0]
                       + Guid.NewGuid().ToString().Split('-')[1]
@@ -313,6 +308,8 @@ namespace V2boardApi.Tools
             NewLink.tbL_Email = Order.AccountName;
             NewLink.tbL_Token = Token;
             NewLink.FK_Server_ID = Server.ServerID;
+            NewLink.FK_User_ID = agentUserId;
+            NewLink.FK_MobileUser_ID = Order.FK_MobileUser_ID;
             NewLink.tb_AutoRenew = false;
             SubscriptionReserveWarnHelper.ResetReserveWarnState(NewLink);
             RepositoryLinks.Insert(NewLink);
@@ -332,7 +329,7 @@ namespace V2boardApi.Tools
         /// تمدید اشتراک موجود. اگر بسته فعلی هنوز تمام نشده باشد سفارش رزرو می شود
         /// (OrderStatus = FOR_RESERVE) — همان رفتاری که مسیر ربات دارد.
         /// </summary>
-        private async Task<ConfirmResult> RenewSubscriptionAsync(MySqlEntities mySql, tbOrders Order, tbLinkUserAndPlans PlanLink, tbLinks Link)
+        private async Task<ConfirmResult> RenewSubscriptionAsync(MySqlEntities mySql, tbOrders Order, tbLinkUserAndPlans PlanLink, tbLinks Link, int agentUserId)
         {
             var Disc1 = new Dictionary<string, object>();
             Disc1.Add("@tbL_Email", Link.tbL_Email);
@@ -354,6 +351,15 @@ namespace V2boardApi.Tools
             if (!Found)
             {
                 return ConfirmResult.Fail("اشتراک این سفارش روی سرور یافت نشد");
+            }
+
+            if (Order.FK_MobileUser_ID != null)
+            {
+                Link.FK_MobileUser_ID = Order.FK_MobileUser_ID;
+            }
+            if (Link.FK_User_ID == null)
+            {
+                Link.FK_User_ID = agentUserId;
             }
 
             if (!Ended)

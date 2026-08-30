@@ -44,6 +44,8 @@ namespace DataLayer.DomainModel
         public virtual DbSet<tbNotificationUser> tbNotificationUser { get; set; }
         public virtual DbSet<tbOrders> tbOrders { get; set; }
         public virtual DbSet<tbPanelChangelogSeen> tbPanelChangelogSeen { get; set; }
+        public virtual DbSet<tbAlertSendLogs> tbAlertSendLogs { get; set; }
+        public virtual DbSet<tbAppRelease> tbAppRelease { get; set; }
         public virtual DbSet<tbPaymentLinks> tbPaymentLinks { get; set; }
         public virtual DbSet<tbPaymentMethods> tbPaymentMethods { get; set; }
         public virtual DbSet<tbPaymentMethodUser> tbPaymentMethodUser { get; set; }

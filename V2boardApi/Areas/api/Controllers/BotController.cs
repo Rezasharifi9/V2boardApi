@@ -620,44 +620,19 @@ namespace V2boardApi.Areas.api.Controllers
                                     {
                                         await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
 
-
-                                        //await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectSubType", db, botName);
-
-                                        var AccName = "";
-                                        if (UserAcc.Tel_Username != null)
+                                        var existingLinks = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).ToList();
+                                        if (existingLinks.Count > 0)
                                         {
-                                            var Link = await tbLinksRepository.FirstOrDefaultAsync(a => a.tbL_Email.Contains(UserAcc.Tel_Username) && a.tbTelegramUsers.Tel_UniqUserID == UserAcc.Tel_UniqUserID);
-                                            if (Link != null)
-                                            {
-                                                AccName = UserAcc.Tel_Username + Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
-                                            }
-                                            else
-                                            {
-                                                AccName = UserAcc.Tel_Username + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
-                                            }
-
-                                        }
-                                        else
-                                        {
-
-                                            AccName = Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                                            await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForBuyExistingChoice", db, botName);
+                                            await bot.Client.SendMessage(
+                                                UserAcc.Tel_UniqUserID,
+                                                TelegramSubscriptionHelper.BuildExistingSubscriptionWarning(BotSettings.Bot_ID),
+                                                replyMarkup: Keyboards.GetBuyExistingChoiceKeyboard(),
+                                                parseMode: ParseMode.Html);
+                                            return Ok();
                                         }
 
-
-                                        var keyboard = Keyboards.GetPlansKeyboard(AccName, RepositoryLinkUserAndPlan);
-
-                                        var plansForBot = RepositoryLinkUserAndPlan
-                                            .Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_Status == true)
-                                            .ToList();
-                                        var str = new StringBuilder();
-                                        str.Append(BuildPlanCatalogMessage(plansForBot, BotSettings));
-                                        //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
-
-
-                                        await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
-
-                                        //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
-
+                                        await SendNewSubscriptionCatalogAsync(UserAcc, BotSettings, botName, bot.Client, tbLinksRepository, RepositoryLinkUserAndPlan);
                                         return Ok();
                                     }
                                     else
@@ -712,8 +687,8 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     #region بخش نمایش لینک های موجود کاربر
                                     await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
-                                    var keyboard = Keyboards.GetServiceLinksKeyboard(UserAcc.Tel_UserID, tbLinksRepository);
-                                    if (keyboard == null)
+                                    var existingLinks = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).ToList();
+                                    if (existingLinks.Count == 0)
                                     {
                                         StringBuilder str3 = new StringBuilder();
                                         str3.AppendLine("<b>" + "❌ عزیزم شما اشتراکی نداری" + "</b>");
@@ -724,15 +699,18 @@ namespace V2boardApi.Areas.api.Controllers
                                         await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str3.ToString(), parseMode: ParseMode.Html);
                                         return Ok();
                                     }
+
+                                    var summaries = await TelegramSubscriptionHelper.LoadUserSubscriptionSummariesAsync(
+                                        existingLinks, BotSettings.tbUsers.tbServers.ConnectionString);
+                                    var keyboard = Keyboards.GetServiceLinksKeyboard(summaries);
                                     await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db, botName);
 
-                                    StringBuilder str2 = new StringBuilder();
-                                    str2.AppendLine("");
-                                    str2.AppendLine("♨️  عزیزم اشتراکتو انتخاب کن تا بریم برای تمدیدش");
-                                    str2.AppendLine("〰️〰️〰️〰️〰️");
-                                    str2.AppendLine("🆔 @" + BotSettings.Bot_ID);
-
-                                    var editedMessage = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString(), replyMarkup: keyboard, replyParameters: message.MessageId, parseMode: ParseMode.Html);
+                                    var editedMessage = await bot.Client.SendMessage(
+                                        UserAcc.Tel_UniqUserID,
+                                        TelegramSubscriptionHelper.BuildSubscriptionListMessage(summaries, BotSettings.Bot_ID, TelegramSubscriptionListMode.Renew),
+                                        replyMarkup: keyboard,
+                                        replyParameters: message.MessageId,
+                                        parseMode: ParseMode.Html);
                                     return Ok();
                                     #endregion
 
@@ -2178,8 +2156,8 @@ namespace V2boardApi.Areas.api.Controllers
                                         {
                                             #region بخش نمایش لینک های موجود کاربر
                                             await RealUser.SetEmptyState(User.Tel_UniqUserID, db, botName);
-                                            var keyboard = Keyboards.GetServiceLinksKeyboard(UserAcc.Tel_UserID, tbLinksRepository);
-                                            if (keyboard == null)
+                                            var existingLinks = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).ToList();
+                                            if (existingLinks.Count == 0)
                                             {
                                                 StringBuilder str2 = new StringBuilder();
                                                 str2.AppendLine("❌ شما سرویسی ندارید");
@@ -2189,15 +2167,18 @@ namespace V2boardApi.Areas.api.Controllers
                                                 await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str2.ToString());
                                                 return Ok();
                                             }
+
+                                            var summaries = await TelegramSubscriptionHelper.LoadUserSubscriptionSummariesAsync(
+                                                existingLinks, BotSettings.tbUsers.tbServers.ConnectionString);
+                                            var keyboard = Keyboards.GetServiceLinksKeyboard(summaries);
                                             await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db, botName);
 
-                                            StringBuilder str3 = new StringBuilder();
-                                            str3.AppendLine("♨️  لطفا اشتراک مورد نظر را انتخاب کنید");
-                                            str3.AppendLine("");
-                                            str3.AppendLine("〰️〰️〰️〰️〰️");
-                                            str3.AppendLine("🚀 @" + BotSettings.Bot_ID);
-
-                                            await bot.Client.EditMessageText(callbackQuery.From.Id, callbackQuery.Message.MessageId, str3.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+                                            await bot.Client.EditMessageText(
+                                                callbackQuery.From.Id,
+                                                callbackQuery.Message.MessageId,
+                                                TelegramSubscriptionHelper.BuildSubscriptionListMessage(summaries, BotSettings.Bot_ID, TelegramSubscriptionListMode.Renew),
+                                                parseMode: ParseMode.Html,
+                                                replyMarkup: keyboard);
                                             return Ok();
                                             #endregion
                                         }
@@ -2213,7 +2194,7 @@ namespace V2boardApi.Areas.api.Controllers
                                         await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "WaitForSelectAccount", db, botName);
                                         return Ok();
                                     }
-                                    if (User.Tel_Step == "WaitForPay")
+                                    if (User.Tel_Step == "WaitForPay" || User.Tel_Step == BotInvoiceGuard.BuyInvoiceStep)
                                     {
                                         var type = BotMessages.SendSelectSubType(BotSettings);
                                         await bot.Client.DeleteMessage(callbackQuery.From.Id, callbackQuery.Message.MessageId);
@@ -2727,10 +2708,10 @@ namespace V2boardApi.Areas.api.Controllers
                                 {
                                     if (callback[0] == "NextLevel")
                                     {
-                                        await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "WaitForPay", db, botName);
-
                                         var LinkPlanId = Convert.ToInt32(callback[1]);
                                         var AccName = callback[2].Split('@')[0].Split('$')[0];
+                                        await RealUser.SetEmptyState(User.Tel_UniqUserID.ToString(), db, botName);
+                                        await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "WaitForPay", db, botName, callback[2]);
                                         var Plan = await RepositoryLinkUserAndPlan.FirstOrDefaultAsync(s => s.Link_PU_ID == LinkPlanId);
 
                                         StringBuilder str = new StringBuilder();
@@ -2779,11 +2760,70 @@ namespace V2boardApi.Areas.api.Controllers
                                         var accountName = callback[2];
                                         var planId = Convert.ToInt32(callback[1]);
 
+                                        if (!BotInvoiceGuard.TryEnterPayLock(UserAcc.Tel_UniqUserID))
+                                        {
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, BotInvoiceGuard.DuplicatePayClickMessage, true);
+                                            return Ok();
+                                        }
+                                        var claimedPay = false;
+                                        try
+                                        {
+                                            claimedPay = BotInvoiceGuard.TryClaimPaymentClick(UserAcc);
+                                            if (claimedPay)
+                                                await tbTelegramUserRepository.SaveChangesAsync();
+                                        }
+                                        finally
+                                        {
+                                            BotInvoiceGuard.ExitPayLock(UserAcc.Tel_UniqUserID);
+                                        }
+                                        if (!claimedPay)
+                                        {
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, BotInvoiceGuard.DuplicatePayClickMessage, true);
+                                            return Ok();
+                                        }
+
+                                        try
+                                        {
+                                            await bot.Client.EditMessageReplyMarkup(UserAcc.Tel_UniqUserID, callbackQuery.Message.MessageId, Keyboards.GetBackToInfoOnly());
+                                        }
+                                        catch
+                                        {
+                                        }
+
                                         var FirstCard = BotSettings.tbUsers.tbBankCardNumbers.Where(p => p.Active == true).FirstOrDefault();
                                         var Plan = RepositoryLinkUserAndPlan.Where(a => a.Link_PU_ID == planId).FirstOrDefault();
                                         var Account = tbLinksRepository.Where(a => a.tbL_Email == accountName).FirstOrDefault();
 
                                         var ActivePay = BotSettings.tbUsers.tbPaymentMethodUser.Where(a => a.tbPaymentMethods.tbpm_Key == "CardToCard").FirstOrDefault();
+
+                                        var existingSame = tbOrdersRepository.Where(o =>
+                                            o.FK_Tel_UserID == UserAcc.Tel_UserID
+                                            && o.OrderStatus == "FOR_PAY"
+                                            && o.FK_Link_Plan_ID == planId).ToList()
+                                            .FirstOrDefault(o =>
+                                                !OrderStatusHelper.IsExpiredPendingOrder(o.OrderDate)
+                                                && o.tbDepositWallet_Log.Any(d => d.dw_PayMethod == "Card" && d.dw_Status == "FOR_PAY"));
+
+                                        if (existingSame != null)
+                                        {
+                                            var existingDep = existingSame.tbDepositWallet_Log.FirstOrDefault(d => d.dw_Status == "FOR_PAY")
+                                                ?? existingSame.tbDepositWallet_Log.FirstOrDefault();
+                                            if (existingDep != null && FirstCard != null)
+                                            {
+                                                var existStr = BotInvoiceGuard.BuildCardToCardPaymentMessage(
+                                                    existingDep.dw_TaxId,
+                                                    existingDep.dw_Price.GetValueOrDefault(),
+                                                    FirstCard.CardNumber,
+                                                    FirstCard.InTheNameOf,
+                                                    BotSettings.IsActiveCardToCard == true,
+                                                    BotSettings.IsActiveSendReceipt == true,
+                                                    BotSettings.Bot_ID);
+                                                var existKeys = Keyboards.GetCopyPriceAndCardNumberButton(existingDep.dw_Price.GetValueOrDefault().ToString(), FirstCard.CardNumber);
+                                                await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, existStr, parseMode: ParseMode.Html, replyMarkup: existKeys);
+                                            }
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, BotInvoiceGuard.DuplicatePayClickMessage, true);
+                                            return Ok();
+                                        }
 
                                         var Price = Plan.L_SellPrice.Value;
                                         if (BotSettings.Present_Discount != null && BotSettings.Present_Discount != 0)
@@ -2849,11 +2889,11 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         tbOrdersRepository.Insert(order);
                                         await tbOrdersRepository.SaveChangesAsync();
-                                        await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "Wait_For_Pay_IncreasePrice", db, botName);
                                         var keys = Keyboards.GetCopyPriceAndCardNumberButton(fullPrice.ToString(), FirstCard.CardNumber);
                                         var btnres = await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str, parseMode: ParseMode.Html, replyMarkup: keys);
                                         tbDeposit.dw_message_id = btnres.MessageId;
                                         await tbOrdersRepository.SaveChangesAsync();
+                                        return Ok();
 
                                     }
                                     else
@@ -2862,6 +2902,29 @@ namespace V2boardApi.Areas.api.Controllers
 
                                         var LinkPlanId = System.Convert.ToInt32(callback[1]);
                                         var AccName = callback[2];
+
+                                        if (!BotInvoiceGuard.TryEnterPayLock(UserAcc.Tel_UniqUserID))
+                                        {
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, BotInvoiceGuard.DuplicatePayClickMessage, true);
+                                            return Ok();
+                                        }
+                                        var claimedWallet = false;
+                                        try
+                                        {
+                                            claimedWallet = BotInvoiceGuard.TryClaimPaymentClick(UserAcc);
+                                            if (claimedWallet)
+                                                await tbTelegramUserRepository.SaveChangesAsync();
+                                        }
+                                        finally
+                                        {
+                                            BotInvoiceGuard.ExitPayLock(UserAcc.Tel_UniqUserID);
+                                        }
+                                        if (!claimedWallet)
+                                        {
+                                            await bot.Client.AnswerCallbackQuery(callbackQuery.Id, BotInvoiceGuard.DuplicatePayClickMessage, true);
+                                            return Ok();
+                                        }
+
                                         var Plan = await RepositoryLinkUserAndPlan.FirstOrDefaultAsync(s => s.Link_PU_ID == LinkPlanId);
 
 
@@ -2878,12 +2941,10 @@ namespace V2boardApi.Areas.api.Controllers
 
                                             if (AgentWallet > UserAgent.Limit)
                                             {
+                                                BotInvoiceGuard.ReleasePaymentClick(UserAcc);
+                                                await tbTelegramUserRepository.SaveChangesAsync();
                                                 await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "⚠️ متاسفانه فعلا امکان ایجاد یا تمدید اشتراک نمی باشد لطفا با پشتیبانی ارتباط بگیرید", true);
                                                 return Ok();
-                                            }
-                                            else
-                                            {
-                                                UserAgent.Wallet += (int)FinalPrice.Value;
                                             }
                                         }
                                         else if (UserAgent.Role == 2)
@@ -2891,20 +2952,16 @@ namespace V2boardApi.Areas.api.Controllers
                                             var AgentWallet = UserAgent.Wallet + Plan.L_SellPrice;
                                             if (AgentWallet > UserAgent.Limit)
                                             {
+                                                BotInvoiceGuard.ReleasePaymentClick(UserAcc);
+                                                await tbTelegramUserRepository.SaveChangesAsync();
                                                 await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "⚠️ متاسفانه فعلا امکان ایجاد یا تمدید اشتراک نمی باشد لطفا با پشتیبانی ارتباط بگیرید", true);
                                                 return Ok();
                                             }
-                                            else
-                                            {
-                                                UserAgent.Wallet += Plan.tbPlans.Price;
-                                            }
                                         }
 
-                                        var AccountName = "";
-                                        if (User.Tel_Data != null)
-                                        {
-                                            AccountName = AccName;
-                                        }
+                                        ReservedPackageHelper.ApplySubscriptionAgentDebt(UserAgent, Plan);
+
+                                        var AccountName = AccName;
                                         var Wallet = UserAcc.Tel_Wallet;
                                         var Price = Plan.L_SellPrice.Value;
                                         if (BotSettings.Present_Discount != null && BotSettings.Present_Discount != 0)
@@ -3072,31 +3129,36 @@ namespace V2boardApi.Areas.api.Controllers
                                                 tbOrders Order = new tbOrders();
                                                 Order.Order_Guid = Guid.NewGuid();
 
-
-
                                                 var s = Guid.NewGuid();
-                                                if (string.IsNullOrEmpty(User.Tel_Username))
+                                                if (!string.IsNullOrEmpty(AccountName) && AccountName.Contains("@"))
                                                 {
-                                                    AccountName = s.ToString().Split('-')[ran.Next(0, 3)];
+                                                    Order.AccountName = AccountName;
                                                 }
                                                 else
                                                 {
-                                                    var acc = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).Count();
-                                                    acc++;
+                                                    if (string.IsNullOrEmpty(User.Tel_Username))
+                                                    {
+                                                        AccountName = s.ToString().Split('-')[ran.Next(0, 3)];
+                                                    }
+                                                    else
+                                                    {
+                                                        var acc = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).Count();
+                                                        acc++;
 
-                                                    AccountName += User.Tel_Username + acc;
+                                                        AccountName = User.Tel_Username + acc;
+                                                    }
+
+                                                    Order.AccountName = AccountName + "$" + s.ToString().Split('-')[ran.Next(0, 3)] + "@" + BotSettings.tbUsers.Username;
                                                 }
 
-
-
-                                                Order.AccountName = AccountName + "$" + s.ToString().Split('-')[ran.Next(0, 3)] + "@" + BotSettings.tbUsers.Username;
                                                 bool IsExists = true;
                                                 while (IsExists)
                                                 {
                                                     var Links = tbLinksRepository.Where(p => p.tbL_Email == Order.AccountName).Any();
                                                     if (Links)
                                                     {
-                                                        Order.AccountName = AccountName + "$" + s.ToString().Split('-')[ran.Next(0, 3)] + "@" + BotSettings.tbUsers.Username;
+                                                        Order.AccountName = (AccountName.Contains("@") ? AccountName.Split('@')[0] : AccountName)
+                                                            + "$" + s.ToString().Split('-')[ran.Next(0, 3)] + "@" + BotSettings.tbUsers.Username;
                                                     }
                                                     else
                                                     {
@@ -3112,6 +3174,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 Order.Month = Plan.tbPlans.PlanMonth;
                                                 Order.V2_Plan_ID = Plan.tbPlans.Plan_ID_V2;
                                                 Order.FK_Tel_UserID = UserAcc.Tel_UserID;
+                                                Order.FK_Link_Plan_ID = Plan.Link_PU_ID;
                                                 Order.Order_Price = Price;
                                                 Order.PriceWithOutDiscount = PirceWithoutDiscount;
 
@@ -3198,6 +3261,7 @@ namespace V2boardApi.Areas.api.Controllers
                                                 tbLinks.tbL_Email = FullName;
                                                 tbLinks.tbL_Token = token;
                                                 tbLinks.FK_Server_ID = Server.ServerID;
+                                                tbLinks.FK_User_ID = UserAcc.FK_User_ID;
                                                 tbLinks.FK_TelegramUserID = UserAcc.Tel_UserID;
                                                 SubscriptionReserveWarnHelper.ResetReserveWarnState(tbLinks);
                                                 tbLinks.tb_AutoRenew = false;
@@ -3256,6 +3320,9 @@ namespace V2boardApi.Areas.api.Controllers
                                             str.AppendLine("");
                                             str.AppendLine("⚠️ برو تو بخش کیف پول من و از اونجا کیف پولتو شارژ کن بعد برگرد . من منتظرتم 😉");
 
+                                            UserAgent.Wallet = agentWalletBefore;
+                                            BotInvoiceGuard.ReleasePaymentClick(UserAcc);
+                                            await tbTelegramUserRepository.SaveChangesAsync();
                                             await bot.Client.AnswerCallbackQuery(callbackQuery.Id, str.ToString(), true);
                                             return Ok();
                                         }
@@ -3266,31 +3333,118 @@ namespace V2boardApi.Areas.api.Controllers
 
                                 #endregion
 
+                                #region انتخاب اشتراک جدید یا شارژ اشتراک قبلی
+
+                                if (callbackQuery.Data == "BuyNewSub")
+                                {
+                                    if (BotSettings.IsNotActiveSell)
+                                    {
+                                        await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "💢 با عرض پوزش فروش ربات موقتا غیرفعال شده است .", true);
+                                        return Ok();
+                                    }
+
+                                    await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
+                                    await SendNewSubscriptionCatalogAsync(
+                                        UserAcc, BotSettings, botName, bot.Client, tbLinksRepository, RepositoryLinkUserAndPlan,
+                                        callbackQuery.Message.MessageId);
+                                    return Ok();
+                                }
+
+                                if (callbackQuery.Data == "BuyExistingSub")
+                                {
+                                    if (BotSettings.IsNotActiveSell)
+                                    {
+                                        await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "💢 با عرض پوزش فروش ربات موقتا غیرفعال شده است .", true);
+                                        return Ok();
+                                    }
+
+                                    var existingLinks = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).ToList();
+                                    if (existingLinks.Count == 0)
+                                    {
+                                        await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "❌ عزیزم شما اشتراکی نداری", true);
+                                        return Ok();
+                                    }
+
+                                    var summaries = await TelegramSubscriptionHelper.LoadUserSubscriptionSummariesAsync(
+                                        existingLinks, BotSettings.tbUsers.tbServers.ConnectionString);
+                                    var keyboard = Keyboards.GetServiceLinksKeyboard(summaries);
+                                    await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db, botName);
+                                    await bot.Client.EditMessageText(
+                                        callbackQuery.From.Id,
+                                        callbackQuery.Message.MessageId,
+                                        TelegramSubscriptionHelper.BuildSubscriptionListMessage(summaries, BotSettings.Bot_ID, TelegramSubscriptionListMode.ExistingBuy),
+                                        parseMode: ParseMode.Html,
+                                        replyMarkup: keyboard);
+                                    return Ok();
+                                }
+
+                                if (callbackQuery.Data == "ConfirmRenew")
+                                {
+                                    var renewEmail = User.Tel_Data;
+                                    if (string.IsNullOrWhiteSpace(renewEmail))
+                                    {
+                                        await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "⚠️ لطفا دوباره اشتراک را انتخاب کن", true);
+                                        return Ok();
+                                    }
+
+                                    await SendRenewPlanCatalogAsync(
+                                        UserAcc, BotSettings, botName, bot.Client, RepositoryLinkUserAndPlan, db,
+                                        renewEmail, callbackQuery.Message.MessageId, appendAccountData: false);
+                                    return Ok();
+                                }
+
+                                if (callbackQuery.Data == "CancelRenew")
+                                {
+                                    var existingLinks = tbLinksRepository.Where(p => p.FK_TelegramUserID == UserAcc.Tel_UserID).ToList();
+                                    if (existingLinks.Count == 0)
+                                    {
+                                        await bot.Client.AnswerCallbackQuery(callbackQuery.Id, "❌ عزیزم شما اشتراکی نداری", true);
+                                        return Ok();
+                                    }
+
+                                    var summaries = await TelegramSubscriptionHelper.LoadUserSubscriptionSummariesAsync(
+                                        existingLinks, BotSettings.tbUsers.tbServers.ConnectionString);
+                                    var keyboard = Keyboards.GetServiceLinksKeyboard(summaries);
+                                    await RealUser.SetEmptyState(UserAcc.Tel_UniqUserID, db, botName);
+                                    await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForSelectAccount", db, botName);
+                                    await bot.Client.EditMessageText(
+                                        callbackQuery.From.Id,
+                                        callbackQuery.Message.MessageId,
+                                        TelegramSubscriptionHelper.BuildSubscriptionListMessage(summaries, BotSettings.Bot_ID, TelegramSubscriptionListMode.Renew),
+                                        parseMode: ParseMode.Html,
+                                        replyMarkup: keyboard);
+                                    return Ok();
+                                }
+
+                                #endregion
+
                                 #region بخش انتخاب اشتراک برای تمدید
 
                                 if (User.Tel_Step == "WaitForSelectAccount")
                                 {
-                                    await RealUser.SetUserStep(User.Tel_UniqUserID, "WaitForSelectPlan", db, botName, callbackQuery.Data);
-                                    //var type = BotMessages.SendSelectSubType(BotSettings);
+                                    var selectedEmail = callbackQuery.Data;
+                                    var selectedLink = await tbLinksRepository.FirstOrDefaultAsync(
+                                        p => p.tbL_Email == selectedEmail && p.FK_TelegramUserID == UserAcc.Tel_UserID);
+                                    if (selectedLink != null)
+                                    {
+                                        var selectedSummaries = await TelegramSubscriptionHelper.LoadUserSubscriptionSummariesAsync(
+                                            new List<tbLinks> { selectedLink }, BotSettings.tbUsers.tbServers.ConnectionString);
+                                        var selectedSummary = selectedSummaries.FirstOrDefault();
+                                        if (selectedSummary != null && selectedSummary.WouldReserveOnRenew)
+                                        {
+                                            await RealUser.SetUserStep(UserAcc.Tel_UniqUserID, "WaitForConfirmRenew", db, botName, selectedEmail);
+                                            await bot.Client.EditMessageText(
+                                                callbackQuery.From.Id,
+                                                callbackQuery.Message.MessageId,
+                                                TelegramSubscriptionHelper.BuildRenewReserveWarning(selectedSummary, BotSettings.Bot_ID),
+                                                parseMode: ParseMode.Html,
+                                                replyMarkup: Keyboards.GetConfirmRenewKeyboard());
+                                            return Ok();
+                                        }
+                                    }
 
-                                    //await RealUser.SetUserStep(User.Tel_UniqUserID.ToString(), "SelectSubType", db, botName);
-
-
-                                    var keyboard = Keyboards.GetPlansKeyboard(callbackQuery.Data, RepositoryLinkUserAndPlan);
-
-                                    var plansForBot = RepositoryLinkUserAndPlan
-                                        .Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == BotSettings.FK_User_ID && s.L_Status == true)
-                                        .ToList();
-                                    var str = new StringBuilder();
-                                    str.Append(BuildPlanCatalogMessage(plansForBot, BotSettings));
-
-                                    //await SendTrafficCalculator(UserAcc, BotSettings, bot.Client, botName, messageId: callbackQuery.Message.MessageId);
-
-
-                                    await bot.Client.SendMessage(UserAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
-
-                                    //await SendTrafficCalculator(UserAcc, callbackQuery.Message.MessageId, BotSettings, bot.Client, botName, callbackQuery.Data);
-
+                                    await SendRenewPlanCatalogAsync(
+                                        UserAcc, BotSettings, botName, bot.Client, RepositoryLinkUserAndPlan, db, selectedEmail);
                                     return Ok();
                                 }
 
@@ -3525,6 +3679,77 @@ namespace V2boardApi.Areas.api.Controllers
             }
 
             return false;
+        }
+
+        private async Task SendNewSubscriptionCatalogAsync(
+            tbTelegramUsers userAcc,
+            tbBotSettings botSettings,
+            string botName,
+            TelegramBotClient client,
+            Repository<tbLinks> tbLinksRepository,
+            Repository<tbLinkUserAndPlans> repositoryLinkUserAndPlan,
+            int? editMessageId = null)
+        {
+            var accName = "";
+            if (userAcc.Tel_Username != null)
+            {
+                var link = await tbLinksRepository.FirstOrDefaultAsync(a => a.tbL_Email.Contains(userAcc.Tel_Username) && a.tbTelegramUsers.Tel_UniqUserID == userAcc.Tel_UniqUserID);
+                if (link != null)
+                    accName = userAcc.Tel_Username + Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+                else
+                    accName = userAcc.Tel_Username + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+            }
+            else
+            {
+                accName = Guid.NewGuid().ToString().Split('-')[0] + "$" + Guid.NewGuid().ToString().Split('-')[0] + "@" + botName;
+            }
+
+            await RealUser.SetUserStep(userAcc.Tel_UniqUserID, "WaitForSelectPlan", db, botName, accName);
+
+            var keyboard = Keyboards.GetPlansKeyboard(accName, repositoryLinkUserAndPlan);
+            var plansForBot = repositoryLinkUserAndPlan
+                .Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == botSettings.FK_User_ID && s.L_Status == true)
+                .ToList();
+            var str = new StringBuilder();
+            str.Append(BuildPlanCatalogMessage(plansForBot, botSettings));
+
+            if (editMessageId.HasValue)
+            {
+                await client.EditMessageText(userAcc.Tel_UniqUserID, editMessageId.Value, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+            }
+            else
+            {
+                await client.SendMessage(userAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
+            }
+        }
+
+        private async Task SendRenewPlanCatalogAsync(
+            tbTelegramUsers userAcc,
+            tbBotSettings botSettings,
+            string botName,
+            TelegramBotClient client,
+            Repository<tbLinkUserAndPlans> repositoryLinkUserAndPlan,
+            Entities db,
+            string email,
+            int? editMessageId = null,
+            bool appendAccountData = true)
+        {
+            await RealUser.SetUserStep(userAcc.Tel_UniqUserID, "WaitForSelectPlan", db, botName, appendAccountData ? email : null);
+            var keyboard = Keyboards.GetPlansKeyboard(email, repositoryLinkUserAndPlan);
+            var plansForBot = repositoryLinkUserAndPlan
+                .Where(s => s.L_SellPrice != null && s.L_ShowInBot == true && s.L_FK_U_ID == botSettings.FK_User_ID && s.L_Status == true)
+                .ToList();
+            var str = new StringBuilder();
+            str.Append(BuildPlanCatalogMessage(plansForBot, botSettings));
+
+            if (editMessageId.HasValue)
+            {
+                await client.EditMessageText(userAcc.Tel_UniqUserID, editMessageId.Value, str.ToString(), parseMode: ParseMode.Html, replyMarkup: keyboard);
+            }
+            else
+            {
+                await client.SendMessage(userAcc.Tel_UniqUserID, str.ToString(), replyMarkup: keyboard, parseMode: ParseMode.Html);
+            }
         }
 
 

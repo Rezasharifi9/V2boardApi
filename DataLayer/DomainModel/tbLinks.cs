@@ -29,8 +29,12 @@ namespace DataLayer.DomainModel
         public int ExceededCount { get; set; }
         public Nullable<System.DateTime> ExceededLastTime { get; set; }
         public int tbL_ReserveWarnMask { get; set; }
+        public Nullable<int> FK_User_ID { get; set; }
+        public Nullable<int> FK_MobileUser_ID { get; set; }
     
         public virtual tbServers tbServers { get; set; }
         public virtual tbTelegramUsers tbTelegramUsers { get; set; }
+        public virtual tbUsers tbUsers { get; set; }
+        public virtual tbMobileUsers tbMobileUsers { get; set; }
     }
 }

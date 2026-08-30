@@ -51,7 +51,7 @@ namespace V2boardApi.Tools
                 PlanCount = db.tbPlans.Count(p => p.FK_User_ID == agentId),
                 ChildAgentCount = db.tbUsers.Count(u => u.Parent_ID == agentId && u.Role != 1),
                 NotificationCount = db.tbNotifications.Count(n => n.tbNoti_FK_User_ID == agentId),
-                LinkCount = db.tbLinks.Count(l => l.tbTelegramUsers.FK_User_ID == agentId)
+                LinkCount = db.tbLinks.Count(l => l.FK_User_ID == agentId || l.tbTelegramUsers.FK_User_ID == agentId)
             };
 
             preview.Message = BuildConfirmMessage(preview);
@@ -151,6 +151,12 @@ namespace V2boardApi.Tools
             var changelogSeen = await db.tbPanelChangelogSeen.Where(s => s.FK_User_ID == agentId).ToListAsync().ConfigureAwait(false);
             db.tbPanelChangelogSeen.RemoveRange(changelogSeen);
 
+            var agentLinks = await db.tbLinks
+                .Where(l => l.FK_User_ID == agentId)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            db.tbLinks.RemoveRange(agentLinks);
+
             if (telUserIds.Count > 0)
             {
                 var usersWithTel = await db.tbUsers
@@ -192,7 +198,7 @@ namespace V2boardApi.Tools
         {
             var suffix = "@" + username;
             return db.tbLinks
-                .Where(l => l.tbTelegramUsers.FK_User_ID == agentId && l.tbL_Email != null)
+                .Where(l => (l.FK_User_ID == agentId || l.tbTelegramUsers.FK_User_ID == agentId) && l.tbL_Email != null)
                 .Select(l => l.tbL_Email)
                 .ToList()
                 .Where(e => e.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))

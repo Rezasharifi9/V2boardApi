@@ -1,0 +1,81 @@
+@model V2boardApi.Areas.App.Data.SettingsViewModels.AppReleaseEditViewModel
+@{
+    ViewBag.Title = "نسخه اپلیکیشن";
+}
+
+@section vendorStyle {
+    <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
+}
+
+<h4 class="py-3 mb-4">نسخه اپلیکیشن</h4>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="ti ti-download me-2"></i>لینک دانلود و به‌روزرسانی</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">این اطلاعات با API به اپلیکیشن اندروید داده می‌شود تا در صورت نسخهٔ قدیمی‌تر، کاربر را به دانلود هدایت کند.</p>
+                <form id="appReleaseForm">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="DownloadUrl">لینک دانلود نسخه اپلیکیشن</label>
+                            <input type="text" dir="ltr" class="form-control" id="DownloadUrl" name="DownloadUrl" placeholder="https://example.com/app.apk" value="@Model.DownloadUrl" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="Version">نسخه اپلیکیشن</label>
+                            <input type="text" dir="ltr" class="form-control" id="Version" name="Version" placeholder="2.1.8" value="@Model.Version" maxlength="30" />
+                            <small class="text-muted">همان versionName نمایشی، مثلاً 2.1.8</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="VersionCode">شماره بیلد (versionCode)</label>
+                            <input type="number" dir="ltr" class="form-control" id="VersionCode" name="VersionCode" placeholder="218" value="@Model.VersionCode" min="1" />
+                            <small class="text-muted">عدد صحیح اندروید برای مقایسه با نسخهٔ نصب‌شده</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">تغییرات نسخه</label>
+                            <p class="text-muted small mb-2">هر ردیف یک تغییر جدا است. برای یک نسخه می‌توانید چند مورد اضافه کنید.</p>
+                            <div id="changelogList">
+                                @foreach (var item in Model.ChangelogItems)
+                                {
+                                    <div class="input-group mb-2 changelog-row">
+                                        <span class="input-group-text"><i class="ti ti-list"></i></span>
+                                        <input type="text" class="form-control changelog-item" placeholder="مثلاً رفع باگ اتصال" value="@item" />
+                                        <button type="button" class="btn btn-label-danger btn-changelog-remove" title="حذف">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                            <button type="button" class="btn btn-label-primary btn-sm" id="btnAddChangelog">
+                                <i class="ti ti-plus me-1"></i>افزودن تغییر
+                            </button>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="ForceInstall" name="ForceInstall" value="true" @(Model.ForceInstall ? "checked" : "") />
+                                <label class="form-check-label" for="ForceInstall">نصب اجباری</label>
+                            </div>
+                            <small class="text-muted d-block mt-1">اگر فعال باشد، کاربر با نسخهٔ قدیمی‌تر باید حتماً آپدیت کند و نمی‌تواند دیالوگ را ببندد.</small>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-primary" id="btnSaveAppRelease">
+                            <i class="ti ti-device-floppy me-1"></i>ذخیره
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section vendorScripts {
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+}
+
+@section customScripts {
+    <script src="@Url.Content(PanelAssetHelper.Js("~/assets/js/app-app-release.js"))"></script>
+}

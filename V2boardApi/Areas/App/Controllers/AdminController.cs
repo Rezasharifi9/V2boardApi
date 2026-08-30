@@ -144,6 +144,14 @@ namespace V2boardApi.Areas.App.Controllers
         {
             var currentUser = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
             ViewBag.UserRole = currentUser?.Role?.ToString() ?? string.Empty;
+            if (currentUser != null && currentUser.Role == 1)
+            {
+                ViewBag.HeadAgents = RepositoryUser
+                    .Where(s => s.Role == 3 && s.Parent_ID == currentUser.User_ID)
+                    .OrderBy(s => s.Username)
+                    .Select(s => new SelectUserViewModel { id = s.User_ID, username = s.Username })
+                    .ToList();
+            }
             return View();
         }
 
@@ -152,10 +160,28 @@ namespace V2boardApi.Areas.App.Controllers
         {
             try
             {
-                var usersList = await RepositoryUser.WhereAsync(s => s.tbUsers2.Username == User.Identity.Name);
                 var adminUser = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
-                if (adminUser != null && usersList.All(u => u == null || u.User_ID != adminUser.User_ID))
-                    usersList.Add(adminUser);
+                List<tbUsers> usersList;
+
+                int filterParentId = 0;
+                int.TryParse(Request["filterParentId"], out filterParentId);
+
+                if (adminUser != null && adminUser.Role == 1 && filterParentId > 0)
+                {
+                    var headAgent = await RepositoryUser.FirstOrDefaultAsync(s =>
+                        s.User_ID == filterParentId
+                        && s.Role == 3
+                        && s.Parent_ID == adminUser.User_ID);
+                    usersList = headAgent != null
+                        ? await RepositoryUser.WhereAsync(s => s.Parent_ID == headAgent.User_ID)
+                        : new List<tbUsers>();
+                }
+                else
+                {
+                    usersList = await RepositoryUser.WhereAsync(s => s.tbUsers2.Username == User.Identity.Name);
+                    if (adminUser != null && usersList.All(u => u == null || u.User_ID != adminUser.User_ID))
+                        usersList.Add(adminUser);
+                }
 
                 usersList = usersList
                     .Where(u => u != null && !string.IsNullOrWhiteSpace(u.Username))
@@ -193,23 +219,71 @@ namespace V2boardApi.Areas.App.Controllers
                     .ToList()
                     .ToDictionary(x => x.UserId);
 
+                var lastPayments = db.tbUserFactors
+                    .Where(f => f.FK_User_ID != null
+                        && agentIds.Contains(f.FK_User_ID.Value)
+                        && f.tbUf_Status == 3
+                        && f.tbUf_CreateTime.HasValue)
+                    .GroupBy(f => f.FK_User_ID.Value)
+                    .Select(g => new
+                    {
+                        UserId = g.Key,
+                        LastPaid = g.Max(x => x.tbUf_CreateTime)
+                    })
+                    .ToList()
+                    .ToDictionary(x => x.UserId, x => x.LastPaid.Value);
+
+                var telegramUserIds = new HashSet<int>();
+                var telegramKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var tel in db.tbTelegramUsers.Select(t => new { t.Tel_UserID, t.Tel_Username, t.Tel_UniqUserID }).ToList())
+                {
+                    telegramUserIds.Add(tel.Tel_UserID);
+
+                    var usernameKey = TelegramNotifyHelper.NormalizeTelegramIdentity(tel.Tel_Username);
+                    if (usernameKey != null)
+                        telegramKeys.Add(usernameKey);
+
+                    var uniqKey = TelegramNotifyHelper.NormalizeTelegramIdentity(tel.Tel_UniqUserID);
+                    if (uniqKey != null)
+                        telegramKeys.Add(uniqKey);
+                }
+
+                var today = DateTime.Now.Date;
                 var result = new List<UserViewModel>();
                 foreach (var item in usersList)
                 {
                     var limit = item.Limit ?? 0;
                     salesByAgent.TryGetValue(item.User_ID, out var sales);
+                    lastPayments.TryGetValue(item.User_ID, out var lastPaid);
+
+                    DateTime? unpaidSince = lastPaid != default(DateTime)
+                        ? lastPaid
+                        : (item.Register_Date ?? item.Settlement_StartDate);
+
                     var user = new UserViewModel
                     {
                         id = item.User_ID,
                         profile = item.Profile_Filename,
                         username = item.Username,
+                        fullName = item.FullName,
+                        role = item.Role ?? 0,
+                        parentId = item.Parent_ID ?? 0,
+                        parentUsername = item.tbUsers2 != null ? item.tbUsers2.Username : "",
                         status = 1,
                         sortPriority = GetAgentLimitSortPriority(item),
                         sellCount = sales?.SellCount ?? 0,
                         sumSellCount = ((long)(sales?.SumSell ?? 0)).ConvertToMony() + " تومان",
+                        walletValue = item.Wallet,
                         used = item.Wallet.ConvertToMony() + " تومان",
                         limit = limit.ConvertToMony() + " تومان",
-                        RobotStatus = 0
+                        RobotStatus = 0,
+                        telegramActive = IsAgentTelegramActive(item, telegramUserIds, telegramKeys),
+                        isBlocked = item.Settlement_IsBlocked,
+                        lastPaymentDate = lastPaid != default(DateTime) ? lastPaid.ConvertDateTimeToShamsi5() : "",
+                        lastPaymentSort = lastPaid != default(DateTime)
+                            ? (long)(lastPaid.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds
+                            : 0,
+                        daysUnpaid = unpaidSince.HasValue ? Math.Max(0, (today - unpaidSince.Value.Date).Days) : 0
                     };
 
                     if (limit > 0)
@@ -254,6 +328,34 @@ namespace V2boardApi.Areas.App.Controllers
             return 2;
         }
 
+        private static bool IsAgentTelegramActive(tbUsers agent, HashSet<int> telegramUserIds, HashSet<string> telegramKeys)
+        {
+            if (agent == null)
+                return false;
+
+            if (agent.Admin_Telegram_ID.HasValue && telegramUserIds != null && telegramUserIds.Contains(agent.Admin_Telegram_ID.Value))
+                return true;
+
+            var identity = TelegramNotifyHelper.NormalizeTelegramIdentity(agent.TelegramID);
+            return identity != null && telegramKeys != null && telegramKeys.Contains(identity);
+        }
+
+        private async Task<tbUsers> FindNetworkActionAgentAsync(int userId)
+        {
+            var current = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+            if (current == null || current.User_ID == userId)
+                return null;
+
+            var agent = await FindEditableUserAsync(userId);
+            if (agent == null || agent.Role == 1)
+                return null;
+
+            if (agent.tbServers == null)
+                await db.Entry(agent).Reference(u => u.tbServers).LoadAsync();
+
+            return agent;
+        }
+
         #endregion
 
         #region افزودن و ویرایش کاربر
@@ -271,6 +373,12 @@ namespace V2boardApi.Areas.App.Controllers
             if (us == null)
             {
                 us = RepositoryUser.Where(s => s.User_ID == id && s.tbUsers2.Username == User.Identity.Name).FirstOrDefault();
+            }
+            if (us == null)
+            {
+                var current = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+                if (current != null && current.Role == 1)
+                    us = RepositoryUser.Where(s => s.User_ID == id).FirstOrDefault();
             }
             if (us == null)
             {
@@ -295,6 +403,23 @@ namespace V2boardApi.Areas.App.Controllers
 
         #region ثبت ویرایش و افزودن اطلاعات کاربر
 
+        private async Task<tbUsers> FindEditableUserAsync(int userId)
+        {
+            var tbUser = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == userId && p.Username == User.Identity.Name);
+            if (tbUser != null)
+                return tbUser;
+
+            tbUser = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == userId && p.tbUsers2.Username == User.Identity.Name);
+            if (tbUser != null)
+                return tbUser;
+
+            var current = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+            if (current != null && current.Role == 1)
+                return await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == userId);
+
+            return null;
+        }
+
         [AuthorizeApp(Roles = "1,3,4")]
         [System.Web.Mvc.HttpPost]
         //[ValidateAntiForgeryToken]
@@ -309,12 +434,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                     if (user.userId != 0)
                     {
-                        dbUser = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user.userId && s.Username == User.Identity.Name);
-
-                        if (dbUser == null)
-                        {
-                            dbUser = await RepositoryUser.FirstOrDefaultAsync(s => s.tbUsers2.Username == User.Identity.Name);
-                        }
+                        dbUser = await FindEditableUserAsync(user.userId);
 
                         if (dbUser == null)
                         {
@@ -341,7 +461,7 @@ namespace V2boardApi.Areas.App.Controllers
                             tbUser.Email = user.userEmail;
                             tbUser.Password = user.userPassword.ToSha256();
 
-                            tbUser.TelegramID = user.userTelegramid;
+                            tbUser.TelegramID = TelegramNotifyHelper.NormalizeTelegramIdentity(user.userTelegramid);
                             try
                             {
                                 var Number = int.Parse(user.userLimit, NumberStyles.Currency);
@@ -371,12 +491,7 @@ namespace V2boardApi.Areas.App.Controllers
                     }
                     else
                     {
-                        tbUsers tbUser = await RepositoryUser.FirstOrDefaultAsync(p => p.User_ID == user.userId && p.tbUsers2.Username == User.Identity.Name);
-
-                        if (tbUser == null)
-                        {
-                            tbUser = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
-                        }
+                        tbUsers tbUser = await FindEditableUserAsync(user.userId);
 
                         if (tbUser == null)
                         {
@@ -410,7 +525,7 @@ namespace V2boardApi.Areas.App.Controllers
                             return MessageBox.Warning("هشدار", "لطفا مبلغ را صحیح وارد کنید", icon: icon.warning);
                         }
                         tbUser.PhoneNumber = user.userContact;
-                        tbUser.TelegramID = user.userTelegramid;
+                        tbUser.TelegramID = TelegramNotifyHelper.NormalizeTelegramIdentity(user.userTelegramid);
 
 
                         if (tbUser.Username != user.userUsername)
@@ -531,6 +646,12 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 user = RepositoryUser.Where(s => s.User_ID == userid && s.tbUsers2.Username == User.Identity.Name).FirstOrDefault();
             }
+            if (user == null)
+            {
+                var current = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+                if (current != null && current.Role == 1)
+                    user = RepositoryUser.Where(s => s.User_ID == userid).FirstOrDefault();
+            }
 
             if (user == null)
             {
@@ -573,6 +694,12 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 if (user == null)
                 {
+                    var current = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+                    if (current != null && current.Role == 1)
+                        user = RepositoryUser.Where(s => s.User_ID == id).FirstOrDefault();
+                }
+                if (user == null)
+                {
                     return RedirectToAction("Error404", "Error", new { area = "App" });
                 }
                 if (user != null)
@@ -595,6 +722,128 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 logger.Error(ex, "در تغییر وضعیت کاربر خطایی رخ داد");
                 return MessageBox.Error("ناموفق", "در تغییر وضعیت نماینده خطایی رخ داد");
+            }
+        }
+
+        #endregion
+
+        #region پیام و مسدودسازی اشتراک نماینده
+
+        [AuthorizeApp(Roles = "1,3,4")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> SendAgentMessage(int id, string message)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(message))
+                    return MessageBox.Warning("ناموفق", "متن پیام را وارد کنید");
+
+                var current = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                var agent = await FindNetworkActionAgentAsync(id);
+                if (current == null || agent == null)
+                    return MessageBox.Warning("ناموفق", "امکان ارسال پیام برای این نماینده وجود ندارد");
+
+                var text = message.Trim();
+                PanelNotificationService.Create(
+                    db,
+                    agent.User_ID,
+                    current.User_ID,
+                    PanelNotificationService.TitleAdminMessage,
+                    text,
+                    14);
+                await db.SaveChangesAsync();
+
+                var telegramSent = await SettlementService.SendAgentTelegramMessage(
+                    agent, text, mirrorToPanel: false, panelTitle: PanelNotificationService.TitleAdminMessage);
+
+                logger.Info("پیام مدیریت برای نماینده " + agent.Username + " ارسال شد. تلگرام=" + telegramSent);
+                if (telegramSent)
+                    return Toaster.Success("موفق", "پیام در پنل و ربات ارسال شد");
+
+                return Toaster.Warning("ارسال ناقص", "پیام در پنل ثبت شد اما ارسال به ربات انجام نشد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ارسال پیام به نماینده");
+                return MessageBox.Error("ناموفق", "ارسال پیام با خطا مواجه شد");
+            }
+        }
+
+        [AuthorizeApp(Roles = "1,3,4")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> BlockAgentSubscriptions(int id)
+        {
+            try
+            {
+                var current = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                var agent = await FindNetworkActionAgentAsync(id);
+                if (current == null || agent == null)
+                    return MessageBox.Warning("ناموفق", "امکان مسدودسازی این نماینده وجود ندارد");
+
+                if (agent.tbServers == null || string.IsNullOrEmpty(agent.tbServers.ConnectionString))
+                    return MessageBox.Warning("ناموفق", "سرور این نماینده تنظیم نشده است");
+
+                await SettlementService.BlockAgentSubscriptions(agent, db);
+                agent.Settlement_IsBlocked = true;
+                await db.SaveChangesAsync();
+
+                var text = "تمامی اشتراک‌های زیرمجموعه شما توسط مدیریت مسدود گردید.";
+                PanelNotificationService.Create(
+                    db, agent.User_ID, current.User_ID, PanelNotificationService.TitleBlocked, text);
+                await db.SaveChangesAsync();
+
+                await SettlementService.SendAgentTelegramMessage(
+                    agent,
+                    "🚫 نماینده گرامی" + Environment.NewLine + Environment.NewLine + text,
+                    mirrorToPanel: false,
+                    panelTitle: PanelNotificationService.TitleBlocked);
+
+                logger.Info("اشتراک‌های نماینده " + agent.Username + " توسط " + current.Username + " مسدود شد");
+                return Toaster.Success("موفق", "اشتراک‌های زیرمجموعه این نماینده مسدود شد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در مسدودسازی اشتراک‌های نماینده");
+                return MessageBox.Error("ناموفق", "مسدودسازی اشتراک‌ها با خطا مواجه شد");
+            }
+        }
+
+        [AuthorizeApp(Roles = "1,3,4")]
+        [System.Web.Mvc.HttpPost]
+        public async Task<ActionResult> UnblockAgentSubscriptions(int id)
+        {
+            try
+            {
+                var current = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                var agent = await FindNetworkActionAgentAsync(id);
+                if (current == null || agent == null)
+                    return MessageBox.Warning("ناموفق", "امکان رفع مسدودسازی این نماینده وجود ندارد");
+
+                if (agent.tbServers == null || string.IsNullOrEmpty(agent.tbServers.ConnectionString))
+                    return MessageBox.Warning("ناموفق", "سرور این نماینده تنظیم نشده است");
+
+                await SettlementService.UnblockAgentSubscriptions(agent, db);
+                agent.Settlement_IsBlocked = false;
+                await db.SaveChangesAsync();
+
+                var text = "مسدودسازی اشتراک‌های زیرمجموعه شما توسط مدیریت برداشته شد.";
+                PanelNotificationService.Create(
+                    db, agent.User_ID, current.User_ID, PanelNotificationService.TitleUnblocked, text);
+                await db.SaveChangesAsync();
+
+                await SettlementService.SendAgentTelegramMessage(
+                    agent,
+                    "✅ نماینده گرامی" + Environment.NewLine + Environment.NewLine + text,
+                    mirrorToPanel: false,
+                    panelTitle: PanelNotificationService.TitleUnblocked);
+
+                logger.Info("مسدودسازی اشتراک‌های نماینده " + agent.Username + " توسط " + current.Username + " برداشته شد");
+                return Toaster.Success("موفق", "مسدودسازی اشتراک‌های این نماینده برداشته شد");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در رفع مسدودسازی اشتراک‌های نماینده");
+                return MessageBox.Error("ناموفق", "رفع مسدودسازی با خطا مواجه شد");
             }
         }
 
@@ -688,6 +937,12 @@ namespace V2boardApi.Areas.App.Controllers
                 }
                 if (user == null)
                 {
+                    var current = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                    if (current != null && current.Role == 1)
+                        user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
+                }
+                if (user == null)
+                {
                     return RedirectToAction("Error404", "Error", new { area = "App" });
                 }
 
@@ -741,6 +996,12 @@ namespace V2boardApi.Areas.App.Controllers
                 if (user == null)
                 {
                     user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id && s.tbUsers2.Username == User.Identity.Name);
+                }
+                if (user == null)
+                {
+                    var current = await RepositoryUser.FirstOrDefaultAsync(s => s.Username == User.Identity.Name);
+                    if (current != null && current.Role == 1)
+                        user = await RepositoryUser.FirstOrDefaultAsync(s => s.User_ID == user_id);
                 }
                 if (user == null)
                 {
@@ -1507,6 +1768,7 @@ namespace V2boardApi.Areas.App.Controllers
                         return true;
                     })
                     .Sum(f => f.tbUf_Value.Value)
+                    .RialToToman()
             };
             summary.TotalSalesAmountFormatted = summary.TotalSalesAmount.ConvertToMony();
             summary.PaidInvoicesAmountFormatted = summary.PaidInvoicesAmount.ConvertToMony();
@@ -1563,7 +1825,7 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     UserFactorResponseModel factor = new UserFactorResponseModel();
                     factor.PayDate = item.tbUf_CreateTime.Value.ConvertDateTimeToShamsi2();
-                    factor.Price = item.tbUf_Value.Value.ConvertToMony();
+                    factor.Price = item.tbUf_Value.Value.RialToToman().ConvertToMony();
                     factor.PayStatus = item.tbUf_Status.Value;
                     factor.factor_id = item.tbUf_ID;
                     Factores.Add(factor);
@@ -1577,30 +1839,36 @@ namespace V2boardApi.Areas.App.Controllers
         #endregion
 
         #region شارژ کیف پول کاربر
-        [AuthorizeApp(Roles = "1,3,4")]
-
+        [AuthorizeApp(Roles = "1")]
         public ActionResult _EditWallet(int user_id)
         {
+            var current = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+            if (current == null || current.Role != 1)
+                return Content("");
+
             var us = db.tbUsers.Where(p => p.User_ID == user_id).FirstOrDefault();
-            if (us != null)
-            {
+            if (us != null && us.Role != 1)
                 return PartialView(us);
-            }
-            else
-            {
-                return RedirectToAction("Login", "Admin");
-            }
+
+            return Content("");
         }
 
 
-        [AuthorizeApp(Roles = "1,3,4")]
+        [AuthorizeApp(Roles = "1")]
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult EditWallet(int user_id, string userDeposit)
         {
             try
             {
+                var current = RepositoryUser.Where(s => s.Username == User.Identity.Name).FirstOrDefault();
+                if (current == null || current.Role != 1)
+                    return MessageBox.Warning("ناموفق", "فقط ادمین سیستم مجاز به تغییر مبلغ کیف پول است");
+
                 var us = db.tbUsers.Where(p => p.User_ID == user_id).FirstOrDefault();
+                if (us == null || us.Role == 1)
+                    return MessageBox.Warning("ناموفق", "امکان تغییر کیف پول این کاربر وجود ندارد");
+
                 var intWallet = 0;
                 intWallet = int.Parse(userDeposit, NumberStyles.Currency);
 
@@ -1608,7 +1876,7 @@ namespace V2boardApi.Areas.App.Controllers
                 if (us.Role == 4)
                 {
                     tbUserFactors factor = new tbUserFactors();
-                    factor.tbUf_Value = us.Wallet - intWallet;
+                    factor.tbUf_Value = (us.Wallet - intWallet).TomanToRial();
                     factor.tbUf_CreateTime = DateTime.Now;
                     factor.FK_User_ID = user_id;
                     us.Wallet = intWallet;
@@ -1618,13 +1886,14 @@ namespace V2boardApi.Areas.App.Controllers
                 if (us.Wallet != intWallet)
                 {
                     tbUserFactors factor = new tbUserFactors();
-                    factor.tbUf_Value = us.Wallet - intWallet;
+                    factor.tbUf_Value = (us.Wallet - intWallet).TomanToRial();
                     factor.tbUf_CreateTime = DateTime.Now;
                     factor.FK_User_ID = user_id;
                     us.Wallet = intWallet;
                     us.tbUserFactors.Add(factor);
                 }
                 RepositoryUser.Save();
+                logger.Info("کیف پول نماینده " + us.Username + " توسط ادمین به " + intWallet + " تغییر کرد");
                 return MessageBox.Success("موفق", "اطلاعات کیف پول با موفقیت تغییر کرد");
             }
             catch (Exception ex)

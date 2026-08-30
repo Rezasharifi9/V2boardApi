@@ -185,6 +185,35 @@ namespace V2boardApi.Tools
         }
 
         /// <summary>
+        /// افزایش بدهی نماینده هنگام ساخت، تمدید یا رزرو اشتراک از ربات یا اپ.
+        /// نقش ۳: مبلغ تخصیص گروه سرور (گیگ/ماه/کاربر). نقش ۲: قیمت تعرفه.
+        /// شارژ کیف پول کاربر اینجا اعمال نمی‌شود؛ ذخیره با فراخواننده است.
+        /// </summary>
+        public static void ApplySubscriptionAgentDebt(tbUsers agent, tbLinkUserAndPlans planLink)
+        {
+            if (agent == null || planLink?.tbPlans == null)
+                return;
+
+            var plan = planLink.tbPlans;
+            if (agent.Role == 3)
+            {
+                var prices = agent.tbLinkServerGroupWithUsers
+                    .FirstOrDefault(s => s.FK_Group_Id == plan.Group_Id);
+                if (prices == null)
+                    return;
+
+                var amount = (plan.PlanMonth * prices.PriceForMonth)
+                           + (plan.PlanVolume * prices.PriceForGig)
+                           + ((plan.device_limit ?? 0) * prices.PriceForUser);
+                agent.Wallet += (int)amount;
+            }
+            else if (agent.Role == 2)
+            {
+                agent.Wallet += plan.Price;
+            }
+        }
+
+        /// <summary>
         /// برگشت بدهی کیف‌پول نماینده برای سفارش رزرو.
         /// null = خطا / نقش ۲و۳ بدون امکان محاسبه؛ 0 = نیازی به برگشت نماینده نبود (مثلاً ادمین).
         /// </summary>

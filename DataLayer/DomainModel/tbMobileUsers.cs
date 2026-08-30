@@ -19,6 +19,7 @@ namespace DataLayer.DomainModel
         {
             this.tbOrders = new HashSet<tbOrders>();
             this.tbDepositWallet_Log = new HashSet<tbDepositWallet_Log>();
+            this.tbLinks = new HashSet<tbLinks>();
         }
 
         public int tbMu_ID { get; set; }
@@ -53,5 +54,7 @@ namespace DataLayer.DomainModel
         public virtual ICollection<tbOrders> tbOrders { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbDepositWallet_Log> tbDepositWallet_Log { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbLinks> tbLinks { get; set; }
     }
 }

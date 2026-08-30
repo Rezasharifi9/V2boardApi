@@ -264,6 +264,19 @@ namespace V2boardApi.Tools
             return formattedNumber;
         }
 
+        /// <summary>
+        /// فاکتور نماینده در tbUserFactors به ریال ذخیره می‌شود؛ پنل مبلغ را به تومان نشان می‌دهد.
+        /// </summary>
+        public static double RialToToman(this double rial)
+        {
+            return rial / 10d;
+        }
+
+        public static double TomanToRial(this double toman)
+        {
+            return toman * 10d;
+        }
+
         public static byte[] GenerateQRCode(string text)
         {
             var generator = new QRCodeGenerator();

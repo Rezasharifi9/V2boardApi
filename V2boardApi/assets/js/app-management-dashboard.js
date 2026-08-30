@@ -160,5 +160,16 @@ window.ManagementDashboard = (function () {
         });
     }
 
+    $(document).on('click', '#mgmtToggleAmounts', function () {
+        var $root = $('#mgmtDashboard');
+        var $btn = $(this);
+        var $icon = $btn.find('i');
+        var revealing = $root.hasClass('mgmt-amounts-hidden');
+        $root.toggleClass('mgmt-amounts-hidden');
+        $icon.toggleClass('ti-eye-off', !revealing).toggleClass('ti-eye', revealing);
+        var label = revealing ? 'مخفی کردن مبالغ' : 'نمایش مبالغ';
+        $btn.attr('title', label).attr('aria-label', label);
+    });
+
     return { loadCharts: loadCharts };
 })();

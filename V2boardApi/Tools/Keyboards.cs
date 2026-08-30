@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using V2boardApi.Tools;
 using V2boardBotApp;
 using V2boardBotApp.Models;
 
@@ -221,6 +222,64 @@ namespace V2boardBot.Models
             var keyboard = new InlineKeyboardMarkup(inlineKeyboards);
 
             return keyboard;
+        }
+
+        public static InlineKeyboardMarkup GetServiceLinksKeyboard(IList<TelegramSubscriptionSummary> summaries)
+        {
+            if (summaries == null || summaries.Count == 0)
+                return null;
+
+            List<List<InlineKeyboardButton>> inlineKeyboards = new List<List<InlineKeyboardButton>>();
+            int itemsPerRow = 2;
+
+            for (int i = 0; i < summaries.Count; i += itemsPerRow)
+            {
+                List<InlineKeyboardButton> row = new List<InlineKeyboardButton>();
+
+                for (int j = i; j < i + itemsPerRow && j < summaries.Count; j++)
+                {
+                    var item = summaries[j];
+                    var icon = item.IsActive ? "✅" : (item.IsBanned ? "🚫" : "❌");
+                    var label = icon + " " + item.DisplayName;
+                    if (label.Length > 64)
+                        label = label.Substring(0, 64);
+                    row.Add(InlineKeyboardButton.WithCallbackData(label, item.Email));
+                }
+
+                inlineKeyboards.Add(row);
+            }
+
+            return new InlineKeyboardMarkup(inlineKeyboards);
+        }
+
+        public static InlineKeyboardMarkup GetBuyExistingChoiceKeyboard()
+        {
+            List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            row1.Add(InlineKeyboardButton.WithCallbackData("✅ آره، اشتراک جدید می‌خوام", "BuyNewSub"));
+            btns.Add(row1);
+
+            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+            row2.Add(InlineKeyboardButton.WithCallbackData("♻️ نه، همون قبلی‌ها رو شارژ می‌کنم", "BuyExistingSub"));
+            btns.Add(row2);
+
+            return new InlineKeyboardMarkup(btns);
+        }
+
+        public static InlineKeyboardMarkup GetConfirmRenewKeyboard()
+        {
+            List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+
+            List<InlineKeyboardButton> row1 = new List<InlineKeyboardButton>();
+            row1.Add(InlineKeyboardButton.WithCallbackData("✅ آره، ادامه بده", "ConfirmRenew"));
+            btns.Add(row1);
+
+            List<InlineKeyboardButton> row2 = new List<InlineKeyboardButton>();
+            row2.Add(InlineKeyboardButton.WithCallbackData("❌ نه، برمی‌گردم", "CancelRenew"));
+            btns.Add(row2);
+
+            return new InlineKeyboardMarkup(btns);
         }
 
 
@@ -620,6 +679,17 @@ namespace V2boardBot.Models
             var keyborad = new InlineKeyboardMarkup(btns);
 
             return keyborad;
+        }
+
+        public static InlineKeyboardMarkup GetBackToInfoOnly()
+        {
+            List<List<InlineKeyboardButton>> btns = new List<List<InlineKeyboardButton>>();
+            List<InlineKeyboardButton> row = new List<InlineKeyboardButton>();
+            InlineKeyboardButton btn = new InlineKeyboardButton("🔙 برگشت");
+            btn.CallbackData = "backToInfo";
+            row.Add(btn);
+            btns.Add(row);
+            return new InlineKeyboardMarkup(btns);
         }
 
         /// <summary>

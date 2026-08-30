@@ -1,0 +1,145 @@
+@{
+    ViewBag.Title = "لاگ سیستم";
+}
+
+@section vendorStyle {
+    <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
+    <link href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" rel="stylesheet" />
+    <link href="../../assets/libs/flatpickr/flatpickr.css" rel="stylesheet" />
+}
+
+<h4 class="py-3 mb-4">لاگ سیستم</h4>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="ti ti-file-text me-2"></i>فیلتر لاگ‌ها</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label" for="filterLevel">سطح</label>
+                <select id="filterLevel" class="form-select">
+                    <option value="">همه</option>
+                    <option value="Fatal">Fatal</option>
+                    <option value="Error">Error</option>
+                    <option value="Warn">Warn</option>
+                    <option value="Info">Info</option>
+                    <option value="Debug">Debug</option>
+                    <option value="Trace">Trace</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="filterHasException">Exception</label>
+                <select id="filterHasException" class="form-select">
+                    <option value="">همه</option>
+                    <option value="1">دارای خطا</option>
+                    <option value="0">بدون خطا</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="filterHttpMethod">متد HTTP</label>
+                <select id="filterHttpMethod" class="form-select">
+                    <option value="">همه</option>
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterFromDate">از تاریخ</label>
+                <input type="text" dir="ltr" id="filterFromDate" class="form-control" placeholder="1404/01/01" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterToDate">تا تاریخ</label>
+                <input type="text" dir="ltr" id="filterToDate" class="form-control" placeholder="1404/03/01" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterLogger">Logger</label>
+                <input type="text" dir="ltr" id="filterLogger" class="form-control" list="loggerSuggestions" placeholder="AndroidApp" />
+                <datalist id="loggerSuggestions">
+                    <option value="AndroidApp"></option>
+                </datalist>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterUserName">کاربر</label>
+                <input type="text" id="filterUserName" class="form-control" placeholder="نام کاربری" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterIp">آیپی</label>
+                <input type="text" dir="ltr" id="filterIp" class="form-control" placeholder="127.0.0.1" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterMessage">متن پیام</label>
+                <input type="text" id="filterMessage" class="form-control" placeholder="جستجو در متن لاگ" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterController">کنترلر</label>
+                <input type="text" dir="ltr" id="filterController" class="form-control" placeholder="Settings" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="filterAction">اکشن</label>
+                <input type="text" dir="ltr" id="filterAction" class="form-control" placeholder="Index" />
+            </div>
+            <div class="col-md-6">
+                <button type="button" id="btnApplyNLogFilters" class="btn btn-primary me-2">
+                    <i class="ti ti-filter me-1"></i>اعمال فیلتر
+                </button>
+                <button type="button" id="btnFilterAndroidAppLogs" class="btn btn-label-info me-2">
+                    <i class="ti ti-device-mobile me-1"></i>لاگ اپلیکیشن
+                </button>
+                <button type="button" id="btnClearNLogFilters" class="btn btn-label-secondary">
+                    پاک کردن
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-datatable table-responsive pt-0">
+        <table class="datatables-nlog table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>سطح</th>
+                    <th>تاریخ</th>
+                    <th>Logger</th>
+                    <th>پیام</th>
+                    <th>کاربر</th>
+                    <th>آیپی</th>
+                    <th>کنترلر / اکشن</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="nlogDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">جزئیات لاگ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <div class="modal-body" id="nlogDetailsBody"></div>
+        </div>
+    </div>
+</div>
+
+@section vendorScripts {
+    <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="../../assets/vendor/libs/datatables-bs5/i18n/fa.js"></script>
+    <script src="../../assets/vendor/libs/block-ui/block-ui.js"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/jdate/jdate.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/flatpickr/flatpickr-jalali.js")"></script>
+    <script src="@PanelAssetHelper.Js("../../assets/libs/flatpickr/l10n/fa.js")"></script>
+}
+
+@section customScripts {
+    <script src="@PanelAssetHelper.Js("../../assets/js/app-nlog-list.js")"></script>
+}

@@ -8,7 +8,7 @@
 - مدل خروجی: `V2boardApi/Areas/api/Data/ViewModels/SupportLinkViewModel.cs`
 - جدول: `dbo.tbSupportLinks` — اسکریپت ساخت: [`Database/AddSupportLinksTable.sql`](../Database/AddSupportLinksTable.sql)
 
-> آیدی تلگرام پشتیبانی در [`GET /User/GetFaq`](API-Faq.md) با فیلد `supportUsername` هم برمی‌گردد. این اندپوینت لینک‌های ثبت‌شده در پنل را جدا می‌دهد تا صفحه «ارتباط با پشتیبانی» ساخته شود.
+> آیدی تلگرام پشتیبانی در [`GET /User/GetFaq`](API-Faq.md) با فیلد `supportUsername` هم برمی‌گردد. این اندپوینت لینک‌های ثبت‌شده در پنل را جدا می‌دهد تا صفحه «ارتباط با پشتیبانی» ساخته شود. نسخه و لینک دانلود اپلیکیشن را از [`GET /User/GetAppRelease`](API-AppRelease.md) بگیر.
 
 ---
 

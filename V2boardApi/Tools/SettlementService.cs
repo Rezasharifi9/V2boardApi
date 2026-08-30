@@ -124,6 +124,35 @@ namespace V2boardApi.Tools
         }
 
         /// <summary>
+        /// آیا این نماینده یا یکی از بالادستی‌هایش توسط مدیریت (یا تسویه) مسدود شده است.
+        /// </summary>
+        public static bool IsAgentOrAncestorBlocked(tbUsers agent, Entities db)
+        {
+            if (agent == null || db == null)
+                return false;
+
+            var seen = new HashSet<int>();
+            var current = agent;
+            while (current != null && seen.Add(current.User_ID))
+            {
+                if (current.Settlement_IsBlocked)
+                    return true;
+                if (!current.Parent_ID.HasValue || current.Parent_ID.Value <= 0)
+                    break;
+                var parentId = current.Parent_ID.Value;
+                current = db.tbUsers.FirstOrDefault(u => u.User_ID == parentId);
+            }
+
+            return false;
+        }
+
+        public static bool HasAdminBlockFlag(string remarks)
+        {
+            return !string.IsNullOrEmpty(remarks) &&
+                   remarks.IndexOf(RemarksFlag, StringComparison.Ordinal) >= 0;
+        }
+
+        /// <summary>
         /// ارسال پیام به نماینده. توکن ربات همیشه از کاربر ادمین (Role = 1) خوانده می‌شود،
         /// نه از ربات خود نماینده — تا نمایندگانی که ربات اختصاصی ندارند هم پیام دریافت کنند.
         ///
@@ -150,34 +179,67 @@ namespace V2boardApi.Tools
             if (mirrorToPanel)
                 MirrorMessageToPanel(agent, message, panelTitle, panelDedupHours);
 
+            var alertType = !string.IsNullOrWhiteSpace(panelTitle)
+                ? panelTitle
+                : PanelNotificationService.TitleGeneral;
+            var sent = false;
+            string chatId = null;
+            string error = null;
+
             try
             {
                 using (var db = new Entities())
                 {
                     var admin = GetOwnerAdmin(db, agent);
                     if (admin == null)
-                        return false;
+                    {
+                        error = "ادمین سیستم یافت نشد";
+                    }
+                    else
+                    {
+                        var adminBotSetting = admin.tbBotSettings?.FirstOrDefault();
+                        if (adminBotSetting == null || string.IsNullOrEmpty(adminBotSetting.Bot_Token))
+                        {
+                            error = "توکن ربات ادمین تنظیم نشده است";
+                        }
+                        else
+                        {
+                            var telegramId = db.tbUsers
+                                .Where(u => u.User_ID == agent.User_ID)
+                                .Select(u => u.TelegramID)
+                                .FirstOrDefault() ?? agent.TelegramID;
 
-                    var adminBotSetting = admin.tbBotSettings?.FirstOrDefault();
-                    if (adminBotSetting == null || string.IsNullOrEmpty(adminBotSetting.Bot_Token))
-                        return false;
+                            chatId = TelegramNotifyHelper.ResolveChatIdFromProfile(
+                                db, telegramId, adminBotSetting.Bot_ID);
+                            if (string.IsNullOrEmpty(chatId))
+                            {
+                                error = "شناسه تلگرام نماینده ثبت نشده است";
+                            }
+                            else
+                            {
+                                var cached = BotManager.GetBot(admin.Username);
+                                var client = cached != null && string.Equals(cached.Token, adminBotSetting.Bot_Token, StringComparison.Ordinal)
+                                    ? cached.Client
+                                    : new TelegramBotClient(adminBotSetting.Bot_Token);
 
-                    var chatId = ResolveAgentChatId(db, agent, adminBotSetting);
-                    if (string.IsNullOrEmpty(chatId))
-                        return false;
-
-                    var cached = BotManager.GetBot(admin.Username);
-                    var client = cached != null && string.Equals(cached.Token, adminBotSetting.Bot_Token, StringComparison.Ordinal)
-                        ? cached.Client
-                        : new TelegramBotClient(adminBotSetting.Bot_Token);
-
-                    return await TelegramNotifyHelper.TrySendMessageAsync(client, chatId, message);
+                                string sendError = null;
+                                sent = await TelegramNotifyHelper.TrySendMessageAsync(
+                                    client, chatId, message, onFailure: e => sendError = e);
+                                if (!sent)
+                                    error = string.IsNullOrWhiteSpace(sendError) ? "ارسال پیام تلگرام ناموفق بود" : sendError;
+                            }
+                        }
+                    }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                sent = false;
+                error = ex.Message;
             }
+
+            AlertSendLogService.Write(agent, chatId, alertType, message, sent, error);
+            return sent;
         }
 
         /// <summary>
@@ -208,32 +270,6 @@ namespace V2boardApi.Tools
             {
                 logger.Warn(ex, "خطا در میرور پیام تلگرام به اعلانات پنل نماینده " + agent.User_ID);
             }
-        }
-
-        /// <summary>
-        /// شناسه چت تلگرام نماینده: یوزرنیم تلگرامِ ثبت‌شده در پروفایل نماینده (tbUsers.TelegramID)
-        /// را با Tel_Username در جدول tbTelegramUsers مطابقت می‌دهد و شناسه یکتای همان کاربر را برمی‌گرداند.
-        /// عمداً هیچ fallback به AdminBot_ID ندارد تا پیام هرگز به ادمین ارسال نشود.
-        /// </summary>
-        private static string ResolveAgentChatId(Entities db, tbUsers agent, tbBotSettings adminBotSetting)
-        {
-            if (string.IsNullOrEmpty(agent.TelegramID))
-                return null;
-
-            // ترجیحاً رکورد مربوط به همان ربات ادمین (چون پیام با توکن ربات ادمین ارسال می‌شود)
-            tbTelegramUsers telUser = null;
-            if (!string.IsNullOrEmpty(adminBotSetting.Bot_ID))
-            {
-                telUser = db.tbTelegramUsers.FirstOrDefault(t =>
-                    t.Tel_Username == agent.TelegramID && t.Tel_RobotID == adminBotSetting.Bot_ID);
-            }
-
-            if (telUser == null)
-                telUser = db.tbTelegramUsers.FirstOrDefault(t => t.Tel_Username == agent.TelegramID);
-
-            return telUser != null && !string.IsNullOrEmpty(telUser.Tel_UniqUserID)
-                ? telUser.Tel_UniqUserID
-                : null;
         }
 
         public static async Task BlockAgentSubscriptions(tbUsers agent, Entities db)
@@ -458,6 +494,9 @@ namespace V2boardApi.Tools
                 if (admin == null)
                 {
                     logger.Warn("درخواست تایید مسدودسازی ارسال نشد: ادمین (Role=1) یافت نشد — نماینده " + agent.Username);
+                    AlertSendLogService.Write(
+                        null, "ادمین", null, "درخواست تایید مسدودسازی",
+                        BuildBlockApprovalMessage(agent, db, now), false, "ادمین سیستم یافت نشد");
                     return false;
                 }
 
@@ -465,6 +504,9 @@ namespace V2boardApi.Tools
                 if (botSetting == null || string.IsNullOrEmpty(botSetting.Bot_Token) || botSetting.AdminBot_ID <= 0)
                 {
                     logger.Warn("درخواست تایید مسدودسازی ارسال نشد: توکن ربات یا شناسه تلگرام ادمین تنظیم نشده");
+                    AlertSendLogService.Write(
+                        admin, null, "درخواست تایید مسدودسازی",
+                        BuildBlockApprovalMessage(agent, db, now), false, "توکن ربات یا شناسه تلگرام ادمین تنظیم نشده است");
                     return false;
                 }
 
@@ -481,12 +523,32 @@ namespace V2boardApi.Tools
                 });
 
                 var message = BuildBlockApprovalMessage(agent, db, now);
-                return await TelegramNotifyHelper.TrySendMessageAsync(
-                    client, botSetting.AdminBot_ID.ToString(), message, ParseMode.Html, keyboard);
+                var chatId = botSetting.AdminBot_ID.ToString();
+                string sendError = null;
+                var sent = await TelegramNotifyHelper.TrySendMessageAsync(
+                    client, chatId, message, ParseMode.Html, keyboard, onFailure: e => sendError = e);
+
+                AlertSendLogService.Write(
+                    admin,
+                    chatId,
+                    "درخواست تایید مسدودسازی",
+                    message,
+                    sent,
+                    sent ? null : (string.IsNullOrWhiteSpace(sendError) ? "ارسال پیام تلگرام ناموفق بود" : sendError));
+
+                return sent;
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "خطا در ارسال درخواست تایید مسدودسازی نماینده " + agent.Username);
+                AlertSendLogService.Write(
+                    null,
+                    agent != null ? AlertSendLogService.FormatRecipientName(agent) : "—",
+                    null,
+                    "درخواست تایید مسدودسازی",
+                    "خطا در ارسال درخواست تایید مسدودسازی نماینده " + (agent?.Username ?? "—"),
+                    false,
+                    ex.Message);
                 return false;
             }
         }
@@ -513,7 +575,7 @@ namespace V2boardApi.Tools
             msg.AppendLine("تمامی اشتراک‌های زیرمجموعه شما مسدود گردید.");
             msg.AppendLine("لطفاً نسبت به پرداخت بدهی اقدام کنید؛ پس از ثبت پرداخت، اشتراک‌ها خودکار فعال می‌شوند.");
             // اعلان پنل بالاتر با CreateAgentPanelNotification ثبت شد
-            await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false);
+            await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false, panelTitle: NotiTitleBlocked);
         }
 
         /// <summary>
@@ -621,7 +683,7 @@ namespace V2boardApi.Tools
                         msg.AppendLine(payText);
                     }
 
-                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false);
+                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false, panelTitle: NotiTitlePreWarning);
                     agent.Settlement_LastPreWarning = now;
                     await db.SaveChangesAsync();
                 }
@@ -653,7 +715,7 @@ namespace V2boardApi.Tools
                         msg.AppendLine(payText);
                     }
 
-                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false);
+                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false, panelTitle: NotiTitleDueDay);
                     agent.Settlement_LastDueDayWarning = now;
                     await db.SaveChangesAsync();
                 }
@@ -685,7 +747,7 @@ namespace V2boardApi.Tools
                         msg.AppendLine(payText);
                     }
 
-                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false);
+                    await SendAgentTelegramMessage(agent, msg.ToString(), mirrorToPanel: false, panelTitle: NotiTitleOverdue);
                     agent.Settlement_LastOverdueWarning = now;
                     await db.SaveChangesAsync();
                 }
@@ -724,7 +786,7 @@ namespace V2boardApi.Tools
                             agentMsg.AppendLine(payText);
                         }
 
-                        await SendAgentTelegramMessage(agent, agentMsg.ToString(), mirrorToPanel: false);
+                        await SendAgentTelegramMessage(agent, agentMsg.ToString(), mirrorToPanel: false, panelTitle: NotiTitlePreBlock);
                     }
 
                     await SendBlockApprovalRequestToAdmin(agent, db, now);

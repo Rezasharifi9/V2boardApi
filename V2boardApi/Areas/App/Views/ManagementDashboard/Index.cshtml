@@ -2,6 +2,22 @@
     ViewBag.Title = "داشبورد مدیریت";
 }
 
+@section vendorStyle {
+    <style>
+        .mgmt-amounts-hidden .js-mgmt-amount {
+            filter: blur(8px);
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .mgmt-amounts-hidden .js-mgmt-amount-chart {
+            filter: blur(14px);
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+}
+
 <div class="row section-loading" id="mgmtOverview">
 </div>
 

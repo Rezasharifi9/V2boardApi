@@ -570,6 +570,53 @@ namespace V2boardApi.Areas.api.Controllers
 
         #endregion
 
+        #region نسخه اپلیکیشن
+
+        /// <summary>
+        /// نسخه منتشرشده اپلیکیشن، لینک دانلود، متن تغییرات و پرچم نصب اجباری را برمی گرداند
+        /// تا کلاینت اندروید در صورت قدیمی بودن نسخه، دیالوگ به روزرسانی نشان دهد.
+        /// توکن نماینده از هدر Authorization خوانده می شود.
+        /// </summary>
+        [System.Web.Http.HttpGet]
+        public async Task<IHttpActionResult> GetAppRelease()
+        {
+            try
+            {
+                var token = GetAgentTokenFromHeader();
+                if (token == null)
+                {
+                    return BadRequest("توکن در هدر Authorization ارسال نشده است");
+                }
+
+                var User = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == token);
+                if (User == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                var row = await db.tbAppRelease.AsNoTracking().FirstOrDefaultAsync();
+                AppReleaseViewModel data = new AppReleaseViewModel();
+                data.Changelog = new List<string>();
+                if (row != null)
+                {
+                    data.Version = row.tbAr_Version;
+                    data.VersionCode = row.tbAr_VersionCode;
+                    data.DownloadUrl = row.tbAr_DownloadUrl;
+                    data.Changelog = AppReleaseViewModel.ParseItems(row.tbAr_Changelog);
+                    data.ForceInstall = row.tbAr_ForceInstall;
+                }
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در دریافت نسخه اپلیکیشن");
+                return Content(HttpStatusCode.InternalServerError, "خطا در دریافت نسخه اپلیکیشن");
+            }
+        }
+
+        #endregion
+
         #region موجودی کیف پول ربات تلگرام مشتری
 
         /// <summary>
@@ -593,13 +640,13 @@ namespace V2boardApi.Areas.api.Controllers
                     return BadRequest("توکن در هدر Authorization ارسال نشده است");
                 }
 
-                var Agent = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == token);
+                var Agent = await db.tbUsers.Include(p => p.tbServers).FirstOrDefaultAsync(p => p.Token == token);
                 if (Agent == null)
                 {
                     return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
                 }
 
-                var Link = await FindAgentSubscriptionAsync(model.SubscriptionToken.Trim(), Agent.Username);
+                var Link = await FindAgentSubscriptionAsync(model.SubscriptionToken.Trim(), Agent, null);
                 if (Link == null)
                 {
                     return Content(HttpStatusCode.NotFound, "اشتراکی با این توکن برای این نماینده یافت نشد");
@@ -659,7 +706,7 @@ namespace V2boardApi.Areas.api.Controllers
                     return BadRequest("توکن در هدر Authorization ارسال نشده است");
                 }
 
-                var Agent = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == token);
+                var Agent = await db.tbUsers.Include(p => p.tbServers).FirstOrDefaultAsync(p => p.Token == token);
                 if (Agent == null)
                 {
                     return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
@@ -681,6 +728,9 @@ namespace V2boardApi.Areas.api.Controllers
                     return Content(HttpStatusCode.NotFound, "برای این نماینده کارت بانکی فعالی ثبت نشده است");
                 }
 
+                // دستگاهی که فاکتور را ساخته ، فقط اگر متعلق به همین نماینده باشد
+                var MobileUserId = await FindMobileUserIdAsync(model.ResolveDeviceId(), Agent.User_ID);
+
                 // تعیین اشتراک : توکن خالی یعنی اشتراک جدید ، توکن پر یعنی تمدید اشتراک موجود همین نماینده
                 string AccountName;
                 string OrderType;
@@ -696,7 +746,7 @@ namespace V2boardApi.Areas.api.Controllers
                 }
                 else
                 {
-                    var Link = await FindAgentSubscriptionAsync(RequestedToken, Agent.Username);
+                    var Link = await FindAgentSubscriptionAsync(RequestedToken, Agent, MobileUserId);
                     if (Link == null)
                     {
                         return Content(HttpStatusCode.NotFound, "اشتراکی با این توکن برای این نماینده یافت نشد");
@@ -715,9 +765,6 @@ namespace V2boardApi.Areas.api.Controllers
 
                 var FullPrice = await BuildUniqueInvoicePriceAsync(Price);
                 var TaxId = Guid.NewGuid().ToString().Split('-')[0] + "#" + Agent.User_ID;
-
-                // دستگاهی که فاکتور را ساخته ، فقط اگر متعلق به همین نماینده باشد
-                var MobileUserId = await FindMobileUserIdAsync(model.ResolveDeviceId(), Agent.User_ID);
 
                 tbOrders Order = new tbOrders();
                 Order.Order_Guid = Guid.NewGuid();
@@ -825,13 +872,137 @@ namespace V2boardApi.Areas.api.Controllers
         }
 
         /// <summary>
-        /// پیدا کردن اشتراک بر اساس توکن لینک ساب ، فقط در صورتی که متعلق به همین نماینده باشد
+        /// پیدا کردن اشتراک بر اساس توکن لینک ساب ، فقط در صورتی که متعلق به همین نماینده باشد.
+        /// اگر در tbLinks نبود ، از MySQL خوانده می‌شود ؛ بخش بعد از @ باید username نماینده باشد.
+        /// در آن حالت رکورد tbLinks ساخته و در صورت وجود دستگاه به همان کاربر موبایل اختصاص داده می‌شود.
         /// </summary>
-        private async Task<tbLinks> FindAgentSubscriptionAsync(string SubscriptionToken, string AgentUsername)
+        private async Task<tbLinks> FindAgentSubscriptionAsync(string SubscriptionToken, tbUsers Agent, int? mobileUserId)
         {
-            var Suffix = "@" + AgentUsername;
+            var link = await db.tbLinks.FirstOrDefaultAsync(p => p.tbL_Token == SubscriptionToken);
+            if (link != null)
+            {
+                if (!EmailBelongsToAgent(link.tbL_Email, Agent.Username))
+                {
+                    return null;
+                }
 
-            return await db.tbLinks.FirstOrDefaultAsync(p => p.tbL_Token == SubscriptionToken && p.tbL_Email.EndsWith(Suffix));
+                if (AssignLinkChannels(link, Agent.User_ID, mobileUserId, null))
+                {
+                    await db.SaveChangesAsync();
+                }
+
+                return link;
+            }
+
+            var imported = await TryImportMysqlSubscriptionAsync(SubscriptionToken, Agent);
+            if (imported == null)
+            {
+                return null;
+            }
+
+            AssignLinkChannels(imported, Agent.User_ID, mobileUserId, null);
+            await db.SaveChangesAsync();
+            return imported;
+        }
+
+        /// <summary>
+        /// ساختار نام اشتراک : name$random@AgentUsername — خانه [1] بعد از Split('@') یوزرنیم نماینده است.
+        /// </summary>
+        private static bool EmailBelongsToAgent(string email, string agentUsername)
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(agentUsername))
+            {
+                return false;
+            }
+
+            var parts = email.Split('@');
+            return parts.Length >= 2 && parts[1].Trim() == agentUsername;
+        }
+
+        private static bool AssignLinkChannels(tbLinks link, int? agentUserId, int? mobileUserId, int? telegramUserId)
+        {
+            if (link == null)
+            {
+                return false;
+            }
+
+            var changed = false;
+            if (agentUserId != null && link.FK_User_ID != agentUserId)
+            {
+                link.FK_User_ID = agentUserId;
+                changed = true;
+            }
+
+            if (mobileUserId != null && link.FK_MobileUser_ID != mobileUserId)
+            {
+                link.FK_MobileUser_ID = mobileUserId;
+                changed = true;
+            }
+
+            if (telegramUserId != null && link.FK_TelegramUserID != telegramUserId)
+            {
+                link.FK_TelegramUserID = telegramUserId;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        /// <summary>
+        /// خواندن اشتراک از v2_user با توکن ساب و ثبت آن در tbLinks اگر متعلق به همین نماینده باشد.
+        /// </summary>
+        private async Task<tbLinks> TryImportMysqlSubscriptionAsync(string subscriptionToken, tbUsers agent)
+        {
+            var server = agent.tbServers;
+            if (server == null || string.IsNullOrWhiteSpace(server.ConnectionString))
+            {
+                return null;
+            }
+
+            string email = null;
+            using (var mySql = new MySqlEntities(server.ConnectionString))
+            {
+                await mySql.OpenAsync();
+                var parameters = new Dictionary<string, object> { { "@token", subscriptionToken } };
+                using (var reader = await mySql.GetDataAsync(
+                    "SELECT email FROM v2_user WHERE token=@token LIMIT 1", parameters))
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        email = reader.IsDBNull(0) ? null : reader.GetString(0);
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(email) || !EmailBelongsToAgent(email, agent.Username))
+            {
+                return null;
+            }
+
+            var link = await db.tbLinks.FirstOrDefaultAsync(p => p.tbL_Email == email);
+            if (link != null)
+            {
+                link.tbL_Token = subscriptionToken;
+                if (link.FK_Server_ID == null)
+                {
+                    link.FK_Server_ID = server.ServerID;
+                }
+
+                AssignLinkChannels(link, agent.User_ID, null, null);
+                return link;
+            }
+
+            link = new tbLinks();
+            link.tbL_Email = email;
+            link.tbL_Token = subscriptionToken;
+            link.FK_Server_ID = server.ServerID;
+            link.FK_User_ID = agent.User_ID;
+            link.tb_AutoRenew = false;
+            SubscriptionReserveWarnHelper.ResetReserveWarnState(link);
+            db.tbLinks.Add(link);
+
+            logger.Info("اشتراک " + email + " از MySQL برای نماینده " + agent.Username + " در tbLinks ثبت شد");
+            return link;
         }
 
         /// <summary>

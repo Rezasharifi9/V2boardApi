@@ -126,7 +126,7 @@ namespace V2boardApi.Areas.App.Controllers
         }
 
         /// <summary>
-        /// اعمال فیلترهای اختصاصی صفحه فاکتورها: کاربر، شماره پیگیری، بازه مبلغ و بازه تاریخ (شمسی).
+        /// اعمال فیلترهای اختصاصی صفحه فاکتورها: کاربر، شماره پیگیری، مبلغ دقیق و بازه تاریخ (شمسی).
         /// </summary>
         private static IQueryable<tbDepositWallet_Log> ApplyCustomFilters(IQueryable<tbDepositWallet_Log> query, HttpRequestBase request)
         {
@@ -145,13 +145,9 @@ namespace V2boardApi.Areas.App.Controllers
             if (!string.IsNullOrWhiteSpace(filterTaxId))
                 query = query.Where(p => p.dw_TaxId != null && p.dw_TaxId.Contains(filterTaxId));
 
-            var amountMin = ParseFilterAmount(request.Form["filterAmountMin"]);
-            if (amountMin.HasValue)
-                query = query.Where(p => p.dw_Price.HasValue && p.dw_Price.Value >= amountMin.Value);
-
-            var amountMax = ParseFilterAmount(request.Form["filterAmountMax"]);
-            if (amountMax.HasValue)
-                query = query.Where(p => p.dw_Price.HasValue && p.dw_Price.Value <= amountMax.Value);
+            var amount = ParseFilterAmount(request.Form["filterAmount"]);
+            if (amount.HasValue)
+                query = query.Where(p => p.dw_Price.HasValue && p.dw_Price.Value == amount.Value);
 
             DateTime fromDate;
             if (Utility.TryParseShamsiDate(request.Form["filterFromDate"], out fromDate))
@@ -210,7 +206,7 @@ namespace V2boardApi.Areas.App.Controllers
                 DeviceId = item.FK_MobileUser_ID ?? 0
             };
 
-            if (item.dw_Status == "FOR_PAY" || item.dw_Status == "EXPIRED")
+            if (item.dw_Status == "FOR_PAY" || item.dw_Status == "EXPIRED" || item.dw_Status == "CANCELED")
                 factor.Status = OrderStatusHelper.GetDepositDisplayStatus(item.dw_Status, item.dw_CreateDatetime);
             else if (item.dw_Status == "FINISH")
                 factor.Status = OrderStatusHelper.DisplayFinished;

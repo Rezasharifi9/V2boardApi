@@ -123,6 +123,7 @@ $(function () {
                             1: { title: 'انجام شده', class: 'bg-label-success' },
                             3: { title: 'در انتظار پرداخت', class: 'bg-label-primary' },
                             4: { title: 'منقضی شده', class: 'bg-label-secondary' },
+                            5: { title: 'لغو شده', class: 'bg-label-secondary' },
                         };
 
                         var info = statusObj[$Status];

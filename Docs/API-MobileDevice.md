@@ -6,6 +6,9 @@
 |----------|-----|
 | [`POST /MobileDevice/Register`](#اندپوینت-ثبت-دستگاه) | ثبت یا به‌روزرسانی یک دستگاه |
 | [`POST /MobileDevice/UpdateToken`](#api-بهروزرسانی-توکن-نوتیفیکیشن) | فقط به‌روزرسانی توکن Push |
+| [`POST /MobileDevice/LogError`](API-ClientLog.md) | ثبت خطای کلاینت در NLog با تگ `AndroidApp` |
+
+نسخهٔ منتشرشده و لینک دانلود را از [`GET /User/GetAppRelease`](API-AppRelease.md) بگیرید — جدا از ثبت دستگاه است. خطاهای اپ را با [`POST /MobileDevice/LogError`](API-ClientLog.md) بفرستید.
 
 - کنترلر: `V2boardApi/Areas/api/Controllers/MobileDeviceController.cs`
 - مدل ورودی: `V2boardApi/Areas/api/Data/ApiModels/RegisterMobileDeviceModel.cs`

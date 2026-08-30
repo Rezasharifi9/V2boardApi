@@ -58,10 +58,58 @@ $(function () {
         $modal.modal('show');
     }
 
+    function getOrderRawStatus(full) {
+        return String(full.OrderStatus || full.orderStatus || '').trim().toUpperCase();
+    }
+
+    function isReservedOrder(full) {
+        var raw = getOrderRawStatus(full);
+        if (raw === 'FOR_RESERVE') {
+            return true;
+        }
+        var status = Number(full.Status != null ? full.Status : full.status);
+        return raw === '' && status === 0;
+    }
+
+    function getOrderStatusInfo(full) {
+        var raw = getOrderRawStatus(full);
+        var status = Number(full.Status != null ? full.Status : full.status);
+        if (raw === 'FOR_RESERVE') {
+            return { title: 'رزرو', class: 'bg-label-warning' };
+        }
+        if (raw === 'FINISH') {
+            return { title: 'فعال شده', class: 'bg-label-success' };
+        }
+        if (raw === 'FOR_PAY' || raw === 'EXPIRED') {
+            if (status === 4) {
+                return { title: 'منقضی شده', class: 'bg-label-secondary' };
+            }
+            return { title: 'در انتظار پرداخت', class: 'bg-label-primary' };
+        }
+        if (raw === 'CANCELED') {
+            return { title: 'لغو شده', class: 'bg-label-secondary' };
+        }
+        if (status === 0) {
+            return { title: 'رزرو', class: 'bg-label-warning' };
+        }
+        if (status === 1) {
+            return { title: 'فعال شده', class: 'bg-label-success' };
+        }
+        if (status === 4) {
+            return { title: 'منقضی شده', class: 'bg-label-secondary' };
+        }
+        if (status === 3) {
+            return { title: 'در انتظار پرداخت', class: 'bg-label-primary' };
+        }
+        if (status === 5) {
+            return { title: 'لغو شده', class: 'bg-label-secondary' };
+        }
+        return { title: 'نامشخص', class: 'bg-label-secondary' };
+    }
+
     function renderOrderActions(full) {
-        var status = Number(full.Status);
         var orderId = full.OrderId || full.orderId;
-        if (status !== 0 || !orderId) {
+        if (!isReservedOrder(full) || !orderId) {
             return '<span class="text-muted">—</span>';
         }
         return '<button type="button" class="btn btn-sm btn-label-danger btn-cancel-reserved-order" ' +
@@ -321,16 +369,7 @@ $(function () {
                     // Status
                     targets: 5,
                     render: function (data, type, full, meta) {
-                        var $State = full['Status'];
-                        var statusObj = {
-                            0: { title: 'در انتظار فعال سازی', class: 'bg-label-warning' },
-                            1: { title: 'انجام شده', class: 'bg-label-success' },
-                            3: { title: 'در انتظار پرداخت', class: 'bg-label-primary' }
-                        };
-                        var info = statusObj[$State];
-                        if (!info) {
-                            return "<span class='badge bg-label-secondary'>نامشخص</span>";
-                        }
+                        var info = getOrderStatusInfo(full);
                         return "<span class='badge " + info.class + "'>" + info.title + "</span>";
                     }
                 },

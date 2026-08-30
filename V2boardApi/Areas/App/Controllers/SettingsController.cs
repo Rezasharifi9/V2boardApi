@@ -2,10 +2,16 @@
 using DataLayer.Repository;
 using NLog;
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
+using V2boardApi.Areas.App.Data.SettingsViewModels;
+using V2boardApi.Areas.api.Data.ViewModels;
 using V2boardApi.Tools;
+using NLogEntity = DataLayer.DomainModel.NLog;
 
 namespace V2boardApi.Areas.App.Controllers
 {
@@ -36,6 +42,35 @@ namespace V2boardApi.Areas.App.Controllers
                 return View(new tbServers());
 
             return View(user.tbServers);
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult SystemLogs()
+        {
+            return View();
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult AlertLogs()
+        {
+            return View();
+        }
+
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult AppRelease()
+        {
+            var row = db.tbAppRelease.AsNoTracking().FirstOrDefault();
+            var items = AppReleaseViewModel.ParseItems(row != null ? row.tbAr_Changelog : null);
+            if (items.Count == 0)
+                items.Add("");
+
+            AppReleaseEditViewModel model = new AppReleaseEditViewModel();
+            model.DownloadUrl = row != null ? row.tbAr_DownloadUrl : null;
+            model.Version = row != null ? row.tbAr_Version : null;
+            model.VersionCode = row != null ? row.tbAr_VersionCode : null;
+            model.ForceInstall = row != null && row.tbAr_ForceInstall;
+            model.ChangelogItems = items;
+            return View(model);
         }
 
         #region تست و ذخیره MySQL
@@ -156,6 +191,363 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 logger.Error(ex, "ذخیره تنظیمات ربات با خطا مواجه شد");
                 return Json(new { status = "danger", message = "ذخیره تنظیمات با خطا مواجه شد" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        #endregion
+
+        #region نسخه اپلیکیشن
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult SaveAppRelease(string DownloadUrl, string Version, int? VersionCode, string[] Changelog, bool ForceInstall = false)
+        {
+            try
+            {
+                DownloadUrl = NullIfEmpty(DownloadUrl, 500);
+                Version = NullIfEmpty(Version, 30);
+                var changelogJson = AppReleaseViewModel.SerializeItems(Changelog);
+
+                if (ForceInstall && string.IsNullOrEmpty(DownloadUrl))
+                    return Json(new { status = "warning", message = "برای نصب اجباری لینک دانلود لازم است" }, JsonRequestBehavior.AllowGet);
+
+                if (ForceInstall && string.IsNullOrEmpty(Version) && !VersionCode.HasValue)
+                    return Json(new { status = "warning", message = "برای نصب اجباری نسخه یا شماره بیلد لازم است" }, JsonRequestBehavior.AllowGet);
+
+                if (!string.IsNullOrEmpty(DownloadUrl)
+                    && !DownloadUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                    && !DownloadUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    return Json(new { status = "warning", message = "لینک دانلود باید با http یا https شروع شود" }, JsonRequestBehavior.AllowGet);
+
+                var row = db.tbAppRelease.FirstOrDefault();
+                if (row == null)
+                {
+                    row = new tbAppRelease();
+                    db.tbAppRelease.Add(row);
+                }
+
+                row.tbAr_DownloadUrl = DownloadUrl;
+                row.tbAr_Version = Version;
+                row.tbAr_VersionCode = VersionCode;
+                row.tbAr_Changelog = changelogJson;
+                row.tbAr_ForceInstall = ForceInstall;
+                row.tbAr_UpdatedAt = DateTime.Now;
+
+                db.SaveChanges();
+                logger.Info("تنظیمات نسخه اپلیکیشن ذخیره شد");
+                return Json(new { status = "success", message = "تنظیمات نسخه اپلیکیشن ذخیره شد" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "ذخیره تنظیمات نسخه اپلیکیشن با خطا مواجه شد");
+                return Json(new { status = "danger", message = "ذخیره تنظیمات با خطا مواجه شد" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        private static string NullIfEmpty(string value, int maxLength)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+
+            value = value.Trim();
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+        }
+
+        #endregion
+
+        #region لاگ سیستم (NLog)
+
+        [HttpPost]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult GetNLogs()
+        {
+            try
+            {
+                var dt = DataTablesRequest.Parse(Request);
+                IQueryable<NLogEntity> query = db.NLog.AsNoTracking();
+
+                query = ApplyNLogFilters(query, Request);
+
+                if (!string.IsNullOrWhiteSpace(dt.SearchValue))
+                {
+                    var term = dt.SearchValue;
+                    query = query.Where(p =>
+                        (p.Message != null && p.Message.Contains(term)) ||
+                        (p.Logger != null && p.Logger.Contains(term)) ||
+                        (p.userName != null && p.userName.Contains(term)) ||
+                        (p.ipAddress != null && p.ipAddress.Contains(term)) ||
+                        (p.controllerName != null && p.controllerName.Contains(term)) ||
+                        (p.actionName != null && p.actionName.Contains(term)) ||
+                        (p.Exception != null && p.Exception.Contains(term)) ||
+                        (p.customData != null && p.customData.Contains(term)));
+                }
+
+                var totalRecords = query.Count();
+
+                switch (dt.SortColumnIndex)
+                {
+                    case 1:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.Level)
+                            : query.OrderByDescending(p => p.Level);
+                        break;
+                    case 3:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.Logger)
+                            : query.OrderByDescending(p => p.Logger);
+                        break;
+                    case 5:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.userName)
+                            : query.OrderByDescending(p => p.userName);
+                        break;
+                    case 6:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.ipAddress)
+                            : query.OrderByDescending(p => p.ipAddress);
+                        break;
+                    case 7:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.controllerName)
+                            : query.OrderByDescending(p => p.controllerName);
+                        break;
+                    default:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.Logged)
+                            : query.OrderByDescending(p => p.Logged);
+                        break;
+                }
+
+                var pageSize = dt.Length > 0 ? dt.Length : 10;
+                var rows = query.Skip(dt.Start).Take(pageSize)
+                    .Select(p => new
+                    {
+                        p.ID,
+                        p.Logged,
+                        p.Level,
+                        p.Message,
+                        p.Logger,
+                        p.userName,
+                        p.ipAddress,
+                        p.httpMethod,
+                        p.controllerName,
+                        p.actionName,
+                        p.executionTime,
+                        HasException = p.Exception != null && p.Exception != ""
+                    })
+                    .ToList();
+
+                var data = rows.Select(p => new NLogListItemViewModel
+                {
+                    Id = p.ID,
+                    Level = p.Level ?? "",
+                    Logged = p.Logged.ConvertDateTimeToShamsi2(),
+                    Logger = p.Logger ?? "",
+                    Message = TruncateLogText(p.Message, 180),
+                    UserName = p.userName ?? "",
+                    IpAddress = p.ipAddress ?? "",
+                    HttpMethod = p.httpMethod ?? "",
+                    Controller = p.controllerName ?? "",
+                    Action = p.actionName ?? "",
+                    ExecutionTime = p.executionTime ?? "",
+                    HasException = p.HasException
+                }).ToList();
+
+                return Json(new
+                {
+                    draw = dt.Draw,
+                    recordsTotal = totalRecords,
+                    recordsFiltered = totalRecords,
+                    data
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "نمایش لاگ‌های سیستم با خطا مواجه شد");
+                return Json(new { draw = 0, recordsTotal = 0, recordsFiltered = 0, data = new List<NLogListItemViewModel>() }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult GetNLogDetail(int id)
+        {
+            var log = db.NLog.AsNoTracking().FirstOrDefault(p => p.ID == id);
+            if (log == null)
+                return Content("<p class='text-danger mb-0'>لاگ یافت نشد</p>");
+
+            return PartialView("_NLogDetail", log);
+        }
+
+        private static IQueryable<NLogEntity> ApplyNLogFilters(IQueryable<NLogEntity> query, HttpRequestBase request)
+        {
+            var filterLevel = request.Form["filterLevel"]?.Trim();
+            if (!string.IsNullOrWhiteSpace(filterLevel))
+                query = query.Where(p => p.Level == filterLevel);
+
+            var filterLogger = request.Form["filterLogger"]?.Trim();
+            if (!string.IsNullOrWhiteSpace(filterLogger))
+                query = query.Where(p => p.Logger != null && p.Logger.Contains(filterLogger));
+
+            var filterUserName = request.Form["filterUserName"]?.Trim();
+            if (!string.IsNullOrWhiteSpace(filterUserName))
+                query = query.Where(p => p.userName != null && p.userName.Contains(filterUserName));
+
+            var filterIp = request.Form["filterIp"]?.Trim();
+            if (!string.IsNullOrWhiteSpace(filterIp))
+                query = query.Where(p => p.ipAddress != null && p.ipAddress.Contains(filterIp));
+
+            var filterController = request.Form["filterController"]?.Trim();
+            if (!string.IsNullOrWhiteSpace(filterController))
+                query = query.Where(p => p.controllerName != null && p.controllerName.Contains(filterController));
+
+            var filterAction = request.Form["filterAction"]?.Trim();
+            if (!string.IsNullOrWhiteSpace(filterAction))
+                query = query.Where(p => p.actionName != null && p.actionName.Contains(filterAction));
+
+            var filterHttpMethod = request.Form["filterHttpMethod"]?.Trim();
+            if (!string.IsNullOrWhiteSpace(filterHttpMethod))
+                query = query.Where(p => p.httpMethod == filterHttpMethod);
+
+            var filterMessage = request.Form["filterMessage"]?.Trim();
+            if (!string.IsNullOrWhiteSpace(filterMessage))
+                query = query.Where(p => p.Message != null && p.Message.Contains(filterMessage));
+
+            var filterHasException = request.Form["filterHasException"]?.Trim();
+            if (filterHasException == "1")
+                query = query.Where(p => p.Exception != null && p.Exception != "");
+            else if (filterHasException == "0")
+                query = query.Where(p => p.Exception == null || p.Exception == "");
+
+            DateTime fromDate;
+            if (Utility.TryParseShamsiDate(request.Form["filterFromDate"], out fromDate))
+                query = query.Where(p => p.Logged >= fromDate);
+
+            DateTime toDate;
+            if (Utility.TryParseShamsiDate(request.Form["filterToDate"], out toDate))
+            {
+                var toEnd = toDate.Date.AddDays(1);
+                query = query.Where(p => p.Logged < toEnd);
+            }
+
+            return query;
+        }
+
+        private static string TruncateLogText(string value, int max)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            var compact = value.Replace("\r", " ").Replace("\n", " ");
+            return compact.Length <= max ? compact : compact.Substring(0, max) + "...";
+        }
+
+        #endregion
+
+        #region لاگ ارسال هشدارها
+
+        [HttpPost]
+        [AuthorizeApp(Roles = "1")]
+        public ActionResult GetAlertSendLogs()
+        {
+            try
+            {
+                var dt = DataTablesRequest.Parse(Request);
+                IQueryable<tbAlertSendLogs> query = db.tbAlertSendLogs.AsNoTracking();
+
+                var filterRecipient = Request.Form["filterAlertRecipient"]?.Trim();
+                if (!string.IsNullOrWhiteSpace(filterRecipient))
+                    query = query.Where(p =>
+                        (p.tbAsl_RecipientName != null && p.tbAsl_RecipientName.Contains(filterRecipient)) ||
+                        (p.tbAsl_ChatId != null && p.tbAsl_ChatId.Contains(filterRecipient)));
+
+                var filterAlertType = Request.Form["filterAlertType"]?.Trim();
+                if (!string.IsNullOrWhiteSpace(filterAlertType))
+                    query = query.Where(p => p.tbAsl_AlertType != null && p.tbAsl_AlertType.Contains(filterAlertType));
+
+                var filterStatus = Request.Form["filterAlertStatus"]?.Trim();
+                if (filterStatus == "1")
+                    query = query.Where(p => p.tbAsl_IsSuccess);
+                else if (filterStatus == "0")
+                    query = query.Where(p => !p.tbAsl_IsSuccess);
+
+                DateTime fromDate;
+                if (Utility.TryParseShamsiDate(Request.Form["filterAlertFromDate"], out fromDate))
+                    query = query.Where(p => p.tbAsl_SentAt >= fromDate);
+
+                DateTime toDate;
+                if (Utility.TryParseShamsiDate(Request.Form["filterAlertToDate"], out toDate))
+                {
+                    var toEnd = toDate.Date.AddDays(1);
+                    query = query.Where(p => p.tbAsl_SentAt < toEnd);
+                }
+
+                if (!string.IsNullOrWhiteSpace(dt.SearchValue))
+                {
+                    var term = dt.SearchValue;
+                    query = query.Where(p =>
+                        (p.tbAsl_RecipientName != null && p.tbAsl_RecipientName.Contains(term)) ||
+                        (p.tbAsl_AlertType != null && p.tbAsl_AlertType.Contains(term)) ||
+                        (p.tbAsl_Message != null && p.tbAsl_Message.Contains(term)) ||
+                        (p.tbAsl_ChatId != null && p.tbAsl_ChatId.Contains(term)) ||
+                        (p.tbAsl_Error != null && p.tbAsl_Error.Contains(term)));
+                }
+
+                var totalRecords = query.Count();
+
+                switch (dt.SortColumnIndex)
+                {
+                    case 1:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.tbAsl_RecipientName)
+                            : query.OrderByDescending(p => p.tbAsl_RecipientName);
+                        break;
+                    case 3:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.tbAsl_AlertType)
+                            : query.OrderByDescending(p => p.tbAsl_AlertType);
+                        break;
+                    case 5:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.tbAsl_IsSuccess)
+                            : query.OrderByDescending(p => p.tbAsl_IsSuccess);
+                        break;
+                    default:
+                        query = dt.IsAscending
+                            ? query.OrderBy(p => p.tbAsl_SentAt)
+                            : query.OrderByDescending(p => p.tbAsl_SentAt);
+                        break;
+                }
+
+                var pageSize = dt.Length > 0 ? dt.Length : 10;
+                var rows = query.Skip(dt.Start).Take(pageSize).ToList();
+
+                var data = rows.Select(p => new AlertSendLogListItemViewModel
+                {
+                    Id = p.tbAsl_ID,
+                    Recipient = p.tbAsl_RecipientName ?? "—",
+                    ChatId = p.tbAsl_ChatId ?? "",
+                    SentAt = p.tbAsl_SentAt.ConvertDateTimeToShamsi2(),
+                    AlertType = p.tbAsl_AlertType ?? "",
+                    Message = TruncateLogText(p.tbAsl_Message, 140),
+                    MessageFull = p.tbAsl_Message ?? "",
+                    IsSuccess = p.tbAsl_IsSuccess,
+                    Error = p.tbAsl_Error ?? ""
+                }).ToList();
+
+                return Json(new
+                {
+                    draw = dt.Draw,
+                    recordsTotal = totalRecords,
+                    recordsFiltered = totalRecords,
+                    data
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "نمایش لاگ ارسال هشدارها با خطا مواجه شد");
+                return Json(new { draw = 0, recordsTotal = 0, recordsFiltered = 0, data = new List<AlertSendLogListItemViewModel>() }, JsonRequestBehavior.AllowGet);
             }
         }
 

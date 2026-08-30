@@ -1,0 +1,115 @@
+@model DataLayer.DomainModel.NLog
+@functions {
+    public static string Dash(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "-" : value;
+    }
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <small class="text-muted d-block">شناسه</small>
+        <span>@Model.ID</span>
+    </div>
+    <div class="col-md-3">
+        <small class="text-muted d-block">سطح</small>
+        <span>@Dash(Model.Level)</span>
+    </div>
+    <div class="col-md-6">
+        <small class="text-muted d-block">زمان</small>
+        <span>@Model.Logged.ConvertDateTimeToShamsi2()</span>
+    </div>
+    <div class="col-md-6">
+        <small class="text-muted d-block">Logger</small>
+        <span dir="ltr">@Dash(Model.Logger)</span>
+    </div>
+    <div class="col-md-3">
+        <small class="text-muted d-block">کاربر</small>
+        <span>@Dash(Model.userName)</span>
+    </div>
+    <div class="col-md-3">
+        <small class="text-muted d-block">نقش</small>
+        <span>@Dash(Model.userRole)</span>
+    </div>
+    <div class="col-md-3">
+        <small class="text-muted d-block">آیپی</small>
+        <span dir="ltr">@Dash(Model.ipAddress)</span>
+    </div>
+    <div class="col-md-3">
+        <small class="text-muted d-block">متد</small>
+        <span dir="ltr">@Dash(Model.httpMethod)</span>
+    </div>
+    <div class="col-md-3">
+        <small class="text-muted d-block">کنترلر</small>
+        <span dir="ltr">@Dash(Model.controllerName)</span>
+    </div>
+    <div class="col-md-3">
+        <small class="text-muted d-block">اکشن</small>
+        <span dir="ltr">@Dash(Model.actionName)</span>
+    </div>
+    <div class="col-md-6">
+        <small class="text-muted d-block">مدت اجرا</small>
+        <span dir="ltr">@Dash(Model.executionTime)</span>
+    </div>
+    <div class="col-12">
+        <small class="text-muted d-block">آدرس درخواست</small>
+        <span dir="ltr" class="text-break">@Dash(Model.requestUrl)</span>
+    </div>
+    <div class="col-12">
+        <small class="text-muted d-block">User Agent</small>
+        <span dir="ltr" class="text-break">@Dash(Model.userAgent)</span>
+    </div>
+</div>
+
+<div class="mb-3">
+    <small class="text-muted d-block mb-1">پیام</small>
+    <pre class="bg-label-secondary p-3 rounded mb-0" style="white-space:pre-wrap;max-height:220px;overflow:auto;direction:ltr;text-align:left;">@Dash(Model.Message)</pre>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Exception))
+{
+    <div class="mb-3">
+        <small class="text-muted d-block mb-1">Exception</small>
+        <pre class="bg-label-danger p-3 rounded mb-0" style="white-space:pre-wrap;max-height:260px;overflow:auto;direction:ltr;text-align:left;">@Model.Exception</pre>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.requestData))
+{
+    <div class="mb-3">
+        <small class="text-muted d-block mb-1">Request Data</small>
+        <pre class="bg-label-secondary p-3 rounded mb-0" style="white-space:pre-wrap;max-height:200px;overflow:auto;direction:ltr;text-align:left;">@Model.requestData</pre>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.responseData))
+{
+    <div class="mb-3">
+        <small class="text-muted d-block mb-1">Response Data</small>
+        <pre class="bg-label-secondary p-3 rounded mb-0" style="white-space:pre-wrap;max-height:200px;overflow:auto;direction:ltr;text-align:left;">@Model.responseData</pre>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.customData))
+{
+    <div class="mb-3">
+        <small class="text-muted d-block mb-1">Custom Data</small>
+        <pre class="bg-label-secondary p-3 rounded mb-0" style="white-space:pre-wrap;max-height:220px;overflow:auto;direction:ltr;text-align:left;">@Model.customData</pre>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Properties))
+{
+    <div class="mb-3">
+        <small class="text-muted d-block mb-1">Properties</small>
+        <pre class="bg-label-secondary p-3 rounded mb-0" style="white-space:pre-wrap;max-height:160px;overflow:auto;direction:ltr;text-align:left;">@Model.Properties</pre>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.requestHeaders))
+{
+    <div class="mb-0">
+        <small class="text-muted d-block mb-1">Request Headers</small>
+        <pre class="bg-label-secondary p-3 rounded mb-0" style="white-space:pre-wrap;max-height:160px;overflow:auto;direction:ltr;text-align:left;">@Model.requestHeaders</pre>
+    </div>
+}

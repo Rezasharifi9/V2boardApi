@@ -379,6 +379,7 @@
     <Compile Include="Areas\api\Controllers\UserController.cs" />
     <Compile Include="Areas\api\Data\ApiModels\AddFirebaseTokenModel.cs" />
     <Compile Include="Areas\api\Data\ApiModels\CheckAgentInvoiceModel.cs" />
+    <Compile Include="Areas\api\Data\ApiModels\ClientLogModel.cs" />
     <Compile Include="Areas\api\Data\ApiModels\CreateAgentInvoiceModel.cs" />
     <Compile Include="Areas\api\Data\ApiModels\GetTelegramWalletModel.cs" />
     <Compile Include="Areas\api\Data\ApiModels\PlisioRespModel.cs" />
@@ -396,13 +397,13 @@
     <Compile Include="Areas\api\Data\ViewModels\AgentInvoiceViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\AgentPlanViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\FaqViewModel.cs" />
+    <Compile Include="Areas\api\Data\ViewModels\AppReleaseViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\SupportLinkViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\TelegramWalletViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\GetFactorsViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\MobileDeviceViewModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\NotPayedUserModel.cs" />
     <Compile Include="Areas\api\Data\ViewModels\ReservedPackageViewModel.cs" />
-    <Compile Include="Areas\App\Controllers\AdminDashboardController.cs" />
     <Compile Include="Areas\App\AppAreaRegistration.cs" />
     <Compile Include="Areas\App\Controllers\AdminController.cs" />
     <Compile Include="Areas\App\Controllers\BotFactorsController.cs" />
@@ -422,10 +423,8 @@
     <Compile Include="Areas\App\Controllers\TelegramUsersController.cs" />
     <Compile Include="Areas\App\Controllers\UserFactorsController.cs" />
     <Compile Include="Areas\App\Controllers\UserNotificationsController.cs" />
-    <Compile Include="Areas\App\Data\AdminDashboard\OverallSalesPerformanceViewModel.cs" />
-    <Compile Include="Areas\App\Data\AdminDashboard\SalesSummaryViewModel.cs" />
-    <Compile Include="Areas\App\Data\AdminDashboard\TopAgentsViewModel.cs" />
     <Compile Include="Areas\App\Data\ManagementDashboard\ManagementDashboardViewModel.cs" />
+    <Compile Include="Areas\App\Data\SettingsViewModels\NLogListItemViewModel.cs" />
     <Compile Include="Areas\App\Data\BotFactoresViewModels\BotFactoresResponseModel.cs" />
     <Compile Include="Areas\App\Data\MobileUsersViewModels\MobileUsersResponseModel.cs" />
     <Compile Include="Areas\App\Data\BotViewModel\UseageViewModel.cs" />
@@ -443,6 +442,8 @@
     <Compile Include="Areas\App\Data\RequestModels\UserLogResponseModel.cs" />
     <Compile Include="Areas\App\Data\RequestModels\UserRequestModel.cs" />
     <Compile Include="Areas\App\Data\Changelog\PanelChangelogModels.cs" />
+    <Compile Include="Areas\App\Data\SettingsViewModels\AlertSendLogListItemViewModel.cs" />
+    <Compile Include="Areas\App\Data\SettingsViewModels\AppReleaseEditViewModel.cs" />
     <Compile Include="Areas\App\Data\SubscriptionsViewModels\SubUsageHistoryResultViewModel.cs" />
     <Compile Include="Areas\App\Data\SubscriptionsViewModels\SubUsageHistoryItemViewModel.cs" />
     <Compile Include="Areas\App\Data\SubscriptionsViewModels\ActivityStatusViewModel.cs" />
@@ -519,6 +520,7 @@
     <Compile Include="Tools\Network.cs" />
     <Compile Include="Tools\RealUser.cs" />
     <Compile Include="Tools\StartUpOwin.cs" />
+    <Compile Include="Tools\AlertSendLogService.cs" />
     <Compile Include="Tools\PanelAssetHelper.cs" />
     <Compile Include="Tools\PanelChangelogService.cs" />
     <Compile Include="Tools\PanelNotificationService.cs" />
@@ -943,6 +945,7 @@
     <Content Include="assets\js\app-access-permission.js" />
     <Content Include="assets\js\app-access-roles.js" />
     <Content Include="assets\js\app-botfactores-list.js" />
+    <Content Include="assets\js\app-nlog-list.js" />
     <Content Include="assets\js\app-mobileusers-list.js" />
     <Content Include="assets\js\app-calendar-events.js" />
     <Content Include="assets\js\app-calendar-jalali.js" />
@@ -963,12 +966,13 @@
     <Content Include="assets\js\app-email.js" />
     <Content Include="assets\js\app-invoice-add.js" />
     <Content Include="assets\js\app-invoice-edit.js" />
+    <Content Include="assets\js\app-app-release.js" />
     <Content Include="assets\js\app-panel-settings.js" />
+    <Content Include="assets\js\app-alert-send-logs.js" />
     <Content Include="assets\js\app-invoice-list.js" />
     <Content Include="assets\js\app-invoice-user-list.js" />
     <Content Include="assets\js\app-invoice-print.js" />
     <Content Include="assets\js\app-kanban.js" />
-    <Content Include="assets\js\app-logistics-admindashboard.js" />
     <Content Include="assets\js\app-logistics-dashboard.js" />
     <Content Include="assets\js\app-management-dashboard.js" />
     <Content Include="assets\js\app-logistics-fleet-mapbox.js" />
@@ -993,7 +997,6 @@
     <Content Include="assets\js\charts-chartjs.js" />
     <Content Include="assets\js\config.js" />
     <Content Include="assets\js\dashboards-analytics.js" />
-    <Content Include="assets\js\dashboards-crm-admin.js" />
     <Content Include="assets\js\dashboards-crm.js" />
     <Content Include="assets\js\extended-ui-blockui.js" />
     <Content Include="assets\js\extended-ui-drag-and-drop.js" />
@@ -1919,6 +1922,10 @@
     <Content Include="Areas\App\Views\TelegramUsers\_SendMessage.cshtml" />
     <Content Include="Areas\App\Views\TelegramUsers\Accounts.cshtml" />
     <Content Include="Areas\App\Views\Settings\Index.cshtml" />
+    <Content Include="Areas\App\Views\Settings\AppRelease.cshtml" />
+    <Content Include="Areas\App\Views\Settings\SystemLogs.cshtml" />
+    <Content Include="Areas\App\Views\Settings\AlertLogs.cshtml" />
+    <Content Include="Areas\App\Views\Settings\_NLogDetail.cshtml" />
     <Content Include="Areas\App\Views\Settings\_BaseSetting.cshtml" />
     <Content Include="Areas\App\Views\Settings\_BotSetting.cshtml" />
     <Content Include="Areas\App\Views\Settings\_BankNumbers.cshtml" />
@@ -1963,8 +1970,6 @@
     <Content Include="Areas\App\Views\OnlineChat\GetChat.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetLearns.cshtml" />
     <Content Include="Areas\App\Views\Admin\_GetSupportLinks.cshtml" />
-    <Content Include="Areas\App\Views\AdminDashboard\Index.cshtml" />
-    <Content Include="Areas\App\Views\AdminDashboard\_SalesSummaryReport.cshtml" />
     <Content Include="Areas\App\Views\PaymentLinks\Index.cshtml" />
     <Content Include="Areas\App\Views\UserFactors\Invoice.cshtml" />
     <None Include="Jsons\fqrjldna.json" />

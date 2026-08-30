@@ -221,19 +221,15 @@ namespace V2boardApi.Areas.App.Controllers
                 var data = page.Select(item =>
                 {
                     var model = new OrderResponseViewModel();
-                    if (item.OrderStatus == "FOR_RESERVE")
-                        model.Status = 0;
-                    else if (item.OrderStatus == "FINISH")
-                        model.Status = 1;
-                    else if (item.OrderStatus == "FOR_PAY")
-                        model.Status = 3;
+                    model.Status = OrderStatusHelper.GetOrderDisplayStatus(item.OrderStatus, item.OrderDate);
+                    model.OrderStatus = item.OrderStatus;
 
                     model.CreateDate = item.OrderDate.HasValue ? item.OrderDate.Value.ConvertDateTimeToShamsi2() : "-";
                     model.Plan = item.Traffic + " گیگ " + item.Month + " ماهه";
                     model.SubName = item.AccountName?.Split('@')[0] ?? "-";
                     model.Price = item.Order_Price.HasValue ? item.Order_Price.Value.ConvertToMony() : "0";
                     model.OrderId = item.Order_ID;
-                    if (model.Status == 1 && item.Tel_RenewedDate != null)
+                    if (model.Status == OrderStatusHelper.DisplayFinished && item.Tel_RenewedDate != null)
                         model.ActiveDate = item.Tel_RenewedDate.Value.ConvertDateTimeToShamsi2();
                     return model;
                 }).ToList();

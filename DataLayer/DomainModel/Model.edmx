@@ -146,6 +146,8 @@
           <Property Name="ExceededCount" Type="int" Nullable="false" />
           <Property Name="ExceededLastTime" Type="datetime" />
           <Property Name="tbL_ReserveWarnMask" Type="int" Nullable="false" />
+          <Property Name="FK_User_ID" Type="int" />
+          <Property Name="FK_MobileUser_ID" Type="int" />
         </EntityType>
         <EntityType Name="tbLinkServerGroupWithUsers">
           <Key>
@@ -221,8 +223,8 @@
           </Key>
           <Property Name="tbNoti_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="tbNoti_FK_User_ID" Type="int" Nullable="false" />
-          <Property Name="tbNoti_Title" Type="nvarchar" MaxLength="30" Nullable="false" />
-          <Property Name="tbNoti_Text" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="tbNoti_Title" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="tbNoti_Text" Type="nvarchar(max)" Nullable="false" />
           <Property Name="tbNoti_RegisterDate" Type="datetime" Nullable="false" />
           <Property Name="tbNoti_Status" Type="int" Nullable="false" />
           <Property Name="tbNoti_EndDate" Type="datetime" Nullable="false" />
@@ -278,6 +280,32 @@
           <Property Name="FK_User_ID" Type="int" Nullable="false" />
           <Property Name="tbPcls_Version" Type="varchar" MaxLength="20" Nullable="false" />
           <Property Name="tbPcls_SeenAt" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbAlertSendLogs">
+          <Key>
+            <PropertyRef Name="tbAsl_ID" />
+          </Key>
+          <Property Name="tbAsl_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FK_User_ID" Type="int" />
+          <Property Name="tbAsl_RecipientName" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="tbAsl_ChatId" Type="nvarchar" MaxLength="50" />
+          <Property Name="tbAsl_AlertType" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="tbAsl_Message" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="tbAsl_SentAt" Type="datetime" Nullable="false" />
+          <Property Name="tbAsl_IsSuccess" Type="bit" Nullable="false" />
+          <Property Name="tbAsl_Error" Type="nvarchar" MaxLength="500" />
+        </EntityType>
+        <EntityType Name="tbAppRelease">
+          <Key>
+            <PropertyRef Name="tbAr_ID" />
+          </Key>
+          <Property Name="tbAr_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="tbAr_DownloadUrl" Type="nvarchar" MaxLength="500" />
+          <Property Name="tbAr_Version" Type="nvarchar" MaxLength="30" />
+          <Property Name="tbAr_VersionCode" Type="int" />
+          <Property Name="tbAr_Changelog" Type="nvarchar(max)" />
+          <Property Name="tbAr_ForceInstall" Type="bit" Nullable="false" />
+          <Property Name="tbAr_UpdatedAt" Type="datetime" Nullable="false" />
         </EntityType>
         <EntityType Name="tbPanelChangelogVersions">
           <Key>
@@ -661,6 +689,30 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_tbLinks_tbMobileUsers">
+          <End Role="tbMobileUsers" Type="Self.tbMobileUsers" Multiplicity="0..1" />
+          <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbMobileUsers">
+              <PropertyRef Name="tbMu_ID" />
+            </Principal>
+            <Dependent Role="tbLinks">
+              <PropertyRef Name="FK_MobileUser_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinks_tbUsers">
+          <End Role="tbUsers" Type="Self.tbUsers" Multiplicity="0..1" />
+          <End Role="tbLinks" Type="Self.tbLinks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbLinks">
+              <PropertyRef Name="FK_User_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_tbLinkServerGroupWithUsers_tbServerGroups">
           <End Role="tbServerGroups" Type="Self.tbServerGroups" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
@@ -989,6 +1041,8 @@
           <EntitySet Name="tbOrders" EntityType="Self.tbOrders" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPanelChangelogItems" EntityType="Self.tbPanelChangelogItems" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPanelChangelogSeen" EntityType="Self.tbPanelChangelogSeen" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbAlertSendLogs" EntityType="Self.tbAlertSendLogs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbAppRelease" EntityType="Self.tbAppRelease" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPanelChangelogVersions" EntityType="Self.tbPanelChangelogVersions" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPaymentLinks" EntityType="Self.tbPaymentLinks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tbPaymentMethods" EntityType="Self.tbPaymentMethods" Schema="dbo" store:Type="Tables" />
@@ -1056,6 +1110,14 @@
           </AssociationSet>
           <AssociationSet Name="FK_tbLinks_tbTelegramUsers" Association="Self.FK_tbLinks_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbMobileUsers" Association="Self.FK_tbLinks_tbMobileUsers">
+            <End Role="tbMobileUsers" EntitySet="tbMobileUsers" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbUsers" Association="Self.FK_tbLinks_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbLinks" EntitySet="tbLinks" />
           </AssociationSet>
           <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbServerGroups" Association="Self.FK_tbLinkServerGroupWithUsers_tbServerGroups">
@@ -1202,6 +1264,8 @@
           <EntitySet Name="tbNotificationUser" EntityType="V2boardSiteSharifiModel.tbNotificationUser" />
           <EntitySet Name="tbOrders" EntityType="V2boardSiteSharifiModel.tbOrders" />
           <EntitySet Name="tbPanelChangelogSeen" EntityType="V2boardSiteSharifiModel.tbPanelChangelogSeen" />
+          <EntitySet Name="tbAlertSendLogs" EntityType="V2boardSiteSharifiModel.tbAlertSendLogs" />
+          <EntitySet Name="tbAppRelease" EntityType="V2boardSiteSharifiModel.tbAppRelease" />
           <EntitySet Name="tbPaymentLinks" EntityType="V2boardSiteSharifiModel.tbPaymentLinks" />
           <EntitySet Name="tbPaymentMethods" EntityType="V2boardSiteSharifiModel.tbPaymentMethods" />
           <EntitySet Name="tbPaymentMethodUser" EntityType="V2boardSiteSharifiModel.tbPaymentMethodUser" />
@@ -1272,6 +1336,14 @@
           </AssociationSet>
           <AssociationSet Name="FK_tbLinks_tbTelegramUsers" Association="V2boardSiteSharifiModel.FK_tbLinks_tbTelegramUsers">
             <End Role="tbTelegramUsers" EntitySet="tbTelegramUsers" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbMobileUsers" Association="V2boardSiteSharifiModel.FK_tbLinks_tbMobileUsers">
+            <End Role="tbMobileUsers" EntitySet="tbMobileUsers" />
+            <End Role="tbLinks" EntitySet="tbLinks" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbLinks_tbUsers" Association="V2boardSiteSharifiModel.FK_tbLinks_tbUsers">
+            <End Role="tbUsers" EntitySet="tbUsers" />
             <End Role="tbLinks" EntitySet="tbLinks" />
           </AssociationSet>
           <AssociationSet Name="FK_tbLinkServerGroupWithUsers_tbServerGroups" Association="V2boardSiteSharifiModel.FK_tbLinkServerGroupWithUsers_tbServerGroups">
@@ -1571,8 +1643,12 @@
           <Property Name="ExceededCount" Type="Int32" Nullable="false" />
           <Property Name="ExceededLastTime" Type="DateTime" Precision="3" />
           <Property Name="tbL_ReserveWarnMask" Type="Int32" Nullable="false" />
+          <Property Name="FK_User_ID" Type="Int32" />
+          <Property Name="FK_MobileUser_ID" Type="Int32" />
           <NavigationProperty Name="tbServers" Relationship="V2boardSiteSharifiModel.FK_tbLinks_tbServers" FromRole="tbLinks" ToRole="tbServers" />
           <NavigationProperty Name="tbTelegramUsers" Relationship="V2boardSiteSharifiModel.FK_tbLinks_tbTelegramUsers" FromRole="tbLinks" ToRole="tbTelegramUsers" />
+          <NavigationProperty Name="tbUsers" Relationship="V2boardSiteSharifiModel.FK_tbLinks_tbUsers" FromRole="tbLinks" ToRole="tbUsers" />
+          <NavigationProperty Name="tbMobileUsers" Relationship="V2boardSiteSharifiModel.FK_tbLinks_tbMobileUsers" FromRole="tbLinks" ToRole="tbMobileUsers" />
         </EntityType>
         <EntityType Name="tbLinkServerGroupWithUsers">
           <Key>
@@ -1651,6 +1727,7 @@
           <NavigationProperty Name="tbUsers" Relationship="V2boardSiteSharifiModel.FK_tbMobileUsers_tbUsers" FromRole="tbMobileUsers" ToRole="tbUsers" />
           <NavigationProperty Name="tbOrders" Relationship="V2boardSiteSharifiModel.FK_tbOrders_tbMobileUsers" FromRole="tbMobileUsers" ToRole="tbOrders" />
           <NavigationProperty Name="tbDepositWallet_Log" Relationship="V2boardSiteSharifiModel.FK_tbDepositWallet_Log_tbMobileUsers" FromRole="tbMobileUsers" ToRole="tbDepositWallet_Log" />
+          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteSharifiModel.FK_tbLinks_tbMobileUsers" FromRole="tbMobileUsers" ToRole="tbLinks" />
         </EntityType>
         <EntityType Name="tbNotifications">
           <Key>
@@ -1658,8 +1735,8 @@
           </Key>
           <Property Name="tbNoti_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="tbNoti_FK_User_ID" Type="Int32" Nullable="false" />
-          <Property Name="tbNoti_Title" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="true" />
-          <Property Name="tbNoti_Text" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="tbNoti_Title" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="tbNoti_Text" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="tbNoti_RegisterDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="tbNoti_Status" Type="Int32" Nullable="false" />
           <Property Name="tbNoti_EndDate" Type="DateTime" Nullable="false" Precision="3" />
@@ -1710,6 +1787,32 @@
           <Property Name="FK_User_ID" Type="Int32" Nullable="false" />
           <Property Name="tbPcls_Version" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="tbPcls_SeenAt" Type="DateTime" Nullable="false" Precision="3" />
+        </EntityType>
+        <EntityType Name="tbAlertSendLogs">
+          <Key>
+            <PropertyRef Name="tbAsl_ID" />
+          </Key>
+          <Property Name="tbAsl_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FK_User_ID" Type="Int32" />
+          <Property Name="tbAsl_RecipientName" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="tbAsl_ChatId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="tbAsl_AlertType" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="tbAsl_Message" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="tbAsl_SentAt" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="tbAsl_IsSuccess" Type="Boolean" Nullable="false" />
+          <Property Name="tbAsl_Error" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="tbAppRelease">
+          <Key>
+            <PropertyRef Name="tbAr_ID" />
+          </Key>
+          <Property Name="tbAr_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="tbAr_DownloadUrl" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="tbAr_Version" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
+          <Property Name="tbAr_VersionCode" Type="Int32" />
+          <Property Name="tbAr_Changelog" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="tbAr_ForceInstall" Type="Boolean" Nullable="false" />
+          <Property Name="tbAr_UpdatedAt" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
         <EntityType Name="tbPaymentLinks">
           <Key>
@@ -1945,6 +2048,7 @@
           <NavigationProperty Name="tbUsers1" Relationship="V2boardSiteSharifiModel.FK_tbUsers_tbUsers" FromRole="tbUsers" ToRole="tbUsers1" />
           <NavigationProperty Name="tbUsers2" Relationship="V2boardSiteSharifiModel.FK_tbUsers_tbUsers" FromRole="tbUsers1" ToRole="tbUsers" />
           <NavigationProperty Name="tbMobileUsers" Relationship="V2boardSiteSharifiModel.FK_tbMobileUsers_tbUsers" FromRole="tbUsers" ToRole="tbMobileUsers" />
+          <NavigationProperty Name="tbLinks" Relationship="V2boardSiteSharifiModel.FK_tbLinks_tbUsers" FromRole="tbUsers" ToRole="tbLinks" />
         </EntityType>
         <Association Name="FK_tbBankCardNumbers_tbUsers">
           <End Type="V2boardSiteSharifiModel.tbUsers" Role="tbUsers" Multiplicity="1" />
@@ -2129,6 +2233,30 @@
             </Principal>
             <Dependent Role="tbLinks">
               <PropertyRef Name="FK_TelegramUserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinks_tbMobileUsers">
+          <End Type="V2boardSiteSharifiModel.tbMobileUsers" Role="tbMobileUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteSharifiModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbMobileUsers">
+              <PropertyRef Name="tbMu_ID" />
+            </Principal>
+            <Dependent Role="tbLinks">
+              <PropertyRef Name="FK_MobileUser_ID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbLinks_tbUsers">
+          <End Type="V2boardSiteSharifiModel.tbUsers" Role="tbUsers" Multiplicity="0..1" />
+          <End Type="V2boardSiteSharifiModel.tbLinks" Role="tbLinks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbUsers">
+              <PropertyRef Name="User_ID" />
+            </Principal>
+            <Dependent Role="tbLinks">
+              <PropertyRef Name="FK_User_ID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -2608,6 +2736,8 @@
                 <ScalarProperty Name="tbL_Warning" ColumnName="tbL_Warning" />
                 <ScalarProperty Name="tbL_Email" ColumnName="tbL_Email" />
                 <ScalarProperty Name="tbL_Token" ColumnName="tbL_Token" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="FK_MobileUser_ID" ColumnName="FK_MobileUser_ID" />
                 <ScalarProperty Name="FK_Server_ID" ColumnName="FK_Server_ID" />
                 <ScalarProperty Name="FK_TelegramUserID" ColumnName="FK_TelegramUserID" />
                 <ScalarProperty Name="tbLink_ID" ColumnName="tbLink_ID" />
@@ -2739,6 +2869,34 @@
                 <ScalarProperty Name="tbPcls_Version" ColumnName="tbPcls_Version" />
                 <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
                 <ScalarProperty Name="tbPcls_ID" ColumnName="tbPcls_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbAlertSendLogs">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbAlertSendLogs">
+              <MappingFragment StoreEntitySet="tbAlertSendLogs">
+                <ScalarProperty Name="tbAsl_Error" ColumnName="tbAsl_Error" />
+                <ScalarProperty Name="tbAsl_IsSuccess" ColumnName="tbAsl_IsSuccess" />
+                <ScalarProperty Name="tbAsl_SentAt" ColumnName="tbAsl_SentAt" />
+                <ScalarProperty Name="tbAsl_Message" ColumnName="tbAsl_Message" />
+                <ScalarProperty Name="tbAsl_AlertType" ColumnName="tbAsl_AlertType" />
+                <ScalarProperty Name="tbAsl_ChatId" ColumnName="tbAsl_ChatId" />
+                <ScalarProperty Name="tbAsl_RecipientName" ColumnName="tbAsl_RecipientName" />
+                <ScalarProperty Name="FK_User_ID" ColumnName="FK_User_ID" />
+                <ScalarProperty Name="tbAsl_ID" ColumnName="tbAsl_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbAppRelease">
+            <EntityTypeMapping TypeName="V2boardSiteSharifiModel.tbAppRelease">
+              <MappingFragment StoreEntitySet="tbAppRelease">
+                <ScalarProperty Name="tbAr_UpdatedAt" ColumnName="tbAr_UpdatedAt" />
+                <ScalarProperty Name="tbAr_ForceInstall" ColumnName="tbAr_ForceInstall" />
+                <ScalarProperty Name="tbAr_Changelog" ColumnName="tbAr_Changelog" />
+                <ScalarProperty Name="tbAr_VersionCode" ColumnName="tbAr_VersionCode" />
+                <ScalarProperty Name="tbAr_Version" ColumnName="tbAr_Version" />
+                <ScalarProperty Name="tbAr_DownloadUrl" ColumnName="tbAr_DownloadUrl" />
+                <ScalarProperty Name="tbAr_ID" ColumnName="tbAr_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

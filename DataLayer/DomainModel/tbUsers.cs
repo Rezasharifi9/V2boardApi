@@ -30,6 +30,7 @@ namespace DataLayer.DomainModel
             this.tbUsers1 = new HashSet<tbUsers>();
             this.tbMobileUsers = new HashSet<tbMobileUsers>();
             this.tbSupportLinks = new HashSet<tbSupportLinks>();
+            this.tbLinks = new HashSet<tbLinks>();
         }
     
         public int User_ID { get; set; }
@@ -99,5 +100,7 @@ namespace DataLayer.DomainModel
         public virtual ICollection<tbMobileUsers> tbMobileUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbSupportLinks> tbSupportLinks { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tbLinks> tbLinks { get; set; }
     }
 }

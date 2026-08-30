@@ -4,11 +4,14 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using DataLayer.DomainModel;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using V2boardApi.Areas.api.Data.ApiModels;
 using V2boardApi.Areas.api.Data.ViewModels;
@@ -16,10 +19,11 @@ using V2boardApi.Areas.api.Data.ViewModels;
 namespace V2boardApi.Areas.api.Controllers
 {
     /// <summary>
-    /// ثبت دستگاه های اپلیکیشن موبایل و تخصیص آن ها به نماینده.
+    /// ثبت دستگاه های اپلیکیشن موبایل و تخصیص آن ها به نماینده،
+    /// و دریافت خطاهای کلاینت برای ثبت در NLog با تگ AndroidApp.
     ///
-    /// عمدا LogActionFilter ندارد چون بدنه درخواست شامل توکن FCM و شناسه دستگاه است
-    /// و نباید در جدول لاگ ذخیره شود.
+    /// عمدا LogActionFilter ندارد چون بدنه درخواست شامل توکن FCM، شناسه دستگاه
+    /// و استک تریس است و نباید دوباره به عنوان requestData ذخیره شود.
     /// </summary>
     [EnableCors(origins: "*", "*", "*")]
     public class MobileDeviceController : ApiController
@@ -228,9 +232,109 @@ namespace V2boardApi.Areas.api.Controllers
         }
 
         /// <summary>
+        /// ثبت خطای کلاینت در جدول NLog با Logger برابر AndroidApp.{packageName}
+        /// تا در صفحه لاگ سیستم با فیلتر Logger=AndroidApp جدا شود.
+        /// </summary>
+        [System.Web.Http.HttpPost]
+        public async Task<IHttpActionResult> LogError(ClientLogModel model)
+        {
+            try
+            {
+                if (model == null)
+                {
+                    return BadRequest("اطلاعات لاگ ارسال نشده است");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Message) && string.IsNullOrWhiteSpace(model.Exception))
+                {
+                    return BadRequest("متن پیام یا متن خطا ارسال نشده است");
+                }
+
+                var Token = ResolveAgentToken(model.AgentToken);
+                if (Token == null)
+                {
+                    return BadRequest("توکن نماینده در هدر Authorization ارسال نشده است");
+                }
+
+                var Agent = await db.tbUsers.FirstOrDefaultAsync(p => p.Token == Token);
+                if (Agent == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "کاربری با این توکن یافت نشد");
+                }
+
+                var loggerName = BuildAppLoggerName(model.PackageName);
+                var tag = Cut(SanitizeTag(model.Tag), 50) ?? "app";
+                var level = ResolveLogLevel(model.Level);
+                var message = Cut(BuildLogMessage(tag, model.Message), 8000);
+                if (message == null)
+                {
+                    message = "[" + tag + "] (بدون پیام)";
+                }
+
+                var custom = new Dictionary<string, object>();
+                AddIfPresent(custom, "deviceId", model.DeviceId);
+                AddIfPresent(custom, "packageName", model.PackageName);
+                AddIfPresent(custom, "appVersion", model.AppVersion);
+                if (model.VersionCode != null)
+                {
+                    custom["versionCode"] = model.VersionCode.Value;
+                }
+                AddIfPresent(custom, "manufacturer", model.Manufacturer);
+                AddIfPresent(custom, "model", model.Model);
+                AddIfPresent(custom, "device", model.Device);
+                AddIfPresent(custom, "osVersion", model.OsVersion);
+                if (model.Sdk != null)
+                {
+                    custom["sdk"] = model.Sdk.Value;
+                }
+                AddIfPresent(custom, "tag", tag);
+                AddIfPresent(custom, "screen", model.Screen);
+                if (model.Extra != null && model.Extra.Type != JTokenType.Null)
+                {
+                    custom["extra"] = model.Extra;
+                }
+
+                var entry = new DataLayer.DomainModel.NLog();
+                entry.MachineName = Cut(Environment.MachineName, 200);
+                entry.Logged = DateTime.Now;
+                entry.Level = level;
+                entry.Message = message;
+                entry.Logger = loggerName;
+                entry.Exception = Cut(model.Exception, 32000);
+                entry.ipAddress = Cut(GetClientIp(), 50);
+                entry.userName = Cut(Agent.Username, 100);
+                entry.userId = Agent.User_ID.ToString();
+                entry.userRole = "AndroidApp";
+                entry.httpMethod = "POST";
+                entry.controllerName = "AndroidApp";
+                entry.actionName = tag;
+                entry.sessionId = Cut(model.DeviceId, 50);
+                entry.userAgent = GetUserAgent();
+                entry.requestUrl = GetRequestUrl();
+                entry.customData = Cut(JsonConvert.SerializeObject(custom), 16000);
+                entry.Properties = "source=AndroidApp|tag=" + tag;
+
+                db.NLog.Add(entry);
+                await db.SaveChangesAsync();
+
+                return Ok(new { ok = true, logger = loggerName });
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "خطا در ثبت لاگ کلاینت");
+                return Content(HttpStatusCode.InternalServerError, "خطا در ثبت لاگ");
+            }
+        }
+
+        /// <summary>
         /// توکن نماینده : اول هدر Authorization (با یا بدون Bearer) و بعد فیلد AgentToken بدنه
         /// </summary>
         private string GetAgentToken(RegisterMobileDeviceModel model)
+        {
+            return ResolveAgentToken(model != null ? model.AgentToken : null);
+        }
+
+        private string ResolveAgentToken(string bodyToken)
         {
             IEnumerable<string> AuthValues;
             string token = null;
@@ -245,7 +349,7 @@ namespace V2boardApi.Areas.api.Controllers
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                token = model.AgentToken;
+                token = bodyToken;
             }
 
             token = token == null ? null : token.Trim();
@@ -291,6 +395,143 @@ namespace V2boardApi.Areas.api.Controllers
 
             value = value.Trim();
             return value.Length <= max ? value : value.Substring(0, max);
+        }
+
+        /// <summary>
+        /// Logger ثابت AndroidApp به علاوه packageName تمیزشده تا در صفحه لاگ سیستم فیلتر شود.
+        /// </summary>
+        private static string BuildAppLoggerName(string packageName)
+        {
+            const string Prefix = "AndroidApp";
+            var cleaned = SanitizeLoggerPart(packageName);
+            if (cleaned == null)
+            {
+                return Prefix;
+            }
+
+            var name = Prefix + "." + cleaned;
+            return name.Length <= 300 ? name : name.Substring(0, 300);
+        }
+
+        private static string SanitizeLoggerPart(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            var buffer = new StringBuilder(value.Length);
+            foreach (var c in value.Trim())
+            {
+                if (char.IsLetterOrDigit(c) || c == '.' || c == '_' || c == '-')
+                {
+                    buffer.Append(c);
+                }
+            }
+
+            return buffer.Length == 0 ? null : buffer.ToString();
+        }
+
+        private static string SanitizeTag(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+            {
+                return null;
+            }
+
+            var buffer = new StringBuilder(tag.Length);
+            foreach (var c in tag.Trim())
+            {
+                if (char.IsLetterOrDigit(c) || c == '.' || c == '_' || c == '-' || c == '/')
+                {
+                    buffer.Append(c);
+                }
+                else if (char.IsWhiteSpace(c) || c == ':')
+                {
+                    buffer.Append('-');
+                }
+            }
+
+            return buffer.Length == 0 ? null : buffer.ToString();
+        }
+
+        private static string ResolveLogLevel(string level)
+        {
+            if (string.IsNullOrWhiteSpace(level))
+            {
+                return "Error";
+            }
+
+            switch (level.Trim().ToLowerInvariant())
+            {
+                case "fatal":
+                case "crash":
+                    return "Fatal";
+                case "error":
+                    return "Error";
+                case "warn":
+                case "warning":
+                    return "Warn";
+                case "info":
+                case "information":
+                    return "Info";
+                case "debug":
+                    return "Debug";
+                case "trace":
+                    return "Trace";
+                default:
+                    return "Error";
+            }
+        }
+
+        private static string BuildLogMessage(string tag, string message)
+        {
+            var text = string.IsNullOrWhiteSpace(message) ? null : message.Trim();
+            if (text == null)
+            {
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(tag))
+            {
+                return text;
+            }
+
+            return "[" + tag + "] " + text;
+        }
+
+        private static void AddIfPresent(Dictionary<string, object> target, string key, string value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                target[key] = value.Trim();
+            }
+        }
+
+        private static string GetUserAgent()
+        {
+            try
+            {
+                var context = HttpContext.Current;
+                return context == null ? null : context.Request.UserAgent;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string GetRequestUrl()
+        {
+            try
+            {
+                var context = HttpContext.Current;
+                return context == null || context.Request.Url == null ? null : context.Request.Url.ToString();
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         protected override void Dispose(bool disposing)

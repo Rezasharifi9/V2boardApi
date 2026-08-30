@@ -5,91 +5,115 @@
     <link rel="stylesheet" href="../../assets/vendor/libs/select2/select2.css" />
     <link rel="stylesheet" href="@Url.Content("~/assets/vendor/libs/@form-validation/form-validation.css")" />
     <link rel="stylesheet" href="../../assets/vendor/libs/sweetalert2/sweetalert2.css" />
+    <style>
+        #cardOverdueDebt { cursor: pointer; transition: box-shadow .15s ease; }
+        #cardOverdueDebt:hover { box-shadow: 0 .25rem .9rem rgba(255, 62, 29, .18); }
+    </style>
 }
-
-@*<div class="row g-4 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-start justify-content-between">
-                        <div class="content-left">
-                            <span>مجموع کاربران</span>
-                            <div class="d-flex align-items-center my-2">
-                                <h3 class="mb-0 me-2">21,459</h3>
-                                <p class="text-success mb-0">
-                                    <bdi>(+29%)</bdi>
-                                </p>
-                            </div>
-                            <p class="mb-0">آمار هفته قبل</p>
-                        </div>
-                        <div class="avatar"> <span class="avatar-initial rounded bg-label-primary"> <i class="ti ti-user ti-sm"></i> </span> </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-start justify-content-between">
-                        <div class="content-left">
-                            <span>کاربران وفادار</span>
-                            <div class="d-flex align-items-center my-2">
-                                <h3 class="mb-0 me-2">4,567</h3>
-                                <p class="text-success mb-0">
-                                    <bdi>(+18%)</bdi>
-                                </p>
-                            </div>
-                            <p class="mb-0">آمار هفته قبل</p>
-                        </div>
-                        <div class="avatar"> <span class="avatar-initial rounded bg-label-danger"> <i class="ti ti-user-plus ti-sm"></i> </span> </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-start justify-content-between">
-                        <div class="content-left">
-                            <span>کاربران فعال</span>
-                            <div class="d-flex align-items-center my-2">
-                                <h3 class="mb-0 me-2">19,860</h3>
-                                <p class="text-danger mb-0">
-                                    <bdi>(-14%)</bdi>
-                                </p>
-                            </div>
-                            <p class="mb-0">آمار هفته قبل</p>
-                        </div>
-                        <div class="avatar"> <span class="avatar-initial rounded bg-label-success"> <i class="ti ti-user-check ti-sm"></i> </span> </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-start justify-content-between">
-                        <div class="content-left">
-                            <span>کاربران مسدود</span>
-                            <div class="d-flex align-items-center my-2">
-                                <h3 class="mb-0 me-2">237</h3>
-                                <p class="text-success mb-0">
-                                    <bdi>(+42%)</bdi>
-                                </p>
-                            </div>
-                            <p class="mb-0">آمار هفته قبل</p>
-                        </div>
-                        <div class="avatar"> <span class="avatar-initial rounded bg-label-warning"> <i class="ti ti-user-exclamation ti-sm"></i> </span> </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>*@
-<!-- Users List Table -->
 
 <h4 class="py-3 mb-4">
     نمایندگان
 </h4>
+
+<div class="row g-4 mb-4" id="agentSummaryCards">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100" id="cardOverdueDebt" role="button" title="برای مشاهده جزئیات کلیک کنید">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>بدهی بیش از یک ماه</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2" id="statOverdueCount">—</h3>
+                        </div>
+                        <p class="mb-0 text-muted">پرداخت‌نشده — برای جزئیات کلیک کنید</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-danger"> <i class="ti ti-alert-triangle ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>مجموع بدهی</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2" id="statTotalDebt">—</h3>
+                        </div>
+                        <p class="mb-0 text-muted">تومان بدهی جاری نمایندگان</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-warning"> <i class="ti ti-cash ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>اشتراک مسدود</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2" id="statBlockedCount">—</h3>
+                        </div>
+                        <p class="mb-0 text-muted">نمایندگان با اشتراک مسدودشده</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-secondary"> <i class="ti ti-lock ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="content-left">
+                        <span>بدون تلگرام فعال</span>
+                        <div class="d-flex align-items-center my-2">
+                            <h3 class="mb-0 me-2" id="statNoTelegramCount">—</h3>
+                        </div>
+                        <p class="mb-0 text-muted">حساب تلگرام در ربات ثبت نشده</p>
+                    </div>
+                    <div class="avatar"> <span class="avatar-initial rounded bg-label-info"> <i class="ti ti-send ti-sm"></i> </span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    var isSystemAdmin = (ViewBag.UserRole as string) == "1";
+    var headAgents = ViewBag.HeadAgents as IEnumerable<V2boardApi.Areas.App.Data.UsersViewModels.SelectUserViewModel>;
+}
+@if (isSystemAdmin)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label" for="filterHeadAgentSelect">نماینده کل</label>
+                    <select id="filterHeadAgentSelect" class="form-select">
+                        <option value="">نمایندگان مستقیم</option>
+                        @if (headAgents != null)
+                        {
+                            foreach (var agent in headAgents)
+                            {
+                                <option value="@agent.id">@agent.username</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <p class="text-muted mb-0">با انتخاب نماینده کل، نمایندگان زیرمجموعه او در جدول نمایش داده می‌شوند.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Users List Table -->
+
 <div class="card">
     @*<div class="card-header border-bottom">
             <h5 class="card-title mb-3">فیلتر جستجو</h5>
@@ -108,6 +132,8 @@
                     <th>بدهی</th>
                     <th>محدودیت</th>
                     <th>وضعیت</th>
+                    <th>تلگرام</th>
+                    <th>آخرین پرداختی</th>
                     <th>تعداد فروش</th>
                     <th>مجموع فروش</th>
                     <th>عملیات</th>
@@ -177,6 +203,86 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalSendAgentMessage" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ارسال پیام به <span id="sendAgentMessageName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="sendAgentMessageText">متن پیام</label>
+                <textarea class="form-control" id="sendAgentMessageText" rows="6" placeholder="پیام در پنل و ربات تلگرام نماینده ارسال می‌شود"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary" id="btnSendAgentMessage">ارسال به پنل و ربات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalOverdueDebt" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">بدهی‌های پرداخت‌نشده بیش از یک ماه</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>نام کاربری</th>
+                                <th>بدهی</th>
+                                <th>آخرین پرداختی</th>
+                                <th>مدت بدون پرداخت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overdueDebtBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (isSystemAdmin)
+{
+    <div aria-hidden="true" class="modal fade" id="editWallet" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+            <div class="modal-content p-3 p-md-5">
+                <div class="modal-body">
+                    <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                    <div class="text-center mb-4">
+                        <h3 class="mb-2">تغییر مبلغ کیف پول</h3>
+                        <p class="text-muted mb-0" id="editWalletAgentName"></p>
+                    </div>
+                    <form class="row g-3" id="editWalletForm" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" value="" name="user_id" id="editWalletUserId" />
+                        <div class="col-12 d-flex align-items-center justify-content-between">
+                            <div class="flex-grow-1 me-2">
+                                <label class="form-label" for="Deposit">بدهی / کیف پول</label>
+                                <input class="form-control" id="Deposit" name="userDeposit" placeholder="3,000,000" type="text" onkeyup="separateDigits(this)" value="" />
+                            </div>
+                            <div class="text-center">
+                                <label class="form-label d-block">&nbsp;</label>
+                                <button class="btn btn-label-info" id="ZeroWallet" type="button">صفر</button>
+                            </div>
+                        </div>
+                        <div class="col-12 text-center">
+                            <button class="btn btn-primary me-sm-3 me-1" type="button" id="SaveDeposit">ثبت</button>
+                            <button aria-label="بستن" class="btn btn-label-secondary" data-bs-dismiss="modal" type="reset">لغو</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 <!-- Add New Credit Card Modal -->
 <div aria-hidden="true" class="modal fade" id="addNewPlan" tabindex="-1">

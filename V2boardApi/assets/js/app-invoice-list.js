@@ -306,8 +306,7 @@ $(function () {
         }
     });
 
-    fv.on('core.form.valid', function (e) {
-
+    function submitFactorForm() {
         blockUI('.section-block');
 
         if ($('#factorDebt').is(':checked')) {
@@ -332,6 +331,37 @@ $(function () {
             }
 
         });
+    }
+
+    fv.on('core.form.valid', function (e) {
+        var enteredAmount = parseInt(String($('#factorPrice').val() || '').replace(/,/g, ''), 10) || 0;
+        var debtValue = Number(usersDebtMap[$('#usersSelect').val()]) || 0;
+
+        if (enteredAmount > debtValue) {
+            Swal.fire({
+                title: 'توجه',
+                html: 'مبلغ واردشده (' + formatMoney(enteredAmount) + ' ءتء) از بدهی نماینده (' + formatMoney(debtValue) + ' ءتء) بیشتر است.<br>در صورت تأیید، همین مبلغ از بدهی کسر می‌شود.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، کسر شود',
+                cancelButtonText: 'اصلاح مبلغ',
+                customClass: {
+                    confirmButton: 'btn btn-primary me-3 waves-effect waves-light',
+                    cancelButton: 'btn btn-label-secondary waves-effect waves-light'
+                },
+                buttonsStyling: false
+            }).then(function (result) {
+                if (result.value) {
+                    $('#factorDebt').prop('checked', true);
+                    submitFactorForm();
+                } else {
+                    $('#factorPrice').focus();
+                }
+            });
+            return;
+        }
+
+        submitFactorForm();
     });
 
     // Accept pending payment factor

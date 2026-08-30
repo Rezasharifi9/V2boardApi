@@ -130,24 +130,22 @@ namespace V2boardApi.Tools
                     botClient = new TelegramBotClient(botSetting.Bot_Token);
             }
 
-            var telegramUser = RepositoryTelegramUser
-                .Where(q => q.Tel_Username == agent.TelegramID)
-                .FirstOrDefault();
-
-            if (telegramUser != null && botClient != null && botSetting != null)
+            if (botClient != null && botSetting != null)
             {
-                StringBuilder str1 = new StringBuilder();
-                str1.AppendLine("نماینده گرامی");
-                str1.AppendLine("");
-                str1.AppendLine("✅ پرداختی شما با موفقیت تائید شد");
-                str1.AppendLine("");
-                str1.AppendLine("🚀 @" + botSetting.Bot_ID);
-
-                try
+                var chatId = TelegramNotifyHelper.ResolveChatIdFromProfile(
+                    db, agent.TelegramID, botSetting.Bot_ID);
+                if (!string.IsNullOrEmpty(chatId))
                 {
-                    await botClient.SendMessage(telegramUser.Tel_UniqUserID, str1.ToString(), parseMode: ParseMode.Html);
+                    StringBuilder str1 = new StringBuilder();
+                    str1.AppendLine("نماینده گرامی");
+                    str1.AppendLine("");
+                    str1.AppendLine("✅ پرداختی شما با موفقیت تائید شد");
+                    str1.AppendLine("");
+                    str1.AppendLine("🚀 @" + botSetting.Bot_ID);
+
+                    await TelegramNotifyHelper.TrySendMessageAsync(
+                        botClient, chatId, str1.ToString(), ParseMode.Html);
                 }
-                catch { }
             }
 
             RepositoryFactor.Save();
@@ -215,6 +213,10 @@ namespace V2boardApi.Tools
                             item.dw_Status = "FINISH";
                             if (item.FK_Order_ID != null)
                             {
+                                var agent = item.tbTelegramUsers?.tbUsers;
+                                var agentWalletBefore = agent != null ? agent.Wallet : 0;
+                                ReservedPackageHelper.ApplySubscriptionAgentDebt(agent, item.tbOrders?.tbLinkUserAndPlans);
+
                                 var Link = await RepositoryLinks.FirstOrDefaultAsync(p => p.tbL_Email == item.tbOrders.AccountName);
                                 if (Link != null)
                                 {
@@ -296,6 +298,8 @@ namespace V2boardApi.Tools
                                         await RepositoryOrder.SaveChangesAsync();
                                         await RepositoryDepositWallet.SaveChangesAsync();
                                         transaction.Commit();
+                                        if (agent != null)
+                                            AgentLimitNotificationService.ScheduleCheckAfterWalletChange(agent.User_ID, agentWalletBefore);
 
                                         StringBuilder str2 = new StringBuilder();
                                         str2.Append(BotMessages.BuildRenewedPackageConfirmMessage(
@@ -322,6 +326,8 @@ namespace V2boardApi.Tools
                                         await RepositoryOrder.SaveChangesAsync();
                                         await RepositoryDepositWallet.SaveChangesAsync();
                                         transaction.Commit();
+                                        if (agent != null)
+                                            AgentLimitNotificationService.ScheduleCheckAfterWalletChange(agent.User_ID, agentWalletBefore);
 
 
                                         StringBuilder str2 = new StringBuilder();
@@ -430,6 +436,7 @@ namespace V2boardApi.Tools
                                     tbLinks.tbL_Email = FullName;
                                     tbLinks.tbL_Token = token;
                                     tbLinks.FK_Server_ID = Order.tbTelegramUsers.tbUsers.tbServers.ServerID;
+                                    tbLinks.FK_User_ID = Order.tbTelegramUsers.FK_User_ID;
                                     tbLinks.FK_TelegramUserID = Order.tbTelegramUsers.Tel_UserID;
                                     SubscriptionReserveWarnHelper.ResetReserveWarnState(tbLinks);
                                     tbLinks.tb_AutoRenew = false;
@@ -458,6 +465,8 @@ namespace V2boardApi.Tools
                                     await RepositoryLinks.SaveChangesAsync();
                                     await RepositoryLinkUserAndPlan.SaveChangesAsync();
                                     transaction.Commit();
+                                    if (agent != null)
+                                        AgentLimitNotificationService.ScheduleCheckAfterWalletChange(agent.User_ID, agentWalletBefore);
 
                                     var keys = Keyboards.GetHomeButton();
 
@@ -590,6 +599,10 @@ namespace V2boardApi.Tools
                             item.dw_Status = "FINISH";
                             if (item.FK_Order_ID != null)
                             {
+                                var agent = item.tbTelegramUsers?.tbUsers;
+                                var agentWalletBefore = agent != null ? agent.Wallet : 0;
+                                ReservedPackageHelper.ApplySubscriptionAgentDebt(agent, item.tbOrders?.tbLinkUserAndPlans);
+
                                 var Link = await RepositoryLinks.FirstOrDefaultAsync(p => p.tbL_Email == item.tbOrders.AccountName);
                                 if (Link != null)
                                 {
@@ -671,6 +684,8 @@ namespace V2boardApi.Tools
                                         await RepositoryOrder.SaveChangesAsync();
                                         await RepositoryDepositWallet.SaveChangesAsync();
                                         transaction.Commit();
+                                        if (agent != null)
+                                            AgentLimitNotificationService.ScheduleCheckAfterWalletChange(agent.User_ID, agentWalletBefore);
 
                                         StringBuilder str2 = new StringBuilder();
                                         str2.Append(BotMessages.BuildRenewedPackageConfirmMessage(
@@ -697,6 +712,8 @@ namespace V2boardApi.Tools
                                         await RepositoryOrder.SaveChangesAsync();
                                         await RepositoryDepositWallet.SaveChangesAsync();
                                         transaction.Commit();
+                                        if (agent != null)
+                                            AgentLimitNotificationService.ScheduleCheckAfterWalletChange(agent.User_ID, agentWalletBefore);
 
 
                                         StringBuilder str2 = new StringBuilder();
@@ -795,6 +812,7 @@ namespace V2boardApi.Tools
                                     tbLinks.tbL_Email = FullName;
                                     tbLinks.tbL_Token = token;
                                     tbLinks.FK_Server_ID = Order.tbTelegramUsers.tbUsers.tbServers.ServerID;
+                                    tbLinks.FK_User_ID = Order.tbTelegramUsers.FK_User_ID;
                                     tbLinks.FK_TelegramUserID = Order.tbTelegramUsers.Tel_UserID;
                                     SubscriptionReserveWarnHelper.ResetReserveWarnState(tbLinks);
                                     tbLinks.tb_AutoRenew = false;
@@ -823,6 +841,8 @@ namespace V2boardApi.Tools
                                     await RepositoryLinks.SaveChangesAsync();
                                     await RepositoryLinkUserAndPlan.SaveChangesAsync();
                                     transaction.Commit();
+                                    if (agent != null)
+                                        AgentLimitNotificationService.ScheduleCheckAfterWalletChange(agent.User_ID, agentWalletBefore);
 
                                     var keys = Keyboards.GetHomeButton();
 

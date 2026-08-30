@@ -9,7 +9,7 @@ namespace V2boardApi.Areas.api.Data.ApiModels
         public int PlanId { get; set; }
 
         /// <summary>
-        /// توکن اشتراکی که باید تمدید شود (ستون tbL_Token در جدول tbLinks).
+        /// توکن اشتراکی که باید تمدید شود (ستون token در v2_user و tbL_Token در tbLinks).
         /// خالی بودن این مقدار یعنی یک اشتراک جدید ساخته شود.
         /// </summary>
         public string SubscriptionToken { get; set; }

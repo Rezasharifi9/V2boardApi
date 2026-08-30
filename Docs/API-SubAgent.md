@@ -5,7 +5,7 @@
 - کنترلر: `V2boardApi/Areas/api/Controllers/SubController.cs` → متد `Agent`
 - مدل خروجی: `V2boardApi/Areas/api/Data/ApiModels/SubscriptionAgentModel.cs`
 
-> اندپوینت هم‌خانواده: [`GET /api/v1/Sub/Info`](API-SubscriptionInfo.md) · [`GET /api/v1/Sub/Usage`](API-SubscriptionUsage.md) · [`POST /api/v1/Sub/ResetLink`](API-SubscriptionResetLink.md) · سوالات متداول ربات: [`GET /User/GetFaq`](API-Faq.md) · لینک‌های پشتیبانی: [`GET /User/GetSupportLinks`](API-SupportLinks.md)
+> اندپوینت هم‌خانواده: [`GET /api/v1/Sub/Info`](API-SubscriptionInfo.md) · [`GET /api/v1/Sub/Usage`](API-SubscriptionUsage.md) · [`POST /api/v1/Sub/ResetLink`](API-SubscriptionResetLink.md) · سوالات متداول ربات: [`GET /User/GetFaq`](API-Faq.md) · لینک‌های پشتیبانی: [`GET /User/GetSupportLinks`](API-SupportLinks.md) · نسخه اپلیکیشن: [`GET /User/GetAppRelease`](API-AppRelease.md) · ثبت خطای اپ: [`POST /MobileDevice/LogError`](API-ClientLog.md)
 
 ---
 
@@ -59,9 +59,11 @@ Authorization: {agentToken}          Authorization: {agentToken}
 POST /User/GetTelegramWallet  ← موجودی کیف پول ربات برای دکمه‌ی پرداخت از کیف پول
 GET  /User/GetFaq             ← سوالات متداول همان ربات
 GET  /User/GetSupportLinks    ← لینک‌های ارتباطی پشتیبانی نماینده
+GET  /User/GetAppRelease      ← نسخه، لینک دانلود و نصب اجباری اپلیکیشن
+POST /MobileDevice/LogError   ← ثبت خطای اپ در NLog با تگ AndroidApp
 ```
 
-کلاینت این را **یک بار** بعد از وارد کردن اشتراک صدا می‌زند و `agentToken` را نگه می‌دارد؛ لازم نیست قبل از هر فراخوانی تکرار شود. موجودی کیف پول را از [`GetTelegramWallet`](API-TelegramWallet.md) بگیر. سوالات متداول را از [`GetFaq`](API-Faq.md). لینک‌های پشتیبانی را از [`GetSupportLinks`](API-SupportLinks.md).
+کلاینت این را **یک بار** بعد از وارد کردن اشتراک صدا می‌زند و `agentToken` را نگه می‌دارد؛ لازم نیست قبل از هر فراخوانی تکرار شود. موجودی کیف پول را از [`GetTelegramWallet`](API-TelegramWallet.md) بگیر. سوالات متداول را از [`GetFaq`](API-Faq.md). لینک‌های پشتیبانی را از [`GetSupportLinks`](API-SupportLinks.md). نسخه اپلیکیشن و لینک دانلود را از [`GetAppRelease`](API-AppRelease.md). خطاهای اپ را با [`LogError`](API-ClientLog.md) بفرست.
 
 ---
 

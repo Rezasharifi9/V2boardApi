@@ -8,7 +8,7 @@
 - مدل خروجی: `V2boardApi/Areas/api/Data/ViewModels/FaqViewModel.cs`
 - منبع ربات: `BotController` شاخه `mess == "❓ سؤالات رایج"`
 
-> آیدی پشتیبانی در [`GET /api/v1/Sub/Agent`](API-SubAgent.md) هم با فیلد `supportUsername` برمی‌گردد. این اندپوینت همان مقدار را کنار خود سوالات می‌گذارد تا صفحه FAQ با یک فراخوانی کامل شود. لینک‌های روبیکا/بله/ایتا/تلگرام ثبت‌شده در پنل را از [`GET /User/GetSupportLinks`](API-SupportLinks.md) بگیر.
+> آیدی پشتیبانی در [`GET /api/v1/Sub/Agent`](API-SubAgent.md) هم با فیلد `supportUsername` برمی‌گردد. این اندپوینت همان مقدار را کنار خود سوالات می‌گذارد تا صفحه FAQ با یک فراخوانی کامل شود. لینک‌های روبیکا/بله/ایتا/تلگرام ثبت‌شده در پنل را از [`GET /User/GetSupportLinks`](API-SupportLinks.md) بگیر. نسخه و لینک دانلود اپلیکیشن را از [`GET /User/GetAppRelease`](API-AppRelease.md) بگیر.
 
 ---
 

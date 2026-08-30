@@ -369,7 +369,10 @@
     }*@
 <!--/ Edit Setting Modal -->
 <!-- Edit Wallet Modal -->
-@*@Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })*@
+@if (Role == "1")
+{
+    @Html.Action("_EditWallet", "Admin", new { area = "App", user_id = Model })
+}
 
 <!--/ Edit Wallet Modal -->
 
@@ -492,6 +495,7 @@
                         eval(res.data);
                         if (res.status == "success") {
                             $("#editWallet").modal("hide");
+                            location.reload();
                         }
 
                     });

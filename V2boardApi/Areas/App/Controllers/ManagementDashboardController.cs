@@ -79,8 +79,13 @@ namespace V2boardApi.Areas.App.Controllers
             var yesterdaySales = DashboardSalesHelper.SumSalesInRange(salesData, range.YesterdayStart, range.YesterdayEnd);
             var monthOrderCount = DashboardSalesHelper.CountSalesInRange(salesData, range.ThisMonthStart, range.ThisMonthEnd);
 
+            var currentAdminId = repositoryUser.table
+                .Where(u => u.Username == User.Identity.Name && u.Role == 1)
+                .Select(u => u.User_ID)
+                .FirstOrDefault();
+
             var agents = repositoryUser.table
-                .Where(u => u.Role != 1)
+                .Where(u => u.Role != 1 && u.Parent_ID == currentAdminId)
                 .Select(u => new
                 {
                     u.User_ID,
@@ -183,7 +188,7 @@ namespace V2boardApi.Areas.App.Controllers
                 RenewRatePercent = Percent(renewCount, mixTotal),
                 AgentReceivables = agents.Where(a => a.Wallet > 0).Sum(a => a.Wallet),
                 PendingInvoiceCount = pendingInvoices.Count,
-                PendingInvoiceAmount = pendingInvoices.Sum(),
+                PendingInvoiceAmount = pendingInvoices.Sum().RialToToman(),
                 ActiveAgentCount = agents.Count(a => a.Status == true && !a.Settlement_IsBlocked),
                 BlockedAgentCount = agents.Count(a => a.Settlement_IsBlocked || a.Status != true),
                 TelegramActiveCount = db.tbTelegramUsers.Count(t => t.Tel_Status == 1 && !t.Tel_IsBlocked),
@@ -244,8 +249,12 @@ namespace V2boardApi.Areas.App.Controllers
             var renewAmount = monthLogs.Where(l => editedActions.Contains(l.Action)).Sum(l => l.SalePrice ?? 0)
                 + botOrders.Where(o => o.OrderType == "تمدید").Sum(o => o.Order_Price ?? 0);
 
+            var currentAdminId = repositoryUser.table
+                .Where(u => u.Username == User.Identity.Name && u.Role == 1)
+                .Select(u => u.User_ID)
+                .FirstOrDefault();
             var agents = repositoryUser.table
-                .Where(u => u.Role != 1 && u.Status == true)
+                .Where(u => u.Role != 1 && u.Status == true && u.Parent_ID == currentAdminId)
                 .Select(u => u.Username)
                 .ToList();
             var topAgents = BuildTopAgents(salesData, agents, range);

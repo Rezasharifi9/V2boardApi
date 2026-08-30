@@ -264,20 +264,8 @@ namespace V2boardApi.Tools
 
         private static string ResolveAgentChatId(tbUsers agent, tbServers server, Entities db)
         {
-            if (string.IsNullOrEmpty(agent.TelegramID))
-                return null;
-
-            tbTelegramUsers telUser = null;
-            if (!string.IsNullOrEmpty(server.Robot_ID))
-            {
-                telUser = db.tbTelegramUsers.FirstOrDefault(t =>
-                    t.Tel_Username == agent.TelegramID && t.Tel_RobotID == server.Robot_ID);
-            }
-
-            if (telUser == null)
-                telUser = db.tbTelegramUsers.FirstOrDefault(t => t.Tel_Username == agent.TelegramID);
-
-            return telUser?.Tel_UniqUserID;
+            return TelegramNotifyHelper.ResolveChatIdFromProfile(
+                db, agent?.TelegramID, server?.Robot_ID);
         }
 
         private static async Task SendAdminReportAsync(tbServers server, Entities db, DailySalesReportData report)

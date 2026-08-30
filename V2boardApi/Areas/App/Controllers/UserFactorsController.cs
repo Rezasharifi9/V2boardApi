@@ -67,7 +67,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         factor.IsExistsFile = true;
                     }
-                    factor.Price = item.tbUf_Value.Value.ConvertToMony();
+                    factor.Price = item.tbUf_Value.Value.RialToToman().ConvertToMony();
                     if ((int)item.tbUsers.Role == 2)
                     {
                         factor.Role = "نماینده";
@@ -110,7 +110,7 @@ namespace V2boardApi.Areas.App.Controllers
                 payInfo.AgentUsers = Users.Count();
                 payInfo.DebtAgents = (Users.Sum(s => s.Wallet)).ConvertToMony();
                 payInfo.Factors = Factores.Count();
-                payInfo.Payments = (Factores.Where(s => s.tbUf_Status == 2 || s.tbUf_Status == 3).Sum(s => s.tbUf_Value.Value)).ConvertToMony();
+                payInfo.Payments = (Factores.Where(s => s.tbUf_Status == 2 || s.tbUf_Status == 3).Sum(s => s.tbUf_Value.Value)).RialToToman().ConvertToMony();
 
                 return PartialView(payInfo);
             }
@@ -132,9 +132,10 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     var UserAgent = await RepositoryUsers.FirstOrDefaultAsync(s => s.User_ID == usersSelect);
                     var agentDebtBefore = UserAgent.Wallet;
+                    var priceToman = int.Parse(factorPrice.ToString(), NumberStyles.Currency);
                     tbUserFactors userFactor = new tbUserFactors();
                     userFactor.FK_User_ID = usersSelect;
-                    userFactor.tbUf_Value = int.Parse(factorPrice.ToString(), NumberStyles.Currency);
+                    userFactor.tbUf_Value = ((double)priceToman).TomanToRial();
                     userFactor.tbUf_Description = factorDescription;
                     userFactor.tbUf_Status = 2;
                     userFactor.tbUf_CreateTime = DateTime.Parse(factorDate, CultureInfo.GetCultureInfo("fa-IR"));
@@ -152,12 +153,12 @@ namespace V2boardApi.Areas.App.Controllers
 
                     var PayedFactores = await RepositoryFactors.WhereAsync(s => s.tbUf_Status == 2 && s.FK_User_ID == UserAgent.User_ID);
 
-                    var PaySum = PayedFactores.Sum(s => s.tbUf_Value.Value);
+                    var PaySumToman = PayedFactores.Sum(s => s.tbUf_Value.Value).RialToToman();
                     var walletBefore = UserAgent.Wallet;
 
-                    if (PaySum >= UserAgent.Wallet)
+                    if (PaySumToman >= UserAgent.Wallet)
                     {
-                        UserAgent.Wallet -= PaySum;
+                        UserAgent.Wallet -= PaySumToman;
 
                         foreach (var item in PayedFactores)
                         {
@@ -168,7 +169,7 @@ namespace V2boardApi.Areas.App.Controllers
                     {
                         if (factorDebt)
                         {
-                            UserAgent.Wallet -= userFactor.tbUf_Value.Value;
+                            UserAgent.Wallet -= userFactor.tbUf_Value.Value.RialToToman();
                             userFactor.tbUf_Status = 3;
                         }
                     }
@@ -183,9 +184,9 @@ namespace V2boardApi.Areas.App.Controllers
                         (userFactor.tbUf_Status == 3 || PayedFactores.Any(f => f.tbUf_Status == 3)))
                         await SettlementService.OnAgentPaymentConfirmed(UserAgent, db);
 
-                    var invoiceAmount = userFactor.tbUf_Value.Value;
+                    var invoiceAmountToman = userFactor.tbUf_Value.Value.RialToToman();
                     var shouldNotifyAgent = userFactor.tbUf_Status == 3 &&
-                        (factorDebt || invoiceAmount >= agentDebtBefore);
+                        (factorDebt || invoiceAmountToman >= agentDebtBefore);
 
                     if (shouldNotifyAgent)
                     {
@@ -194,7 +195,7 @@ namespace V2boardApi.Areas.App.Controllers
                         telegramMsg.AppendLine("");
                         telegramMsg.AppendLine("✅ فاکتور شما با موفقیت ثبت گردید و از بدهی کسر شد.");
                         telegramMsg.AppendLine("");
-                        telegramMsg.AppendLine("💰 مبلغ: " + userFactor.tbUf_Value.Value.ConvertToMony());
+                        telegramMsg.AppendLine("💰 مبلغ: " + invoiceAmountToman.ConvertToMony());
                         if (UserAgent.Wallet > 0)
                             telegramMsg.AppendLine("📊 بدهی باقی‌مانده: " + UserAgent.Wallet.ConvertToMony());
                         await SettlementService.SendAgentTelegramMessage(
@@ -370,7 +371,7 @@ namespace V2boardApi.Areas.App.Controllers
                 {
                     factor.IsExistsFile = true;
                 }
-                factor.Price = item.tbUf_Value.Value.ConvertToMony();
+                factor.Price = item.tbUf_Value.Value.RialToToman().ConvertToMony();
                 if ((int)item.tbUsers.Role == 2)
                 {
                     factor.Role = "نماینده";
@@ -414,7 +415,7 @@ namespace V2boardApi.Areas.App.Controllers
             {
                 model.FullName = "#";
             }
-            model.Amount = Factor.tbUf_Value.Value.ConvertToMony();
+            model.Amount = Factor.tbUf_Value.Value.RialToToman().ConvertToMony();
             model.PayAmount = Factor.tbUf_Value.Value.ConvertToMony();
             if(Factor.tbUf_Status == 3)
             {

@@ -27,8 +27,7 @@ $(function () {
                 data: function (d) {
                     d.filterUser = $('#filterUser').val() || '';
                     d.filterTaxId = $('#filterTaxId').val() || '';
-                    d.filterAmountMin = $('#filterAmountMin').val() || '';
-                    d.filterAmountMax = $('#filterAmountMax').val() || '';
+                    d.filterAmount = $('#filterAmount').val() || '';
                     d.filterFromDate = $('#filterFromDate').val() || '';
                     d.filterToDate = $('#filterToDate').val() || '';
                     return d;
@@ -130,6 +129,7 @@ $(function () {
                             1: { title: 'پرداخت شده', class: 'bg-label-success' },
                             3: { title: 'در انتظار پرداخت', class: 'bg-label-primary' },
                             4: { title: 'منقضی شده', class: 'bg-label-secondary' },
+                            5: { title: 'لغو شده', class: 'bg-label-secondary' },
                         };
 
                         var info = statusObj[$Traffic];
@@ -223,7 +223,7 @@ $(function () {
     });
 
     $('#btnClearFactorFilters').on('click', function () {
-        $('#filterUser, #filterTaxId, #filterAmountMin, #filterAmountMax').val('');
+        $('#filterUser, #filterTaxId, #filterAmount').val('');
         var fromPicker = document.querySelector('#filterFromDate')._flatpickr;
         var toPicker = document.querySelector('#filterToDate')._flatpickr;
         if (fromPicker) { fromPicker.clear(); } else { $('#filterFromDate').val(''); }

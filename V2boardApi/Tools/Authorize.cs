@@ -20,9 +20,7 @@ namespace V2boardApi.Tools
         public override void OnAuthorization(HttpActionContext actionContext)
         {
             RepositoryUser = new Repository<tbUsers>();
-            var currentIdentity = System.Threading.Thread.CurrentPrincipal.Identity;
-            if (!currentIdentity.IsAuthenticated)
-            {
+            
                 var auth = actionContext.Request.Headers.Authorization;
                 if (auth != null)
                 {
@@ -43,8 +41,7 @@ namespace V2boardApi.Tools
                     else { HandleUnauthorizedRequest(actionContext); }
                 }
                 else { HandleUnauthorizedRequest(actionContext); }
-            }
-            else { HandleUnauthorizedRequest(actionContext); }
+            
 
         }
 

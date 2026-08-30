@@ -100,6 +100,10 @@ namespace V2boardApi.Areas.App.Controllers
                         filterAgent = candidate;
                 }
 
+                var lockedByAdmin = userRole != 1 &&
+                    (SettlementService.IsAgentOrAncestorBlocked(user, db) ||
+                     (filterAgent != null && SettlementService.IsAgentOrAncestorBlocked(filterAgent, db)));
+
                 string baseQuery = "SELECT v2.id, v2.email, v2.t, v2.u, v2.d, v2.transfer_enable, v2.banned, v2.token, v2.expired_at, v2.plan_id, v2.created_at, pl.name " +
                                    "FROM `v2_user` AS v2 JOIN v2_plan AS pl ON v2.plan_id = pl.id WHERE 1=1 ";
                 string filterQuery = BuildRoleScopeFilter(user, userRole, filterAgent);
@@ -137,6 +141,7 @@ namespace V2boardApi.Areas.App.Controllers
 
                                     TotalVolume = Utility.ConvertByteToGB(reader.GetInt64(reader.GetOrdinal("transfer_enable"))).ToString(),
                                     IsBanned = Convert.ToBoolean(reader.GetSByte(reader.GetOrdinal("banned"))),
+                                    IsAdminBlocked = lockedByAdmin,
                                     Name = reader.GetString(reader.GetOrdinal("email")),
                                     IsActive = 1,
                                     SubLink = $"https://{user.tbServers.SubAddress}/api/v1/client/subscribe?token={reader.GetString(reader.GetOrdinal("token"))}",
@@ -543,6 +548,17 @@ namespace V2boardApi.Areas.App.Controllers
 
 
                                     await mySql.CloseAsync();
+
+                                    var newLink = new tbLinks();
+                                    newLink.tbL_Email = emilprx;
+                                    newLink.tbL_Token = token;
+                                    newLink.FK_Server_ID = user.FK_Server_ID;
+                                    newLink.FK_User_ID = user.User_ID;
+                                    newLink.tb_AutoRenew = false;
+                                    SubscriptionReserveWarnHelper.ResetReserveWarnState(newLink);
+                                    linksRepository.Insert(newLink);
+                                    linksRepository.Save();
+
                                     linkUserAndPlansRepository.Save();
                                     usersRepository.Save();
                                     NotifyAgentLimitAfterWalletChange(user, walletBefore, parentWalletBefore);
@@ -789,8 +805,39 @@ namespace V2boardApi.Areas.App.Controllers
             try
             {
                 var user = usersRepository.table.Where(p => p.Username == User.Identity.Name && p.Status == true).FirstOrDefault();
+                if (user == null || user.tbServers == null)
+                    return Toaster.Error("ناموفق", "خطایی در مسدود سازی اشتراک رخ داد");
+
+                if (!status && user.Role != 1 && SettlementService.IsAgentOrAncestorBlocked(user, db))
+                    return Toaster.Warning("ناموفق", "این اشتراک توسط مدیریت مسدود شده و امکان رفع مسدودی توسط نماینده وجود ندارد");
+
                 MySqlEntities mySql = new MySqlEntities(user.tbServers.ConnectionString);
                 await mySql.OpenAsync();
+
+                if (!status && user.Role != 1)
+                {
+                    var remarksQuery = "SELECT remarks FROM v2_user WHERE id = @id AND email LIKE @pattern LIMIT 1";
+                    var remarksParams = new Dictionary<string, object>
+                    {
+                        { "@id", user_id },
+                        { "@pattern", "%" + user.Username + "%" }
+                    };
+                    var adminBlocked = false;
+                    using (var remarksReader = await mySql.GetDataAsync(remarksQuery, remarksParams))
+                    {
+                        if (await remarksReader.ReadAsync())
+                        {
+                            var remarks = remarksReader["remarks"] == DBNull.Value ? "" : remarksReader["remarks"].ToString();
+                            adminBlocked = SettlementService.HasAdminBlockFlag(remarks);
+                        }
+                    }
+                    if (adminBlocked)
+                    {
+                        await mySql.CloseAsync();
+                        return Toaster.Warning("ناموفق", "این اشتراک توسط مدیریت مسدود شده و امکان رفع مسدودی توسط نماینده وجود ندارد");
+                    }
+                }
+
                 var Query = "update v2_user set banned = " + Convert.ToInt16(status) + " where email like '%" + user.Username + "%' and id =" + user_id;
                 var reader = await mySql.GetDataAsync(Query);
                 var res = await reader.ReadAsync();

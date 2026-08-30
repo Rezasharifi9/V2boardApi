@@ -27,6 +27,8 @@ namespace V2boardApi.Areas.App.Data.SubscriptionsViewModels
         public bool Exceeded { get; set; }
         public bool CanDelete { get; set; }
         public bool CanEarlyDeleteRefund { get; set; }
+        /// <summary>مسدودسازی توسط مدیریت؛ نماینده نمی‌تواند رفع مسدودی کند.</summary>
+        public bool IsAdminBlocked { get; set; }
 
     }
 }
